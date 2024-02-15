@@ -1,6 +1,5 @@
 #!/bin/bash
-# TODO: check if user app is able to perform sudo in a non interactive environement
-
+# Stop the running service
 sudo systemctl stop webapp-prod
 
 # Copy .env file to a safe place
@@ -10,15 +9,18 @@ cp PPDB-Prod/.env prod-temp/.env
 rm -rf PPDB-Prod
 
 # Clone the repo
-git clone git@github.com:Idraigyr/ProgrammingProjectDatabases.git PPDB-Prod
+git clone -b main git@github.com:Idraigyr/ProgrammingProjectDatabases.git PPDB-Prod
 # Restore env file
 cp prod-temp/.env PPDB-Prod/
 
+# Setup the app
 cd PPDB-Prod
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
+# Start the service
 sudo systemctl start webapp-prod
 
-sudo systemctl status webapp-prod | exit 1
+# Finally, test if the service succesfully started
+sudo systemctl is-active --quiet webapp-prod || exit 1
