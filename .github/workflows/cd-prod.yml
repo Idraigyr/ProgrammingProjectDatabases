@@ -1,0 +1,23 @@
+name: Deploy to Production
+
+# Activate when pushed to dev
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: team2.ua-ppdb.me
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd ~
+            chmod +x PPDB-Prod/deploy-prod.sh
+            ./PPDB-Prod/deploy-prod.sh
