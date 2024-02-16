@@ -10,7 +10,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy using SSH
+      - name: Deploy to dev using SSH
         uses: appleboy/ssh-action@master
         with:
           host: team2.ua-ppdb.me
@@ -18,6 +18,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            cd ~
+            cd /home/${{ secrets.USERNAME }}
+            ls -al
             chmod +x PPDB-Dev/deploy-dev.sh
             ./PPDB-Dev/deploy-dev.sh
