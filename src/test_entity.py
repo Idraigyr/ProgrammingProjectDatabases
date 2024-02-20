@@ -1,11 +1,11 @@
+from flask import current_app
 from sqlalchemy import Integer, String
-from sqlalchemy.orm import Mapped, mapped_column
-from app import db
 
-class TestEntity(db.Model):
+
+class TestEntity(current_app.db.Model):
     __tablename__ = 'test_entity'
-    id = db.Column(Integer, primary_key=True)
-    name = db.Column(String(255))
+    id = current_app.db.Column(Integer, primary_key=True)
+    name = current_app.db.Column(String(255))
 
     def __init__(self, name):
         self.name = name

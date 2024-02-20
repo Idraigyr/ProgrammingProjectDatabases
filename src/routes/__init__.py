@@ -1,1 +1,1 @@
-from . import public_routes
+import src.routes.public_routes
