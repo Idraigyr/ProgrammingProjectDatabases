@@ -3,7 +3,6 @@ from sqlalchemy import Integer, String
 
 
 class TestEntity(current_app.db.Model):
-    __tablename__ = 'test_entity'
     id = current_app.db.Column(Integer, primary_key=True)
     name = current_app.db.Column(String(255))
 

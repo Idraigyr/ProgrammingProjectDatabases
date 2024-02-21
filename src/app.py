@@ -19,7 +19,7 @@ db: SQLAlchemy = SQLAlchemy(model_class=Base)
 
 def setup():
     # Load environment variables
-    assert load_dotenv("../.env"), "unable to load .env file"
+    assert load_dotenv(".env"), "unable to load .env file"
     from os import environ
 
     # Configure the logger
@@ -65,7 +65,7 @@ def setup():
         db.create_all()
 
         # Temp test
-        from test_entity import TestEntity
+        from src.test_entity import TestEntity
         logging.debug(TestEntity.query.all())
 
     return app
