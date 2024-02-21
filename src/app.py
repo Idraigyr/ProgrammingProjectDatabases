@@ -4,33 +4,39 @@ from flask import Flask
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
-from logging.config import dictConfig
-
-
 
 """
 This is the main entry point for the application.
 """
 
+
 class Base(DeclarativeBase):
     pass
 
-db: SQLAlchemy = SQLAlchemy(model_class=Base)
 
-def setup():
+# Load environment variables
+assert load_dotenv(".env"), "unable to load .env file"
+from os import environ
+
+db: SQLAlchemy = SQLAlchemy(model_class=Base)
+app: Flask = Flask(environ.get('APP_NAME'))
+
+
+def setup(app: Flask):
     # Load environment variables
-    assert load_dotenv(".env"), "unable to load .env file"
-    from os import environ
+    # assert load_dotenv(".env"), "unable to load .env file"
+    # from os import environ
 
     # Configure the logger
-    if environ.get('APP_DEBUG'):
+    if environ.get('APP_DEBUG') == "true":
         logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
         logging.debug("Debug mode enabled")
     else:
         logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
+
     # Create the Flask app
-    app: Flask = Flask(environ.get('APP_NAME'))
+    # app: Flask = Flask()
 
     # Key differs in production, this is good enough for dev purposes
     app.secret_key = environ.get('APP_SECRET_KEY') or '*^*(*&)(*)(*afafafaSDD47j\3yX R~X@H!jmM]Lwf/,?KT'
@@ -72,9 +78,10 @@ def setup():
 
 
 # RUN DEV SERVER
-if __name__ == "__main__":
-    app = setup()
 
+app = setup(app)
+
+if __name__ == "__main__":
     # Finally, run the app
     # don't put this in the setup() as the WSGI server uses that function as well
     logging.info("Booting Flask Debug server")
