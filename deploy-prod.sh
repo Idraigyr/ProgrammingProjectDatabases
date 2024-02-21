@@ -23,4 +23,10 @@ pip install -r requirements.txt
 sudo systemctl start webapp-prod
 
 # Finally, test if the service succesfully started
+echo "Testing if the service is running"
 sudo systemctl is-active --quiet webapp-prod || exit 1
+
+echo "Testing if the site is reachable"
+curl -s -o /dev/null https://team2.ua-ppdb.me || exit 1
+
+echo "Done"

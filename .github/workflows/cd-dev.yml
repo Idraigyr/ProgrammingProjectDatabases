@@ -19,6 +19,5 @@ jobs:
           port: 22
           script: |
             cd /home/${{ secrets.USERNAME }}
-            ls -al
             chmod +x PPDB-Dev/deploy-dev.sh
             ./PPDB-Dev/deploy-dev.sh
