@@ -23,12 +23,25 @@ db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
 
 def setup_jwt(app: Flask):
+    """
+    Setup the JWT manager for the given Flask app
+    Uses the APP_JWT_SECRET_KEY environment variable to load the secret key
+
+    Generate a secret key with:
+    <pre>
+    import secrets
+    with open('jwtRS256.key', 'wb') as f:
+         f.write(secrets.token_bytes(256))
+    </pre>
+
+    :param app:
+    :return:
+    """
     # Configure JWT
     app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
 
     # Load the secret key from file
-    # Genrate key with secrets.token_bytes(256)
-    with open(app.config['APP_JWT_SECRET_KEY'], 'r') as f:
+    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:
         app.config['JWT_SECRET_KEY'] = f.read()
 
     app.config['JWT_TOKEN_LOCATION'] = ['headers']
