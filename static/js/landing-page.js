@@ -10,7 +10,7 @@ let imgHeight = 1280;
 init();
 animate();
 
-
+// Function to initialize the scene
 function init() {
     // Set up scene
     scene = new THREE.Scene();
@@ -25,7 +25,7 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
-    // Load planet model
+    // Load island model
     const loader = new THREE.GLTFLoader();
     loader.load('../static/3d-models/island-landing-page.glb', (gltf) => {
         planet = gltf.scene;
@@ -53,19 +53,21 @@ function init() {
     scaleBackground();
 }
 
+// Scales background image
 function scaleBackground(){
     if(!scene.background) return;
     const targetAspect = window.innerWidth / window.innerHeight;
     const imageAspect = imgWidth / imgHeight;
     const factor = imageAspect / targetAspect;
-// When factor larger than 1, that means texture 'wilder' than target。
-// we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
+    // When factor larger than 1, that means texture 'wilder' than target。
+    // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
     scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
     scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
     scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
     scene.background.repeat.y = factor > 1 ? 1 : factor;
 }
 
+// Animate the scene
 function animate() {
     requestAnimationFrame(animate);
 
