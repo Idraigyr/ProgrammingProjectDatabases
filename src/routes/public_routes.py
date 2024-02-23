@@ -12,3 +12,7 @@ def main():
     db.session.commit()
     return render_template('index.html', app_name=current_app.config['APP_NAME'])
 
+@public_routes.route("/landing")
+def landing():
+    return render_template('landing-page.html', app_name=current_app.config['APP_NAME'])
+

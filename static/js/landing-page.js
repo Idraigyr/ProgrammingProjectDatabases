@@ -3,8 +3,9 @@ let scene, camera, renderer;
 let planet;
 
 
-var img = new Image();
-img.src = "background.jpg";
+// TODO: another options that does not give any problems with initial loading of the image
+let imgWidth = 1920;
+let imgHeight = 1280;
 
 init();
 animate();
@@ -26,7 +27,7 @@ function init() {
 
     // Load planet model
     const loader = new THREE.GLTFLoader();
-    loader.load('./planet.glb', (gltf) => {
+    loader.load('../static/3d-models/island-landing-page.glb', (gltf) => {
         planet = gltf.scene;
         scene.add(planet);
         planet.rotation.x += 0.5
@@ -46,7 +47,7 @@ function init() {
     const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
     scene.add(ambientLight);
 
-    const texture = new THREE.TextureLoader().load( "background.jpg" );
+    const texture = new THREE.TextureLoader().load( "../static/images/background-landing.jpg" );
     scene.background = texture;
 
     scaleBackground();
@@ -55,7 +56,7 @@ function init() {
 function scaleBackground(){
     if(!scene.background) return;
     const targetAspect = window.innerWidth / window.innerHeight;
-    const imageAspect = img.width / img.height;
+    const imageAspect = imgWidth / imgHeight;
     const factor = imageAspect / targetAspect;
 // When factor larger than 1, that means texture 'wilder' than target。
 // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
