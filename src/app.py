@@ -1,7 +1,8 @@
 import logging
 
-from flask import Flask
+from flask import Flask, jsonify
 from dotenv import load_dotenv
+from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
@@ -21,8 +22,47 @@ from os import environ
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
 
+def setup_jwt(app: Flask):
+    # Configure JWT
+    app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
+
+    # Load the secret key from file
+    # Genrate key with secrets.token_bytes(256)
+    with open(app.config['APP_JWT_SECRET_KEY'], 'r') as f:
+        app.config['JWT_SECRET_KEY'] = f.read()
+
+    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
+
+    # Create the JWT manager
+    app.jwt = JWTManager(app)
+
+    # Add a custom error handler for JWT errors
+    _log = logging.getLogger("_jwt")
+    @app.jwt.invalid_token_loader
+    def custom_invalid_token_loader(callback):
+        _log.debug(f"Invalid token (check format?): {callback}")
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    @app.jwt.unauthorized_loader
+    def custom_unauthorized_loader(callback):
+        _log.debug(f"Unauthorized (no header?): {callback}")
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+
+    @app.jwt.expired_token_loader
+    def custom_expired_token_loader(callback):
+        _log.debug(f"Expired token (log back in): {callback}")
+        return jsonify({'status': 'error', 'message': 'Token has expired (log back in)'}), 401
+
 
 def setup(app: Flask):
+    """
+    Setup the Flask app with the given configuration from environment variables (in .env or system)
+    Also initializes the database (SQLAlchemy), JWT manager and imports & registers the routes
+    :param app: The flask app
+    :return: None
+    """
+
     # Load environment variables
     # assert load_dotenv(".env"), "unable to load .env file"
     # from os import environ
@@ -56,6 +96,9 @@ def setup(app: Flask):
         (f"postgresql://{app.config['APP_POSTGRES_USER']}:{app.config['APP_POSTGRES_PASSWORD']}"
          f"@{app.config['APP_POSTGRES_HOST']}:{app.config['APP_POSTGRES_PORT']}"
          f"/{app.config['APP_POSTGRES_DATABASE']}")
+
+    # Configre JWT
+    setup_jwt(app)
 
     # Initialize the db with our Flask instance
     db.init_app(app)

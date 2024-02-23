@@ -9,3 +9,8 @@ class Player(current_app.db.Model):
 
     xp: Mapped[int] = current_app.db.Column(BigInteger, nullable=False, default=0)
     crystals: Mapped[int] = current_app.db.Column(BigInteger, nullable=False, default=0)
+
+    def __init__(self, user_profile, xp: int=0, crystals: int=0):
+        self.user_profile = user_profile
+        self.xp = xp
+        self.crystals = crystals

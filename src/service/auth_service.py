@@ -1,8 +1,13 @@
 import logging
 from typing import Optional
 
-from src.model.user_profile import UserProfile
+from flask import current_app
+from flask_jwt_extended import create_access_token
+from flask_sqlalchemy import SQLAlchemy
 
+from src.model.credentials import Credentials, PasswordCredentials
+from src.model.user_profile import UserProfile
+db: SQLAlchemy = current_app.db
 
 class AuthService:
     """
@@ -13,33 +18,85 @@ class AuthService:
         pass
 
 
-    def get_user(self, username=None, user_id=None) -> Optional[UserProfile]:
+    def get_user(self, username=None, user_id=None) -> Optional['UserProfile']:
         """
         Get user by username or user_id
         :param username: The username of the user
         :param user_id: The user_id of the user
         :return: The userProfile object, or None if not found
         """
-        # TODO
-        pass
+        if user_id is not None:
+            return db.session.execute(db.select(UserProfile).where(UserProfile.id == user_id)).scalar_one_or_none()
+        elif username is not None:
+            return db.session.execute(db.select(UserProfile).where(UserProfile.username == username)).scalar_one_or_none()
+        raise ValueError('Either username or user_id must be provided')
 
-    def authenticate(self, username, password) -> Optional[UserProfile]:
+
+    def authenticate(self, username, password) -> Optional['UserProfile']:
         """
         Authenticate the user using username and password
         :param username: The username of the user
         :param password: The password of the user
-        :return: The userProfile object, or None if not found
+        :return: The userProfile object, or None if not found or failed to authenticate
         """
-        user: Optional[UserProfile] = self.get_user(username=username)
+        user: Optional['UserProfile'] = self.get_user(username=username)
         if user is None:
             self._log.debug(f'User {username} not found, cannot authenticate')
             return None
 
-        user.credentials.authenticate({'username': username, 'password': password})
+        pwd_match = user.credentials.authenticate({'username': username, 'password': password})
+        if not pwd_match:
+            self._log.info(f'User {username} provided wrong password, cannot authenticate')
+            return None
+
+        self._log.info(f'User {username} authenticated successfully')
+        return user
 
 
-        # TODO
-        pass
+    def create_jwt(self, user: 'UserProfile') -> str:
+        """
+        Generate a JWT token for the user.
+        Tokens are identified by the user_id
+        ONLY use this method after successful authentication
+        :param user: The user to generate the token for
+        :return: The JWT token
+        """
+        self._log.debug(f'Generating JWT token for user {user.id}')
+        token = create_access_token(identity=user.id)
+        return token
+
+
+    def create_user_password(self, username: str, password: str, firstname: str, lastname: str) -> 'UserProfile':
+        """
+        Create a new user with a password
+        The username should not be already be taken. Check in advance with get_user()
+        :param lastname:  The last name
+        :param firstname: The first name
+        :param username: The username of the user
+        :param password: The password of the user, plaintext
+        :return: The new user object
+        """
+        credentials: Credentials = PasswordCredentials.create_from_password(password)
+        return self.create_user(credentials, username, firstname, lastname)
+
+
+    def create_user(self, credentials: 'Credentials', username: str, firstname: str, lastname: str) -> 'UserProfile':
+        """
+        Create a new user with a password
+        The username should not be already be taken. Check in advance with get_user()
+        :param username: The username of the user
+        :param lastname:  The last name
+        :param firstname: The first name
+        :param credentials: The credentials object
+        :return: The new user object
+        """
+        assert self.get_user(username) is None, f'User {username} already exists'
+        self._log.info(f'Creating new account for {firstname} {lastname} with username {username}')
+        user: UserProfile = UserProfile(username, firstname, lastname, credentials)
+        current_app.db.session.add(user)
+        current_app.db.session.commit()
+        return user
+
 
 
 AUTH_SERVICE = AuthService()
