@@ -1,0 +1,65 @@
+body { margin: 0; overflow: hidden; cursor: url('../images/wand.png'), auto;}
+        body::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+            pointer-events: none; /* Allows interaction with the content behind the overlay */
+        }
+        canvas { display: block; }
+        #title {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            line-height: 100%;
+            font-family: 'Surabasa', sans-serif;
+            font-size: 10vh;
+            color: #ffffff;
+            text-shadow: 0.25vh 0.25vh 0.5vh rgba(0, 0, 0, 0.8);
+        }
+        @font-face {
+            font-family: 'Surabasa';
+            src: url('../fonts/SurabanglusNormal.ttf') format('truetype');
+        }
+        #buttonContainer {
+            position: absolute;
+            bottom: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .roundButton {
+            display: inline-block;
+            padding: 1vh 3vh;
+            font-size: 2.75vh;
+            font-family: "Eras Light ITC", sans-serif;
+            border-radius: 3vh;
+            background-color: rgba(0,0,0.7,0);
+            color: #ffffff;
+            margin-bottom: 1vh;
+            cursor: url('../images/wand.png'), auto;
+            transition: all .25s;
+        }
+        .roundButton:hover {
+            background-color: rgba(79, 255, 78, 0.5);
+        }
+
+        .whiteButton:hover{
+            color: white;
+        }
+        .whiteButton{
+            background-color: white;
+            font-weight: 700;
+            font-family: "Cascadia Code";
+            color: #8f78a7;
+        }
