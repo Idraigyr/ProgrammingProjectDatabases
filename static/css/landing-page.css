@@ -22,9 +22,18 @@ body { margin: 0; overflow: hidden; cursor: url('../images/wand.png'), auto;}
             color: #ffffff;
             text-shadow: 0.25vh 0.25vh 0.5vh rgba(0, 0, 0, 0.8);
         }
+        /* Define some fonts */
         @font-face {
             font-family: 'Surabasa';
             src: url('../fonts/SurabanglusNormal.ttf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Eras Light ITC';
+            src: url('../fonts/ITCErasLightRegular.otf') format('truetype');
+        }
+        @font-face {
+            font-family: 'Cascadia Code';
+            src: url('../fonts/Cascadia.ttf') format('truetype');
         }
         #buttonContainer {
             position: absolute;
