@@ -45,7 +45,7 @@ def setup_jwt(app: Flask):
     with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:
         app.config['JWT_SECRET_KEY'] = f.read()
 
-    app.config['JWT_TOKEN_LOCATION'] = ['headers']
+    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
 
     # Create the JWT manager
