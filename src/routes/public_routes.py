@@ -43,7 +43,7 @@ def send_favicon():
 def login():
     user = get_jwt_identity()
     if user is not None:  # already logged in
-        return redirect("/landing", 302)
+        return redirect("/", 302)
     else:
         return render_template('login.html')
 
@@ -52,6 +52,6 @@ def login():
 def register():
     user = get_jwt_identity()
     if user is not None:  # user already logged in
-        return redirect("/landing", 302)
+        return redirect("/", 302)
     else:
         return render_template('register.html')
