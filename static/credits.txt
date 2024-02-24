@@ -1,0 +1,13 @@
+Fonts:
+license: Freeware
+link: https://www.fontspace.com/surabanglus-font-f24110
+-----------------------------------
+Images:
+Abstract background with low poly clouds and pink and blue gradient
+<a href="https://www.vecteezy.com/free-vector/sky">Sky Vectors by Vecteezy</a>
+Magic wand
+https://www.svgart.org/harry-potter-wands-svg/
+-----------------------------------
+3d models:
+Floating island landing page:
+https://sketchfab.com/3d-models/floating-island-a7ee83349e3142068b73a1ddd9e99311
