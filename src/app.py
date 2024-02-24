@@ -22,6 +22,7 @@ from os import environ
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
 
+
 def setup_jwt(app: Flask):
     """
     Setup the JWT manager for the given Flask app
@@ -52,6 +53,7 @@ def setup_jwt(app: Flask):
 
     # Add a custom error handler for JWT errors
     _log = logging.getLogger("_jwt")
+
     @app.jwt.invalid_token_loader
     def custom_invalid_token_loader(callback):
         _log.debug(f"Invalid token (check format?): {callback}")
@@ -70,7 +72,7 @@ def setup_jwt(app: Flask):
 
 def setup(app: Flask):
     """
-    Setup the Flask app with the given configuration from environment variables (in .env or system)
+    Set up the Flask app with the given configuration from environment variables (in .env or system)
     Also initializes the database (SQLAlchemy), JWT manager and imports & registers the routes
     :param app: The flask app
     :return: None
@@ -86,7 +88,6 @@ def setup(app: Flask):
         logging.debug("Debug mode enabled")
     else:
         logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-
 
     # Create the Flask app
     # app: Flask = Flask()

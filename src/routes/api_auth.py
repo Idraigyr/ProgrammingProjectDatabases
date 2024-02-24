@@ -21,7 +21,7 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
     jwt_required = lambda: lambda x: x  # no-op decorator
     def f():
         # When JWT is disabled, return the default user (id=0)
-        return AUTH_SERVICE.get_user(user_id=0)
+        return AUTH_SERVICE.get_user(user_id=1)
     get_jwt_identity = f
 
 
