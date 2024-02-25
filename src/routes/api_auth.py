@@ -3,12 +3,13 @@ import logging
 
 from flask import Blueprint, current_app, Response, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_restful_swagger_3 import swagger
 from markupsafe import escape
 
 from src.service.auth_service import AUTH_SERVICE
 
 # Create the blueprint
-api_auth = Blueprint('api_auth', __name__)
+blueprint = Blueprint('api_auth', __name__)
 
 # Utliity variables
 db = current_app.db
@@ -25,7 +26,7 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
     get_jwt_identity = f
 
 
-@api_auth.route("/register", methods=['POST'])
+@blueprint.route("/register", methods=['POST'])
 def register():
     """
     REST API endpoint for user registration
@@ -68,10 +69,9 @@ def register():
             'username': user.username
         }
     }), status=200, mimetype='application/json')
-    # TODO - generate docs : https://www.sphinx-doc.org/en/master/usage/quickstart.html
 
 
-@api_auth.route("/login", methods=['POST'])
+@blueprint.route("/login", methods=['POST'])
 def login():
     """
     REST API endpoint for user-password login
@@ -102,7 +102,7 @@ def login():
     # Return response
     return Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
 
-@api_auth.route("/ssologin")
+@blueprint.route("/ssologin")
 def sso_login():
     # implement SSO login
     return Response("Not implemented yet", status=501, mimetype='application/json')
@@ -111,8 +111,11 @@ def sso_login():
 
 ####################### USER MANAGEMENT #######################
 
-@api_auth.route("/user", methods=['GET'])
+@blueprint.route("/user", methods=['GET'])
 @jwt_required()
+@swagger.response(200, description='Get the user profile')
+@swagger.response(401, description='Unauthorized (no JWT) or not authorized to access (other) user profile')
+@swagger.response(404, description='User not found')
 def get_user():
     """
     Get the user's profile
@@ -130,4 +133,3 @@ def get_user():
         return Response(json.dumps({'status': 'error', 'message': "User not found"}), status=404, mimetype='application/json')
     else:
         return Response(json.dumps({'status': 'success'} | user.to_json()), status=200, mimetype='application/json')
-

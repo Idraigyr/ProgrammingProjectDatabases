@@ -1,7 +1,8 @@
 import logging
+from json import JSONEncoder
 
-from flask import Flask, jsonify
 from dotenv import load_dotenv
+from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -13,6 +14,26 @@ This is the main entry point for the application.
 
 class Base(DeclarativeBase):
     pass
+
+
+class JSONClassEncoder:
+    """
+    JSON Encoder that calls to_json() on objects
+    """
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def default(self, o):
+        if hasattr(o, 'to_json'):
+            return JSONEncoder().default(o.to_json())
+        else:
+            return JSONEncoder().default(o)
+
+    def encode(self, o):
+        if hasattr(o, 'to_json'):
+            return JSONEncoder().encode(o.to_json())
+        else:
+            return JSONEncoder().encode(o)
 
 
 # Load environment variables
@@ -57,17 +78,17 @@ def setup_jwt(app: Flask):
     @app.jwt.invalid_token_loader
     def custom_invalid_token_loader(callback):
         _log.debug(f"Invalid token (check format?): {callback}")
-        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+        return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_invalid_token'}), 401
 
     @app.jwt.unauthorized_loader
     def custom_unauthorized_loader(callback):
         _log.debug(f"Unauthorized (no header?): {callback}")
-        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 401
+        return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_no_header'}), 401
 
     @app.jwt.expired_token_loader
-    def custom_expired_token_loader(callback):
-        _log.debug(f"Expired token (log back in): {callback}")
-        return jsonify({'status': 'error', 'message': 'Token has expired (log back in)'}), 401
+    def custom_expired_token_loader(jwt_header, jwt_data):
+        _log.debug(f"Expired token (log back in): {jwt_header}, {jwt_data}")
+        return jsonify({'status': 'error', 'message': 'Token has expired (log back in)', 'type': 'jwt_token_expired'}), 401
 
 
 def setup(app: Flask):
@@ -122,11 +143,26 @@ def setup(app: Flask):
     with app.app_context():
         # import routes INSIDE the app context
         import src.routes
-        app.register_blueprint(src.routes.public_routes.public_routes)
-        app.register_blueprint(src.routes.api_auth.api_auth, url_prefix='/api/auth')
+        app.register_blueprint(src.routes.public_routes.blueprint)
+        app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
 
         # Create the tables in the db, AFTER entities are imported
         db.create_all()
+
+        # Register custom JSON Encoder to call to_json() on objects
+        # This is so that Flask can jsonify our SQLAlchemy models
+        app.config['RESTFUL_JSON'] = {'cls': JSONClassEncoder}
+
+        # Setup SWAGGER API documentation (only in debug mode)
+        enable_swagger = app.config.get('APP_SWAGGER_ENABLED', "false") == 'true'
+        if enable_swagger:
+            logging.info("Setting up Swagger API documentation")
+            app.config['SWAGGER_BLUEPRINT_URL_PREFIX'] = '/api/docs'
+
+        # Create all API endpoints
+        from src.model import attach_resources
+        attach_resources(app, enable_swagger=enable_swagger)
+
 
     return app
 

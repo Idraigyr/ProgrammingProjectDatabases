@@ -12,3 +12,4 @@ pytest==6.2.4
 flask-sqlalchemy==3.1.1
 flask-jwt-extended==4.6.0
 bcrypt==4.1.2
+flask-restful-swagger-3==0.5.1

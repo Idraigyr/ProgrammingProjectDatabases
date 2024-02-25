@@ -4,7 +4,7 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 
 from src.service.auth_service import AUTH_SERVICE
 
-public_routes = Blueprint('public_routes', __name__)
+blueprint = Blueprint('public_routes', __name__)
 db = current_app.db
 
 # Disable JWT if not enabled, JWT is enabled by default
@@ -18,7 +18,7 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
     get_jwt_identity = f
 
 
-@public_routes.route("/")
+@blueprint.route("/")
 @jwt_required(optional=True)
 def index():
     user = get_jwt_identity()
@@ -29,16 +29,16 @@ def index():
         return render_template('index.html', app_name=current_app.config['APP_NAME'])
 
 
-@public_routes.route("/landing")
+@blueprint.route("/landing")
 def landing():
     return render_template('landing-page.html', app_name=current_app.config['APP_NAME'])
 
 
-@public_routes.route("/favicon.ico")
+@blueprint.route("/favicon.ico")
 def send_favicon():
     return current_app.send_static_file("favicon.ico")
 
-@public_routes.route("/login")
+@blueprint.route("/login")
 @jwt_required(optional=True)
 def login():
     user = get_jwt_identity()
@@ -47,7 +47,7 @@ def login():
     else:
         return render_template('login.html')
 
-@public_routes.route("/register")
+@blueprint.route("/register")
 @jwt_required(optional=True)
 def register():
     user = get_jwt_identity()
