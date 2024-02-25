@@ -4,6 +4,7 @@ from json import JSONEncoder
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
+from flask_restful_swagger_3 import get_swagger_blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
@@ -144,7 +145,7 @@ def setup(app: Flask):
         # import routes INSIDE the app context
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
-        app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
+        # app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
 
         # Create the tables in the db, AFTER entities are imported
         db.create_all()
@@ -153,15 +154,23 @@ def setup(app: Flask):
         # This is so that Flask can jsonify our SQLAlchemy models
         app.config['RESTFUL_JSON'] = {'cls': JSONClassEncoder}
 
-        # Setup SWAGGER API documentation (only in debug mode)
-        enable_swagger = app.config.get('APP_SWAGGER_ENABLED', "false") == 'true'
-        if enable_swagger:
+        # Create all API endpoints
+        from src.resource import attach_resources
+        attach_resources(app)
+
+        # Setup SWAGGER API documentation (only when enabled)
+        if app.config.get('APP_SWAGGER_ENABLED', "false") == 'true':
+            from src.resource import openapi_dict
             logging.info("Setting up Swagger API documentation")
             app.config['SWAGGER_BLUEPRINT_URL_PREFIX'] = '/api/docs'
+            swagger_url = app.config.get('APP_SWAGGER_URL', '/api/docs')
+            api_url = app.config.get('APP_SWAGGER_API_URL', '/static/swagger.json')
+            resource = get_swagger_blueprint(openapi_dict, add_api_spec_resource=True,
+                                             swagger_url=swagger_url, swagger_prefix_url=api_url,
+                                             title=app.config['APP_NAME'])
+            app.register_blueprint(resource, url_prefix=swagger_url)
 
-        # Create all API endpoints
-        from src.model import attach_resources
-        attach_resources(app, enable_swagger=enable_swagger)
+
 
 
     return app

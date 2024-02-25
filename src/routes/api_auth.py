@@ -2,7 +2,6 @@ import json
 import logging
 
 from flask import Blueprint, current_app, Response, request
-from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful_swagger_3 import swagger
 from markupsafe import escape
 
@@ -27,6 +26,16 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
 
 
 @blueprint.route("/register", methods=['POST'])
+# Swagger decorators added for completion, but unable to add it automatically to documentation
+@swagger.tags('auth')
+@swagger.parameter(name='username', in_='query', type='string', required=True)
+@swagger.parameter(name='password', in_='query', type='string', required=True)
+@swagger.parameter(name='firstname', in_='query', type='string', required=True)
+@swagger.parameter(name='lastname', in_='query', type='string', required=True)
+@swagger.response(response_code=200, description='User registered successfully')
+@swagger.response(response_code=400, description='Incorrect number of parameters')
+@swagger.response(response_code=409, description='Username already taken')
+@swagger.response(response_code=409, description='Registration not enabled')
 def register():
     """
     REST API endpoint for user registration
@@ -72,6 +81,14 @@ def register():
 
 
 @blueprint.route("/login", methods=['POST'])
+# Swagger decorators added for completion, but unable to add it automatically to documentation
+@swagger.tags('auth')
+@swagger.parameter(name='username', in_='query', type='string', required=True)
+@swagger.parameter(name='password', in_='query', type='string', required=True)
+@swagger.response(response_code=200, description='User logged in successfully')
+@swagger.response(response_code=400, description='Incorrect number of parameters')
+@swagger.response(response_code=401, description='Username not found or incorrect password')
+@swagger.response(response_code=409, description='Login not enabled')
 def login():
     """
     REST API endpoint for user-password login
@@ -103,33 +120,8 @@ def login():
     return Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
 
 @blueprint.route("/ssologin")
+# Swagger decorators added for completion, but unable to add it automatically to documentation
+@swagger.tags('auth')
 def sso_login():
     # implement SSO login
     return Response("Not implemented yet", status=501, mimetype='application/json')
-
-
-
-####################### USER MANAGEMENT #######################
-
-@blueprint.route("/user", methods=['GET'])
-@jwt_required()
-@swagger.response(200, description='Get the user profile')
-@swagger.response(401, description='Unauthorized (no JWT) or not authorized to access (other) user profile')
-@swagger.response(404, description='User not found')
-def get_user():
-    """
-    Get the user's profile
-    :return: The user's profile
-    """
-    current_user = get_jwt_identity()
-    req_id = int(escape(request.args.get('id', current_user)))
-
-    if current_user != req_id:
-        _log.warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-        return Response(json.dumps({'status': 'error', 'message': "Not authorized"}), status=401, mimetype='application/json')
-
-    user = AUTH_SERVICE.get_user(user_id=req_id)
-    if user is None:
-        return Response(json.dumps({'status': 'error', 'message': "User not found"}), status=404, mimetype='application/json')
-    else:
-        return Response(json.dumps({'status': 'success'} | user.to_json()), status=200, mimetype='application/json')

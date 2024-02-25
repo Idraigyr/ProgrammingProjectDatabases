@@ -39,4 +39,17 @@ class UserProfile(current_app.db.Model):
             "lastname": self.lastname,
         }
 
+    def update(self, data: dict):
+        """
+        Update the user profile with new data
+        Only firstname & lastname can be updated
+        :param data: The new data
+        :return:
+        """
+        if 'firstname' in data:
+            self.firstname = data['firstname']
+        if 'lastname' in data:
+            self.lastname = data['lastname']
+        return self
+
 
