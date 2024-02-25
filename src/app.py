@@ -145,7 +145,7 @@ def setup(app: Flask):
         # import routes INSIDE the app context
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
-        # app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
+        app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
 
         # Create the tables in the db, AFTER entities are imported
         db.create_all()

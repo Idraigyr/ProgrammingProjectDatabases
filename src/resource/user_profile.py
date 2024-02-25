@@ -69,7 +69,8 @@ class UserProfileResource(Resource):
             return {'status': 'error', 'message': "User not found"}, 404
 
         # Update the user
-        user.update(clean_dict_input(request.args))
+        copy = request.args.copy() # Create a copy of the request args as these are immutable
+        user.update(clean_dict_input(copy))
         current_app.db.session.commit() # Save changes to db
 
         return {'status': 'success', 'message': 'User profile updated'}, 200
