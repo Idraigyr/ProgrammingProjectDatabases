@@ -60,6 +60,7 @@ def setup_jwt(app: Flask):
     :param app:
     :return:
     """
+    logging.debug("Setting up JWT")
     # Configure JWT
     app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
 
@@ -111,6 +112,8 @@ def setup(app: Flask):
     else:
         logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
+    logging.debug("Setting up app")
+
     # Create the Flask app
     # app: Flask = Flask()
 
@@ -132,6 +135,10 @@ def setup(app: Flask):
         (f"postgresql://{app.config['APP_POSTGRES_USER']}:{app.config['APP_POSTGRES_PASSWORD']}"
          f"@{app.config['APP_POSTGRES_HOST']}:{app.config['APP_POSTGRES_PORT']}"
          f"/{app.config['APP_POSTGRES_DATABASE']}")
+
+    # Needed to have Flask to propagate exceptions in order to have the JWT exception handlers to work properly
+    # See SCRUM-45
+    app.config['PROPAGATE_EXCEPTIONS'] = True
 
     # Configre JWT
     setup_jwt(app)
