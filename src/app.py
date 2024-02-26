@@ -68,8 +68,9 @@ def setup_jwt(app: Flask):
     with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:
         app.config['JWT_SECRET_KEY'] = f.read()
 
-    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
+    app.config['JWT_TOKEN_LOCATION'] = ['cookies']
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
+    app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME', 'https') == 'https' # Serve cookies only over HTTPS, default to do so
 
     # Create the JWT manager
     app.jwt = JWTManager(app)
@@ -84,8 +85,8 @@ def setup_jwt(app: Flask):
 
     @app.jwt.unauthorized_loader
     def custom_unauthorized_loader(callback):
-        _log.debug(f"Unauthorized (no header?): {callback}")
-        return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_no_header'}), 401
+        _log.debug(f"Unauthorized (no cookie?): {callback}")
+        return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_no_cookie'}), 401
 
     @app.jwt.expired_token_loader
     def custom_expired_token_loader(jwt_header, jwt_data):
