@@ -1,8 +1,9 @@
 import json
 import logging
+from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, current_app, Response, request
-from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt
 from markupsafe import escape
 
 from src.service.auth_service import AUTH_SERVICE
@@ -69,7 +70,7 @@ def register():
         }
     }), status=200, mimetype='application/json')
 
-    set_access_cookies(response, jwt) # Set the JWT in the response as a cookie
+    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 
@@ -103,7 +104,7 @@ def login():
 
     # Return response
     response = Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
-    set_access_cookies(response, jwt) # Set the JWT in the response as a cookie
+    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 @blueprint.route("/logout", methods=['POST', 'GET'])
@@ -117,6 +118,28 @@ def logout():
     response = Response(json.dumps({'status': 'success', 'message': 'Logged out'}), status=200, mimetype='application/json')
     unset_jwt_cookies(response) # Unset the JWT in the response as a cookie
     return response
+
+
+@current_app.after_request
+def refresh_expiring_jwts(response):
+    """
+    Checks after each request if the JWT token is about to expire and refreshes it if necessary
+    Stolen from https://flask-jwt-extended.readthedocs.io/en/stable/refreshing_tokens/
+    :param response: The response to modify (attach the new JWT to)
+    :return: The modified response
+    """
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            _log.debug(f"Refreshing JWT token of {get_jwt_identity()}")
+            access_token = AUTH_SERVICE.create_jwt(AUTH_SERVICE.get_user(user_id=get_jwt_identity()))
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        return response
 
 
 @blueprint.route("/ssologin")

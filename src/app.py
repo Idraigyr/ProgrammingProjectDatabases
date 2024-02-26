@@ -65,11 +65,13 @@ def setup_jwt(app: Flask):
     app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
 
     # Load the secret key from file
-    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:
+    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f: # The secret key to sign our JWTs with
         app.config['JWT_SECRET_KEY'] = f.read()
 
-    app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
+    app.config['JWT_TOKEN_LOCATION'] = ['cookies'] # only look for tokens in the cookies
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # token expiers 1 hour
+    app.config['JWT_SESSION_COOKIE'] = True  # Use cookies for session, removed once browser closes
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF protection (for now)
     app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME', 'https') == 'https' # Serve cookies only over HTTPS, default to do so
 
     # Create the JWT manager
