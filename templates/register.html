@@ -62,13 +62,14 @@
 <body>
 <div class="container">
     <h2>Register</h2>
-    <form action="your_registration_script.php" method="POST">
-        <input type="text" name="fullname" placeholder="Full Name" required>
-        <input type="text" name="email" placeholder="Email Address" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <input type="password" name="confirm_password" placeholder="Confirm Password" required>
-        <input type="submit" value="Register">
-    </form>
+    <form action="/register" method="POST">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <input type="text" name="firstname" placeholder="First Name" required>
+    <input type="text" name="lastname" placeholder="Last Name" required>
+    <input type="submit" value="Register">
+</form>
+
     <div class="footer">
         Already have an account? <a href="login">Login here</a>
     </div>
