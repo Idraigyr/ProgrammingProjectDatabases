@@ -1,8 +1,9 @@
 import json
 import logging
+from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, current_app, Response, request
-from flask_restful_swagger_3 import swagger
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt
 from markupsafe import escape
 
 from src.service.auth_service import AUTH_SERVICE
@@ -18,7 +19,7 @@ _log = logging.getLogger(__name__)
 # We override the jwt_required decorator to be a no-op
 # We also override the get_jwt_identity function to return the default user
 if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
-    jwt_required = lambda: lambda x: x  # no-op decorator
+    jwt_required = lambda *args, **kwargs: lambda x: x  # no-op decorator
     def f():
         # When JWT is disabled, return the default user (id=0)
         return AUTH_SERVICE.get_user(user_id=1)
@@ -57,7 +58,7 @@ def register():
     jwt = AUTH_SERVICE.create_jwt(user)
 
     # Return response
-    return Response(json.dumps({
+    response = Response(json.dumps({
         'status': 'success',
         'jwt': jwt,
         'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES'],
@@ -68,6 +69,9 @@ def register():
             'username': user.username
         }
     }), status=200, mimetype='application/json')
+
+    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    return response
 
 
 @blueprint.route("/login", methods=['POST'])
@@ -99,7 +103,44 @@ def login():
     jwt = AUTH_SERVICE.create_jwt(user)
 
     # Return response
-    return Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
+    response = Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
+    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    return response
+
+@blueprint.route("/logout", methods=['POST', 'GET'])
+@jwt_required(optional=True)
+def logout():
+    """
+    REST API endpoint for user logout
+    Requires a valid JWT token to be provided
+    :return: Response
+    """
+    response = Response(json.dumps({'status': 'success', 'message': 'Logged out'}), status=200, mimetype='application/json')
+    unset_jwt_cookies(response) # Unset the JWT in the response as a cookie
+    return response
+
+
+@current_app.after_request
+def refresh_expiring_jwts(response):
+    """
+    Checks after each request if the JWT token is about to expire and refreshes it if necessary
+    Stolen from https://flask-jwt-extended.readthedocs.io/en/stable/refreshing_tokens/
+    :param response: The response to modify (attach the new JWT to)
+    :return: The modified response
+    """
+    try:
+        exp_timestamp = get_jwt()["exp"]
+        now = datetime.now(timezone.utc)
+        target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
+        if target_timestamp > exp_timestamp:
+            _log.debug(f"Refreshing JWT token of {get_jwt_identity()}")
+            access_token = AUTH_SERVICE.create_jwt(AUTH_SERVICE.get_user(user_id=get_jwt_identity()))
+            set_access_cookies(response, access_token)
+        return response
+    except (RuntimeError, KeyError):
+        # Case where there is not a valid JWT. Just return the original response
+        return response
+
 
 @blueprint.route("/ssologin")
 def sso_login():

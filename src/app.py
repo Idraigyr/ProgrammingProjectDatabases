@@ -60,15 +60,19 @@ def setup_jwt(app: Flask):
     :param app:
     :return:
     """
+    logging.debug("Setting up JWT")
     # Configure JWT
     app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
 
     # Load the secret key from file
-    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:
+    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f: # The secret key to sign our JWTs with
         app.config['JWT_SECRET_KEY'] = f.read()
 
-    app.config['JWT_TOKEN_LOCATION'] = ['headers', 'cookies']
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # 1 hour
+    app.config['JWT_TOKEN_LOCATION'] = ['cookies'] # only look for tokens in the cookies
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # token expiers 1 hour
+    app.config['JWT_SESSION_COOKIE'] = True  # Use cookies for session, removed once browser closes
+    app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF protection (for now)
+    app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME', 'https') == 'https' # Serve cookies only over HTTPS, default to do so
 
     # Create the JWT manager
     app.jwt = JWTManager(app)
@@ -83,8 +87,8 @@ def setup_jwt(app: Flask):
 
     @app.jwt.unauthorized_loader
     def custom_unauthorized_loader(callback):
-        _log.debug(f"Unauthorized (no header?): {callback}")
-        return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_no_header'}), 401
+        _log.debug(f"Unauthorized (no cookie?): {callback}")
+        return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_no_cookie'}), 401
 
     @app.jwt.expired_token_loader
     def custom_expired_token_loader(jwt_header, jwt_data):
@@ -111,6 +115,8 @@ def setup(app: Flask):
     else:
         logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
+    logging.debug("Setting up app")
+
     # Create the Flask app
     # app: Flask = Flask()
 
@@ -132,6 +138,10 @@ def setup(app: Flask):
         (f"postgresql://{app.config['APP_POSTGRES_USER']}:{app.config['APP_POSTGRES_PASSWORD']}"
          f"@{app.config['APP_POSTGRES_HOST']}:{app.config['APP_POSTGRES_PORT']}"
          f"/{app.config['APP_POSTGRES_DATABASE']}")
+
+    # Needed to have Flask to propagate exceptions in order to have the JWT exception handlers to work properly
+    # See SCRUM-45
+    app.config['PROPAGATE_EXCEPTIONS'] = True
 
     # Configre JWT
     setup_jwt(app)
