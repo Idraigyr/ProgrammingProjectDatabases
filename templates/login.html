@@ -1,8 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/auth.js') }}" defer></script>
+
     <title>Login Page</title>
     <style>
         body {
@@ -62,11 +65,11 @@
 <body>
 <div class="container">
     <h2>Login</h2>
-    <form action="/login" method="POST">
-    <input type="text" name="username" placeholder="Username" required>
-    <input type="password" name="password" placeholder="Password" required>
-    <input type="submit" value="Login">
-</form>
+    <form id="loginForm">
+        <input id="username" type="text" name="username" placeholder="Username" required>
+        <input id="password" type="password" name="password" placeholder="Password" required>
+        <input type="submit" value="Login">
+    </form>
     <div class="footer">
         Don't have an account? <a href="register">Register here</a>
     </div>
