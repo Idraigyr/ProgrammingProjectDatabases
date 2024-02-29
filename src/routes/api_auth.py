@@ -109,7 +109,6 @@ def login():
     return response
 
 @blueprint.route("/logout", methods=['POST', 'GET'])
-@jwt_required(optional=True)
 def logout():
     """
     REST API endpoint for user logout
@@ -122,6 +121,7 @@ def logout():
 
 
 @current_app.after_request
+@jwt_required(optional=True)
 def refresh_expiring_jwts(response):
     """
     Checks after each request if the JWT token is about to expire and refreshes it if necessary
