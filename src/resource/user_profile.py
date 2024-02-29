@@ -28,25 +28,35 @@ class UserProfileResource(Resource):
         :return: The user profile in JSON format
         """
         current_user = get_jwt_identity()
-        req_id = int(escape(request.args.get('id', current_user)))
+        target_user_id = int(escape(request.args.get('id', current_user)))
+        invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
 
-        if current_user != req_id:
+        if current_user != target_user_id and not invoker_user.admin:
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
             return {'status': 'error', 'message': "Not authorized"}, 401
 
-        user = AUTH_SERVICE.get_user(user_id=req_id)
-        if user is None:
+        # Get the user profile
+        if target_user_id != current_user:
+            # users differ, so we're going to get the profile of the requested user
+            target_user = AUTH_SERVICE.get_user(user_id=target_user_id)
+        else:
+            # The invoker is modifying his own profile
+            target_user = invoker_user
+
+
+        if target_user is None:
             return {'status': 'error', 'message': "User not found"}, 404
         else:
-            return user.to_json(), 200
+            return target_user.to_json(), 200
 
 
     @swagger.tags('user_profile')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.parameter(_in='query', name='firstname', schema={'type': 'string'}, description='The new firstname')
     @swagger.parameter(_in='query', name='lastname', schema={'type': 'string'}, description='The new lastname')
+    @swagger.parameter(_in='query', name='admin', schema={'type': 'bool'}, description='The new admin status (only allowed if current user is admin)')
     @swagger.response(200, description='Succesfully updated the user profile')
-    @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token')
+    @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token')
     @swagger.response(404, description='Unknown user id')
     @jwt_required()
     def put(self):
@@ -57,20 +67,35 @@ class UserProfileResource(Resource):
         :return:
         """
         current_user = get_jwt_identity()
-        req_id = int(escape(request.args.get('id', current_user)))
+        target_user_id = int(escape(request.args.get('id', current_user)))
+        invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
 
-        if current_user != req_id:
+        if current_user != target_user_id and not invoker_user.admin:
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
             return {'status': 'error', 'message': "Not authorized"}, 401
 
         # Get the user profile
-        user = AUTH_SERVICE.get_user(user_id=req_id)
-        if user is None:
+        if target_user_id != current_user:
+            # users differ, so we're going to get the profile of the requested user
+            target_user = AUTH_SERVICE.get_user(user_id=target_user_id)
+        else:
+            # The invoker is modifying his own profile
+            target_user = invoker_user
+
+
+        if target_user is None:
             return {'status': 'error', 'message': "User not found"}, 404
 
         # Update the user
         copy = request.args.copy() # Create a copy of the request args as these are immutable
-        user.update(clean_dict_input(copy))
+
+        if 'admin' in copy:
+            # Check if the current user is an admin, otherwise he's not allowed to change the admin bit
+            # (a creative user would be able to give himself admin, so we need to check this)
+            if not invoker_user.admin:
+                return {'status': 'error', 'message': "Not authorized to change admin status"}, 401
+
+        target_user.update(clean_dict_input(copy))
         current_app.db.session.commit() # Save changes to db
 
         return {'status': 'success', 'message': 'User profile updated'}, 200
