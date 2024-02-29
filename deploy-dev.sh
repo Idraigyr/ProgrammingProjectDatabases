@@ -21,6 +21,10 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
+echo "Running migrations"
+# Run database migrations, if any
+flask --app src.app db upgrade
+
 # Start the service
 sudo systemctl start webapp-dev
 

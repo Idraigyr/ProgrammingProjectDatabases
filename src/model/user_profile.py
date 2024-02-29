@@ -1,5 +1,5 @@
 from flask import current_app
-from sqlalchemy import String, BigInteger, Column
+from sqlalchemy import String, BigInteger, Column, Boolean
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from src.model.credentials import Credentials
@@ -18,6 +18,7 @@ class UserProfile(current_app.db.Model):
     firstname: Mapped[str] = Column(String(255), nullable=False)
     lastname: Mapped[str] = Column(String(255), nullable=False)
     username: Mapped[str] = Column(String(255), unique=True)
+    admin: Mapped[bool] = Column(Boolean(), default=False, server_default="false", nullable=False)
 
     credentials: Mapped[Credentials] = relationship(back_populates="user_profile", uselist=False)
 
@@ -37,6 +38,7 @@ class UserProfile(current_app.db.Model):
             "username": self.username,
             "firstname": self.firstname,
             "lastname": self.lastname,
+            "admin": self.admin,
         }
 
     def update(self, data: dict):
@@ -50,6 +52,8 @@ class UserProfile(current_app.db.Model):
             self.firstname = data['firstname']
         if 'lastname' in data:
             self.lastname = data['lastname']
+        if 'admin' in data:
+            self.admin = data['admin'].lower() == 'true'
         return self
 
 

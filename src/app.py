@@ -4,6 +4,9 @@ from json import JSONEncoder
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
+from flask_migrate import check as check_db_schema
+from flask_migrate import upgrade as upgrade_db_schema
 from flask_restful_swagger_3 import get_swagger_blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -40,6 +43,14 @@ class JSONClassEncoder:
 # Load environment variables
 assert load_dotenv(".env"), "unable to load .env file"
 from os import environ
+
+# Configure the logger
+if environ.get('APP_DEBUG', "false") == "true":
+    logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    logging.debug("Debug mode enabled")
+else:
+    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+
 
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
@@ -78,21 +89,21 @@ def setup_jwt(app: Flask):
     app.jwt = JWTManager(app)
 
     # Add a custom error handler for JWT errors
-    _log = logging.getLogger("_jwt")
+    _jwt_log = logging.getLogger("_jwt")
 
     @app.jwt.invalid_token_loader
     def custom_invalid_token_loader(callback):
-        _log.debug(f"Invalid token (check format?): {callback}")
+        _jwt_log.debug(f"Invalid token (check format?): {callback}")
         return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_invalid_token'}), 401
 
     @app.jwt.unauthorized_loader
     def custom_unauthorized_loader(callback):
-        _log.debug(f"Unauthorized (no cookie?): {callback}")
+        _jwt_log.debug(f"Unauthorized (no cookie?): {callback}")
         return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_no_cookie'}), 401
 
     @app.jwt.expired_token_loader
     def custom_expired_token_loader(jwt_header, jwt_data):
-        _log.debug(f"Expired token (log back in): {jwt_header}, {jwt_data}")
+        _jwt_log.debug(f"Expired token (log back in): {jwt_header}, {jwt_data}")
         return jsonify({'status': 'error', 'message': 'Token has expired (log back in)', 'type': 'jwt_token_expired'}), 401
 
 
@@ -103,18 +114,6 @@ def setup(app: Flask):
     :param app: The flask app
     :return: None
     """
-
-    # Load environment variables
-    # assert load_dotenv(".env"), "unable to load .env file"
-    # from os import environ
-
-    # Configure the logger
-    if environ.get('APP_DEBUG') == "true":
-        logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-        logging.debug("Debug mode enabled")
-    else:
-        logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
-
     logging.debug("Setting up app")
 
     # Create the Flask app
@@ -158,7 +157,18 @@ def setup(app: Flask):
         app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
 
         # Create the tables in the db, AFTER entities are imported
-        db.create_all()
+        # Create the DB migration manager
+        app.migrate = Migrate(app=app, db=app.db, directory='migrations')
+
+        if app.config.get('APP_AUTOMIGRATE', "true") == "true":
+            # Automatically migrate the database
+            upgrade_db_schema()
+
+        if app.config.get('APP_DISABLE_SCHEMA_VALIDATION', "false") != "true":
+            # Check if the database schema is up to date
+            # We allow inconsistencies in debug mode, but not in production
+            check_db_schema()
+
 
         # Register custom JSON Encoder to call to_json() on objects
         # This is so that Flask can jsonify our SQLAlchemy models
