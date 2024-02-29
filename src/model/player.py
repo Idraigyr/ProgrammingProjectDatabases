@@ -16,13 +16,6 @@ class Player(current_app.db.Model):
         self.xp = xp
         self.crystals = crystals
 
-    def to_json(self):
-        return {
-            'user_profile_id': self.user_profile_id,
-            'xp': self.xp,
-            'crystals': self.crystals
-        }
-
     def update(self, data: dict):
         """
         Update the player profile with new data

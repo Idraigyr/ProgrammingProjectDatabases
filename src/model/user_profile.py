@@ -32,15 +32,6 @@ class UserProfile(current_app.db.Model):
     def __repr__(self):
         return f'<UserProfile {self.id} {self.username}>'
 
-    def to_json(self) -> dict:
-        return {
-            "id": self.id,
-            "username": self.username,
-            "firstname": self.firstname,
-            "lastname": self.lastname,
-            "admin": self.admin,
-        }
-
     def update(self, data: dict):
         """
         Update the user profile with new data

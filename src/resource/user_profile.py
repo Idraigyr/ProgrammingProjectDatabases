@@ -2,11 +2,41 @@ import logging
 
 from flask import Flask, Blueprint, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restful_swagger_3 import Resource, swagger, Api
+from flask_restful_swagger_3 import Resource, swagger, Api, Schema
 from markupsafe import escape
 
+from src.schema import ErrorSchema, SuccessSchema
 from src.resource import add_swagger, clean_dict_input
 from src.service.auth_service import AUTH_SERVICE
+
+class UserProfileSchema(Schema):
+    """
+    The schema for the user profile response
+    """
+    type = 'object'
+    properties = {
+        'id': {
+            'type': 'int'
+        },
+        'username': {
+            'type': 'string'
+        },
+        'firstname': {
+            'type': 'string'
+        },
+        'lastname': {
+            'type': 'string'
+        },
+        'admin': {
+            'type': 'bool'
+        }
+    }
+
+    required = ['id', 'username', 'firstname', 'lastname', 'admin']
+
+    def __init__(self, user):
+        super().__init__(id=user.id, username=user.username, firstname=user.firstname, lastname=user.lastname, admin=user.admin)
+
 
 
 class UserProfileResource(Resource):
@@ -18,8 +48,9 @@ class UserProfileResource(Resource):
 
     @swagger.tags('user_profile')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
-    @swagger.response(200, description='Success, returns the user profile in JSON format')
-    @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token')
+    @swagger.response(200, description='Success, returns the user profile in JSON format', schema=UserProfileSchema)
+    @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @jwt_required()
     def get(self):
         """
@@ -31,9 +62,9 @@ class UserProfileResource(Resource):
         target_user_id = int(escape(request.args.get('id', current_user)))
         invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
 
-        if current_user != target_user_id and not invoker_user.admin:
+        if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-            return {'status': 'error', 'message': "Not authorized"}, 401
+            return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
 
         # Get the user profile
         if target_user_id != current_user:
@@ -45,9 +76,9 @@ class UserProfileResource(Resource):
 
 
         if target_user is None:
-            return {'status': 'error', 'message': "User not found"}, 404
+            return ErrorSchema(f"User {target_user_id} not found"), 404
         else:
-            return target_user.to_json(), 200
+            return UserProfileSchema(target_user), 200
 
 
     @swagger.tags('user_profile')
@@ -55,9 +86,9 @@ class UserProfileResource(Resource):
     @swagger.parameter(_in='query', name='firstname', schema={'type': 'string'}, description='The new firstname')
     @swagger.parameter(_in='query', name='lastname', schema={'type': 'string'}, description='The new lastname')
     @swagger.parameter(_in='query', name='admin', schema={'type': 'bool'}, description='The new admin status (only allowed if current user is admin)')
-    @swagger.response(200, description='Succesfully updated the user profile')
-    @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token')
-    @swagger.response(404, description='Unknown user id')
+    @swagger.response(200, description='Succesfully updated the user profile', schema=SuccessSchema)
+    @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -70,9 +101,9 @@ class UserProfileResource(Resource):
         target_user_id = int(escape(request.args.get('id', current_user)))
         invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
 
-        if current_user != target_user_id and not invoker_user.admin:
+        if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-            return {'status': 'error', 'message': "Not authorized"}, 401
+            return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
 
         # Get the user profile
         if target_user_id != current_user:
@@ -84,7 +115,7 @@ class UserProfileResource(Resource):
 
 
         if target_user is None:
-            return {'status': 'error', 'message': "User not found"}, 404
+            return ErrorSchema(f"User {target_user_id} not found"), 404
 
         # Update the user
         copy = request.args.copy() # Create a copy of the request args as these are immutable
@@ -93,12 +124,12 @@ class UserProfileResource(Resource):
             # Check if the current user is an admin, otherwise he's not allowed to change the admin bit
             # (a creative user would be able to give himself admin, so we need to check this)
             if not invoker_user.admin:
-                return {'status': 'error', 'message': "Not authorized to change admin status"}, 401
+                return ErrorSchema(f"Access denied to set admin status for profile {target_user_id}"), 401
 
         target_user.update(clean_dict_input(copy))
         current_app.db.session.commit() # Save changes to db
 
-        return {'status': 'success', 'message': 'User profile updated'}, 200
+        return SuccessSchema(f"User {target_user_id} updated"), 200
 
 
 
