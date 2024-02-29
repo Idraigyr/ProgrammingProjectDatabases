@@ -55,3 +55,8 @@ def register():
         return redirect("/", 302)
     else:
         return render_template('register.html')
+
+
+@blueprint.route("/logout")
+def logout():
+    return redirect("/api/auth/logout", 302)
