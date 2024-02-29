@@ -12,15 +12,19 @@
     src: url('../fonts/Cascadia.ttf') format('truetype');
 }
 
+html {
+    cursor: url('../images/wand.png'), auto;
+}
+
 body {
-    background-color: #f0f0f0;
-    background-image: url('/static/images/background-landing.jpg');
-    background-size: auto;
-    background-repeat: no-repeat;
+    background: url("../images/background-landing.jpg") no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    cursor: url('../images/wand.png'), auto;
 }
 .container {
     max-width: 400px;
