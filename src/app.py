@@ -4,6 +4,7 @@ from json import JSONEncoder
 from dotenv import load_dotenv
 from flask import Flask, jsonify
 from flask_jwt_extended import JWTManager
+from flask_migrate import Migrate
 from flask_restful_swagger_3 import get_swagger_blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
@@ -158,7 +159,9 @@ def setup(app: Flask):
         app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
 
         # Create the tables in the db, AFTER entities are imported
-        db.create_all()
+        # db.create_all()
+        # Create the DB migration manager
+        app.migrate = Migrate(app, app.db)
 
         # Register custom JSON Encoder to call to_json() on objects
         # This is so that Flask can jsonify our SQLAlchemy models
