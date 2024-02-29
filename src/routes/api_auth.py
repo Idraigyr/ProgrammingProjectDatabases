@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, current_app, Response, request
-from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt, get_jwt_identity
 from markupsafe import escape
 from src.resource import add_endpoint_to_swagger
 
