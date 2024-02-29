@@ -5,6 +5,7 @@ from datetime import datetime, timezone, timedelta
 from flask import Blueprint, current_app, Response, request
 from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt
 from markupsafe import escape
+from src.resource import add_endpoint_to_swagger
 
 from src.service.auth_service import AUTH_SERVICE
 
@@ -146,3 +147,28 @@ def refresh_expiring_jwts(response):
 def sso_login():
     # implement SSO login
     return Response("Not implemented yet", status=501, mimetype='application/json')
+
+
+# Add the register endpoint to the Swagger docs
+# God this is ugly
+add_endpoint_to_swagger('/api/auth/register', 'post', ['auth'], 'Register a new user', 'Register a new user',
+                        parameters=[{'name': 'username', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The username of the new user'},
+                         {'name': 'password', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The password of the new user'},
+                         {'name': 'firstname', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The firstname of the new user'},
+                         {'name': 'lastname', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The lastname of the new user'}],
+                        response_schemas={200: {'description': 'Success, returns the JWT token and user profile in JSON format', 'schema': {}},
+                         409: {'description': 'Registration not enabled or username already taken', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                         400: {'description': 'incorrect number of parameters', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})
+
+# Add the login endpoint to the Swagger docs
+add_endpoint_to_swagger('/api/auth/login', 'post', ['auth'], 'Login a user', 'Login a user',
+                        parameters=[{'name': 'username', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The username of the user'},
+                         {'name': 'password', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The password of the user'}],
+                        response_schemas={200: {'description': 'Success, returns the JWT token and user profile in JSON format', 'schema': {}},
+                         401: {'description': 'username not found or incorrect password', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                         409: {'description': 'Login not enabled', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})
+
+# Add the logout endpoint to the Swagger docs
+add_endpoint_to_swagger('/api/auth/logout', ['get', 'post'], ['auth'], 'Logout a user', 'Logout a user',
+                        parameters=[],
+                        response_schemas={200: {'description': 'Success, returns a message', 'schema': {'$ref': '#/components/schemas/SuccessSchema'}}})

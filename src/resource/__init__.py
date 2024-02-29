@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restful_swagger_3 import Api
 from markupsafe import escape
+from deepmerge import always_merger
 
 openapi_dict = dict()
 
@@ -12,14 +13,48 @@ def add_swagger(api: Api) -> None:
     :param api: The api object with the swagger documentation (in json)
     :return: None
     """
-    # Add swagger documentation
+    # Add swagger documentation by deep-merging it into the openAPI object
     global openapi_dict
-    map = api.open_api_object
-    if 'paths' not in openapi_dict: # emtpy dict, init it with the first map
-        openapi_dict = map
-    else: # Merge paths and tags
-        openapi_dict['paths'] = openapi_dict['paths'] | map['paths'] # dict
-        openapi_dict['tags'] = openapi_dict['tags'] + map['tags'] # list
+    always_merger.merge(openapi_dict, api.open_api_object)
+
+def add_endpoint_to_swagger(path: str, method: str or list[str], tags: list, summary: str, description: str, parameters: list[dict], response_schemas: dict) -> None:
+    """
+    Add an endpoint to the global openapi_dict
+    :param path: The path of the endpoint
+    :param method: The method(s) of the endpoint
+    :param tags: The tags of the endpoint
+    :param summary: The summary of the endpoint
+    :param description: The description of the endpoint
+    :param parameters: The parameters of the endpoint
+    :param response_schemas: The response schemas of the endpoint, mapped by status code
+    :return: None
+    """
+    global openapi_dict
+    if 'paths' not in openapi_dict:
+        openapi_dict['paths'] = dict()
+    if path not in openapi_dict['paths']:
+        openapi_dict['paths'][path] = dict()
+
+    methods = method if isinstance(method, list) else [method]
+    for method in methods:
+        openapi_dict['paths'][path][method] = {
+            "tags": tags,
+            "summary": summary,
+            "description": description,
+            "parameters": parameters,
+
+        }
+
+        openapi_dict['paths'][path][method]['responses'] = dict()
+        for status_code, response_schema in response_schemas.items():
+            openapi_dict['paths'][path][method]['responses'][status_code] = {
+                "description": response_schema['description'],
+                "content": {
+                    "application/json": {
+                        "schema": response_schema['schema']
+                    }
+                }
+            }
 
 
 def attach_resources(app: Flask) -> None:
