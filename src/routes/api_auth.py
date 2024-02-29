@@ -3,7 +3,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 
 from flask import Blueprint, current_app, Response, request
-from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt, get_jwt_identity
 from markupsafe import escape
 
 from src.service.auth_service import AUTH_SERVICE
@@ -108,7 +108,6 @@ def login():
     return response
 
 @blueprint.route("/logout", methods=['POST', 'GET'])
-@jwt_required(optional=True)
 def logout():
     """
     REST API endpoint for user logout
@@ -121,6 +120,7 @@ def logout():
 
 
 @current_app.after_request
+@jwt_required(optional=True)
 def refresh_expiring_jwts(response):
     """
     Checks after each request if the JWT token is about to expire and refreshes it if necessary
