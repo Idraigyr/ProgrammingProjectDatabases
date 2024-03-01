@@ -45,7 +45,7 @@ def login():
     if user is not None:  # already logged in
         return redirect("/", 302)
     else:
-        return render_template('login.html')
+        return render_template('login.html', app_name=current_app.config['APP_NAME'])
 
 @blueprint.route("/register")
 @jwt_required(optional=True)
@@ -54,7 +54,7 @@ def register():
     if user is not None:  # user already logged in
         return redirect("/", 302)
     else:
-        return render_template('register.html')
+        return render_template('register.html', app_name=current_app.config['APP_NAME'])
 
 
 @blueprint.route("/logout")

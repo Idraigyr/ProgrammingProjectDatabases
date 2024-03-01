@@ -561,6 +561,10 @@ loader.load("./static/3d-models/Wizard.glb", (gltf) => {
     });
     scene.add(charModel);
     mixer = new THREE.AnimationMixer(model);
+    const clips = gltf.animations;
+    const clip = THREE.AnimationClip.findByName(clips, 'CharacterArmature|Walk');
+    action = new THREE.AnimationAction(mixer, clip, charModel);
+    action.play();
 },undefined, (err) => {
     console.log(err);
 });
