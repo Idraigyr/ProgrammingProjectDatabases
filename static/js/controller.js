@@ -778,12 +778,12 @@ let tmpTrans;
 function createBlock(){
 
     let pos = {x: 0, y: 0, z: 0};
-    let scale = {x: 50, y: 2, z: 50};
+    let scale = {x: 225, y: 2, z: 225};
     let quat = {x: 0, y: 0, z: 0, w: 1};
     let mass = 0;
 
     //threeJS Section
-    let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshPhongMaterial({color: 0xa0afa4}));
+    let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshPhongMaterial({color: 0x027605}));
 
     blockPlane.position.set(pos.x, pos.y, pos.z);
     blockPlane.scale.set(scale.x, scale.y, scale.z);
