@@ -17,6 +17,9 @@ import {Character} from "./model.js";
 // import {Vector3} from "three";
 import {GLTFLoader} from "three-GLTFLoader";
 
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
 class CameraManager{
     #camera;
     #target;
@@ -537,9 +540,6 @@ class Game {
     }
 }
 
-const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-
 camera.position.set(-10,10,5)
 camera.lookAt( 0, 0, 0 );
 
@@ -562,7 +562,7 @@ loader.load("./static/3d-models/Wizard.glb", (gltf) => {
     scene.add(charModel);
     mixer = new THREE.AnimationMixer(model);
     const clips = gltf.animations;
-    const clip = THREE.AnimationClip.findByName(clips, 'CharacterArmature|Walk');
+    const clip = THREE.AnimationClip.findByName(clips, 'CharacterArmature|Run');
     action = new THREE.AnimationAction(mixer, clip, charModel);
     action.play();
 },undefined, (err) => {
@@ -617,10 +617,15 @@ const sceneInit = function(scene){
     scene.add(group);
 
     //create a light
-    const light = new THREE.AmbientLight( 0xFFFFFF, 1);
+    const light = new THREE.AmbientLight( 0xFFFFFF, 2);
     light.position.set(0,3, 10);
     light.castShadow = true;
     scene.add(light);
+
+    const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 10);
+    dirLight.position.set(0,50, 50);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
 
     const pLight = new THREE.PointLight( 0xFFFFFF, 100);
     pLight.position.set(0,5, 10);
@@ -743,7 +748,29 @@ function animate() {
         charModel.rotateY(180 * Math.PI / 360);
     }
     //camera.position.set(cube.position.x+10,cube.position.x+10,cube.position.x+5);
+    limitCameraPosition(camera);
+    scene.background = new THREE.TextureLoader().load( "../static/images/background-landing.jpg" );
+    scaleBackground();
     renderer.render( scene, camera );
+}
+function limitCameraPosition(camera){
+    if (camera.position.y < 3) camera.position.y = 3;
+}
+
+function scaleBackground(){
+    if(!scene.background) return;
+    // Yes, i use magical values
+    let imgWidth = 1920;
+    let imgHeight = 1280;
+    const targetAspect = window.innerWidth / window.innerHeight;
+    const imageAspect = imgWidth / imgHeight;
+    const factor = imageAspect / targetAspect;
+    // When factor larger than 1, that means texture 'wilder' than target。
+    // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
+    scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
+    scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
+    scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
+    scene.background.repeat.y = factor > 1 ? 1 : factor;
 }
 
 let rigidBodies = [];
@@ -912,7 +939,7 @@ function setupPhysicsWorld(){
 function init(){
     setupPhysicsWorld();
     sceneInit(scene);
-    createPlane(scene);
+    // createPlane(scene);
     tmpTrans = new Ammo.btTransform();
     createPlayer();
     createBlock();
