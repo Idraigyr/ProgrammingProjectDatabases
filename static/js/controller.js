@@ -14,6 +14,7 @@ import {
 } from "./config.js";
 import {max, min} from "./helpers.js";
 import {Character} from "./model.js";
+import {Placeable} from "./model.js";
 // import {Vector3} from "three";
 import {GLTFLoader} from "three-GLTFLoader";
 
@@ -23,7 +24,10 @@ let gridCellSize = 15;
 let cellsInRow = 15;
 let islandThickness = 10;
 let enableBuilding = true;
-let debugTrue = true;
+let debugTrue = false;
+let currentThingToPlace = new Placeable();
+let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
+let rollOverMesh;
 
 class CameraManager{
     #camera;
@@ -955,11 +959,20 @@ function buildSetup(){
         gridHelper.visible = false;
     }
 }
+function createRollOver(){
+    if (!currentThingToPlace.getModel()){
+        currentThingToPlace = new THREE.BoxGeometry(gridCellSize, gridCellSize, gridCellSize);
+    }
+    rollOverMesh = new THREE.Mesh(currentThingToPlace, rollOverMaterial);
+    rollOverMesh.position.y = gridCellSize/2;
+    scene.add(rollOverMesh);
+}
 
 function init(){
     setupPhysicsWorld();
     sceneInit(scene);
     // createPlane(scene);
+    createRollOver();
     buildSetup();
     tmpTrans = new Ammo.btTransform();
     createPlayer();

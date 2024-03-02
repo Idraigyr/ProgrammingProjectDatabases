@@ -1,6 +1,7 @@
 //import $ from "jquery";
 //import {Vector3} from "three";
 import {API_URL} from "./config.js"
+import {Vector3} from "three";
 export class World {
     #entities
     constructor() {
@@ -15,8 +16,19 @@ class Entity {
         this.normal = new Vector3(1,0,0);
         this.position = new Vector3(0,0,0);
     }
+    setModel(model){
+        this.model = model;
+    }
+    getModel(){
+        return self.model;
+    }
 }
 export class Character extends Entity {
+    constructor() {
+        super();
+    }
+}
+export class Placeable extends Entity{
     constructor() {
         super();
     }
