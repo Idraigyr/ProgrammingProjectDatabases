@@ -19,6 +19,8 @@ import {GLTFLoader} from "three-GLTFLoader";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+let gridCellSize = 15;
+let cellsInRow = 15;
 
 class CameraManager{
     #camera;
@@ -544,7 +546,7 @@ camera.position.set(-10,10,5)
 camera.lookAt( 0, 0, 0 );
 
 //set renderer
-const renderer = new THREE.WebGLRenderer();
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
@@ -623,7 +625,7 @@ const sceneInit = function(scene){
     scene.add(light);
 
     const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 10);
-    dirLight.position.set(0,50, 50);
+    dirLight.position.set(0,100, 50);
     dirLight.castShadow = true;
     scene.add(dirLight);
 
@@ -749,8 +751,10 @@ function animate() {
     }
     //camera.position.set(cube.position.x+10,cube.position.x+10,cube.position.x+5);
     limitCameraPosition(camera);
-    scene.background = new THREE.TextureLoader().load( "../static/images/background-landing.jpg" );
+    scene.background = new THREE.TextureLoader().load( "./static/images/background-landing.jpg" );
+    scene.background = new THREE.Color( 0x87CEEB );
     scaleBackground();
+    renderer.setPixelRatio( window.devicePixelRatio );
     renderer.render( scene, camera );
 }
 function limitCameraPosition(camera){
@@ -758,6 +762,8 @@ function limitCameraPosition(camera){
 }
 
 function scaleBackground(){
+    // TODO; remove it remove scene.background = new THREE.Color( ... );
+    return;
     if(!scene.background) return;
     // Yes, i use magical values
     let imgWidth = 1920;
@@ -778,7 +784,7 @@ let tmpTrans;
 function createBlock(){
 
     let pos = {x: 0, y: 0, z: 0};
-    let scale = {x: 225, y: 2, z: 225};
+    let scale = {x: cellsInRow*gridCellSize, y: 2, z: cellsInRow*gridCellSize};
     let quat = {x: 0, y: 0, z: 0, w: 1};
     let mass = 0;
 
@@ -936,10 +942,18 @@ function setupPhysicsWorld(){
     physicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
     physicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
 }
+function buildSetup(){
+    // Show build grid
+    const gridHelper = new THREE.GridHelper( gridCellSize*cellsInRow, cellsInRow );
+    gridHelper.position.y = 1.01;
+    scene.add( gridHelper );
+}
+
 function init(){
     setupPhysicsWorld();
     sceneInit(scene);
     // createPlane(scene);
+    buildSetup();
     tmpTrans = new Ammo.btTransform();
     createPlayer();
     createBlock();
