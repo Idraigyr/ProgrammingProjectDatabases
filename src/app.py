@@ -41,7 +41,7 @@ class JSONClassEncoder:
 
 
 # Load environment variables
-assert load_dotenv(".env"), "unable to load .env file"
+assert load_dotenv(".env.example"), "unable to load .env file"
 from os import environ
 
 # Configure the logger
