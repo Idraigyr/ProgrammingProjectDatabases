@@ -11,3 +11,7 @@ https://www.svgart.org/harry-potter-wands-svg/
 3d models:
 Floating island landing page:
 https://sketchfab.com/3d-models/floating-island-a7ee83349e3142068b73a1ddd9e99311
+-----------------------------------
+Scripts:
+Grass shader:
+https://github.com/James-Smyth/three-grass-demo

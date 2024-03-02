@@ -17,6 +17,7 @@ import {Character} from "./model.js";
 import {Placeable} from "./model.js";
 // import {Vector3} from "three";
 import {GLTFLoader} from "three-GLTFLoader";
+import {grassUniforms, generateField} from "./visual/grass.js"
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
@@ -739,7 +740,7 @@ function animate() {
     requestAnimationFrame( animate );
     //update world
     let deltaTime = clock.getDelta();
-
+    grassUniforms.iTime.value = deltaTime;
     player.update(deltaTime);
     cm.update(deltaTime);
 
@@ -797,7 +798,7 @@ function createBlock(){
     let mass = 0;
 
     //threeJS Section
-    let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshPhongMaterial({color: 0x027605}));
+    let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
 
     blockPlane.position.set(pos.x, pos.y, pos.z);
     blockPlane.scale.set(scale.x, scale.y, scale.z);
@@ -971,6 +972,7 @@ function createRollOver(){
 function init(){
     setupPhysicsWorld();
     sceneInit(scene);
+    generateField(scene);
     // createPlane(scene);
     createRollOver();
     buildSetup();
