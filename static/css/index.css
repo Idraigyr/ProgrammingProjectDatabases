@@ -1,0 +1,43 @@
+/* style.css */
+.button-container {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    margin: 10px;
+}
+.chat-popup {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 300px; /* You can adjust the size */
+    height: 400px; /* You can adjust the size */
+    border: 1px solid #888;
+    background-color: #fefefe;
+    z-index: 9;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.chat-messages {
+    overflow-y: auto;
+    margin-bottom: 10px;
+    flex-grow: 1;
+}
+.chat-input-area {
+    display: flex;
+    justify-content: space-between;
+}
+.chat-content {
+    /* Styles for your chat content */
+}
+
+.close {
+    position: absolute;
+    top: 0;
+    right: 10px;
+    cursor: pointer;
+}
+
+#chatInput {
+    flex-grow: 1;
+    margin-right: 10px;
+}

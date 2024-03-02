@@ -23,10 +23,10 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
 def index():
     user = get_jwt_identity()
 
-    if user is None:  # not logged in, redirect to landing page
-        return redirect("/landing", code=302)
-    else:
-        return render_template('index.html', app_name=current_app.config['APP_NAME'])
+    #if user is None:  # not logged in, redirect to landing page
+    #    return redirect("/landing", code=302)
+    #else:
+    return render_template('index.html', app_name=current_app.config['APP_NAME'])
 
 
 @blueprint.route("/landing")

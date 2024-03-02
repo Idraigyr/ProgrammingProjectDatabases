@@ -4,8 +4,9 @@
 	<title>{{app_name}}</title>
     
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
+    <link rel="stylesheet" type="text/css" href="static/css/index.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
+    <script defer src="static/js/chatBox.js"></script>
     <script type="importmap">
       {
         "imports": {
@@ -20,7 +21,26 @@
 <body id="body">
     <div id="container">
     </div>
-    <script type="module" src="static/js/controller.js"></script>
+    <!--<script type="module" src="static/js/controller.js"></script>-->
+    <div class="button-container">
+        <button id="chatButton" class="bottom-left-button">Chat</button>
+
+    </div>
+    <div id="chatPopup" class="chat-popup" style="display: none;">
+        <!-- Chat interface -->
+        <div class="chat-content">
+            <span class="close" id="closeChat">&times;</span>
+            <!-- Chat messages and input -->
+        <div id="chatMessages" class="chat-messages">
+            <!-- Chat messages will be displayed here -->
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type your message...">
+            <button id="sendMessage">Send</button>
+        </div>
+
+        </div>
+    </div>
 </body>
 <!--
 <body>
