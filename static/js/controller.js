@@ -21,6 +21,8 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 let gridCellSize = 15;
 let cellsInRow = 15;
+let islandThickness = 2;
+let enableBuilding = true;
 
 class CameraManager{
     #camera;
@@ -762,7 +764,7 @@ function limitCameraPosition(camera){
 }
 
 function scaleBackground(){
-    // TODO; remove it remove scene.background = new THREE.Color( ... );
+    // TODO; remove it if remove scene.background = new THREE.Color( ... );
     return;
     if(!scene.background) return;
     // Yes, i use magical values
@@ -783,8 +785,8 @@ let rigidBodies = [];
 let tmpTrans;
 function createBlock(){
 
-    let pos = {x: 0, y: 0, z: 0};
-    let scale = {x: cellsInRow*gridCellSize, y: 2, z: cellsInRow*gridCellSize};
+    let pos = {x: 0, y: -islandThickness, z: 0};
+    let scale = {x: cellsInRow*gridCellSize, y: islandThickness, z: cellsInRow*gridCellSize};
     let quat = {x: 0, y: 0, z: 0, w: 1};
     let mass = 0;
 
@@ -945,8 +947,11 @@ function setupPhysicsWorld(){
 function buildSetup(){
     // Show build grid
     const gridHelper = new THREE.GridHelper( gridCellSize*cellsInRow, cellsInRow );
-    gridHelper.position.y = 1.01;
+    gridHelper.position.y = -islandThickness;
     scene.add( gridHelper );
+    if (!enableBuilding){
+        gridHelper.visible = false;
+    }
 }
 
 function init(){
