@@ -21,8 +21,9 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 let gridCellSize = 15;
 let cellsInRow = 15;
-let islandThickness = 2;
+let islandThickness = 10;
 let enableBuilding = true;
+let debugTrue = true;
 
 class CameraManager{
     #camera;
@@ -760,6 +761,7 @@ function animate() {
     renderer.render( scene, camera );
 }
 function limitCameraPosition(camera){
+    if(debugTrue) return;
     if (camera.position.y < 3) camera.position.y = 3;
 }
 
@@ -785,7 +787,7 @@ let rigidBodies = [];
 let tmpTrans;
 function createBlock(){
 
-    let pos = {x: 0, y: -islandThickness, z: 0};
+    let pos = {x: 0, y: -islandThickness/2, z: 0};
     let scale = {x: cellsInRow*gridCellSize, y: islandThickness, z: cellsInRow*gridCellSize};
     let quat = {x: 0, y: 0, z: 0, w: 1};
     let mass = 0;
@@ -947,7 +949,7 @@ function setupPhysicsWorld(){
 function buildSetup(){
     // Show build grid
     const gridHelper = new THREE.GridHelper( gridCellSize*cellsInRow, cellsInRow );
-    gridHelper.position.y = -islandThickness;
+    gridHelper.position.y = 0;
     scene.add( gridHelper );
     if (!enableBuilding){
         gridHelper.visible = false;
