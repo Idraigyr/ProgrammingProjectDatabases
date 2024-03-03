@@ -4,10 +4,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const closeChat = document.getElementById('closeChat');
     const sendMessageButton = document.getElementById('sendMessage');
     const chatInput = document.getElementById('chatInput');
-    const chatMessages = document.getElementById('chatMessages'); // Make sure you have this div in your HTML
+    const chatMessages = document.getElementById('chatMessages');
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
 
     chatButton.onclick = function() {
         chatPopup.style.display = 'block';
+        scrollToBottom(); // Scroll to bottom when chat is opened
     };
 
     closeChat.onclick = function() {
@@ -16,7 +21,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // Close the chat popup if the user clicks outside of it
     window.onclick = function(event) {
-        if (event.target == chatPopup) {
+        // Check if the clicked area is not the chat button and is outside the chat content
+        if (!chatPopup.contains(event.target) && event.target != chatButton) {
             chatPopup.style.display = 'none';
         }
     };
@@ -32,6 +38,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             // Clear the input field after sending the message
             chatInput.value = '';
+
+            // Scroll to the bottom of the chat messages
+            scrollToBottom();
         }
     });
 
@@ -42,4 +51,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             sendMessageButton.click();
         }
     });
+
+    // When the page loads, scroll to the bottom of the chat
+    scrollToBottom();
 });

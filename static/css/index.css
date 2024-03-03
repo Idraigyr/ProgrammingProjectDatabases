@@ -16,18 +16,27 @@
     z-index: 9;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    display: block; /* Controlled by JS */
+    background-image: url('../images/background-landing.jpg'); /* Update path as needed */
+    background-size: cover; /* Cover ensures the image covers the entire div */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+    background-position: center; /* Centers the image in the div */
 }
 .chat-messages {
     overflow-y: auto;
     margin-bottom: 10px;
     flex-grow: 1;
+    direction: rtl; /* Right-to-left direction to align children to the right */
 }
 .chat-input-area {
     display: flex;
     justify-content: space-between;
 }
 .chat-content {
-    /* Styles for your chat content */
+    display: flex; /* Using flex to arrange children */
+    flex-direction: column; /* Stack children vertically */
+    height: 100%; /* Full height of the parent */
+    justify-content: space-between; /* Push children to opposite ends */
 }
 
 .close {
@@ -35,6 +44,11 @@
     top: 0;
     right: 10px;
     cursor: pointer;
+}
+.message {
+    direction: ltr; /* Left-to-right direction for the text within */
+    text-align: left; /* Align the text to the left */
+    display: inline-block; /* This makes sure that the text itself is not full width */
 }
 
 #chatInput {

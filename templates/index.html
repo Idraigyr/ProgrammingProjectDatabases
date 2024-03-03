@@ -5,6 +5,7 @@
     
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
     <script defer src="static/js/chatBox.js"></script>
     <script type="importmap">
@@ -33,10 +34,13 @@
             <!-- Chat messages and input -->
         <div id="chatMessages" class="chat-messages">
             <!-- Chat messages will be displayed here -->
+            <div class="message"></div>
         </div>
         <div class="chat-input-area">
             <input type="text" id="chatInput" placeholder="Type your message...">
-            <button id="sendMessage">Send</button>
+            <button id="sendMessage" class="btn btn-primary">
+                <i class="fa fa-paper-plane"></i> Send
+            </button>
         </div>
 
         </div>
