@@ -26,6 +26,8 @@ export let upKey = "Space";
 
 export let DownKey = "ShiftLeft";
 
-export let sprintKey = "ControlLeft"
+export let sprintKey = "ControlLeft";
 
-export let orbitCameraKey = "AltLeft"
+export let orbitCameraKey = "AltLeft";
+
+export let buildKey = "KeyB";

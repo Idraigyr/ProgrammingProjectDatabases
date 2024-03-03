@@ -10,7 +10,8 @@ import {
     primaryRightKey,
     upKey, secondaryBackwardKey, secondaryForwardKey,
     secondaryLeftKey,
-    secondaryRightKey, movementSpeed, verticalSensitivity, zoomSensitivity, sprintMultiplier
+    secondaryRightKey, movementSpeed, verticalSensitivity, zoomSensitivity, sprintMultiplier,
+    buildKey
 } from "./config.js";
 import {max, min} from "./helpers.js";
 import {Character} from "./model.js";
@@ -30,7 +31,7 @@ const geometry2 = new THREE.PlaneGeometry( 1000, 1000 );
 let plane = new THREE.Mesh( geometry2, new THREE.MeshBasicMaterial( { visible: false } ) );
 let pointer = new THREE.Vector2();
 let raycaster = new THREE.Raycaster();
-const objects = []
+const touchableObjects = []
 let enableBuilding = true;
 let debugTrue = false;
 let currentThingToPlace = new Placeable();
@@ -86,6 +87,7 @@ class InputManager {
         right: false,
         up: false,
         down: false,
+        build: false
     }
     mouse = {
         leftClick: false,
@@ -140,6 +142,9 @@ class InputManager {
     addMouseMoveListener(callback){
         document.addEventListener("mousemove", callback);
     }
+    addMouseDownListener(callback){
+        document.addEventListener("mousedown", callback);
+    }
     #onKeyDown(event){
         switch (event.code){
             case upKey:
@@ -163,6 +168,9 @@ class InputManager {
             case primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = true;
+                break;
+            case buildKey:
+                this.keys.build = true;
                 break;
         }
     }
@@ -189,6 +197,9 @@ class InputManager {
             case primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = false;
+                break;
+            case buildKey:
+                this.keys.build = false;
                 break;
         }
     }
@@ -244,6 +255,7 @@ class CharacterController extends Subject{
         this.#input = params.inputManager;
         this.#input.addMouseMoveListener(this.updateRotation.bind(this));
         this.#input.addMouseMoveListener(this.ritualManipulator.bind(this));
+        this.#input.addMouseDownListener(this.ritualBuilder.bind(this));
         this.#stateMachine = params.stateMachine;
     }
 
@@ -268,12 +280,15 @@ class CharacterController extends Subject{
         this.rotation = q;
     }
 
+    /**
+     * Shows roll mesh overlay (preview of the object to build)
+     * @param event mouse movement event
+     */
     ritualManipulator(event){
-        const {movementX, movementY} = event;
+        if(!enableBuilding) return;
         pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
         raycaster.setFromCamera( pointer, camera );
-        const intersects = raycaster.intersectObjects( objects, false );
-        console.log(intersects.length);
+        const intersects = raycaster.intersectObjects( touchableObjects, false );
 				if ( intersects.length > 0 ) {
 
 					const intersect = intersects[ 0 ];
@@ -281,10 +296,25 @@ class CharacterController extends Subject{
 					rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
 					rollOverMesh.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
                     rollOverMesh.position.y = gridCellSize/2;
-
 				}
     }
-
+    ritualBuilder(event){
+        if(!enableBuilding) return;
+        if( this.#input.keys.build ){
+                        pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+                        raycaster.setFromCamera( pointer, camera );
+                        const intersects = raycaster.intersectObjects( touchableObjects, false );
+                        if (intersects.length > 0 ){
+                            const intersect = intersects[0];
+                            // TODO; replace rollOverMaterial
+                            const voxel = new THREE.Mesh( currentThingToPlace, rollOverMaterial );
+                            voxel.position.copy( intersect.point ).add( intersect.face.normal );
+                            voxel.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
+                            scene.add( voxel );
+                            // TODO: voxel for further interaction
+                        }
+                    }
+    }
 
     get quatFromHorizontalRotation(){
         const qHorizontal = new THREE.Quaternion();
@@ -833,6 +863,7 @@ function createBlock(){
     blockPlane.receiveShadow = true;
 
     scene.add(blockPlane);
+    touchableObjects.push(blockPlane)
 
 
     //Ammojs Section
@@ -986,7 +1017,6 @@ function buildSetup(){
         gridHelper.visible = false;
     }
     scene.add(plane);
-    objects.push(plane)
 }
 function createRollOver(){
     if (!currentThingToPlace.getModel()){
