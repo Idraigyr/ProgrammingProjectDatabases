@@ -286,7 +286,7 @@ class CharacterController extends Subject{
      * @param event mouse movement event
      */
     ritualManipulator(event){
-        if(!enableBuilding) return;
+        if(!enableBuilding || rollOverMesh === undefined) return;
         pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
         raycaster.setFromCamera( pointer, camera );
         const intersects = raycaster.intersectObjects( touchableObjects, false );
@@ -300,7 +300,7 @@ class CharacterController extends Subject{
 				}
     }
     ritualBuilder(event){
-        if(!enableBuilding) return;
+        if(!enableBuilding || !currentThingToPlace.getModel()) return;
         if( this.#input.keys.build ){
                         pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
                         raycaster.setFromCamera( pointer, camera );
@@ -1026,29 +1026,23 @@ function buildSetup(){
         gridHelper.visible = false;
     }
 }
-// function createRollOver(){
-//     if (!currentThingToPlace.getModel()){
-//         currentThingToPlace = new THREE.BoxGeometry(gridCellSize, gridCellSize, gridCellSize);
-//     }
-//     rollOverMesh = new THREE.Mesh(currentThingToPlace, rollOverMaterial);
-//     rollOverMesh.position.y = gridCellSize/2;
-//     scene.add(rollOverMesh);
-// }
+
 function createRollOver(){
-    if (!currentThingToPlace.getModel()){
-        // TODO: just return
-        rollOverGeo = new THREE.BoxGeometry(gridCellSize, gridCellSize, gridCellSize);
-        rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
-        currentThingToPlace.setModel = rollOverMesh;
-    }else{
-        let model = currentThingToPlace.getModel().clone();
-        model.traverse((o) => {
-            if (o.isMesh) o.material = rollOverMaterial;
-        });
-        rollOverMesh = model;
-    }
-    rollOverMesh.position.y = gridCellSize/2;
-    scene.add(rollOverMesh);
+    console.log("if");
+    loader.load("./static/3d-models/tree.glb", (gltf) => {
+        rollOverMesh = gltf.scene;
+        scene.add(rollOverMesh);
+        currentThingToPlace.setModel(rollOverMesh);
+        rollOverMesh.position.y = gridCellSize/2;
+        scene.add(rollOverMesh);
+    },undefined, (err) => {
+        console.log(err);
+    });
+    // TODO. Now MVP is without red filter
+    // console.log("else");
+    //     rollOverMesh.traverse((o) => {
+    //         if (o.isMesh) o.material = rollOverMaterial;
+    //     })
 }
 
 function init(){

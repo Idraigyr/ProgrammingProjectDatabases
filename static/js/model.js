@@ -16,7 +16,7 @@ class Entity {
         this.normal = new Vector3(1,0,0);
         this.position = new Vector3(0,0,0);
     }
-    set setModel(model){
+    setModel(model){
         this.model = model;
     }
     getModel(){
