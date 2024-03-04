@@ -1,0 +1,75 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f1f5f9;
+}
+
+.container {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f3d2;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.slider, .checkbox, .radio-group, .dropdown {
+  margin-bottom: 20px;
+}
+
+.slider label, .checkbox label, .radio-group label, .dropdown label {
+  color: #0f172a;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.slider input[type="range"] {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.checkbox input[type="checkbox"], .radio-group input[type="radio"], .dropdown select {
+  margin-right: 10px;
+}
+
+.radio-group .radio {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.dropdown select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 2px solid #0f172a;
+  background-color: #ccc5ab;
+}
+
+.key-binds {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.key-bind {
+  display: flex;
+  flex-direction: column;
+  margin-right: 20px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.key-bind label {
+  margin-bottom: 5px;
+}
