@@ -37,6 +37,7 @@ let debugTrue = false;
 let currentThingToPlace = new Placeable();
 let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
 let rollOverMesh;
+let rollOverGeo;
 
 class CameraManager{
     #camera;
@@ -307,7 +308,8 @@ class CharacterController extends Subject{
                         if (intersects.length > 0 ){
                             const intersect = intersects[0];
                             // TODO; replace rollOverMaterial
-                            const voxel = new THREE.Mesh( currentThingToPlace, rollOverMaterial );
+                            let smth = currentThingToPlace.getModel();
+                            const voxel = smth.clone();
                             voxel.position.copy( intersect.point ).add( intersect.face.normal );
                             voxel.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
                             scene.add( voxel );
@@ -1024,11 +1026,27 @@ function buildSetup(){
         gridHelper.visible = false;
     }
 }
+// function createRollOver(){
+//     if (!currentThingToPlace.getModel()){
+//         currentThingToPlace = new THREE.BoxGeometry(gridCellSize, gridCellSize, gridCellSize);
+//     }
+//     rollOverMesh = new THREE.Mesh(currentThingToPlace, rollOverMaterial);
+//     rollOverMesh.position.y = gridCellSize/2;
+//     scene.add(rollOverMesh);
+// }
 function createRollOver(){
     if (!currentThingToPlace.getModel()){
-        currentThingToPlace = new THREE.BoxGeometry(gridCellSize, gridCellSize, gridCellSize);
+        // TODO: just return
+        rollOverGeo = new THREE.BoxGeometry(gridCellSize, gridCellSize, gridCellSize);
+        rollOverMesh = new THREE.Mesh(rollOverGeo, rollOverMaterial);
+        currentThingToPlace.setModel = rollOverMesh;
+    }else{
+        let model = currentThingToPlace.getModel().clone();
+        model.traverse((o) => {
+            if (o.isMesh) o.material = rollOverMaterial;
+        });
+        rollOverMesh = model;
     }
-    rollOverMesh = new THREE.Mesh(currentThingToPlace, rollOverMaterial);
     rollOverMesh.position.y = gridCellSize/2;
     scene.add(rollOverMesh);
 }

@@ -16,11 +16,11 @@ class Entity {
         this.normal = new Vector3(1,0,0);
         this.position = new Vector3(0,0,0);
     }
-    setModel(model){
+    set setModel(model){
         this.model = model;
     }
     getModel(){
-        return self.model;
+        return this.model;
     }
 }
 export class Character extends Entity {
