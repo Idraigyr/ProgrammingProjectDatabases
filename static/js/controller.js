@@ -35,7 +35,7 @@ const touchableObjects = []
 let enableBuilding = true;
 let debugTrue = false;
 let currentThingToPlace = new Placeable();
-let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, opacity: 0.5, transparent: true });
+let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
 let rollOverMesh;
 
 class CameraManager{
@@ -637,50 +637,66 @@ loader.load("./static/3d-models/Wizard.glb", (gltf) => {
 
 const sceneInit = function(scene){
 
-    const geometry5 = new THREE.BoxGeometry( 1, 1, 1 );
-    const material5 = new THREE.MeshPhongMaterial( { color: 0xFF3210 } );
-    const cube2 = new THREE.Mesh( geometry5, material5 );
-    cube2.castShadow = true;
-    cube2.position.set(0,3,5);
-    scene.add(cube2);
+    if (debugTrue){
+        // create boxes
+        const geometry5 = new THREE.BoxGeometry( 1, 1, 1 );
+        const material5 = new THREE.MeshPhongMaterial( { color: 0xFF3210 } );
+        const cube2 = new THREE.Mesh( geometry5, material5 );
+        cube2.castShadow = true;
+        cube2.position.set(0,3,5);
+        scene.add(cube2);
 
-    const points4 = [];
-    points4.push( new THREE.Vector3( cube2.position.x, cube2.position.y , cube2.position.z ) );
-    points4.push( new THREE.Vector3( 0, 0, 0 ) );
-    const geometry6 = new THREE.BufferGeometry().setFromPoints( points4 );
-    const material6 = new THREE.LineBasicMaterial( { color: 0xFF0000 } );
-    const line4 = new THREE.Line( geometry6, material6 );
-    scene.add(line4);
+        const points4 = [];
+        points4.push( new THREE.Vector3( cube2.position.x, cube2.position.y , cube2.position.z ) );
+        points4.push( new THREE.Vector3( 0, 0, 0 ) );
+        const geometry6 = new THREE.BufferGeometry().setFromPoints( points4 );
+        const material6 = new THREE.LineBasicMaterial( { color: 0xFF0000 } );
+        const line4 = new THREE.Line( geometry6, material6 );
+        scene.add(line4);
+        // create a line
+        const points = [];
+        points.push( new THREE.Vector3( 1000, 0, 0 ) );
+        points.push( new THREE.Vector3( -1000, 0, 0 ) );
 
-//create a line
-    const points = [];
-    points.push( new THREE.Vector3( 1000, 0, 0 ) );
-    points.push( new THREE.Vector3( -1000, 0, 0 ) );
+        const geometry2 = new THREE.BufferGeometry().setFromPoints( points );
+        const material2 = new THREE.LineBasicMaterial( { color: 0xFF0000 } ); //red, x
+        const line = new THREE.Line( geometry2, material2 );
 
-    const geometry2 = new THREE.BufferGeometry().setFromPoints( points );
-    const material2 = new THREE.LineBasicMaterial( { color: 0xFF0000 } ); //red, x
-    const line = new THREE.Line( geometry2, material2 );
+        const points2 = [];
+        points2.push( new THREE.Vector3( 0, 1000, 0 ) );
+        points2.push( new THREE.Vector3( 0, -1000, 0 ) );
 
-    const points2 = [];
-    points2.push( new THREE.Vector3( 0, 1000, 0 ) );
-    points2.push( new THREE.Vector3( 0, -1000, 0 ) );
+        const geometry3 = new THREE.BufferGeometry().setFromPoints( points2 );
+        const material3 = new THREE.LineBasicMaterial( { color: 0x00FF0A } ); //green, y
+        const line2 = new THREE.Line( geometry3, material3 );
 
-    const geometry3 = new THREE.BufferGeometry().setFromPoints( points2 );
-    const material3 = new THREE.LineBasicMaterial( { color: 0x00FF0A } ); //green, y
-    const line2 = new THREE.Line( geometry3, material3 );
+        const points3 = [];
+        points3.push( new THREE.Vector3( 0, 0, 1000 ) );
+        points3.push( new THREE.Vector3( 0, 0, -1000 ) );
 
-    const points3 = [];
-    points3.push( new THREE.Vector3( 0, 0, 1000 ) );
-    points3.push( new THREE.Vector3( 0, 0, -1000 ) );
+        const geometry4 = new THREE.BufferGeometry().setFromPoints( points3 );
+        const material4 = new THREE.LineBasicMaterial( { color: 0x0100FF } ); //blue, z
+        const line3 = new THREE.Line( geometry4, material4 );
+        const group = new THREE.Group();
+        group.add(line);
+        group.add(line2);
+        group.add(line3);
+        scene.add(group);
 
-    const geometry4 = new THREE.BufferGeometry().setFromPoints( points3 );
-    const material4 = new THREE.LineBasicMaterial( { color: 0x0100FF } ); //blue, z
-    const line3 = new THREE.Line( geometry4, material4 );
-    const group = new THREE.Group();
-    group.add(line);
-    group.add(line2);
-    group.add(line3);
-    scene.add(group);
+        // Create a point light
+
+        const pLight = new THREE.PointLight( 0xFFFFFF, 100);
+        pLight.position.set(0,5, 10);
+        pLight.castShadow = true;
+        scene.add(pLight);
+
+        //create a cube
+        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+        const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+        const cube = new THREE.Mesh( geometry, material );
+        cube.castShadow = true;
+        scene.add(cube);
+    }
 
     //create a light
     const light = new THREE.AmbientLight( 0xFFFFFF, 2);
@@ -692,11 +708,6 @@ const sceneInit = function(scene){
     dirLight.position.set(0,100, 50);
     dirLight.castShadow = true;
     scene.add(dirLight);
-
-    const pLight = new THREE.PointLight( 0xFFFFFF, 100);
-    pLight.position.set(0,5, 10);
-    pLight.castShadow = true;
-    scene.add(pLight);
 }
 
 const createPlane = function (scene) {
@@ -733,13 +744,6 @@ const createPlane = function (scene) {
 // const playerNormal = new THREE.Line( geo, mat );
 // scene.add(playerNormal);
 
-//create a cube
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
-cube.castShadow = true;
-scene.add(cube);
-
 function createPlayer(){
 
     let pos = {x: 3, y: 3, z: 3};
@@ -756,7 +760,9 @@ function createPlayer(){
     // blockPlane.castShadow = true;
     // blockPlane.receiveShadow = true;
 
-    scene.add(playerBox);
+    if (debugTrue){
+        scene.add(playerBox);
+    }
 
     //Ammojs Section
     let transform = new Ammo.btTransform();
@@ -776,7 +782,8 @@ function createPlayer(){
 
 
     playerBox.userData.physicsBody = body;
-    physicsWorld.addRigidBody( body );
+    // TODO: ask Flynn if we need this, because without it the wizard springs higher (and more beautiful)
+    // physicsWorld.addRigidBody( body );
 }
 
 let ip = new InputManager(camera);
@@ -1016,7 +1023,6 @@ function buildSetup(){
     if (!enableBuilding){
         gridHelper.visible = false;
     }
-    scene.add(plane);
 }
 function createRollOver(){
     if (!currentThingToPlace.getModel()){
@@ -1030,15 +1036,19 @@ function createRollOver(){
 function init(){
     setupPhysicsWorld();
     sceneInit(scene);
+    // Generates grass
     generateField(scene);
     // createPlane(scene);
     createRollOver();
     buildSetup();
     tmpTrans = new Ammo.btTransform();
     createPlayer();
+    // Generates terrain
     createBlock();
-    createBall();
-    createMaskBall();
+    if (debugTrue){
+        createBall();
+        createMaskBall();
+    }
 }
 // let xyz = new CharacterController({inputManager: ip, stateMachine: new FiniteStateMachine()});
 // let x = xyz.position;
