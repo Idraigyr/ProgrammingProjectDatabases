@@ -2,15 +2,28 @@ import * as THREE from 'three';
 import WebGL from 'three-WebGL';
 import * as model from "./model.js"
 import {
-    horizontalSensitivity, maxZoomDistance, minZoomDistance,
+    horizontalSensitivity,
+    maxZoomDistance,
+    minZoomDistance,
     primaryBackwardKey,
-    DownKey, primaryForwardKey,
+    DownKey,
+    primaryForwardKey,
     primaryLeftKey,
     primaryRightKey,
-    upKey, secondaryBackwardKey, secondaryForwardKey,
+    upKey,
+    secondaryBackwardKey,
+    secondaryForwardKey,
     secondaryLeftKey,
-    secondaryRightKey, movementSpeed, verticalSensitivity, zoomSensitivity, sprintMultiplier, sprintKey,
-    buildKey
+    secondaryRightKey,
+    movementSpeed,
+    verticalSensitivity,
+    zoomSensitivity,
+    sprintMultiplier,
+    sprintKey,
+    minZoomIn,
+    maxZoomIn,
+    buildKey,
+    minCameraY
 } from "./config.js";
 import {max, min} from "./helpers.js";
 import {Placeable} from "./model.js";
@@ -50,50 +63,69 @@ function correctRitualPosition(object){
 }
 
 class CameraManager{
-    #camera;
+#camera;
     #target;
     #offset;
     #lookAt;
+    #zoom;
     constructor(params) {
         this.#camera = params.camera;
         this.#target = params.target;
-        this.currentPosition = new THREE.Vector3(0,0,0);
-        this.currentLookAt = new THREE.Vector3(0,0,0);
         this.#offset = new THREE.Vector3(-5,2,1);
         this.#lookAt = new THREE.Vector3(500,0,0);
+        this.#zoom = minZoomIn;
+        //there is no zoomOut functionality so not functional
+        // document.addEventListener("keydown", (e) => {
+        //     if(e.code === "KeyO"){
+        //         this.zoomIn(0.2);
+        //     } else if (e.code === "KeyP"){
+        //         this.zoomIn(-0.2);
+        //     }
+        // });
     }
 
-    CloseIn(){}
+    calculateZoom(idealOffset, idealLookAt, zoomIn){
+        let vec = new THREE.Vector3().copy(idealOffset);
+        let vec2 = new THREE.Vector3().copy(idealLookAt);
+        vec2.multiplyScalar(-1);
+        vec.add(vec2);
+        vec.normalize();
+        vec.multiplyScalar(max(maxZoomIn, min(minZoomIn, zoomIn)));
+        return vec;
+    }
+    zoomIn(amount){
+        this.#zoom = max(maxZoomIn, min(minZoomIn, this.#zoom + amount));
+    }
+
+    transformVecWithTarget(vector){
+        vector.applyQuaternion(this.#target.rotation);
+        vector.add(this.#target.position);
+        return vector;
+    }
 
     update(deltaTime){
-        let idealOffset = this.calculateCameraPositionTransformation(new THREE.Vector3().copy(this.#offset));
-        const idealLookAt = this.calculateCameraLookTransformation(new THREE.Vector3().copy(this.#lookAt));
+        let idealOffset = this.transformVecWithTarget(new THREE.Vector3().copy(this.#offset));
+        const idealLookAt = this.transformVecWithTarget(new THREE.Vector3().copy(this.#lookAt));
+        let zoom = this.calculateZoom(idealOffset, idealLookAt, this.#zoom);
+        let zoomIn = this.#zoom;
 
-        let vec = new THREE.Vector3().copy(this.#offset);
-        while(idealOffset.y - 1 < 0){
-            vec.multiplyScalar(0.1);
-            vec.add(new THREE.Vector3(0,2,0));
-            idealOffset = this.calculateCameraPositionTransformation(vec);
+        let copy = idealOffset;
+
+        //don't uncomment; freezes screen;
+        //copy = copy.add(zoom);
+        if(copy.y < minCameraY){
+            while(copy.y < minCameraY){
+                copy = new THREE.Vector3().copy(idealOffset);
+                zoomIn -= 0.1;
+                zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);
+                copy = copy.add(zoom);
+            }
         }
 
-
-        this.#camera.position.copy(idealOffset);
+        this.#camera.position.copy(copy);
         this.#camera.lookAt(idealLookAt);
     }
-
-    calculateCameraPositionTransformation(vector){
-        vector.applyQuaternion(this.#target.rotation);
-        vector.add(this.#target.position);
-        return vector;
-    }
-
-    calculateCameraLookTransformation(vector){
-        vector.applyQuaternion(this.#target.rotation);
-        vector.add(this.#target.position);
-        return vector;
-    }
 }
-
 class InputManager {
     keys = {
         forward: false,
@@ -418,14 +450,14 @@ class CharacterController extends Subject{
             this.#jumping = true;
         }
 
-        if (this.position.y > 4){
+        if (this.position.y > 3){
             this.#jumping = false;
             this.#falling = true;
         }
 
 
         if(this.#jumping){
-            this.#velocity.add(new THREE.Vector3(0,0.3,0));
+            this.#velocity.add(new THREE.Vector3(0,0.2,0));
         }
         if(this.#falling){
             this.#velocity.add(new THREE.Vector3(0,-0.2,0));
@@ -681,7 +713,7 @@ const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
-// let loader = new GLTFLoader();
+let loaded = false;
 let charModel;
 let mixer;
 let animations = {};
@@ -727,11 +759,13 @@ await loader.load("../static/3d-models/Wizard.glb", (gltf) => {
 },function ( xhr ) {
 
     console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    if(xhr.loaded / xhr.total === 1) {
+        loaded = true;
+    }
 
 }, (err) => {
     console.log(err);
 });
-console.log(charModel);
 // let loader = new FBXLoader();
 // loader.load("./assets/asura.fbx", (fbx) => {
 //     charModel = fbx;
