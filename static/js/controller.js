@@ -39,6 +39,17 @@ let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0
 let rollOverMesh;
 let rollOverGeo;
 
+// TODO: where should we place this function?
+/**
+ * Corrects (e.g. centralize on the grid cell) the given object
+ * @param object object to centralize
+ */
+function correctRitualPosition(object){
+    // rollOverMesh.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
+    const boundingBox = new THREE.Box3().setFromObject(object);
+    object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
+    // rollOverMesh.position.y = 0;
+}
 class CameraManager{
     #camera;
     #target;
@@ -296,10 +307,7 @@ class CharacterController extends Subject{
 					const intersect = intersects[ 0 ];
 
 					rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
-					// rollOverMesh.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
-                    const boundingBox = new THREE.Box3().setFromObject(rollOverMesh);
-                    rollOverMesh.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
-                    // rollOverMesh.position.y = 0;
+                    correctRitualPosition(rollOverMesh);
 				}
     }
     ritualBuilder(event){
@@ -315,16 +323,17 @@ class CharacterController extends Subject{
                             const voxel = smth.clone();
                             voxel.position.copy( intersect.point ).add( intersect.face.normal );
                             // voxel.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
+                            correctRitualPosition(voxel);
                             scene.add( voxel );
-                            const objectBoundingBox = new THREE.Box3().setFromObject(voxel);
-                            const boxSize = objectBoundingBox.getSize(new THREE.Vector3());
-                            let minVec = objectBoundingBox.min;
-                            let maxVec = objectBoundingBox.max;
-                            const boxCenter = objectBoundingBox.getCenter(new THREE.Vector3());
-                            let boundingBox = new THREE.BoxHelper(voxel, 0xffff00);
-                            boundingBox.scale.set(boxSize.x, boxSize.y, boxSize.z);
-                            boundingBox.position.copy(boxCenter).add(new THREE.Vector3(0,-minVec.y,0));
-                            scene.add(boundingBox);
+                            // const objectBoundingBox = new THREE.Box3().setFromObject(voxel);
+                            // const boxSize = objectBoundingBox.getSize(new THREE.Vector3());
+                            // let minVec = objectBoundingBox.min;
+                            // let maxVec = objectBoundingBox.max;
+                            // const boxCenter = objectBoundingBox.getCenter(new THREE.Vector3());
+                            // let boundingBox = new THREE.BoxHelper(voxel, 0xffff00);
+                            // boundingBox.scale.set(boxSize.x, boxSize.y, boxSize.z);
+                            // boundingBox.position.copy(boxCenter).add(new THREE.Vector3(0,-minVec.y,0));
+                            // scene.add(boundingBox);
                             // TODO: voxel for further interaction
                         }
                     }
@@ -1043,18 +1052,15 @@ function createRollOver(){
     console.log("if");
     loader.load("./static/3d-models/tree.glb", (gltf) => {
         rollOverMesh = gltf.scene;
-        scene.add(rollOverMesh);
-        currentThingToPlace.setModel(rollOverMesh);
-        rollOverMesh.position.y = 0;
+        correctRitualPosition(rollOverMesh);
+        currentThingToPlace.setModel(rollOverMesh.clone());
+        rollOverMesh.traverse((o) => {
+            if (o.isMesh) o.material = rollOverMaterial;
+        })
         scene.add(rollOverMesh);
     },undefined, (err) => {
         console.log(err);
     });
-    // TODO. Now MVP is without red filter
-    // console.log("else");
-    //     rollOverMesh.traverse((o) => {
-    //         if (o.isMesh) o.material = rollOverMaterial;
-    //     })
 }
 
 function init(){
