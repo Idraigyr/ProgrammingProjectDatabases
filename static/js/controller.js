@@ -858,7 +858,7 @@ function animate() {
     }
     //camera.position.set(cube.position.x+10,cube.position.x+10,cube.position.x+5);
     limitCameraPosition(camera);
-    scene.background = new THREE.TextureLoader().load( "./static/images/background-landing.jpg" );
+    // scene.background = new THREE.TextureLoader().load( "./static/images/background-landing.jpg" );
     scene.background = new THREE.Color( 0x87CEEB );
     scaleBackground();
     renderer.setPixelRatio( window.devicePixelRatio );
