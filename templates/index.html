@@ -84,8 +84,18 @@ void main() {
             <!-- Chat messages and input -->
             <div id="chatMessages" class="chat-messages">
                 <!-- Chat messages will be displayed here -->
-                <div id="MyMessage" class="MyMsg"></div>
-                <div id="OtherMessage" class="OtherMsg"></div>
+                <div id="MyMessage" class="MyMsg">
+                    <!-- for message box -->
+                    <div class="message" id="Message"></div>
+                    <div class="time" id="Time"></div>
+                </div>
+
+                <div id="OtherMessage" class="OtherMsg">
+                    <!-- for other message box -->
+                    <div class="user" id="username"></div>
+                    <div class="message" id="Message"></div>
+                    <div class="time" id="Time"></div>
+                </div>
             </div>
             <div class="chat-input-area">
                 <input type="text" id="chatInput" placeholder="Type your message...">
