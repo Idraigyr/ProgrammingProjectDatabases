@@ -71,3 +71,156 @@ body {
     flex-grow: 1;
     margin-right: 10px;
 }
+
+/* UI/HUD Style */
+
+
+@font-face {
+    font-family: 'Surabasa';
+    src: url('../fonts/SurabanglusNormal.ttf') format('truetype');
+}
+
+
+/* Settings Button Styles */
+body {
+    /*cursor: url('/sprites/mouse.png'), auto;*/
+    display: flex;
+
+}
+
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+.HotBar {
+    position: absolute;
+    width: 34%;
+    height: 12%;
+    margin: 0 auto;
+    bottom: 0;
+    left: 33%;
+
+}
+
+.HealthPotion {
+    position: absolute;
+    bottom: 0%;
+    left: 24%;
+    width: 11%;
+    height: auto;
+    transform: scaleX(-1);
+
+}
+
+.ManaPotion {
+    position: absolute;
+    bottom: 0%;
+    right: 24%;
+    width: 11%;
+    height: auto;
+
+}
+
+.ManaAmount {
+    font-family: Surabasa, sans-serif; /* Assigning font */
+    font-size: 3vh; /* Font size */
+    color: #000000; /* Text color */
+    position: absolute; /* Relative positioning */
+    bottom: 5%;
+    right: 27.3%;
+}
+
+.HealthAmount {
+    font-family: Surabasa, sans-serif; /* Assigning font */
+    font-size: 3vh; /* Font size */
+    color: #000000; /* Text color */
+    position: absolute; /* Relative positioning */
+    bottom: 5%;
+    left: 27.3%;
+}
+
+.Banner {
+    position: absolute;
+    width: 10%;
+    height: auto;
+    top: 2.6%;
+    right: 5%;
+
+}
+.NewCrystalIcon {
+    position: absolute;
+    top: 3%;
+    left: 91%;
+    width: 2%;
+    height: auto;
+
+}
+
+.CrystalAmount {
+    font-family: Surabasa, sans-serif; /* Assigning font */
+    font-size: 3vh; /* Font size */
+    color: #000000; /* Text color */
+    position: absolute; /* Relative positioning */
+    top: 2%;
+    right: 9%;
+}
+
+.item {
+    width: 20%;
+    height: 100%;
+
+}
+.item:hover {
+    content: url('../images/Button_Hover_9Slides.png');
+}
+
+.item:active  {
+    content: url('../images/Button_Blue_9Slides_Pressed.png');
+}
+
+.HotBar {
+    display: flex;
+    justify-content: center;
+}
+.settings-button {
+    position: absolute;
+    top: 30px;
+    left: 30px;
+    display: inline-block; /* Ensure the container has the size of its contents */
+
+}
+.button {
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+}
+.icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+
+
+/* Settings Button Hover and Press Effects */
+.settings-button:hover .button {
+    content: url('../images/Button_Hover.png');
+}
+
+.settings-button:active .button {
+    content: url('../images/Button_Blue_Pressed.png');
+}
+
+.settings-button:active .icon {
+    content: url('../images/Pressed_02.png');
+}
+
+
