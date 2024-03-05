@@ -312,6 +312,12 @@ class CharacterController extends Subject{
     }
     ritualBuilder(event){
         if(!enableBuilding || !currentThingToPlace.getModel()) return;
+        // For object rotation
+        if(event.which === 3 || event.button === 2){
+            rollOverMesh.rotation.y += Math.PI/2;
+            currentThingToPlace.getModel().rotation.y += Math.PI/2;
+            return;
+        }
         if( this.#input.keys.build ){
                         pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
                         raycaster.setFromCamera( pointer, camera );
