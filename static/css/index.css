@@ -15,35 +15,45 @@ body {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 300px; /* You can adjust the size */
-    height: 99vh; /* You can adjust the size */
+    width: 300px;
+    height: 60vh;
     border: 1px solid #888;
-    background-color: #fefefe;
     z-index: 9;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.5);
     display: block; /* Controlled by JS */
-    background-image: url('../images/background-landing.jpg');
+    overflow: hidden;
+    background-color: transparent;
+    padding-bottom: 10px;
+}
+.chat-popup::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url("../images/background-landing.jpg");
     background-size: cover; /* Cover ensures the image covers the entire div */
     background-repeat: no-repeat; /* Prevents the image from repeating */
     background-position: center; /* Centers the image in the div */
+    opacity: 0.5; /* Adjust transparency as needed */
+    z-index: -1; /* Ensures the content is above the background */
 }
 .chat-messages {
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    flex-grow: 1;
+    max-width: 100%;
 }
 .chat-input-area {
     display: flex;
     justify-content: space-between;
 }
 .chat-content {
-    display: flex; /* Using flex to arrange children */
-    flex-direction: column; /* Stack children vertically */
-    height: 100%; /* Full height of the parent */
-    justify-content: space-between; /* Push children to opposite ends */
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
 }
 
 .close {
@@ -52,20 +62,47 @@ body {
     right: 10px;
     cursor: pointer;
 }
-.MyMsg {
-    align-self: flex-start;
-    direction: rtl; /* Right-to-left text direction */
-    text-align: left; /* Align the text to the right */
-    display: block; /* Block display to take the full width */
-    clear: both; /* Avoid floating issues by clearing both sides */
+.message{
+    margin-bottom: 5px;
 }
-
+.MyMsg {
+    display: block;
+    align-self: flex-start;
+    direction: ltr;
+    text-align: left;
+    background: #f1f1f1;
+    border-radius: 2px;
+    margin-left: 10px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+.time{
+    display: block;
+    text-align: right;
+    color: #37c924;
+    font-size: 0.6em;
+    font-style: italic;
+}
+.user{
+    margin-top: 5px;
+    display: block;
+    text-align: right;
+    color: red;
+    font-size: 0.6em;
+    font-style: oblique;
+    margin-bottom: 5px;
+}
 .OtherMsg {
     align-self: flex-end;
-    direction: ltr; /* Left-to-right text direction */
-    text-align: right; /* Align the text to the left */
-    display: block; /* Block display to take the full width */
-    clear: both; /* Avoid floating issues by clearing both sides */
+    direction: ltr;
+    text-align: right;
+    background: #f1f1f1;
+    border-radius: 2px;
+    margin-right: 10px;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.2);
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 #chatInput {
     flex-grow: 1;
