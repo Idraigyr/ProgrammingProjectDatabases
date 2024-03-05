@@ -1,22 +1,39 @@
 import * as THREE from "three";
+import {maxZoomIn, minZoomIn} from "../../js/config";
+import {max, min} from "../../js/helpers";
 
 export class CameraManager {
     #target;
     #offset;
     #lookAt;
+    #zoom;
     constructor(params) {
         this.camera = params.camera;
         this.#target = params.target;
         this.#offset = params.offset;
         this.#lookAt = params.lookAt;
+        this.#zoom = minZoomIn;
+        //there is no zoomOut functionality so not functional
+        // document.addEventListener("keydown", (e) => {
+        //     if(e.code === "KeyO"){
+        //         this.zoomIn(0.2);
+        //     } else if (e.code === "KeyP"){
+        //         this.zoomIn(-0.2);
+        //     }
+        // });
     }
 
+    calculateZoom(idealOffset, idealLookAt, zoomIn){
+        let vec = new THREE.Vector3().copy(idealOffset);
+        let vec2 = new THREE.Vector3().copy(idealLookAt);
+        vec2.multiplyScalar(-1);
+        vec.add(vec2);
+        vec.normalize();
+        vec.multiplyScalar(max(maxZoomIn, min(minZoomIn, zoomIn)));
+        return vec;
+    }
     zoomIn(amount){
-        console.log(this.camera.getWorldDirection());
-    }
-
-    zoomOut(amount){
-        console.log(this.camera.getWorldDirection());
+        this.#zoom = max(maxZoomIn, min(minZoomIn, this.#zoom + amount));
     }
 
     transformVecWithTarget(vector){
@@ -28,13 +45,23 @@ export class CameraManager {
     update(deltaTime){
         let idealOffset = this.transformVecWithTarget(new THREE.Vector3().copy(this.#offset));
         const idealLookAt = this.transformVecWithTarget(new THREE.Vector3().copy(this.#lookAt));
+        let zoom = this.calculateZoom(idealOffset, idealLookAt, this.#zoom);
+        let zoomIn = this.#zoom;
 
-        let vec = new THREE.Vector3().copy(this.#offset);
-        while(false){ // false => conditional that checks against max zoomIn amount if camera.position.y < 0
-            this.zoomIn(5);
+        let copy = idealOffset;
+
+        //don't uncomment; freezes screen;
+        //copy = copy.add(zoom);
+        if(copy.y < 0){
+            while(copy.y < 0){
+                copy = new THREE.Vector3().copy(idealOffset);
+                zoomIn -= 0.1;
+                zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);
+                copy = copy.add(zoom);
+            }
         }
 
-        this.camera.position.copy(idealOffset);
+        this.camera.position.copy(copy);
         this.camera.lookAt(idealLookAt);
     }
 

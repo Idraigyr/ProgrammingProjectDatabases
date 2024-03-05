@@ -16,7 +16,6 @@ class FiniteStateMachine{
         this.currentState.updateState(deltaTime, input);
     }
     setState(name){
-        console.log(name);
         const prevState = this.currentState
         if(prevState && prevState.name === name){
             if(prevState.name === name) return;

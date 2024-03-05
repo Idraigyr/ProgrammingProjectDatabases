@@ -7,9 +7,11 @@ export let zoomSensitivity = 1;
 export let minZoomDistance = 3;
 export let maxZoomDistance = 20;
 
-export const movementSpeed = 0.5;
+export const movementSpeed = 0.1;
 
-export const sprintMultiplier = 1.5;
+export const sprintMultiplier = 2;
+
+//add jump vars
 export let primaryForwardKey = "KeyW";
 export let secondaryForwardKey = "ArrowUp";
 
@@ -37,3 +39,10 @@ export let slot2Key = "Digit2"
 export let slot3Key = "Digit3"
 export let slot4Key = "Digit4"
 export let slot5Key = "Digit5"
+
+export let maxZoomIn = -6; //WARNING! make sure this (|maxZoomIn|) is large enough to stay above minCameraY treshold, otherwise infinite loop.
+
+//currently does not do anything;
+export let minZoomIn = 1.2;
+
+export let minCameraY = 1; //0 when no grass present, in future change depending on collision with ground objects?
