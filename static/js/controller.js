@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import WebGL from 'three-WebGL';
-// import {clamp, color, vec3} from "three/nodes";
 import * as model from "./model.js"
 import {
     horizontalSensitivity, maxZoomDistance, minZoomDistance,
@@ -10,7 +9,7 @@ import {
     primaryRightKey,
     upKey, secondaryBackwardKey, secondaryForwardKey,
     secondaryLeftKey,
-    secondaryRightKey, movementSpeed, verticalSensitivity, zoomSensitivity, sprintMultiplier,
+    secondaryRightKey, movementSpeed, verticalSensitivity, zoomSensitivity, sprintMultiplier, sprintKey,
     buildKey
 } from "./config.js";
 import {max, min} from "./helpers.js";
@@ -18,6 +17,7 @@ import {Character} from "./model.js";
 import {Placeable} from "./model.js";
 // import {Vector3} from "three";
 import {GLTFLoader} from "three-GLTFLoader";
+import {PlayerFSM} from "../js_refactored/Patterns/FiniteStateMachine.js";
 import {grassUniforms, generateField} from "./visual/grass.js"
 
 const scene = new THREE.Scene();
@@ -51,42 +51,46 @@ function correctRitualPosition(object){
     object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
     // rollOverMesh.position.y = 0;
 }
+
 class CameraManager{
     #camera;
     #target;
+    #offset;
+    #lookAt;
     constructor(params) {
         this.#camera = params.camera;
         this.#target = params.target;
         this.currentPosition = new THREE.Vector3(0,0,0);
         this.currentLookAt = new THREE.Vector3(0,0,0);
+        this.#offset = new THREE.Vector3(-5,2,1);
+        this.#lookAt = new THREE.Vector3(500,0,0);
     }
-    half(){
-        if(this.currentPosition.y < 1){
-            let vec = this.currentLookAt;
-            vec.multiplyScalar(0.1);
-            this.currentPosition.add(vec);
-            this.half();
-        }
-    }
+
+    CloseIn(){}
+
     update(deltaTime){
-        const idealOffset = this.calculateCameraTransformation(new THREE.Vector3(-5,2,1));
-        const idealLookAt = this.calculateCameraTransformation2(new THREE.Vector3(50,0,0));
+        let idealOffset = this.calculateCameraPositionTransformation(new THREE.Vector3().copy(this.#offset));
+        const idealLookAt = this.calculateCameraLookTransformation(new THREE.Vector3().copy(this.#lookAt));
 
-        this.currentPosition.copy(idealOffset);
-        this.currentLookAt.copy(idealLookAt);
-        //this.half();
+        let vec = new THREE.Vector3().copy(this.#offset);
+        while(idealOffset.y - 1 < 0){
+            vec.multiplyScalar(0.1);
+            vec.add(new THREE.Vector3(0,2,0));
+            idealOffset = this.calculateCameraPositionTransformation(vec);
+        }
 
-        this.#camera.position.copy(this.currentPosition);
-        this.#camera.lookAt(this.currentLookAt);
+
+        this.#camera.position.copy(idealOffset);
+        this.#camera.lookAt(idealLookAt);
     }
 
-    calculateCameraTransformation(vector){
+    calculateCameraPositionTransformation(vector){
         vector.applyQuaternion(this.#target.rotation);
         vector.add(this.#target.position);
         return vector;
     }
 
-    calculateCameraTransformation2(vector){
+    calculateCameraLookTransformation(vector){
         vector.applyQuaternion(this.#target.rotation);
         vector.add(this.#target.position);
         return vector;
@@ -101,6 +105,7 @@ class InputManager {
         right: false,
         up: false,
         down: false,
+        sprint: false,
         build: false
     }
     mouse = {
@@ -111,7 +116,7 @@ class InputManager {
         x: 0,
         y: 0
     }
-    mousePrev = null;
+
     constructor(camera) {
         this.camera = camera;
         this.vec = new THREE.Vector3(0,0,0);
@@ -131,7 +136,18 @@ class InputManager {
                     break;
             }
         });
-        document.addEventListener("auxclick", (e) => Handler(e));
+        document.addEventListener("mouseup", (e) => {
+            switch (e.button){
+                case 0:
+                    this.mouse.leftClick = false;
+                    break;
+                case 2:
+                    this.mouse.rightClick = false;
+                    break;
+                default:
+                    break;
+            }
+        });
         //document.addEventListener("wheel", this.#onScroll.bind(this));
     }
 
@@ -160,6 +176,7 @@ class InputManager {
         document.addEventListener("mousedown", callback);
     }
     #onKeyDown(event){
+        event.preventDefault();
         switch (event.code){
             case upKey:
                 this.keys.up = true;
@@ -182,6 +199,9 @@ class InputManager {
             case primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = true;
+                break;
+            case sprintKey:
+                this.keys.sprint = true;
                 break;
             case buildKey:
                 this.keys.build = true;
@@ -211,6 +231,9 @@ class InputManager {
             case primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = false;
+                break;
+            case sprintKey:
+                this.keys.sprint = false;
                 break;
             case buildKey:
                 this.keys.build = false;
@@ -265,18 +288,18 @@ class CharacterController extends Subject{
         this.#velocity = new THREE.Vector3(0,0,0);
         this.position = new THREE.Vector3(0,0,0);
         this.rotation = new THREE.Quaternion();
-        this.rotation.identity();
         this.#input = params.inputManager;
         this.#input.addMouseMoveListener(this.updateRotation.bind(this));
         this.#input.addMouseMoveListener(this.ritualManipulator.bind(this));
         this.#input.addMouseDownListener(this.ritualBuilder.bind(this));
         this.#stateMachine = params.stateMachine;
+
+        this.fireballCooldown = 0;
     }
 
+
+
     updateRotation(event){
-        if(false){ //check for pointerlock
-            return;
-        }
         const {movementX, movementY} = event;
         const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/360);
         const rotateVertical = (movementY  * verticalSensitivity) *  (Math.PI/360);
@@ -362,7 +385,7 @@ class CharacterController extends Subject{
         if(!this.#stateMachine.currentState){
             return;
         }
-        this.#stateMachine.update(deltaTime, this.#input);
+        this.#stateMachine.updateState(deltaTime, this.#input);
 
         const qHorizontal = this.quatFromHorizontalRotation;
 
@@ -390,7 +413,7 @@ class CharacterController extends Subject{
 
         this.#velocity.multiplyScalar(movementSpeed);
 
-        if (this.#input.keys.shift) {
+        if (this.#input.keys.sprint) {
             this.#velocity.multiplyScalar(sprintMultiplier);
         }
 
@@ -416,6 +439,17 @@ class CharacterController extends Subject{
             this.position.y = 0;
             this.#falling = false;
         }
+
+        if(this.fireballCooldown === 0 && this.#input.mouse.leftClick){
+            let vec = new THREE.Vector3().copy(this.position);
+            vec.y = 2;
+            createFireball(new THREE.Vector3(1,0,0).applyQuaternion(this.rotation),vec,20);
+            this.fireballCooldown = 2;
+        }
+        if(this.fireballCooldown > 0){
+            this.fireballCooldown = max(0,this.fireballCooldown - deltaTime);
+        }
+
 
         // const velocity = this.#velocity;
         // const frameDeceleration = new THREE.Vector3(
@@ -654,8 +688,10 @@ document.body.appendChild( renderer.domElement );
 const loader = new GLTFLoader();
 let charModel;
 let mixer;
-let action;
-loader.load("./static/3d-models/Wizard.glb", (gltf) => {
+let animations = {};
+let loader = new GLTFLoader();
+
+await loader.load("../static/3d-models/Wizard.glb", (gltf) => {
     charModel = gltf.scene;
     //const charModel = gltf;
     charModel.traverse(c => {
@@ -663,13 +699,59 @@ loader.load("./static/3d-models/Wizard.glb", (gltf) => {
     });
     scene.add(charModel);
     mixer = new THREE.AnimationMixer(model);
-    const clips = gltf.animations;
-    const clip = THREE.AnimationClip.findByName(clips, 'CharacterArmature|Run');
-    action = new THREE.AnimationAction(mixer, clip, charModel);
-    action.play();
-},undefined, (err) => {
+    let clips = gltf.animations;
+
+    let clip = THREE.AnimationClip.findByName(clips, 'CharacterArmature|Walk');
+    animations["Walk"] =  new THREE.AnimationAction(mixer, clip, charModel);
+    const getAnimation =  (animName, alias) => {
+        let clip = THREE.AnimationClip.findByName(clips, animName);
+        animations[alias] =  new THREE.AnimationAction(mixer, clip, charModel);
+    }
+    getAnimation('CharacterArmature|Idle',"Idle");
+    getAnimation('CharacterArmature|Run',"Run");
+    getAnimation('CharacterArmature|Walk',"WalkForward");
+    getAnimation('CharacterArmature|Roll',"WalkBackward");
+    getAnimation('CharacterArmature|Spell1',"DefaultAttack");
+
+    // getAnimation('CharacterArmature|Walk',"Walk");
+    // getAnimation('CharacterArmature|Death',"Death");
+    // getAnimation('CharacterArmature|Idle',"Idle");
+    // getAnimation('CharacterArmature|Idle_Attacking',"Idle_Attacking");
+    // getAnimation('CharacterArmature|Idle_Weapon',"Idle_Weapon");
+    // getAnimation('CharacterArmature|PickUp',"PickUp");
+    // getAnimation('CharacterArmature|Punch',"Punch");
+    // getAnimation('CharacterArmature|RecieveHit',"RecieveHit");
+    // getAnimation('CharacterArmature|RecieveHit_2',"RecieveHit_2");
+    // getAnimation('CharacterArmature|Roll',"Roll");
+    // getAnimation('CharacterArmature|Run',"Run");
+    // getAnimation('CharacterArmature|Run_Weapon',"Run_Weapon");
+    // getAnimation('CharacterArmature|Spell1',"Spell1");
+    // getAnimation('CharacterArmature|Spell2',"Spell2");
+    // getAnimation('CharacterArmature|Staff_Attack',"Staff_Attack");
+},function ( xhr ) {
+
+    console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    if(xhr.loaded / xhr.total === 1) {
+        loaded = true;
+    }
+
+}, (err) => {
     console.log(err);
 });
+console.log(charModel);
+// let loader = new FBXLoader();
+// loader.load("./assets/asura.fbx", (fbx) => {
+//     charModel = fbx;
+//     charModel.traverse(c => {
+//         c.castShadow = true;
+//     });
+//     scene.add(charModel);
+//     mixer = new THREE.AnimationMixer(model);
+//     clips = charModel.animations;
+// },undefined, (err) => {
+//     console.log(err);
+// });
+
 
 const sceneInit = function(scene){
 
@@ -771,6 +853,32 @@ const createPlane = function (scene) {
         scene.add(line2);
     }
 }
+class Fireball{
+    #direction;
+    #position;
+    #velocity;
+    constructor(direction,position,velocity) {
+        this.#direction = direction;
+        this.#position = position;
+        this.#velocity = velocity;
+
+        const geo = new THREE.SphereGeometry(  1 );
+        const mat = new THREE.MeshPhongMaterial( { color: 0xFF6C00 } );
+        const ball = new THREE.Mesh( geo, mat );
+        ball.position.set(this.#position.x, this.#position.y, this.#position.z);
+        this.model = ball;
+    }
+    update(deltaTime){
+        const vec = new THREE.Vector3().copy(this.#direction);
+        vec.multiplyScalar(this.#velocity*deltaTime);
+        this.#position.add(vec);
+        this.model.position.set(this.#position.x, this.#position.y, this.#position.z);
+    }
+
+    get position(){
+        return this.#position;
+    }
+}
 
 // const pnPoints = [];
 // pnPoints.push( new THREE.Vector3( 0,0,0 ) );
@@ -780,50 +888,32 @@ const createPlane = function (scene) {
 // const playerNormal = new THREE.Line( geo, mat );
 // scene.add(playerNormal);
 
-function createPlayer(){
+//create a cube
+const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
+const cube = new THREE.Mesh( geometry, material );
+cube.castShadow = true;
+scene.add(cube);
 
-    let pos = {x: 3, y: 3, z: 3};
-    let scale = {x: 3, y: 3, z: 3};
-    let quat = {x: 0, y: 0, z: 0, w: 1};
-    let mass = 1;
+let fireballs = [];
 
-    //threeJS Section
-    let playerBox = new THREE.LineSegments(new THREE.WireframeGeometry(new THREE.BoxGeometry()), new THREE.MeshPhongMaterial({color: 0x000000}));
-
-    playerBox.position.set(pos.x, pos.y, pos.z);
-    playerBox.scale.set(scale.x, scale.y, scale.z);
-
-    // blockPlane.castShadow = true;
-    // blockPlane.receiveShadow = true;
-
-    if (debugTrue){
-        scene.add(playerBox);
-    }
-
-    //Ammojs Section
-    let transform = new Ammo.btTransform();
-    transform.setIdentity();
-    transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
-    transform.setRotation( new Ammo.btQuaternion( quat.x, quat.y, quat.z, quat.w ) );
-    let motionState = new Ammo.btDefaultMotionState( transform );
-
-    let colShape = new Ammo.btBoxShape( new Ammo.btVector3( scale.x * 0.5, scale.y * 0.5, scale.z * 0.5 ) );
-    colShape.setMargin( 0.05 );
-
-    let localInertia = new Ammo.btVector3( 0, 0, 0 );
-    colShape.calculateLocalInertia( mass, localInertia );
-
-    let rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, colShape, localInertia );
-    let body = new Ammo.btRigidBody( rbInfo );
-
-
-    playerBox.userData.physicsBody = body;
-    // TODO: ask Flynn if we need this, because without it the wizard springs higher (and more beautiful)
-    // physicsWorld.addRigidBody( body );
+const updateFireballs = function(playerPos, deltaTime){
+    fireballs.forEach((fireball) => {
+        if(playerPos.distanceTo(fireball.position) > 50){
+            scene.remove(fireball.model);
+        }
+    });
+    fireballs = fireballs.filter((fireball)=> playerPos.distanceTo(fireball.position) < 50);
+    fireballs.forEach((fireball) => fireball.update(deltaTime));
 }
 
+const createFireball = function(direction,position,velocity){
+    let fireball = new Fireball(direction,position,velocity);
+    scene.add(fireball.model);
+    fireballs.push(fireball);
+}
 let ip = new InputManager(camera);
-let player = new CharacterController({inputManager: ip, stateMachine: new CharacterFSM()});
+let player = new CharacterController({inputManager: ip, stateMachine: new PlayerFSM(animations)});
 let cm = new CameraManager({
     camera: camera,
     target: player
@@ -841,11 +931,8 @@ function animate() {
     let deltaTime = clock.getDelta();
     grassUniforms.iTime.value = deltaTime;
     player.update(deltaTime);
+    updateFireballs(player.position,deltaTime);
     cm.update(deltaTime);
-
-    updatePhysics(deltaTime);
-
-
 
     // playerNormal.position.set(player.position.x,player.position.y,player.position.z);
     // playerNormal.rotation.setFromQuaternion(player.rotation);
@@ -857,7 +944,7 @@ function animate() {
         charModel.rotateY(180 * Math.PI / 360);
     }
     //camera.position.set(cube.position.x+10,cube.position.x+10,cube.position.x+5);
-    limitCameraPosition(camera);
+    // limitCameraPosition(camera);
     // scene.background = new THREE.TextureLoader().load( "./static/images/background-landing.jpg" );
     scene.background = new THREE.Color( 0x87CEEB );
     scaleBackground();
@@ -1095,7 +1182,6 @@ function updateObjectToPlace(object){
 }
 
 function init(){
-    setupPhysicsWorld();
     sceneInit(scene);
     // Generates grass
     generateField(scene);
@@ -1110,12 +1196,12 @@ function init(){
         createBall();
         createMaskBall();
     }
+    createPlane(scene);
 }
 // let xyz = new CharacterController({inputManager: ip, stateMachine: new FiniteStateMachine()});
 // let x = xyz.position;
 if ( WebGL.isWebGLAvailable()) {
-    // Initiate function or other initializations here
-    await Ammo().then( init );
+    init();
     animate();
 } else {
     const warning = WebGL.getWebGLErrorMessage();

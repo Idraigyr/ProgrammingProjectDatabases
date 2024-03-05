@@ -1,5 +1,5 @@
-//import $ from "jquery";
-//import {Vector3} from "three";
+import * as $ from "jquery";
+import {Vector3} from "three";
 import {API_URL} from "./config.js"
 import {Vector3} from "three";
 export class World {
