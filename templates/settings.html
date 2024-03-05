@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Settings</title>
+  <link rel="stylesheet" href="settingsStyle.css">
+</head>
+<body>
+
+<div class="container">
+  <h1>Game Settings</h1>
+
+  <div class="settings">
+    <div class="slider">
+      <label for="volume">Volume:</label>
+      <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+    </div>
+
+    <div class="checkbox">
+      <input type="checkbox" id="sound" name="sound" checked>
+      <label for="sound">Sound Effects</label>
+    </div>
+
+    <div class="checkbox">
+      <input type="checkbox" id="music" name="music">
+      <label for="music">Background Music</label>
+    </div>
+
+    <div class="radio-group">
+      <div class="radio">
+        <input type="radio" id="easy" name="difficulty" value="easy" checked>
+        <label for="easy">Easy</label>
+      </div>
+      <div class="radio">
+        <input type="radio" id="medium" name="difficulty" value="medium">
+        <label for="medium">Medium</label>
+      </div>
+      <div class="radio">
+        <input type="radio" id="hard" name="difficulty" value="hard">
+        <label for="hard">Hard</label>
+      </div>
+    </div>
+
+    <div class="dropdown">
+      <label for="resolution">Resolution:</label>
+      <select id="resolution" name="resolution">
+        <option value="720p">720p</option>
+        <option value="1080p">1080p</option>
+        <option value="4k">4K</option>
+      </select>
+    </div>
+
+    <div class="key-binds">
+      <div class="key-bind">
+        <label for="move-forward">Move forward:</label>
+        <input type="text" id="move-forward" name="move-forward" placeholder="w">
+      </div>
+      <div class="key-bind">
+        <label for="move-left">Move left:</label>
+        <input type="text" id="move-left" name="move-left" placeholder="a">
+      </div>
+      <div class="key-bind">
+        <label for="move-right">Move right:</label>
+        <input type="text" id="move-right" name="move-right" placeholder="d">
+      </div>
+      <div class="key-bind">
+        <label for="move-backwards">Move backwards:</label>
+        <input type="text" id="move-backwards" name="move-backwards" placeholder="s">
+      </div>
+      <div class="key-bind">
+        <label for="jump">Jump:</label>
+        <input type="text" id="jump" name="jump" placeholder="Space">
+      </div>
+      <div class="key-bind">
+        <label for="open-inventory">Open inventory:</label>
+        <input type="text" id="open-inventory" name="open-inventory" placeholder="e">
+      </div>
+      <div class="key-bind">
+        <label for="attack">Attack:</label>
+        <input type="text" id="attack" name="attack" placeholder="Left Mouse Button">
+      </div>
+      <div class="key-bind">
+        <label for="pause">Pause:</label>
+        <input type="text" id="pause" name="pause" placeholder="Esc">
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
