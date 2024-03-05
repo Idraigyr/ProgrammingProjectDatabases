@@ -352,8 +352,8 @@ class CharacterController extends Subject{
      */
     ritualManipulator(event){
         if(!enableBuilding || rollOverMesh === undefined) return;
-        pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-        raycaster.setFromCamera( pointer, camera );
+        //pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+        raycaster.setFromCamera( new THREE.Vec2(0,0), camera );
         const intersects = raycaster.intersectObjects( touchableObjects, false );
 				if ( intersects.length > 0 ) {
 
@@ -372,8 +372,8 @@ class CharacterController extends Subject{
             return;
         }
         if( this.#input.keys.build ){
-                        pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-                        raycaster.setFromCamera( pointer, camera );
+                        //pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+                        raycaster.setFromCamera( new THREE.Vec2(0,0), camera );
                         const intersects = raycaster.intersectObjects( touchableObjects, true );
                         if (intersects.length > 0 ){
                             const intersect = intersects[0];
