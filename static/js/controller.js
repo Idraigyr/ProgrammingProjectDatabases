@@ -39,6 +39,7 @@ let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0
 let rollOverMesh;
 let rollOverGeo;
 
+
 // TODO: where should we place this function?
 /**
  * Corrects (e.g. centralize on the grid cell) the given object
@@ -312,7 +313,7 @@ class CharacterController extends Subject{
     }
     ritualBuilder(event){
         if(!enableBuilding || !currentThingToPlace.getModel()) return;
-        // For object rotation
+        // For object rotation. TODO: encapsulate in an apart function?
         if(event.which === 3 || event.button === 2){
             rollOverMesh.rotation.y += Math.PI/2;
             currentThingToPlace.getModel().rotation.y += Math.PI/2;
@@ -321,16 +322,21 @@ class CharacterController extends Subject{
         if( this.#input.keys.build ){
                         pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
                         raycaster.setFromCamera( pointer, camera );
-                        const intersects = raycaster.intersectObjects( touchableObjects, false );
+                        const intersects = raycaster.intersectObjects( touchableObjects, true );
                         if (intersects.length > 0 ){
                             const intersect = intersects[0];
-                            // TODO; replace rollOverMaterial
+                            if(intersect.object !== blockPlane){
+                                console.log("object touched");
+                                intersect.object.parent.position.copy( intersect.point ).add( intersect.face.normal );
+                                updateObjectToPlace(intersect.object.parent.parent);
+                                return;
+                            }
                             let smth = currentThingToPlace.getModel();
                             const voxel = smth.clone();
                             voxel.position.copy( intersect.point ).add( intersect.face.normal );
-                            // voxel.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
                             correctRitualPosition(voxel);
                             scene.add( voxel );
+                            // // Bounding box when you place the object
                             // const objectBoundingBox = new THREE.Box3().setFromObject(voxel);
                             // const boxSize = objectBoundingBox.getSize(new THREE.Vector3());
                             // let minVec = objectBoundingBox.min;
@@ -341,6 +347,7 @@ class CharacterController extends Subject{
                             // boundingBox.position.copy(boxCenter).add(new THREE.Vector3(0,-minVec.y,0));
                             // scene.add(boundingBox);
                             // TODO: voxel for further interaction
+                            touchableObjects.push(voxel);
                         }
                     }
     }
@@ -1067,6 +1074,24 @@ function createRollOver(){
     },undefined, (err) => {
         console.log(err);
     });
+}
+
+function removeFromScene(object){
+    scene.remove(object);
+}
+function updateObjectToPlace(object){
+    scene.remove(rollOverMesh);
+    scene.remove(currentThingToPlace.getModel());
+    scene.remove( object );
+    rollOverMesh = undefined;
+    currentThingToPlace.setModel(undefined);
+    rollOverMesh = object.clone();
+    currentThingToPlace.setModel(rollOverMesh.clone());
+    rollOverMesh.traverse((o) => {
+            if (o.isMesh) o.material = rollOverMaterial;
+        })
+    scene.add(rollOverMesh);
+    touchableObjects.splice( touchableObjects.indexOf( object ), 1 );
 }
 
 function init(){
