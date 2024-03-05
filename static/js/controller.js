@@ -13,7 +13,6 @@ import {
     buildKey
 } from "./config.js";
 import {max, min} from "./helpers.js";
-import {Character} from "./model.js";
 import {Placeable} from "./model.js";
 // import {Vector3} from "three";
 import {GLTFLoader} from "three-GLTFLoader";
@@ -28,7 +27,7 @@ let islandThickness = 10;
 let blockPlane;
 const geometry2 = new THREE.PlaneGeometry( 1000, 1000 );
 				geometry2.rotateX( - Math.PI / 2 );
-let plane = new THREE.Mesh( geometry2, new THREE.MeshBasicMaterial( { visible: false } ) );
+new THREE.Mesh( geometry2, new THREE.MeshBasicMaterial( { visible: false } ) );
 let pointer = new THREE.Vector2();
 let raycaster = new THREE.Raycaster();
 const touchableObjects = []
@@ -37,8 +36,6 @@ let debugTrue = false;
 let currentThingToPlace = new Placeable();
 let rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
 let rollOverMesh;
-let rollOverGeo;
-
 
 // TODO: where should we place this function?
 /**
@@ -176,7 +173,7 @@ class InputManager {
         document.addEventListener("mousedown", callback);
     }
     #onKeyDown(event){
-        event.preventDefault();
+        // event.preventDefault();
         switch (event.code){
             case upKey:
                 this.keys.up = true;
@@ -685,7 +682,6 @@ renderer.setSize( window.innerWidth, window.innerHeight );
 document.body.appendChild( renderer.domElement );
 
 // let loader = new GLTFLoader();
-const loader = new GLTFLoader();
 let charModel;
 let mixer;
 let animations = {};
@@ -731,9 +727,6 @@ await loader.load("../static/3d-models/Wizard.glb", (gltf) => {
 },function ( xhr ) {
 
     console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    if(xhr.loaded / xhr.total === 1) {
-        loaded = true;
-    }
 
 }, (err) => {
     console.log(err);
@@ -920,8 +913,10 @@ let cm = new CameraManager({
 });
 
 let body = document.getElementById("body");
-body.addEventListener("mousedown", async (e) => {
-    await body.requestPointerLock();
+body.addEventListener("keydown", async (e) => {
+    if (e.code === "KeyW" || e.code === "KeyA" || e.code === "KeyS" || e.code === "KeyD"){
+        await body.requestPointerLock();
+    }
 });
 
 let clock = new THREE.Clock();
@@ -974,14 +969,10 @@ function scaleBackground(){
     scene.background.repeat.y = factor > 1 ? 1 : factor;
 }
 
-let rigidBodies = [];
-let tmpTrans;
 function createBlock(){
 
     let pos = {x: 0, y: -islandThickness/2, z: 0};
     let scale = {x: cellsInRow*gridCellSize, y: islandThickness, z: cellsInRow*gridCellSize};
-    let quat = {x: 0, y: 0, z: 0, w: 1};
-    let mass = 0;
 
     //threeJS Section
     blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
@@ -995,149 +986,8 @@ function createBlock(){
     scene.add(blockPlane);
     touchableObjects.push(blockPlane)
 
-
-    //Ammojs Section
-    let transform = new Ammo.btTransform();
-    transform.setIdentity();
-    transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
-    transform.setRotation( new Ammo.btQuaternion( quat.x, quat.y, quat.z, quat.w ) );
-    let motionState = new Ammo.btDefaultMotionState( transform );
-
-    let colShape = new Ammo.btBoxShape( new Ammo.btVector3( scale.x * 0.5, scale.y * 0.5, scale.z * 0.5 ) );
-    colShape.setMargin( 0.05 );
-
-    let localInertia = new Ammo.btVector3( 0, 0, 0 );
-    colShape.calculateLocalInertia( mass, localInertia );
-
-    let rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, colShape, localInertia );
-    let body = new Ammo.btRigidBody( rbInfo );
-
-
-    physicsWorld.addRigidBody( body, colGroupPlane, colGroupRedBall );
 } // static block with physics
 
-function createBall(){
-
-    let pos = {x: 0, y: 20, z: 0};
-    let radius = 2;
-    let quat = {x: 0, y: 0, z: 0, w: 1};
-    let mass = 1;
-
-    //threeJS Section
-    let ball = new THREE.Mesh(new THREE.SphereGeometry(radius), new THREE.MeshPhongMaterial({color: 0xff0505}));
-
-    ball.position.set(pos.x, pos.y, pos.z);
-
-    ball.castShadow = true;
-    ball.receiveShadow = true;
-
-    scene.add(ball);
-
-
-    //Ammojs Section
-    let transform = new Ammo.btTransform();
-    transform.setIdentity();
-    transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
-    transform.setRotation( new Ammo.btQuaternion( quat.x, quat.y, quat.z, quat.w ) );
-    let motionState = new Ammo.btDefaultMotionState( transform );
-
-    let colShape = new Ammo.btSphereShape( radius );
-    colShape.setMargin( 0.05 );
-
-    let localInertia = new Ammo.btVector3( 0, 0, 0 );
-    colShape.calculateLocalInertia( mass, localInertia );
-
-    let rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, colShape, localInertia );
-    let body = new Ammo.btRigidBody( rbInfo );
-
-    body.setFriction(0);
-    body.setRollingFriction(10);
-
-    body.setActivationState( STATE.DISABLE_DEACTIVATION );
-
-
-    physicsWorld.addRigidBody( body, colGroupRedBall, colGroupPlane | colGroupGreenBall );
-
-    ball.userData.physicsBody = body;
-    rigidBodies.push(ball);
-}
-
-function createMaskBall(){
-
-    let pos = {x: 1, y: 30, z: 0};
-    let radius = 2;
-    let quat = {x: 0, y: 0, z: 0, w: 1};
-    let mass = 1;
-
-    //threeJS Section
-    let ball = new THREE.Mesh(new THREE.SphereGeometry(radius), new THREE.MeshPhongMaterial({color: 0x00ff08}));
-
-    ball.position.set(pos.x, pos.y, pos.z);
-
-    ball.castShadow = true;
-    ball.receiveShadow = true;
-
-    scene.add(ball);
-
-
-    //Ammojs Section
-    let transform = new Ammo.btTransform();
-    transform.setIdentity();
-    transform.setOrigin( new Ammo.btVector3( pos.x, pos.y, pos.z ) );
-    transform.setRotation( new Ammo.btQuaternion( quat.x, quat.y, quat.z, quat.w ) );
-    let motionState = new Ammo.btDefaultMotionState( transform );
-
-    let colShape = new Ammo.btSphereShape( radius );
-    colShape.setMargin( 0.05 );
-
-    let localInertia = new Ammo.btVector3( 0, 0, 0 );
-    colShape.calculateLocalInertia( mass, localInertia );
-
-    let rbInfo = new Ammo.btRigidBodyConstructionInfo( mass, motionState, colShape, localInertia );
-    let body = new Ammo.btRigidBody( rbInfo );
-
-
-    physicsWorld.addRigidBody( body, colGroupGreenBall, colGroupRedBall);
-
-    ball.userData.physicsBody = body;
-    rigidBodies.push(ball);
-}
-
-function updatePhysics( deltaTime ){
-
-    // Step world
-    physicsWorld.stepSimulation( deltaTime, 10 );
-
-    // Update rigid bodies
-    for ( let i = 0; i < rigidBodies.length; i++ ) {
-        let objThree = rigidBodies[ i ];
-        let objAmmo = objThree.userData.physicsBody;
-        let ms = objAmmo.getMotionState();
-        if ( ms ) {
-
-            ms.getWorldTransform( tmpTrans );
-            let p = tmpTrans.getOrigin();
-            let q = tmpTrans.getRotation();
-            objThree.position.set( p.x(), p.y(), p.z() );
-            objThree.quaternion.set( q.x(), q.y(), q.z(), q.w() );
-
-        }
-    }
-
-}
-
-let physicsWorld;
-let colGroupPlane = 1, colGroupRedBall = 2, colGroupGreenBall = 4
-const STATE = { DISABLE_DEACTIVATION : 4 };
-function setupPhysicsWorld(){
-    let collisionConfiguration  = new Ammo.btDefaultCollisionConfiguration();
-    let dispatcher = new Ammo.btCollisionDispatcher(collisionConfiguration);
-    let overlappingPairCache = new Ammo.btDbvtBroadphase();
-    let solver = new Ammo.btSequentialImpulseConstraintSolver();
-
-    physicsWorld = new Ammo.btDiscreteDynamicsWorld(dispatcher, overlappingPairCache, solver, collisionConfiguration);
-    physicsWorld.setGravity(new Ammo.btVector3(0, -10, 0));
-}
 function buildSetup(){
     // Show build grid
     const gridHelper = new THREE.GridHelper( gridCellSize*cellsInRow, cellsInRow );
@@ -1163,9 +1013,6 @@ function createRollOver(){
     });
 }
 
-function removeFromScene(object){
-    scene.remove(object);
-}
 function updateObjectToPlace(object){
     scene.remove(rollOverMesh);
     scene.remove(currentThingToPlace.getModel());
@@ -1188,15 +1035,9 @@ function init(){
     // createPlane(scene);
     createRollOver();
     buildSetup();
-    tmpTrans = new Ammo.btTransform();
-    createPlayer();
     // Generates terrain
     createBlock();
-    if (debugTrue){
-        createBall();
-        createMaskBall();
-    }
-    createPlane(scene);
+    // createPlane(scene);
 }
 // let xyz = new CharacterController({inputManager: ip, stateMachine: new FiniteStateMachine()});
 // let x = xyz.position;
