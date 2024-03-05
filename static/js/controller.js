@@ -37,7 +37,7 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 let gridCellSize = 10;
 let cellsInRow = 15;
 let islandThickness = 10;
-let blockPlane;
+let blockPlane, altar;
 const geometry2 = new THREE.PlaneGeometry( 1000, 1000 );
 				geometry2.rotateX( - Math.PI / 2 );
 new THREE.Mesh( geometry2, new THREE.MeshBasicMaterial( { visible: false } ) );
@@ -387,19 +387,9 @@ class CharacterController extends Subject{
                             const voxel = smth.clone();
                             voxel.position.copy( intersect.point ).add( intersect.face.normal );
                             correctRitualPosition(voxel);
-                            scene.add( voxel );
-                            // // Bounding box when you place the object
-                            // const objectBoundingBox = new THREE.Box3().setFromObject(voxel);
-                            // const boxSize = objectBoundingBox.getSize(new THREE.Vector3());
-                            // let minVec = objectBoundingBox.min;
-                            // let maxVec = objectBoundingBox.max;
-                            // const boxCenter = objectBoundingBox.getCenter(new THREE.Vector3());
-                            // let boundingBox = new THREE.BoxHelper(voxel, 0xffff00);
-                            // boundingBox.scale.set(boxSize.x, boxSize.y, boxSize.z);
-                            // boundingBox.position.copy(boxCenter).add(new THREE.Vector3(0,-minVec.y,0));
-                            // scene.add(boundingBox);
                             // TODO: voxel for further interaction
-                            touchableObjects.push(voxel);
+                            // touchableObjects.push(voxel);
+                            scene.add( voxel );
                         }
                     }
     }
@@ -915,12 +905,14 @@ class Fireball{
 // const playerNormal = new THREE.Line( geo, mat );
 // scene.add(playerNormal);
 
-//create a cube
-const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-const material = new THREE.MeshPhongMaterial( { color: 0x00ff00 } );
-const cube = new THREE.Mesh( geometry, material );
-cube.castShadow = true;
-scene.add(cube);
+loader.load("./static/3d-models/altar.glb", (gltf) => {
+        altar = gltf.scene;
+        altar.scale.set(3,3,3); // TODO: not just a magical value
+        correctRitualPosition(altar);
+        scene.add(altar);
+    },undefined, (err) => {
+        console.log(err);
+});
 
 let fireballs = [];
 
@@ -968,7 +960,7 @@ function animate() {
     //cube.position.set(player.position.x,player.position.y+0.5,player.position.z);
     if(mixer){
         mixer.update( deltaTime );
-        charModel.position.set(player.position.x,player.position.y+0.5,player.position.z);
+        charModel.position.set(player.position.x,player.position.y,player.position.z);
         charModel.setRotationFromQuaternion(player.quatFromHorizontalRotation);
         charModel.rotateY(180 * Math.PI / 360);
     }
@@ -1033,7 +1025,6 @@ function buildSetup(){
 }
 
 function createRollOver(){
-    console.log("if");
     loader.load("./static/3d-models/tree.glb", (gltf) => {
         rollOverMesh = gltf.scene;
         correctRitualPosition(rollOverMesh);
