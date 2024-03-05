@@ -11,6 +11,7 @@ from flask_restful_swagger_3 import get_swagger_blueprint
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 
+
 """
 This is the main entry point for the application.
 """
@@ -24,6 +25,7 @@ class JSONClassEncoder:
     """
     JSON Encoder that calls to_json() on objects
     """
+
     def __init__(self, *args, **kwargs):
         pass
 
@@ -51,7 +53,6 @@ if environ.get('APP_DEBUG', "false") == "true":
 else:
     logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
 
-
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
 
@@ -76,14 +77,15 @@ def setup_jwt(app: Flask):
     app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
 
     # Load the secret key from file
-    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f: # The secret key to sign our JWTs with
+    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:  # The secret key to sign our JWTs with
         app.config['JWT_SECRET_KEY'] = f.read()
 
-    app.config['JWT_TOKEN_LOCATION'] = ['cookies'] # only look for tokens in the cookies
+    app.config['JWT_TOKEN_LOCATION'] = ['cookies']  # only look for tokens in the cookies
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # token expiers 1 hour
     app.config['JWT_SESSION_COOKIE'] = True  # Use cookies for session, removed once browser closes
     app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF protection (for now)
-    app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME', 'https') == 'https' # Serve cookies only over HTTPS, default to do so
+    app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME',
+                                                     'https') == 'https'  # Serve cookies only over HTTPS, default to do so
 
     # Create the JWT manager
     app.jwt = JWTManager(app)
@@ -104,7 +106,8 @@ def setup_jwt(app: Flask):
     @app.jwt.expired_token_loader
     def custom_expired_token_loader(jwt_header, jwt_data):
         _jwt_log.debug(f"Expired token (log back in): {jwt_header}, {jwt_data}")
-        return jsonify({'status': 'error', 'message': 'Token has expired (log back in)', 'type': 'jwt_token_expired'}), 401
+        return jsonify(
+            {'status': 'error', 'message': 'Token has expired (log back in)', 'type': 'jwt_token_expired'}), 401
 
 
 def setup(app: Flask):
@@ -151,7 +154,11 @@ def setup(app: Flask):
 
     # Lock the app context
     with app.app_context():
+        # import socket INSIDE the app context
+        from src.chatBox import socketio
+
         # import routes INSIDE the app context
+
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
         app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
@@ -168,7 +175,6 @@ def setup(app: Flask):
             # Check if the database schema is up to date
             # We allow inconsistencies in debug mode, but not in production
             check_db_schema()
-
 
         # Register custom JSON Encoder to call to_json() on objects
         # This is so that Flask can jsonify our SQLAlchemy models
@@ -189,19 +195,19 @@ def setup(app: Flask):
                                              swagger_url=swagger_url, swagger_prefix_url=api_url,
                                              title=app.config['APP_NAME'])
             app.register_blueprint(resource, url_prefix=swagger_url)
-
-
-
-
-    return app
+        socketio.init_app(app)
+    return app, socketio
 
 
 # RUN DEV SERVER
 
-app = setup(app)
+app, socketio = setup(app)
+
 
 if __name__ == "__main__":
     # Finally, run the app
     # don't put this in the setup() as the WSGI server uses that function as well
     logging.info("Booting Flask Debug server")
-    app.run(app.config['APP_BIND'], debug=app.config['APP_DEBUG'] or False)
+    app_bind = app.config['APP_BIND']
+    debug = app.config['APP_DEBUG'] or False
+    socketio.run(app, debug=debug, allow_unsafe_werkzeug=True)

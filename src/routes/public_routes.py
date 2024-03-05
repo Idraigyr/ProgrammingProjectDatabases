@@ -26,7 +26,8 @@ def index():
     if user is None:  # not logged in, redirect to landing page
         return redirect("/landing", code=302)
     else:
-        return render_template('index.html', app_name=current_app.config['APP_NAME'])
+        username = AUTH_SERVICE.get_user(user_id=user).username
+        return render_template('index.html', app_name=current_app.config['APP_NAME'], username=username)
 
 
 @blueprint.route("/landing")
