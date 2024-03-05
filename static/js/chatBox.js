@@ -31,11 +31,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
     sendMessageButton.addEventListener('click', function() {
         var message = chatInput.value.trim();
         if (message) {
-            // Display the message. This part can be customized to append the message in a more styled manner.
-            const messageElement = document.createElement('p');
-            messageElement.textContent = message;
-            chatMessages.appendChild(messageElement);
-
             // Clear the input field after sending the message
             chatInput.value = '';
 

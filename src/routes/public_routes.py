@@ -23,10 +23,11 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
 def index():
     user = get_jwt_identity()
 
-    #if user is None:  # not logged in, redirect to landing page
-    #    return redirect("/landing", code=302)
-    #else:
-    return render_template('index.html', app_name=current_app.config['APP_NAME'])
+    if user is None:  # not logged in, redirect to landing page
+        return redirect("/landing", code=302)
+    else:
+        username = AUTH_SERVICE.get_user(user_id=user).username
+        return render_template('index.html', app_name=current_app.config['APP_NAME'], username=username)
 
 
 @blueprint.route("/landing")
@@ -42,10 +43,10 @@ def send_favicon():
 @jwt_required(optional=True)
 def login():
     user = get_jwt_identity()
-    if user is not None:  # already logged in
-        return redirect("/", 302)
-    else:
-        return render_template('login.html')
+    #if user is not None:  # already logged in
+    #    return redirect("/", 302)
+    #else:
+    return render_template('login.html')
 
 @blueprint.route("/register")
 @jwt_required(optional=True)

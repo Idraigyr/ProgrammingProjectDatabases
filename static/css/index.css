@@ -10,23 +10,24 @@
     bottom: 0;
     left: 0;
     width: 300px; /* You can adjust the size */
-    height: 400px; /* You can adjust the size */
+    height: 99vh; /* You can adjust the size */
     border: 1px solid #888;
     background-color: #fefefe;
     z-index: 9;
     padding: 20px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     display: block; /* Controlled by JS */
-    background-image: url('../images/background-landing.jpg'); /* Update path as needed */
+    background-image: url('../images/background-landing.jpg');
     background-size: cover; /* Cover ensures the image covers the entire div */
     background-repeat: no-repeat; /* Prevents the image from repeating */
     background-position: center; /* Centers the image in the div */
 }
 .chat-messages {
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     margin-bottom: 10px;
     flex-grow: 1;
-    direction: rtl; /* Right-to-left direction to align children to the right */
 }
 .chat-input-area {
     display: flex;
@@ -45,12 +46,21 @@
     right: 10px;
     cursor: pointer;
 }
-.message {
-    direction: ltr; /* Left-to-right direction for the text within */
-    text-align: left; /* Align the text to the left */
-    display: inline-block; /* This makes sure that the text itself is not full width */
+.MyMsg {
+    align-self: flex-start;
+    direction: rtl; /* Right-to-left text direction */
+    text-align: left; /* Align the text to the right */
+    display: block; /* Block display to take the full width */
+    clear: both; /* Avoid floating issues by clearing both sides */
 }
 
+.OtherMsg {
+    align-self: flex-end;
+    direction: ltr; /* Left-to-right text direction */
+    text-align: right; /* Align the text to the left */
+    display: block; /* Block display to take the full width */
+    clear: both; /* Avoid floating issues by clearing both sides */
+}
 #chatInput {
     flex-grow: 1;
     margin-right: 10px;

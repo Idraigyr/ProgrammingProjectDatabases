@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
-    <script defer src="static/js/chatBox.js"></script>
+   <script defer src="static/js/chatBox.js"></script>
     <script type="importmap">
       {
         "imports": {
@@ -32,19 +32,35 @@
         <div class="chat-content">
             <span class="close" id="closeChat">&times;</span>
             <!-- Chat messages and input -->
-        <div id="chatMessages" class="chat-messages">
-            <!-- Chat messages will be displayed here -->
-            <div class="message"></div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chatInput" placeholder="Type your message...">
-            <button id="sendMessage" class="btn btn-primary">
-                <i class="fa fa-paper-plane"></i> Send
-            </button>
-        </div>
+            <div id="chatMessages" class="chat-messages">
+                <!-- Chat messages will be displayed here -->
+                <div id="MyMessage" class="MyMsg"></div>
+                <div id="OtherMessage" class="OtherMsg"></div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type your message...">
+                <button id="sendMessage" class="btn btn-primary">
+                    <i class="fa fa-paper-plane"></i> Send
+                </button>
+            </div>
 
         </div>
     </div>
+
+    <!-- Get username -->
+    <script type="text/javascript">
+        const username = `{{ username }}`;
+
+    </script>
+
+    <!--SocketIO JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
+            integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
+            crossorigin="anonymous"></script>
+
+    <!-- Custom SocketIO JS -->
+    <script src="{{ url_for('static', filename="js/socketio.js")  }}"></script>
+
 </body>
 <!--
 <body>
