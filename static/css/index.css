@@ -48,7 +48,7 @@
 }
 .MyMsg {
     align-self: flex-start;
-    direction: rtl; /* Right-to-left text direction */
+    direction: ltr; /* Right-to-left text direction */
     text-align: left; /* Align the text to the right */
     display: block; /* Block display to take the full width */
     clear: both; /* Avoid floating issues by clearing both sides */
