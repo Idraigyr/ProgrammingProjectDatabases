@@ -80,6 +80,7 @@ class CameraManager{
         return vector;
     }
 }
+
 class InputManager {
     keys = {
         forward: false,
@@ -295,8 +296,10 @@ class CharacterController extends Subject{
 					const intersect = intersects[ 0 ];
 
 					rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
-					rollOverMesh.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
-                    rollOverMesh.position.y = gridCellSize/2;
+					// rollOverMesh.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
+                    const boundingBox = new THREE.Box3().setFromObject(rollOverMesh);
+                    rollOverMesh.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
+                    // rollOverMesh.position.y = 0;
 				}
     }
     ritualBuilder(event){
@@ -311,8 +314,17 @@ class CharacterController extends Subject{
                             let smth = currentThingToPlace.getModel();
                             const voxel = smth.clone();
                             voxel.position.copy( intersect.point ).add( intersect.face.normal );
-                            voxel.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
+                            // voxel.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
                             scene.add( voxel );
+                            const objectBoundingBox = new THREE.Box3().setFromObject(voxel);
+                            const boxSize = objectBoundingBox.getSize(new THREE.Vector3());
+                            let minVec = objectBoundingBox.min;
+                            let maxVec = objectBoundingBox.max;
+                            const boxCenter = objectBoundingBox.getCenter(new THREE.Vector3());
+                            let boundingBox = new THREE.BoxHelper(voxel, 0xffff00);
+                            boundingBox.scale.set(boxSize.x, boxSize.y, boxSize.z);
+                            boundingBox.position.copy(boxCenter).add(new THREE.Vector3(0,-minVec.y,0));
+                            scene.add(boundingBox);
                             // TODO: voxel for further interaction
                         }
                     }
@@ -1033,7 +1045,7 @@ function createRollOver(){
         rollOverMesh = gltf.scene;
         scene.add(rollOverMesh);
         currentThingToPlace.setModel(rollOverMesh);
-        rollOverMesh.position.y = gridCellSize/2;
+        rollOverMesh.position.y = 0;
         scene.add(rollOverMesh);
     },undefined, (err) => {
         console.log(err);
