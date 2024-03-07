@@ -55,11 +55,36 @@ let rollOverMesh;
  * Corrects (e.g. centralize on the grid cell) the given object
  * @param object object to centralize
  */
+
+function scaleAndCorrectPosition(object){
+    correctRitualScale(object);
+    correctRitualPosition(object);
+}
 function correctRitualPosition(object){
-    // rollOverMesh.position.divideScalar( gridCellSize ).floor().multiplyScalar( gridCellSize ).addScalar( gridCellSize/2 );
+    object.position.x = Math.floor(object.position.x/gridCellSize)*gridCellSize + gridCellSize/2.0; // TODO: understand why you don't need to add grid cellsize/2.0
+    object.position.z = Math.floor(object.position.z/gridCellSize)*gridCellSize + gridCellSize/2.0;
     const boundingBox = new THREE.Box3().setFromObject(object);
     object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
-    // rollOverMesh.position.y = 0;
+}
+
+function correctRitualScale(object){
+    let boundingBox = new THREE.Box3().setFromObject(object);
+    const minVec = boundingBox.min;
+    const maxVec = boundingBox.max;
+    const difVec = maxVec.sub(minVec);
+    const biggestSideLength = Math.max(Math.abs(difVec.x), Math.abs(difVec.z));
+    const scaleFactor = gridCellSize/biggestSideLength;
+    object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
+}
+
+function drawBoundingBox(object){
+    const objectBoundingBox = new THREE.Box3().setFromObject(object);
+    const boxSize = objectBoundingBox.getSize(new THREE.Vector3());
+    const boxCenter = objectBoundingBox.getCenter(new THREE.Vector3());
+    let boundingBox = new THREE.BoxHelper(object, 0xffff00);
+    boundingBox.scale.set(boxSize.x, boxSize.y, boxSize.z);
+    boundingBox.position.copy(boxCenter);
+    scene.add(boundingBox);
 }
 
 class CameraManager{
@@ -386,7 +411,7 @@ class CharacterController extends Subject{
                             let smth = currentThingToPlace.getModel();
                             const voxel = smth.clone();
                             voxel.position.copy( intersect.point ).add( intersect.face.normal );
-                            correctRitualPosition(voxel);
+                            scaleAndCorrectPosition(voxel);
                             // TODO: voxel for further interaction
                             // touchableObjects.push(voxel);
                             scene.add( voxel );
@@ -907,9 +932,9 @@ class Fireball{
 
 loader.load("./static/3d-models/altar.glb", (gltf) => {
         altar = gltf.scene;
-        altar.scale.set(3,3,3); // TODO: not just a magical value
-        correctRitualPosition(altar);
+        scaleAndCorrectPosition(altar);
         scene.add(altar);
+        drawBoundingBox(altar);
     },undefined, (err) => {
         console.log(err);
 });
@@ -1027,8 +1052,9 @@ function buildSetup(){
 function createRollOver(){
     loader.load("./static/3d-models/tree.glb", (gltf) => {
         rollOverMesh = gltf.scene;
-        correctRitualPosition(rollOverMesh);
+        scaleAndCorrectPosition(rollOverMesh);
         currentThingToPlace.setModel(rollOverMesh.clone());
+        scaleAndCorrectPosition(currentThingToPlace.model); // TODO; remove this
         rollOverMesh.traverse((o) => {
             if (o.isMesh) o.material = rollOverMaterial;
         })
