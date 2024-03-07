@@ -5,7 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
-from src.model.credentials import Credentials, PasswordCredentials
+from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
 from src.model.user_profile import UserProfile
 db: SQLAlchemy = current_app.db
 
@@ -32,22 +32,28 @@ class AuthService:
         raise ValueError('Either username or user_id must be provided')
 
 
-    def authenticate(self, username, password) -> Optional['UserProfile']:
+    def authenticate_password(self, username, password) -> 'UserProfile':
         """
         Authenticate the user using username and password
         :param username: The username of the user
         :param password: The password of the user
+        :raise RuntimeError: If the user is not found, the password is incorrect or the user uses OAuth2
         :return: The userProfile object, or None if not found or failed to authenticate
         """
         user: Optional['UserProfile'] = self.get_user(username=username)
         if user is None:
             self._log.debug(f'User {username} not found, cannot authenticate')
-            return None
+            raise RuntimeError('User not found')
+
+        # check if the found user doesn't use OAuth2
+        if user.uses_oauth2():
+            self._log.debug(f'User {username} uses OAuth2, cannot authenticate')
+            raise RuntimeError("You're trying to login using a password, but this account uses OAuth2. Please use the OAuth2 (Google) button instead.")
 
         pwd_match = user.credentials.authenticate({'username': username, 'password': password})
         if not pwd_match:
             self._log.info(f'User {username} provided wrong password, cannot authenticate')
-            return None
+            raise RuntimeError('Invalid password')
 
         self._log.info(f'User {username} authenticated successfully')
         return user
@@ -96,6 +102,20 @@ class AuthService:
         current_app.db.session.add(user)
         current_app.db.session.commit()
         return user
+
+
+    def create_user_oauth2(self, sso_id:str, username: str, firstname: str, lastname: str) -> 'UserProfile':
+        """
+        Create a new user with a password
+        The username should not be already be taken. Check in advance with get_user()
+        :param sso_id: The OAuth2 ID of the user. This should be unique for each user of the same OAuth2 provider
+        :param username: The username of the user
+        :param lastname:  The last name
+        :param firstname: The first name
+        :return: The new user object
+        """
+        credentials: Credentials = OAuth2Credentials(sso_id)
+        return self.create_user(credentials, username, firstname, lastname)
 
 
 

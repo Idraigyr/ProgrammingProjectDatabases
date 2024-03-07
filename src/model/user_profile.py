@@ -2,7 +2,7 @@ from flask import current_app
 from sqlalchemy import String, BigInteger, Column, Boolean
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
-from src.model.credentials import Credentials
+from src.model.credentials import Credentials, PasswordCredentials
 from src.model.player import Player
 
 
@@ -28,6 +28,13 @@ class UserProfile(current_app.db.Model):
         self.lastname = lastname
         self.credentials = credentials
         self.player = Player(self)
+
+    def uses_oauth2(self):
+        """
+        Check if the user uses OAuth2 for authentication
+        :return: True if the user uses OAuth2, False otherwise (when eg. using password)
+        """
+        return not isinstance(self.credentials, PasswordCredentials)
 
     def __repr__(self):
         return f'<UserProfile {self.id} {self.username}>'

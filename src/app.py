@@ -1,4 +1,5 @@
 import logging
+import os
 from json import JSONEncoder
 
 from dotenv import load_dotenv
@@ -9,6 +10,7 @@ from flask_migrate import check as check_db_schema
 from flask_migrate import upgrade as upgrade_db_schema
 from flask_restful_swagger_3 import get_swagger_blueprint
 from flask_sqlalchemy import SQLAlchemy
+from oauthlib.oauth2 import WebApplicationClient
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -151,6 +153,16 @@ def setup(app: Flask):
     # Initialize the db with our Flask instance
     db.init_app(app)
     app.db = db
+
+    # Configure OAuth2 client
+    if app.config.get("APP_DEBUG", "false") == "true":
+        # Allow insecure transport in debug mode
+        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+    # Initialize the OAuth2 client, this client will be used to authenticate users with the OAuth2 (Google) server
+    app.oauth_client = None
+    if app.config.get('APP_OAUTH_ENABLED', 'false') == 'true':
+        app.oauth_client = WebApplicationClient(app.config['APP_OAUTH_CLIENT_ID'])
 
     # Lock the app context
     with app.app_context():
