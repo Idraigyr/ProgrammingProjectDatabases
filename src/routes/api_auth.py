@@ -244,7 +244,7 @@ def oauth2_callback():
         return Response(json.dumps({'status': 'error', 'message': 'User already exists and does not use OAuth2. Please use the regular login instead'}), status=409, mimetype='application/json')
     else:
         # Check SSO ID, should be fine since username implies sso_id and both are unique
-        if not user.credentials.authenticate_password({'sso_id': sso_id}):
+        if not user.credentials.authenticate({'sso_id': sso_id}):
             return Response(json.dumps({'status': 'error', 'message': 'OAuth2 ID mismatch'}), status=409, mimetype='application/json')
 
     ### Verification done, we can now generate the JWT token

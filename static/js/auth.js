@@ -1,3 +1,4 @@
+// Login form event listener
 $("#loginForm").on("submit", function(event) {
     event.preventDefault();
     let username = $("#username").val();
@@ -18,8 +19,11 @@ $("#loginForm").on("submit", function(event) {
     })
 });
 
+
+// Register form event listener
 let form = document.getElementById("registerForm")
-form.addEventListener("submit",function (event){
+if (form) { // If the form exists, it's not always present like on the login page
+    form.addEventListener("submit",function (event){
     event.preventDefault();
     let username = document.getElementById("username").value;
     let password = document.getElementById("password").value;
@@ -47,3 +51,11 @@ form.addEventListener("submit",function (event){
         }
     })
 })
+}
+
+
+// Add Google Sign In button event listener
+$("#google-login").on("click", function(event) {
+    event.preventDefault(); // Whatever the default action is, just prevent it.
+    location.href = "/api/auth/oauth2/login"; // And redirect
+});
