@@ -37,7 +37,7 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 let gridCellSize = 10;
 let cellsInRow = 15;
 let islandThickness = 10;
-let blockPlane, altar;
+let blockPlane, altar,mine;
 const geometry2 = new THREE.PlaneGeometry( 1000, 1000 );
 				geometry2.rotateX( - Math.PI / 2 );
 new THREE.Mesh( geometry2, new THREE.MeshBasicMaterial( { visible: false } ) );
@@ -934,7 +934,17 @@ loader.load("./static/3d-models/altar.glb", (gltf) => {
         altar = gltf.scene;
         scaleAndCorrectPosition(altar);
         scene.add(altar);
-        drawBoundingBox(altar);
+    },undefined, (err) => {
+        console.log(err);
+});
+
+loader.load("./static/3d-models/mine.glb", (gltf) => {
+        mine = gltf.scene; // TODO: remove magical values
+        scaleAndCorrectPosition(mine);
+        mine.rotation.y = 0.89*Math.PI;
+        mine.position.x = gridCellSize*3;
+        mine.position.z = gridCellSize*3;
+        scene.add(mine);
     },undefined, (err) => {
         console.log(err);
 });

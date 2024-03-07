@@ -15,6 +15,8 @@ Tree model:
 Tree by Marc Solà [CC-BY] (https://creativecommons.org/licenses/by/3.0/) via Poly Pizza (https://poly.pizza/m/6Yjt8nIwLsD)
 Altar:
 https://tarasov3d-studio.itch.io/fantasy-portal-lowpoly-3d-model
+Mine:
+https://sketchfab.com/3d-models/low-poly-mine-51f04c3d37784904b12fc020f0e9bee2
 -----------------------------------
 Scripts:
 Grass shader:
