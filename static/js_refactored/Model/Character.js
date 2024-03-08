@@ -1,4 +1,4 @@
-import {Subject} from "../Patterns/Subject";
+import {Subject} from "../Patterns/Subject.js";
 import * as THREE from "three";
 //abstract class
 export class Character extends Subject{
@@ -14,13 +14,25 @@ export class Character extends Subject{
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
         this.fsm = null;
-        this.updatePosition = new CustomEvent("updatePosition", {detail: {position: new THREE.Vector3().copy(this.#position)}});
-        this.updateRotation = new CustomEvent("updateRotation", {detail: {rotation: new THREE.Quaternion().copy(this.#rotation)}});
+    }
+
+    get quatFromHorizontalRotation(){
+        const qHorizontal = new THREE.Quaternion();
+        qHorizontal.setFromAxisAngle(new THREE.Vector3(0,1,0), this.phi);
+        return qHorizontal;
+    }
+
+    createUpdatePositionEvent(){
+        return new CustomEvent("updatePosition", {detail: {position: new THREE.Vector3().copy(this.#position)}});
+    }
+
+    createUpdateRotationEvent(){
+        return new CustomEvent("updateRotation", {detail: {rotation: new THREE.Quaternion().copy(this.quatFromHorizontalRotation)}});
     }
     set position(vector){
         this.#position = vector;
         //update view
-        this.dispatchEvent(this.updatePosition);
+        this.dispatchEvent(this.createUpdatePositionEvent());
     }
 
     get position(){
@@ -30,6 +42,10 @@ export class Character extends Subject{
     set rotation(quaternion){
         this.#rotation = quaternion;
         //update view
-        this.dispatchEvent(this.updateRotation);
+        this.dispatchEvent(this.createUpdateRotationEvent());
+    }
+
+    get rotation(){
+        return this.#rotation;
     }
 }

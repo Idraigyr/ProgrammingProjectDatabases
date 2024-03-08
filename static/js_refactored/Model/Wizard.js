@@ -1,5 +1,5 @@
-import {Character} from "./Character";
-import {max} from "../helpers";
+import {Character} from "./Character.js";
+import {max} from "../helpers.js";
 
 export class Wizard extends Character{
     constructor() {

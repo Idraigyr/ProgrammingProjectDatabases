@@ -6,7 +6,7 @@ import {
     WalkForwardState
 } from "../Model/States/CharacterStates.js";
 
-class FiniteStateMachine{
+export class FiniteStateMachine{
     #states = {};
     constructor() {
         this.currentState = null;
@@ -30,22 +30,5 @@ class FiniteStateMachine{
     }
     init(){
 
-    }
-}
-
-export class PlayerFSM extends FiniteStateMachine{
-    constructor(animations) {
-        super();
-        this.init();
-        this.animations = animations;
-        this.currentState = new IdleState(this);
-    }
-    init(){
-        this.addState("Idle",IdleState);
-        this.addState("WalkForward",WalkForwardState);
-        this.addState("WalkBackward",WalkBackWardState);
-        this.addState("DefaultAttack",DefaultAttackState);
-        this.addState("Run",RunForwardState);
-        this.addState("TakeDamage",TakeDamageState);
     }
 }

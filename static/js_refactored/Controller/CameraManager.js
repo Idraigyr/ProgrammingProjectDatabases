@@ -1,8 +1,9 @@
 import * as THREE from "three";
-import {maxZoomIn, minZoomIn} from "../../js/config";
-import {max, min} from "../../js/helpers";
+import {maxZoomIn, minZoomIn} from "../configs/ControllerConfigs.js";
+import {max, min} from "../helpers.js";
 
 export class CameraManager {
+    //TODO: convert to observer (for target position and rotation)
     #target;
     #offset;
     #lookAt;
@@ -67,6 +68,10 @@ export class CameraManager {
 
     set target(target){
         this.#target = target;
+    }
+
+    get target(){
+        return this.#target;
     }
 
 }

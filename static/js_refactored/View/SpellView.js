@@ -1,7 +1,7 @@
-export class Fireball{
+import {IAnimatedView} from "./View.js";
+
+export class Fireball extends IAnimatedView{
     constructor() {
-        this.charModel = null;
-        this.mixer = null;
-        this.animations = null;
+        super();
     }
 }

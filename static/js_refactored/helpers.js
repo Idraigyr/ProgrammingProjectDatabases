@@ -5,6 +5,11 @@ export const min = function(x1, x2){
 export const max = function(x1, x2){
     return x1 > x2 ? x1 : x2;
 }
+
+export const getFileExtension = function(path){
+    return path.slice((path.lastIndexOf(".") - 1 >>> 0) + 2);
+}
+
 /*
 const timeout = function (s) {
     return new Promise(function(_,reject){

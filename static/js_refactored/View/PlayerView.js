@@ -1,20 +1,25 @@
-export class Player{
+import * as THREE from "three";
+import {IAnimatedView} from "./View.js";
+import {wizardPath} from "../configs/ViewConfigs.js";
+
+export class Player extends IAnimatedView{
     constructor() {
-        this.charModel = null;
-        this.mixer = null;
-        this.animations = null;
-    }
-    updatePosition(event){
-        if(!this.charModel) return;
-        console.log(event);
-        this.charModel.position.set(event.detail.position.x, event.detail.position.y,event.detail.position.z);
+        super();
+        this.assetPath = wizardPath;
+        this.horizontalRotation = 180;
     }
 
-    updateRotation(event){
-        console.log(this.charModel);
-        if(!this.charModel) return;
-        console.log(event);
-        this.charModel.rotation.setFromQuaternion(event.detail.rotation);
+    loadAnimations(clips){
+        const getAnimation =  (animName, alias) => {
+            let clip = THREE.AnimationClip.findByName(clips, animName);
+            this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
+        }
+        getAnimation('CharacterArmature|Walk',"Walk");
+        getAnimation('CharacterArmature|Idle',"Idle");
+        getAnimation('CharacterArmature|Run',"Run");
+        getAnimation('CharacterArmature|Walk',"WalkForward");
+        getAnimation('CharacterArmature|Roll',"WalkBackward");
+        getAnimation('CharacterArmature|Spell1',"DefaultAttack");
     }
 
 }

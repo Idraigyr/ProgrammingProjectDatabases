@@ -63,6 +63,7 @@ export class IdleState extends BaseCharState{
 export class RunForwardState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
+        this.movementPossible = true;
     }
     get name(){
         return "Run"
@@ -107,6 +108,7 @@ export class RunForwardState extends BaseCharState{
 export class WalkForwardState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
+        this.movementPossible = true;
     }
     get name(){
         return "WalkForward"
@@ -152,6 +154,7 @@ export class WalkForwardState extends BaseCharState{
 export class WalkBackWardState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
+        this.movementPossible = true;
     }
     get name(){
         return "WalkBackward"
@@ -169,6 +172,8 @@ export class WalkBackWardState extends BaseCharState{
             //this.manager.setState("Jump");
         } else if(input.mouse.leftClick){
             this.manager.setState("DefaultAttack");
+        } else {
+            this.manager.setState("Idle");
         }
     }
     enter(prevState){
@@ -194,6 +199,7 @@ export class WalkBackWardState extends BaseCharState{
 export class SneakState extends BaseCharState{
     constructor() {
         super();
+        this.movementPossible = true;
     }
     updateState(input){
 
@@ -203,6 +209,7 @@ export class SneakState extends BaseCharState{
 export class JumpAttackState extends BaseCharState{
     constructor() {
         super();
+        this.movementPossible = false;
     }
     updateState(deltaTime, input){
 
@@ -212,6 +219,7 @@ export class JumpAttackState extends BaseCharState{
 export class SneakAttackState extends BaseCharState{
     constructor() {
         super();
+        this.movementPossible = false;
     }
 }
 
@@ -219,6 +227,7 @@ export class DefaultAttackState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
         this.timer = 0;
+        this.movementPossible = false;
     }
     get name(){
         return "DefaultAttack"
@@ -272,6 +281,7 @@ export class DefaultAttackState extends BaseCharState{
 export class TakeDamageState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
+        this.movementPossible = false;
     }
     get name(){
         return "TakeDamage"

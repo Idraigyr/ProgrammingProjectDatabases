@@ -1,6 +1,4 @@
-import {Model} from "../Model/Model";
-import {Controller} from "./Controller";
-import {API_URL} from "../../js/config";
+import {Model} from "../Model/Model.js";
 
 
 export class WorldManager {
@@ -24,8 +22,39 @@ export class WorldManager {
             console.log(e);
         }
         */
-        let islands = null;
-        let player = null;
+        let islands = [
+            {buildings: [{
+                    type: "Altar",
+                    position: {
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    },
+                    rotation: 0
+                },{
+                    type: "Mine",
+                    position: {
+                        x: 5,
+                        y: 0,
+                        z: 5
+                    },
+                    rotation: 0
+                }
+                ],
+                position: {
+                    x: 0,
+                    y: 0,
+                    z: 0
+                },
+                rotation: 0
+            }
+        ];
+        let player = {position: {
+                x: 0,
+                y: 0,
+                z: 0
+            }
+        };
         let characters = null;
         this.world = new Model.World({islands: islands, player: player, characters: characters, Factory: this.factory});
     }

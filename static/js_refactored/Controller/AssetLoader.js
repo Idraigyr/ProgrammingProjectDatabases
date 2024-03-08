@@ -1,22 +1,24 @@
-import {FBXLoader, GLTFLoader} from "three/addons";
+import {GLTFLoader} from "three-GLTFLoader";
+import {FBXLoader} from "three-FBXLoader";
 import * as THREE from "three";
-import * as model from "../../js/model";
 
 export class AssetLoader{
     constructor(scene) {
         this.scene = scene;
+        this.loadingManager = new THREE.LoadingManager();
     }
     loadGLTF(path, view){
         let loader = new GLTFLoader();
         loader.load(path, (gltf) => {
             view.charModel = gltf.scene;
-            console.log(view);
             view.charModel.traverse(c => {
                 c.castShadow = true;
             });
             this.scene.add(view.charModel);
-            view.mixer = new THREE.AnimationMixer(model);
-            view.animations = gltf.animations;
+            if(view.animated){
+                view.mixer = new THREE.AnimationMixer(view.charModel);
+                view.loadAnimations(gltf.animations);
+            }
         },function (xhr) {
 
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
@@ -33,7 +35,7 @@ export class AssetLoader{
                 c.castShadow = true;
             });
             this.scene.add(view.charModel);
-            view.mixer = new THREE.AnimationMixer(model);
+            view.mixer = new THREE.AnimationMixer(view.charModel);
             view.animations = fbx.animations;
         },function (xhr) {
 

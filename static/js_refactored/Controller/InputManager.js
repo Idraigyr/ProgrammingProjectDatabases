@@ -4,9 +4,9 @@ import {
     primaryLeftKey,
     primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
     secondaryLeftKey,
-    secondaryRightKey, slot1Key, slot2Key, slot3Key, slot4Key, slot5Key,
+    secondaryRightKey, slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, sprintKey,
     upKey
-} from "../../js/config";
+} from "../configs/Keybinds.js";
 
 export class InputManager {
     keys = {
@@ -17,6 +17,7 @@ export class InputManager {
         up: false,
         down: false,
         spellSlot: 1,
+        sprint: false
     }
     mouse = {
         leftClick: false,
@@ -95,6 +96,9 @@ export class InputManager {
             case primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = bool;
+                break;
+            case sprintKey:
+                this.keys.sprint = bool;
                 break;
             case slot1Key:
                 this.keys.spellSlot = 1;
