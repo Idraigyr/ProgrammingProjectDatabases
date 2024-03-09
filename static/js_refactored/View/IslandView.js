@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import {IView} from "./View.js";
+import {generateGrassField} from "../external/grass.js";
 
 
 export class Island extends IView{
@@ -51,6 +52,12 @@ export class Island extends IView{
         return group;
     }
 
+    createGrassField(){
+        const group = new THREE.Group();
+        generateGrassField(group);
+        return group;
+    }
+
     createAxes(){
         const group = new THREE.Group();
         const points = [];
@@ -90,6 +97,7 @@ export class Island extends IView{
         group.add(this.createLights());
 
         group.add(this.createPlane());
+        group.add(this.createGrassField());
         return group;
     }
 }
