@@ -6,16 +6,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
 
+
     function scrollToBottom() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
     chatButton.onclick = function() {
         chatPopup.style.display = 'block';
+        chatButton.hidden = true;
         scrollToBottom(); // Scroll to bottom when chat is opened
     };
 
     closeChat.onclick = function() {
+        chatButton.hidden = false;
         chatPopup.style.display = 'none';
     };
 
@@ -23,6 +26,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     window.onclick = function(event) {
         // Check if the clicked area is not the chat button and is outside the chat content
         if (!chatPopup.contains(event.target) && event.target != chatButton) {
+            chatButton.hidden = false;
             chatPopup.style.display = 'none';
         }
     };

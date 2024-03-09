@@ -3,22 +3,29 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     //get message from the server
     socket.on('message', function(data) {
-        const  p = document.createElement('p');
-        const span_time = document.createElement('span');
-        const br = document.createElement('br');
-        span_time.innerHTML = data.time_stamp;
+        const messageContainer = document.createElement('div');
+        const messageText = document.createElement('div');
+        const span_time = document.createElement('div');
 
+        messageText.textContent = data.message;
+        span_time.textContent = data.time_stamp;
+
+            // Add classes for styling
+        messageText.classList.add('message');
+        span_time.classList.add('time');
+           // Conditionally set the alignment based on the username
         if (data.usersname === username) {
-            p.innerHTML = data.message + br.outerHTML + span_time.outerHTML;
-            p.classList.add('MyMsg');
-        } else {
-            const span_username = document.createElement('span');
-            span_username.innerHTML = data.usersname;
-            p.innerHTML = span_username.outerHTML + br.outerHTML + data.message + br.outerHTML + span_time.outerHTML;
-            p.classList.add('OtherMsg');
+            messageContainer.classList.add('MyMsg');
+        } else{
+            messageContainer.classList.add('OtherMsg');
+            const span_username = document.createElement('div');
+            span_username.textContent = data.usersname;
+            span_username.classList.add('user');
+            messageContainer.appendChild(span_username);
         }
-
-        document.querySelector('#chatMessages').appendChild(p);
+        messageContainer.appendChild(messageText);
+        messageContainer.appendChild(span_time);
+        document.querySelector('#chatMessages').appendChild(messageContainer);
         document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
 
     });
