@@ -7,6 +7,12 @@ Abstract background with low poly clouds and pink and blue gradient
 <a href="https://www.vecteezy.com/free-vector/sky">Sky Vectors by Vecteezy</a>
 Magic wand
 https://www.svgart.org/harry-potter-wands-svg/
+Button_Blue, Button_Blue_9Slides, Button_Blue_9Slides_Pressed, Button_Blue_Pressed, Button_Hover, Button_Hover_9Slides, Pressed_02, Regular_02, Ribbon_Blue_3Slides:
+https://pixelfrog-assets.itch.io/tiny-swords
+crystal_01a:
+https://shikashipx.itch.io/shikashis-fantasy-icons-pack
+Potion-blue, Potion-red:
+https://www.vexels.com/png-svg/preview/307130/potion-hand-drawn-witch
 -----------------------------------
 3d models:
 Floating island landing page:
