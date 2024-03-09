@@ -3,8 +3,15 @@ import {IView} from "./View.js";
 
 
 export class Island extends IView{
-    constructor() {
+    #gridCellSize;
+    #cellsInRow;
+    #islandThickness;
+    blockPlane;
+    constructor(gridCellSize = 10, cellsInRow = 15, islandThickness = 10) {
         super();
+        this.#gridCellSize = gridCellSize;
+        this.#cellsInRow = cellsInRow;
+        this.#islandThickness = islandThickness;
         this.buildings = [];
     }
     createIsland(){
@@ -26,29 +33,21 @@ export class Island extends IView{
 
     createPlane(){
         const group = new THREE.Group();
-        const geo1 = new THREE.PlaneGeometry(2000,2000);
-        const mat1 = new THREE.MeshPhongMaterial({color: 0xffffff, side: THREE.DoubleSide});
-        const plane = new THREE.Mesh(geo1, mat1);
-        plane.setRotationFromEuler(new THREE.Euler(180 * Math.PI / 360, 0 ,0, 'XYZ'));
-        plane.position.set(0,0,0);
-        group.add(plane);
-        for(let i = -100; i <= 100; i++){
-            const points = [];
-            points.push( new THREE.Vector3( 1000, 0, i*10 ) );
-            points.push( new THREE.Vector3( -1000, 0, i*10 ) );
-            const geo1 = new THREE.BufferGeometry().setFromPoints( points );
-            const mat1 = new THREE.LineBasicMaterial( { color: 0x000000 } );
-            const line = new THREE.Line( geo1, mat1 );
-            group.add(line);
+        let pos = {x: 0, y: -this.#islandThickness/2, z: 0};
+        let scale = {x: this.#cellsInRow*this.#gridCellSize, y: this.#islandThickness, z: this.#cellsInRow*this.#gridCellSize};
 
-            const points2 = [];
-            points2.push( new THREE.Vector3( i*10, 0, 1000 ) );
-            points2.push( new THREE.Vector3( i*10, 0, -1000 ) );
-            const geo2 = new THREE.BufferGeometry().setFromPoints( points2 );
-            const mat2 = new THREE.LineBasicMaterial( { color: 0x000000 } );
-            const line2 = new THREE.Line( geo2, mat2 );
-            group.add(line2);
-        }
+        //threeJS Section
+        this.blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
+
+        this.blockPlane.position.set(pos.x, pos.y, pos.z);
+        this.blockPlane.scale.set(scale.x, scale.y, scale.z);
+
+        this.blockPlane.castShadow = true;
+        this.blockPlane.receiveShadow = true;
+
+        group.add(this.blockPlane);
+        // TODO: how to add it?
+        // touchableObjects.push(this.blockPlane)
         return group;
     }
 
