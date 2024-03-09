@@ -10,8 +10,9 @@ class App {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        this.renderer = new THREE.WebGLRenderer();
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize( window.innerWidth, window.innerHeight );
+        this.renderer.setPixelRatio( window.devicePixelRatio );
         document.body.appendChild( this.renderer.domElement );
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
