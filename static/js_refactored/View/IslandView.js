@@ -12,15 +12,15 @@ export class Island extends IView{
     }
     createLights(){
         const group = new THREE.Group();
-        const light = new THREE.AmbientLight( 0xFFFFFF, 1);
+        const light = new THREE.AmbientLight( 0xFFFFFF, 2);
         light.position.set(0,3, 10);
         light.castShadow = true;
         group.add(light);
 
-        const pLight = new THREE.PointLight( 0xFFFFFF, 100);
-        pLight.position.set(0,5, 10);
-        pLight.castShadow = true;
-        group.add(pLight);
+        const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 10);
+        dirLight.position.set(0,100, 50);
+        dirLight.castShadow = true;
+        group.add(dirLight);
         return group;
     }
 
