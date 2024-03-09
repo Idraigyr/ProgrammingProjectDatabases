@@ -10,6 +10,7 @@ class App {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
         this.renderer = new THREE.WebGLRenderer({ antialias: true });
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio( window.devicePixelRatio );

@@ -92,7 +92,8 @@ export class Island extends IView{
     initScene(){
         const group = new THREE.Group();
 
-        group.add(this.createAxes());
+        // TODO: debug?
+        // group.add(this.createAxes());
 
         group.add(this.createLights());
 
