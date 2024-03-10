@@ -1,6 +1,6 @@
-import {Building} from "./Building.js";
+import {Placeable} from "./Placeable.js";
 
-export class Altar extends Building{
+export class Altar extends Placeable{
     constructor(params) {
         super(params);
     }

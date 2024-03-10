@@ -2,9 +2,10 @@ import {Model} from "../Model/Model.js";
 
 
 export class WorldManager {
-    constructor(factory) {
+    constructor(params) {
         this.world = null;
-        this.factory = factory;
+        this.factory = params.factory;
+        this.spellFactory = params.spellFactory;
     }
 
     async importWorld(url,request){
@@ -56,7 +57,7 @@ export class WorldManager {
             }
         };
         let characters = null;
-        this.world = new Model.World({islands: islands, player: player, characters: characters, Factory: this.factory});
+        this.world = new Model.World({islands: islands, player: player, characters: characters, Factory: this.factory, SpellFactory: this.spellFactory});
     }
 
     async exportWorld(){

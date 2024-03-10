@@ -1,15 +1,13 @@
-import {Subject} from "../Patterns/Subject.js";
 import * as THREE from "three";
+import {Entity} from "./Entity.js";
 //abstract class
-export class Character extends Subject{
-    #position;
+export class Character extends Entity{
     #rotation;
     constructor() {
         super();
         if(this.constructor === Character){
             throw new Error("cannot instantiate abstract class Character");
         }
-        this.#position = new THREE.Vector3(0,0,0);
         this.phi = 0; // current horizontal rotation
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
@@ -22,21 +20,17 @@ export class Character extends Subject{
         return qHorizontal;
     }
 
-    createUpdatePositionEvent(){
-        return new CustomEvent("updatePosition", {detail: {position: new THREE.Vector3().copy(this.#position)}});
-    }
-
     createUpdateRotationEvent(){
         return new CustomEvent("updateRotation", {detail: {rotation: new THREE.Quaternion().copy(this.quatFromHorizontalRotation)}});
     }
     set position(vector){
-        this.#position = vector;
+        this._position = vector;
         //update view
-        this.dispatchEvent(this.createUpdatePositionEvent());
+        this.dispatchEvent(this._createUpdatePositionEvent());
     }
 
     get position(){
-        return this.#position;
+        return this._position;
     }
 
     set rotation(quaternion){

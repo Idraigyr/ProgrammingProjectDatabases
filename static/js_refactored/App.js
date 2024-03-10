@@ -5,16 +5,26 @@ import {API_URL} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
+import {SpellFactory} from "./Controller/SpellFactory.js";
 class App {
+    /**
+     * create the app
+     * @param {object} params
+     *
+     */
     constructor(params) {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
-        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer = new THREE.WebGLRenderer({canvas: canvas});
+
+        canvas.addEventListener("mousedown", async (e) => {
+            if(!app.blockedInput) return;
+            await canvas.requestPointerLock();
+        });
+
         this.renderer.setSize( window.innerWidth, window.innerHeight );
-        this.renderer.setPixelRatio( window.devicePixelRatio );
-        document.body.appendChild( this.renderer.domElement );
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
         this.inputManager = new Controller.InputManager();
@@ -30,15 +40,28 @@ class App {
         this.minionControllers = [];
 
         this.factory = new Factory(this.scene);
+        this.spellFactory = new SpellFactory(this.scene);
         this.views = this.factory.views;
+        this.spellViews = this.spellFactory.views;
 
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
     }
-
+    /**
+     * scopes updateRotation function of member playerController
+     * @callback updateRotationListener
+     * @param {{movementX: number, movementY: number}} event
+     *
+     */
     updateRotationListener = (event) => {
         this.playerController.updateRotation(event);
     }
+    /**
+     * switches value of boolean member blockedInput and adds or removes updateRotationListener from mousemovement
+     * @callback blockInput
+     * @param {object} event - unused
+     *
+     */
     blockInput(event){
         if(this.blockedInput){
             this.inputManager.addMouseMoveListener(this.updateRotationListener);
@@ -58,9 +81,10 @@ class App {
     }
 
     async loadAssets(){
-        this.worldManager = await new WorldManager(this.factory);
+        this.worldManager = await new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
+        this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.cameraManager.target = this.worldManager.world.player;
     }
     start(){
@@ -87,14 +111,10 @@ class App {
         this.worldManager.world.update(this.deltaTime);
         //...
         this.views.forEach((view) => view.update(this.deltaTime));
+        this.spellViews.forEach((view) => view.update(this.deltaTime));
         this.renderer.render( this.scene, this.cameraManager.camera );
     }
 }
-let body = document.getElementById("body");
-body.addEventListener("mousedown", async (e) => {
-    if(!app.blockedInput) return;
-    await body.requestPointerLock();
-});
 
 let app = await new App();
 await app.loadAssets();

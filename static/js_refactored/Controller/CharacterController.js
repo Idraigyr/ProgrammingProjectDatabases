@@ -18,6 +18,10 @@ export class CharacterController extends Subject{
 
     }
 
+    createSpellCastEvent(type, params){
+        return new CustomEvent("castSpell", {detail: {type: type, params: params}});
+    }
+
     updateRotation(event){
         const {movementX, movementY} = event;
         const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/360);
@@ -47,7 +51,7 @@ export class CharacterController extends Subject{
             return;
         }
 
-        this._character.currentSpellSlot = this.#inputManager.keys.spellSlot - 1;
+        this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
         if(this._character.fsm.currentState.movementPossible){
@@ -107,12 +111,12 @@ export class CharacterController extends Subject{
         }
 
         if(this.#inputManager.mouse.leftClick){
-            if(this._character.currentSpellCooldown === 0){
+            if(this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0){
                 //cast current spell
-                let vec = new THREE.Vector3().copy(this.position);
-                vec.y = 2;
-                //factory.createProjectile(new THREE.Vector3(1,0,0).applyQuaternion(this.#character.rotation),vec,20);
-                this.fireballCooldown = 2;
+                let vec = new THREE.Vector3().copy(this._character.position);
+                vec.y += 2;
+                this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {position: vec, direction: new THREE.Vector3(1,0,0).applyQuaternion(this._character.rotation)}));
+                this._character.cooldownSpell();
             }
         }
         this._character.updateCooldowns(deltaTime);

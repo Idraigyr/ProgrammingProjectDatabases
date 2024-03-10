@@ -104,16 +104,16 @@ export class InputManager {
                 this.keys.spellSlot = 1;
                 break;
             case slot2Key:
-                this.keys.spellSlot = 1;
+                this.keys.spellSlot = 2;
                 break;
             case slot3Key:
-                this.keys.spellSlot = 1;
+                this.keys.spellSlot = 3;
                 break;
             case slot4Key:
-                this.keys.spellSlot = 1;
+                this.keys.spellSlot = 4;
                 break;
             case slot5Key:
-                this.keys.spellSlot = 1;
+                this.keys.spellSlot = 5;
                 break;
         }
     }

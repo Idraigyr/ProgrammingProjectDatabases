@@ -380,13 +380,13 @@ class CharacterController extends Subject{
         //pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
         raycaster.setFromCamera( new THREE.Vector2(0,0), camera );
         const intersects = raycaster.intersectObjects( touchableObjects, false );
-				if ( intersects.length > 0 ) {
+        if ( intersects.length > 0 ) {
 
-					const intersect = intersects[ 0 ];
+            const intersect = intersects[ 0 ];
 
-					rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
-                    correctRitualPosition(rollOverMesh);
-				}
+            rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
+            correctRitualPosition(rollOverMesh);
+        }
     }
     ritualBuilder(event){
         if(!enableBuilding || !currentThingToPlace.getModel()) return;
@@ -397,26 +397,26 @@ class CharacterController extends Subject{
             return;
         }
         if( this.#input.keys.build ){
-                        //pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-                        raycaster.setFromCamera( new THREE.Vector2(0,0), camera );
-                        const intersects = raycaster.intersectObjects( touchableObjects, true );
-                        if (intersects.length > 0 ){
-                            const intersect = intersects[0];
-                            if(intersect.object !== blockPlane){
-                                console.log("object touched");
-                                intersect.object.parent.position.copy( intersect.point ).add( intersect.face.normal );
-                                updateObjectToPlace(intersect.object.parent.parent);
-                                return;
-                            }
-                            let smth = currentThingToPlace.getModel();
-                            const voxel = smth.clone();
-                            voxel.position.copy( intersect.point ).add( intersect.face.normal );
-                            scaleAndCorrectPosition(voxel);
-                            // TODO: voxel for further interaction
-                            // touchableObjects.push(voxel);
-                            scene.add( voxel );
-                        }
-                    }
+            //pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+            raycaster.setFromCamera( new THREE.Vector2(0,0), camera );
+            const intersects = raycaster.intersectObjects( touchableObjects, true );
+            if (intersects.length > 0 ){
+                const intersect = intersects[0];
+                if(intersect.object !== blockPlane){
+                    console.log("object touched");
+                    intersect.object.parent.position.copy( intersect.point ).add( intersect.face.normal );
+                    updateObjectToPlace(intersect.object.parent.parent);
+                    return;
+                }
+                let smth = currentThingToPlace.getModel();
+                const voxel = smth.clone();
+                voxel.position.copy( intersect.point ).add( intersect.face.normal );
+                scaleAndCorrectPosition(voxel);
+                // TODO: voxel for further interaction
+                // touchableObjects.push(voxel);
+                scene.add( voxel );
+            }
+        }
     }
 
     get quatFromHorizontalRotation(){
