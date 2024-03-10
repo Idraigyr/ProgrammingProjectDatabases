@@ -9,6 +9,6 @@ export let maxZoomIn = -4;
 //currently does not do anything;
 export let minZoomIn = 1.2;
 
-export const movementSpeed = 12;
+export const movementSpeed = 4;
 
-export const sprintMultiplier = 1.5;
+export const sprintMultiplier = 3;

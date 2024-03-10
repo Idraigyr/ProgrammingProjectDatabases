@@ -9,5 +9,5 @@ export let Controller = {
     CameraManager: CameraManager,
     InputManager: InputManager,
     CharacterController: CharacterController,
-    AssetLoader: AssetLoader
+    AssetLoader: AssetLoader,
 }

@@ -1,4 +1,5 @@
 import {
+    buildKey,
     DownKey, primaryBackwardKey,
     primaryForwardKey,
     primaryLeftKey,
@@ -17,7 +18,8 @@ export class InputManager {
         up: false,
         down: false,
         spellSlot: 1,
-        sprint: false
+        sprint: false,
+        build: false
     }
     mouse = {
         leftClick: false,
@@ -99,6 +101,9 @@ export class InputManager {
                 break;
             case sprintKey:
                 this.keys.sprint = bool;
+                break;
+            case buildKey:
+                this.keys.build = bool;
                 break;
             case slot1Key:
                 this.keys.spellSlot = 1;

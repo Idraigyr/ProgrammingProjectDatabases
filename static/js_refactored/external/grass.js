@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 // Parameters
 const PLANE_SIZE = 150;
-const BLADE_COUNT = 500000;
+const BLADE_COUNT = 1000000;
 const BLADE_WIDTH = 0.1;
 const BLADE_HEIGHT = 0.8;
 const BLADE_HEIGHT_VARIATION = 0.6;
