@@ -17,7 +17,7 @@ class App {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
-        this.renderer = new THREE.WebGLRenderer({canvas: canvas});
+        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture
 
         canvas.addEventListener("mousedown", async (e) => {
             if(!app.blockedInput) return;
@@ -25,6 +25,7 @@ class App {
         });
 
         this.renderer.setSize( window.innerWidth, window.innerHeight );
+        this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
         this.inputManager = new Controller.InputManager();
