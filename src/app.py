@@ -32,14 +32,14 @@ class JSONClassEncoder:
         pass
 
     def default(self, o):
-        if hasattr(o, 'to_json'):
-            return JSONEncoder().default(o.to_json())
+        if hasattr(o, '_to_json'):
+            return JSONEncoder().default(o._to_json())
         else:
             return JSONEncoder().default(o)
 
     def encode(self, o):
-        if hasattr(o, 'to_json'):
-            return JSONEncoder().encode(o.to_json())
+        if hasattr(o, '_to_json'):
+            return JSONEncoder().encode(o._to_json())
         else:
             return JSONEncoder().encode(o)
 
@@ -96,6 +96,7 @@ def setup_jwt(app: Flask):
     _jwt_log = logging.getLogger("_jwt")
 
     @app.jwt.invalid_token_loader
+    @app.jwt.token_verification_failed_loader
     def custom_invalid_token_loader(callback):
         _jwt_log.debug(f"Invalid token (check format?): {callback}")
         return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_invalid_token'}), 401
@@ -221,5 +222,5 @@ if __name__ == "__main__":
     # don't put this in the setup() as the WSGI server uses that function as well
     logging.info("Booting Flask Debug server")
     app_bind = app.config['APP_BIND']
-    debug = app.config['APP_DEBUG'] or False
+    debug = app.config.get('APP_DEBUG', 'False').lower() == 'true'
     socketio.run(app, debug=debug, allow_unsafe_werkzeug=True)

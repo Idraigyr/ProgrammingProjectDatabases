@@ -43,3 +43,18 @@ class ErrorSchema(Schema):
 
     def __init__(self, message: str="error"):
         super().__init__(status="error", message=message)
+
+
+class IntArraySchema(Schema):
+    """
+    Defines the JSON response for a list of integers
+    """
+
+    type = 'array'
+    items = {
+        'type': 'integer'
+    }
+    required = []
+
+    def __init__(self, items: list[int]):
+        super().__init__(items=items)

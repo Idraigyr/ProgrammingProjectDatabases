@@ -2,12 +2,14 @@ import logging
 
 from flask import Flask, Blueprint, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restful_swagger_3 import Resource, swagger, Api, Schema
+from flask_restful_swagger_3 import Resource, swagger, Api
 from markupsafe import escape
 
 from src.schema import ErrorSchema, SuccessSchema
 from src.resource import add_swagger, clean_dict_input
 from src.service.auth_service import AUTH_SERVICE
+from src.swagger_patches import Schema
+
 
 class UserProfileSchema(Schema):
     """
@@ -16,7 +18,7 @@ class UserProfileSchema(Schema):
     type = 'object'
     properties = {
         'id': {
-            'type': 'int'
+            'type': 'integer'
         },
         'username': {
             'type': 'string'

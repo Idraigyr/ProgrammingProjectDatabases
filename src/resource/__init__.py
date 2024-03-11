@@ -66,8 +66,10 @@ def attach_resources(app: Flask) -> None:
     # This will automatically create a RESTFUL API endpoint for each Resource
     import src.resource.player as player_module
     import src.resource.user_profile as user_profile_module
+    import src.resource.spell as spell_module
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
+    spell_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:
@@ -77,5 +79,9 @@ def clean_dict_input(d: dict) -> dict:
     :return: The cleaned dictionary
     """
     for key, val in d.items():
-        d[escape(key)] = escape(val)
+        if isinstance(val, str):
+            d[str(escape(key))] = str(escape(val))
+        elif isinstance(val, dict): # recursive call
+            d[escape(key)] = clean_dict_input(val)
+
     return d
