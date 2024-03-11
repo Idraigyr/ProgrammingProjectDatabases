@@ -4,10 +4,10 @@ import {View} from "../View/ViewNamespace.js";
 import {Fireball} from "../Model/Spell.js";
 
 export class SpellFactory{
-    constructor(scene) {
-        this.scene = scene;
+    constructor(params) {
+        this.scene = params.scene;
+        this.viewManager = params.viewManager;
         this.AssetLoader = new Controller.AssetLoader(this.scene);
-        this.views = [];
         this.models = [];
     }
     createSpell(event){
@@ -34,7 +34,7 @@ export class SpellFactory{
         view.initModel(); //TODO: implement particle system instead of sphere
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
-        this.views.push(view);
+        this.viewManager.addPair(model,view);
         return model;
     }
 }

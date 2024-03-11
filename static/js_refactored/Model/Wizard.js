@@ -30,4 +30,8 @@ export class Wizard extends Character{
     getCurrentSpell(){
         return this.spells[this.currentSpell];
     }
+
+    get type(){
+        return "player";
+    }
 }

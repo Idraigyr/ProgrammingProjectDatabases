@@ -12,4 +12,10 @@ export class Entity extends Subject{
     update(deltaTime){
 
     }
+
+    get type(){
+        if(this.constructor === Entity){
+            throw new Error("cannot get type of abstract class Entity");
+        }
+    }
 }

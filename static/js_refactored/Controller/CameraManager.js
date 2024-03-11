@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {maxZoomIn, minZoomIn} from "../configs/ControllerConfigs.js";
+import {maxZoomIn, minZoomIn, minCameraY} from "../configs/ControllerConfigs.js";
 import {max, min} from "../helpers.js";
 
 export class CameraManager {
@@ -53,8 +53,8 @@ export class CameraManager {
 
         //don't uncomment; freezes screen;
         //copy = copy.add(zoom);
-        if(copy.y < 0){
-            while(copy.y < 0){
+        if(copy.y < minCameraY){
+            while(copy.y < minCameraY){
                 copy = new THREE.Vector3().copy(idealOffset);
                 zoomIn -= 0.1;
                 zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);

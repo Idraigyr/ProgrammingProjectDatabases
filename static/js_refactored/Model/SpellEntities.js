@@ -7,6 +7,10 @@ class SpellEntity extends Entity{
         this.spellType = params.spellType;
         this.duration = params.duration;
     }
+
+    get type(){
+        return "spellEntity";
+    }
 }
 
 export class Projectile extends SpellEntity{

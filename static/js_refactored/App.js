@@ -6,6 +6,7 @@ import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
+import {ViewManager} from "./Controller/ViewManager.js";
 class App {
     /**
      * create the app
@@ -28,6 +29,8 @@ class App {
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
+
+        this.viewManager = new ViewManager();
         this.inputManager = new Controller.InputManager();
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -40,10 +43,8 @@ class App {
         this.playerController = null;
         this.minionControllers = [];
 
-        this.factory = new Factory(this.scene);
-        this.spellFactory = new SpellFactory(this.scene);
-        this.views = this.factory.views;
-        this.spellViews = this.spellFactory.views;
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager});
+        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager});
 
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
@@ -111,12 +112,12 @@ class App {
         this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
         this.worldManager.world.update(this.deltaTime);
         //...
-        this.views.forEach((view) => view.update(this.deltaTime));
-        this.spellViews.forEach((view) => view.update(this.deltaTime));
+        this.viewManager.updateAnimatedViews(this.deltaTime);
+
         this.renderer.render( this.scene, this.cameraManager.camera );
     }
 }
 
-let app = await new App();
+let app = new App({});
 await app.loadAssets();
 app.start();

@@ -6,10 +6,10 @@ import {getFileExtension} from "../helpers.js";
 
 export class Factory{
     //TODO: add factory itself and model class of object to view.userData
-    constructor(scene) {
-        this.scene = scene;
+    constructor(params) {
+        this.scene = params.scene;
+        this.viewManager = params.viewManager;
         this.AssetLoader = new Controller.AssetLoader(this.scene);
-        this.views = [];
     }
     loadAsset(view){
         let extension = getFileExtension(view.assetPath);
@@ -35,7 +35,7 @@ export class Factory{
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
 
-        this.views.push(view);
+        this.viewManager.addPair(player, view);
         return player;
     }
     createIsland(position, rotation, buildingsList){
@@ -43,13 +43,13 @@ export class Factory{
         let view = new View.Island();
 
         //TODO: island asset?
-        this.addBuildings(islandModel.buildings,view.buildings,buildingsList);
+        this.#addBuildings(islandModel.buildings, buildingsList);
         this.scene.add(view.initScene());
 
-        this.views.push(view);
+        this.viewManager.addPair(islandModel, view);
         return islandModel;
     }
-    addBuildings(islandModel, islandView, buildingsList){
+    #addBuildings(islandModel, buildingsList){
         buildingsList.forEach((building) => {
             try {
                 let model = new Model[building.type](building.position,building.rotation);
@@ -58,16 +58,10 @@ export class Factory{
                 model.addEventListener("updateRotation",view.updateRotation.bind(view));
                 this.AssetLoader.loadGLTF(view.assetPath,view);
                 islandModel.push(model);
-                islandView.push(view);
+                this.viewManager.addPair(model, view);
             } catch (e){
                 console.log(`no ctor for ${building.type} building: ${e.message}`);
             }
         });
-    }
-    createFireball(){
-        // let fireball = new Model.Fireball();
-        // let view = new View.Fireball();
-        // this.AssetLoader.loadGLTF("./assets/Wizard.glb",view);
-        // return fireball;
     }
 }

@@ -5,4 +5,8 @@ export class Placeable extends Entity{
         super();
         this.rotation = params.rotation;
     }
+
+    get type(){
+        return "building";
+    }
 }

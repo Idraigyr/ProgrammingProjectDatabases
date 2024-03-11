@@ -20,56 +20,6 @@
     </script>
 </head>
 <body id="body">
-<script id="grassVert" type="x-shader/x-fragment">
-    varying vec2 vUv;
-varying vec2 cloudUV;
-
-varying vec3 vColor;
-uniform float iTime;
-
-void main() {
-  vUv = uv;
-  cloudUV = uv;
-  vColor = color;
-  vec3 cpos = position;
-
-  float waveSize = 10.0f;
-  float tipDistance = 0.3f;
-  float centerDistance = 0.1f;
-
-  if (color.x > 0.6f) {
-    cpos.x += sin((iTime / 500.) + (uv.x * waveSize)) * tipDistance;
-  }else if (color.x > 0.0f) {
-    cpos.x += sin((iTime / 500.) + (uv.x * waveSize)) * centerDistance;
-  }
-
-  float diff = position.x - cpos.x;
-  cloudUV.x += iTime / 20000.;
-  cloudUV.y += iTime / 10000.;
-
-  vec4 worldPosition = vec4(cpos, 1.);
-  vec4 mvPosition = projectionMatrix * modelViewMatrix * vec4(cpos, 1.0);
-  gl_Position = mvPosition;
-}
-</script>
-<script id="grassFrag" type="x-shader/x-fragment">
-    uniform sampler2D texture1;
-uniform sampler2D textures[4];
-
-varying vec2 vUv;
-varying vec2 cloudUV;
-varying vec3 vColor;
-
-void main() {
-  float contrast = 1.5;
-  float brightness = 0.1;
-  vec3 color = texture2D(textures[0], vUv).rgb * contrast;
-  color = color + vec3(brightness, brightness, brightness);
-  color = mix(color, texture2D(textures[1], cloudUV).rgb, 0.4);
-  gl_FragColor.rgb = color;
-  gl_FragColor.a = 1.;
-}
-</script>
     <div id="container">
     </div>
     <script type="module" src="static/js_refactored/App.js"></script>
@@ -116,10 +66,13 @@ void main() {
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
             integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
-            crossorigin="anonymous"></script>
+            crossorigin="anonymous">
+
+    </script>
 
     <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/socketio.js")  }}"></script>
+    <script src="{{ url_for('static', filename="js/socketio.js")  }}">
+    </script>
 
 
     <!-- UI/HUD -->
@@ -127,18 +80,27 @@ void main() {
 
 
 
-<div class="settings-button" id="settings-btn">
-        <img src="../static/images/Button_Blue.png"  class="button">
-        <img src="../static/images/Regular_02.png" class="icon">
+    <div class="settings-button" id="settings-btn">
+            <img src="../static/images/Button_Blue.png"  class="button">
+            <img src="../static/images/Regular_02.png" class="icon">
     </div>
 
     <div class="HotBar">
-        <div class="item BuildSpell"><img src="../static/images/Button_Blue_9Slides.png"  class="button">
-            </div>
-        <div class="item Spell1"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
-        <div class="item Spell2"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
-        <div class="item Spell3"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
-        <div class="item Spell4"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
+        <div class="item BuildSpell">
+            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+        </div>
+        <div class="item Spell1">
+            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+        </div>
+        <div class="item Spell2">
+            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+        </div>
+        <div class="item Spell3">
+            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+        </div>
+        <div class="item Spell4">
+            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+        </div>
     </div>
 
     <div class="Health">

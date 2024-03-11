@@ -42,4 +42,10 @@ export class Character extends Entity{
     get rotation(){
         return this.#rotation;
     }
+
+    get type(){
+        if(this.constructor === Character){
+            throw new Error("cannot get type of abstract class Character");
+        }
+    }
 }

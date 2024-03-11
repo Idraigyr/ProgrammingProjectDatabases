@@ -1,4 +1,50 @@
 import * as THREE from 'three';
+const vertexShader = "varying vec2 vUv;\n" +
+    "    varying vec2 cloudUV;\n" +
+    "    \n" +
+    "    varying vec3 vColor;\n" +
+    "    uniform float iTime;\n" +
+    "    \n" +
+    "    void main() {\n" +
+    "      vUv = uv;\n" +
+    "      cloudUV = uv;\n" +
+    "      vColor = color;\n" +
+    "      vec3 cpos = position;\n" +
+    "    \n" +
+    "      float waveSize = 10.0f;\n" +
+    "      float tipDistance = 0.3f;\n" +
+    "      float centerDistance = 0.1f;\n" +
+    "    \n" +
+    "      if (color.x > 0.6f) {\n" +
+    "        cpos.x += sin((iTime / 500.) + (uv.x * waveSize)) * tipDistance;\n" +
+    "      } else if (color.x > 0.0f) {\n" +
+    "        cpos.x += sin((iTime / 500.) + (uv.x * waveSize)) * centerDistance;\n" +
+    "      }\n" +
+    "    \n" +
+    "      float diff = position.x - cpos.x;\n" +
+    "      cloudUV.x += iTime / 20000.;\n" +
+    "      cloudUV.y += iTime / 10000.;\n" +
+    "    \n" +
+    "      vec4 worldPosition = vec4(cpos, 1.);\n" +
+    "      vec4 mvPosition = projectionMatrix * modelViewMatrix * vec4(cpos, 1.0);\n" +
+    "      gl_Position = mvPosition;\n" +
+    "    }";
+const fragmentShader = "uniform sampler2D texture1;\n" +
+    "    uniform sampler2D textures[4];\n" +
+    "    \n" +
+    "    varying vec2 vUv;\n" +
+    "    varying vec2 cloudUV;\n" +
+    "    varying vec3 vColor;\n" +
+    "    \n" +
+    "    void main() {\n" +
+    "      float contrast = 1.5;\n" +
+    "      float brightness = 0.1;\n" +
+    "      vec3 color = texture2D(textures[0], vUv).rgb * contrast;\n" +
+    "      color = color + vec3(brightness, brightness, brightness);\n" +
+    "      color = mix(color, texture2D(textures[1], cloudUV).rgb, 0.4);\n" +
+    "      gl_FragColor.rgb = color;\n" +
+    "      gl_FragColor.a = 1.;\n" +
+    "    }";
 // Parameters
 const PLANE_SIZE = 150;
 const BLADE_COUNT = 1000000;
@@ -23,8 +69,8 @@ export const grassUniforms = {
 
 const grassMaterial = new THREE.ShaderMaterial({
   uniforms: grassUniforms,
-  vertexShader: document.getElementById( 'grassVert' ).textContent,
-  fragmentShader: document.getElementById( 'grassFrag' ).textContent,
+  vertexShader: vertexShader,
+  fragmentShader: fragmentShader,
   vertexColors: true,
   side: THREE.DoubleSide
 });
