@@ -23,18 +23,22 @@ class PlayerSchema(Schema):
         'user_profile_id': {
             'type': 'int'
         },
-        'xp': {
+        'level': {
             'type': 'int'
         },
         'crystals': {
             'type': 'int'
+        },
+        'mana': {
+            'type': 'int'
         }
     }
 
-    required = ['user_profile_id', 'xp', 'crystals']
+    required = ['user_profile_id', 'level', 'crystals', 'mana']
 
     def __init__(self, player: Player):
-        super().__init__(user_profile_id=player.user_profile_id, xp=player.xp, crystals=player.crystals)
+        super().__init__(user_profile_id=player.user_profile_id, level=player.level,
+                         crystals=player.crystals, mana=player.mana)
 
 
 class PlayerResource(Resource):
@@ -70,7 +74,8 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The player profile id to retrieve. Defaults to the current user id (by JWT)')
-    @swagger.parameter(_in='query', name='xp', schema={'type': 'int'}, description='The new XP value')
+    @swagger.parameter(_in='query', name='level', schema={'type': 'int'}, description='The new level')
+    @swagger.parameter(_in='query', name='mana', schema={'type': 'int'}, description='The new mana amount')
     @swagger.parameter(_in='query', name='crystals', schema={'type': 'int'}, description='The new crystals value')
     @swagger.response(200, description='Succesfully updated the player profile', schema=SuccessSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
