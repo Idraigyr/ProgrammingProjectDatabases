@@ -26,18 +26,26 @@ class Entity(current_app.db.Model):
 
 
     def __init__(self, island_id:int = 0, xpos: int = 0, zpos: int = 0):
+        """
+        Initialize the entity object
+        :param island_id: The id of the island that this entity belongs to
+        :param xpos: The x position of the entity. Not related to the grid of the island
+        :param zpos: The z position of the entity. Not related to the grid of the island
+        """
         self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
 
-    @abstractmethod
     def update(self, data: dict):
         """
         Update the entity with new data
+        Updating the id, island id and type are not allowed and therefore not implemented in this method
         :param data: The new data
         :return:
         """
-        pass
+        self.xpos = data.get('x', self.xpos)
+        self.zpos = data.get('z', self.zpos)
+
 
     __mapper_args__ = {
         # 'polymporphic_abstract': True,

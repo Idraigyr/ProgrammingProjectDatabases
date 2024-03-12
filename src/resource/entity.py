@@ -40,7 +40,8 @@ class EntitySchema(Schema):
 
     def __init__(self, entity: Entity = None, **kwargs):
         if entity is not None:  # entity -> schema
-            super().__init__(entity_id=entity.entity_id, x=entity.xpos, z=entity.zpos, type=entity.type, island_id=entity.island_id, **kwargs)
+            super().__init__(entity_id=entity.entity_id, x=entity.xpos, z=entity.zpos, type=entity.type,
+                             island_id=entity.island_id, **kwargs)
         else:  # schema -> entity
             super().__init__(**kwargs)
 
@@ -55,5 +56,4 @@ class EntityResource(Resource):
 
     Listing of entities is done through the IslandResource.
     """
-
-    # TODO - get endpoint
+    pass

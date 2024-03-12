@@ -8,7 +8,6 @@ from src.resource import add_swagger, clean_dict_input
 from src.swagger_patches import Schema, summary
 
 
-
 class SpellSchema(Schema):
     """
     The schema for the spell response
@@ -41,12 +40,14 @@ class SpellResource(Resource):
     """
     A Spell resource is a resource/api endpoint that allows for the retrieval and modification of spell profiles
     """
+
     @swagger.tags('spell')
     @summary('Retrieve the spell with the given id')
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The spell id to retrieve', required=True)
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The spell id to retrieve',
+                       required=True)
     @swagger.response(200, description='Success, returns the spell profile in JSON format', schema=SpellSchema)
     @swagger.response(404, description='Unknown spell id', schema=ErrorSchema)
-    @jwt_required() # for security
+    @jwt_required()  # for security
     def get(self):
         """
         Get the spell profile by id
@@ -56,7 +57,7 @@ class SpellResource(Resource):
             return ErrorSchema('No spell id provided'), 400
 
         id = int(request.args.get('id'))
-        spell = Spell.query.get(id) # Get the spell by PK (id)
+        spell = Spell.query.get(id)  # Get the spell by PK (id)
         if spell is None:
             return ErrorSchema('Unknown spell id'), 404
         else:
@@ -91,7 +92,7 @@ class SpellResource(Resource):
     @swagger.tags('spell')
     @summary('Update the spell profile by id')
     @swagger.response(200, description='Success', schema=SuccessSchema)
-    @jwt_required() # for security
+    @jwt_required()  # for security
     def put(self):
         """
         Update the spell profile by id
@@ -112,17 +113,18 @@ class SpellResource(Resource):
             return ErrorSchema(f"Spell {id} not found"), 404
         spell.update(data)
         current_app.db.session.commit()
-        return SuccessSchema(f"Spell {id} succesfully updated"), 200
+        return SuccessSchema(f"Spell {id} successfully updated"), 200
 
 
 class SpellListResource(Resource):
     """
     A SpellList resource is a resource/api endpoint that allows for the retrieval of all spell profiles
     """
+
     @swagger.tags('spell')
     @summary('Get all spell profiles')
     @swagger.response(200, description='Success, returns all spell profiles in JSON format', schema=SpellSchema)
-    @jwt_required() # for security
+    @jwt_required()  # for security
     def get(self):
         """
         Get all spell profiles
@@ -142,5 +144,5 @@ def attach_resource(app: Flask) -> None:
     api = Api(blueprint)
     api.add_resource(SpellResource, '/api/spell')
     api.add_resource(SpellListResource, '/api/spell/list')
-    app.register_blueprint(blueprint, url_prefix='/') # Relative to api.add_resource path
+    app.register_blueprint(blueprint, url_prefix='/')  # Relative to api.add_resource path
     add_swagger(api)

@@ -67,7 +67,7 @@ class BuilderMinionResource(EntityResource):
     def post(self):
         """
         Create a new builder minion
-        :return: The new builder minion in JSON format
+        :return: The success message, or an error message
         """
         # Get the JSON input
         data = request.get_json()
@@ -87,6 +87,36 @@ class BuilderMinionResource(EntityResource):
         current_app.db.session.add(builder_minion)
         current_app.db.session.commit()
         return SuccessSchema(f'Builder minion {builder_minion.entity_id} created'), 200
+
+    @swagger.tags('entity')
+    @summary('Update an existing builder minion')
+    @swagger.expected(schema=BuilderMinionSchema, required=True)
+    @swagger.response(200, description='Builder minion successfully updated', schema=SuccessSchema)
+    @swagger.response(404, description="Builder minion not found", schema=ErrorSchema)
+    @swagger.response(400, description="Invalid input", schema=ErrorSchema)
+    @jwt_required()
+    def put(self):
+        """
+        Update a builder minion by its id (from query)
+        :return:
+        """
+        data = request.get_json()
+        data = clean_dict_input(data)
+
+        try:
+            BuilderMinionSchema(**data)
+            id = int(data['entity_id'])
+        except (ValueError, KeyError) as e:
+            return ErrorSchema(str(e)), 400
+
+        minion = BuilderMinion.query.get(id)
+        if minion is None:
+            return ErrorSchema(f"Builder minion with id {id} not found"), 404
+
+        minion.update(data)
+
+        current_app.db.session.commit()
+        return SuccessSchema(f"Updated builder minion {id}"), 200
 
 
 def attach_resource(app: Flask) -> None:

@@ -19,8 +19,11 @@ class BuilderMinion(Entity):
         self.level = level
 
     def update(self, data: dict):
-        self.xpos = data.get('xpos', self.xpos)
-        self.zpos = data.get('zpos', self.zpos)
+        """
+        Updates the builder minions' fields by a dictionary
+        :param data: The data to update with. Only fields that have to be changed have to be present.
+        """
+        super().update(data)
         self.level = data.get('level', self.level)
 
 
