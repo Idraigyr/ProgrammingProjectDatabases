@@ -56,7 +56,7 @@ Execute all the following commands from the root directory of the project.
    
 ## Documentation
 For more detailed information about the project, please refer to the appropriate documentation files:
-- REST API: see Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally WITH `APP_SWAGGER_ENABLED=true`)
+- REST API: see [API.md](API.md) and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally WITH `APP_SWAGGER_ENABLED=true`)
 - Entity-Releationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)
 - Backend code documentation: see PyDoc documentation at `TODOOOOO`
 - Frontend code documentation: see JSDoc documentation at `TODOOOOO`

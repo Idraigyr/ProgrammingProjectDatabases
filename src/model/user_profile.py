@@ -22,12 +22,21 @@ class UserProfile(current_app.db.Model):
 
     credentials: Mapped[Credentials] = relationship(back_populates="user_profile", uselist=False)
 
-    def __init__(self, username: str, firstname: str, lastname: str, credentials: Credentials):
+    def __init__(self, username: str, firstname: str, lastname: str, credentials: Credentials, admin: bool = False):
+        """
+        Initializes the user profile object
+        :param username: The username of the user, unique
+        :param firstname: The first name of the user
+        :param lastname: The last name of the user
+        :param credentials: The credentials object of the user
+        :param admin: Whether the user is an admin or not. Defautls to false
+        """
         self.username = username
         self.firstname = firstname
         self.lastname = lastname
         self.credentials = credentials
         self.player = Player(self)
+        self.admin = admin
 
     def uses_oauth2(self):
         """

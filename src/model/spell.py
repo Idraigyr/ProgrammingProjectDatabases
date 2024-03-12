@@ -20,6 +20,10 @@ class Spell(current_app.db.Model):
 
 
     def __init__(self, name: str):
+        """
+        Initializes the spell object
+        :param name: The (display) name of the spell
+        """
         self.name = name
 
     def update(self, data: dict):

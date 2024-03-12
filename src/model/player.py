@@ -31,6 +31,13 @@ class Player(current_app.db.Model):
 
 
     def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0):
+        """
+        Initialize the player class
+        :param user_profile: The UserProfile of this player. Should be unique to this player (one-to-one)
+        :param level: The level of the player. Should be >= 0
+        :param crystals: The amount of crystals of the player. Should be >= 0
+        :param mana: The amount of mana of the player. Should be >= 0
+        """
         self.user_profile = user_profile
         self.level = level
         self.crystals = crystals
