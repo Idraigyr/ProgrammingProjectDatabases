@@ -1,0 +1,24 @@
+from flask import current_app
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import mapped_column, Mapped, relationship, declared_attr
+
+from src.model.player import Player
+
+
+class Island(current_app.db.Model):
+    """
+    An island is a collection of entities and placeables (buildings) that are placed on a grid.
+    It contains all necessary values to load in an island of a player.
+    An island is unique to it's owner, and is not shared between players.
+    """
+
+    owner_id: Mapped[int] = mapped_column(ForeignKey('player.user_profile_id'), primary_key=True)
+    owner: Mapped[Player] = relationship("Player", back_populates="island", single_parent=True)
+
+    @declared_attr
+    def entities(self):
+        return relationship("Entity", back_populates="island")
+
+    def __init__(self, owner: Player = None):
+        self.owner = owner
+        self.owner_id = owner.user_profile_id

@@ -8,7 +8,7 @@ from markupsafe import escape
 from src.schema import ErrorSchema, SuccessSchema
 from src.resource import add_swagger, clean_dict_input
 from src.service.auth_service import AUTH_SERVICE
-from src.swagger_patches import Schema
+from src.swagger_patches import Schema, summary
 
 
 class UserProfileSchema(Schema):
@@ -49,6 +49,7 @@ class UserProfileResource(Resource):
     """
 
     @swagger.tags('user_profile')
+    @summary('Retrieve the user profile with the given id')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.response(200, description='Success, returns the user profile in JSON format', schema=UserProfileSchema)
     @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
@@ -84,6 +85,7 @@ class UserProfileResource(Resource):
 
 
     @swagger.tags('user_profile')
+    @summary('Update the user profile by id')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.parameter(_in='query', name='firstname', schema={'type': 'string'}, description='The new firstname')
     @swagger.parameter(_in='query', name='lastname', schema={'type': 'string'}, description='The new lastname')

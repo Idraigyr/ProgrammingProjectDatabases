@@ -5,7 +5,7 @@ from flask_restful_swagger_3 import Resource, swagger, Api
 from src.schema import ErrorSchema, SuccessSchema
 from src.model.spell import Spell
 from src.resource import add_swagger, clean_dict_input
-from src.swagger_patches import Schema
+from src.swagger_patches import Schema, summary
 
 
 
@@ -42,6 +42,7 @@ class SpellResource(Resource):
     A Spell resource is a resource/api endpoint that allows for the retrieval and modification of spell profiles
     """
     @swagger.tags('spell')
+    @summary('Retrieve the spell with the given id')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The spell id to retrieve', required=True)
     @swagger.response(200, description='Success, returns the spell profile in JSON format', schema=SpellSchema)
     @swagger.response(404, description='Unknown spell id', schema=ErrorSchema)
@@ -63,6 +64,7 @@ class SpellResource(Resource):
 
 
     @swagger.tags('spell')
+    @summary('Create a new spell profile')
     @swagger.response(200, description='Success', schema=SuccessSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
     @swagger.expected(SpellSchema, required=True) # The expected input is a spell profile in JSON format, as defined by the SpellSchema class
@@ -87,6 +89,7 @@ class SpellResource(Resource):
         return SuccessSchema(f"Spell {spell.id} succesfully created"), 200
 
     @swagger.tags('spell')
+    @summary('Update the spell profile by id')
     @swagger.response(200, description='Success', schema=SuccessSchema)
     @jwt_required() # for security
     def put(self):
@@ -117,6 +120,7 @@ class SpellListResource(Resource):
     A SpellList resource is a resource/api endpoint that allows for the retrieval of all spell profiles
     """
     @swagger.tags('spell')
+    @summary('Get all spell profiles')
     @swagger.response(200, description='Success, returns all spell profiles in JSON format', schema=SpellSchema)
     @jwt_required() # for security
     def get(self):

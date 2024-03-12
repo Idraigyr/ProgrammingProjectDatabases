@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful_swagger_3 import Resource, swagger, Api
 from markupsafe import escape
 
-from src.swagger_patches import Schema
+from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
 from src.model.player import Player
 from src.resource import add_swagger, clean_dict_input
@@ -61,6 +61,7 @@ class PlayerResource(Resource):
     @swagger.response(200, description='Success, returns the player profile in JSON format', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
+    @summary('Get the player profile by id')
     @jwt_required()
     def get(self):
         """
@@ -82,6 +83,7 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
+    @summary('Update the player profile by id')
     @swagger.response(200, description='Succesfully updated the player profile', schema=SuccessSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
@@ -124,6 +126,7 @@ class PlayerListResource(Resource):
     """
 
     @swagger.tags('player')
+    @summary('Get all player profiles')
     @swagger.response(200, description='Success, returns a list of all player profiles in JSON format', schema=PlayerSchema)
     @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @jwt_required()
@@ -140,7 +143,6 @@ def attach_resource(app: Flask) -> None:
     """
     Attach the PlayerResource (API endpoint + Swagger docs) to the given Flask app
     :param app: The app to create the endpoint for
-    :param enable_swagger: True to enable Swagger documentation, False otherwise
     :return: None
     """
     blueprint = Blueprint('api_player', __name__)

@@ -67,9 +67,14 @@ def attach_resources(app: Flask) -> None:
     import src.resource.player as player_module
     import src.resource.user_profile as user_profile_module
     import src.resource.spell as spell_module
+    import src.resource.island as island_module
+    import src.resource.builder_minion as builder_minion_module
+
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
     spell_module.attach_resource(app)
+    island_module.attach_resource(app)
+    builder_minion_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:

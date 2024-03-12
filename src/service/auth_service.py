@@ -5,6 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
 from src.model.user_profile import UserProfile
 db: SQLAlchemy = current_app.db
@@ -100,6 +101,11 @@ class AuthService:
         self._log.info(f'Creating new account for {firstname} {lastname} with username {username}')
         user: UserProfile = UserProfile(username, firstname, lastname, credentials)
         current_app.db.session.add(user)
+
+        # Create island for the user
+        island = Island(user.player)
+        current_app.db.session.add(island)
+
         current_app.db.session.commit()
         return user
 

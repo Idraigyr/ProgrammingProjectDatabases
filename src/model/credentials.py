@@ -15,7 +15,7 @@ class Credentials(current_app.db.Model):
     """
     __tablename__ = "credentials"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    type: Mapped[str] = Column(String(32))
+    type: Mapped[str] = Column(String(32)) # Keep track of polymorphic identities
     user_profile_id: Mapped[int] = mapped_column(ForeignKey('user_profile.id'))
     user_profile = relationship("UserProfile", back_populates="credentials", uselist=False)
 
