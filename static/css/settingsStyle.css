@@ -65,11 +65,16 @@ h1 {
 .key-bind {
   display: flex;
   flex-direction: column;
-  margin-right: 20px;
+  margin-right: 10px;
   margin-bottom: 20px;
   margin-top: 10px;
 }
 
 .key-bind label {
   margin-bottom: 5px;
+}
+
+.applyButton{
+  background: #ccc5ab;
+  margin-left: 94%;
 }
