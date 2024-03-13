@@ -43,7 +43,7 @@ class IslandSchema(Schema):
             from src.resource.builder_minion import BuilderMinionSchema
             return BuilderMinionSchema(entity)
 
-        raise ValueError(f'Cannot find Schema for unknown entity type {type}')
+        raise ValueError(f'Cannot find Schema for unknown entity type {entity.type}')
 
 
 class IslandResource(Resource):
@@ -61,8 +61,7 @@ class IslandResource(Resource):
     @jwt_required()
     def get(self):
         """
-        Retrieve the island with the given id
-        :param id: The id of the island to retrieve
+        Retrieve the island with the given id in query parameter
         :return: The island in JSON format
         """
         id = request.args.get('id', type=int)
