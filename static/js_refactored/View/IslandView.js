@@ -13,7 +13,6 @@ export class Island extends IView{
         this.#gridCellSize = gridCellSize;
         this.#cellsInRow = cellsInRow;
         this.#islandThickness = islandThickness;
-        this.buildings = [];
     }
     createIsland(){
 
@@ -91,9 +90,6 @@ export class Island extends IView{
 
     initScene(){
         const group = new THREE.Group();
-
-        // TODO: debug?
-        // group.add(this.createAxes());
 
         group.add(this.createLights());
 

@@ -1,7 +1,7 @@
 import {RaycastController} from "./RaycastController.js";
 import * as THREE from "three";
 
-export class RitualController extends RaycastController{
+export class BuildManager {
     ritualToPlace;
     previewMaterial;
     #gridCellSize;
@@ -13,7 +13,6 @@ export class RitualController extends RaycastController{
      */
     // TODO: connect gridcellsize from here to the gridcellsize of the terrain
     constructor(plane, gridCellsize= 10, previewMaterial=undefined) {
-        super(plane);
         this.#gridCellSize = gridCellsize;
         if(!previewMaterial){
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
@@ -31,22 +30,22 @@ export class RitualController extends RaycastController{
         this.correctRitualPosition(object);
     }
     // TODO: refactor the code below
-    // correctRitualPosition(object){
-    //     object.position.x = Math.floor(object.position.x/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
-    //     object.position.z = Math.floor(object.position.z/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
-    //     const boundingBox = new THREE.Box3().setFromObject(object);
-    //     object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
-    // }
-    //
-    // correctRitualScale(object){
-    //     let boundingBox = new THREE.Box3().setFromObject(object);
-    //     const minVec = boundingBox.min;
-    //     const maxVec = boundingBox.max;
-    //     const difVec = maxVec.sub(minVec);
-    //     const biggestSideLength = Math.max(Math.abs(difVec.x), Math.abs(difVec.z));
-    //     const scaleFactor = this.#gridCellSize/biggestSideLength;
-    //     object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
-    // }
+    correctRitualPosition(object){
+        object.position.x = Math.floor(object.position.x/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
+        object.position.z = Math.floor(object.position.z/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
+        const boundingBox = new THREE.Box3().setFromObject(object);
+        object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
+    }
+
+    correctRitualScale(object){
+        let boundingBox = new THREE.Box3().setFromObject(object);
+        const minVec = boundingBox.min;
+        const maxVec = boundingBox.max;
+        const difVec = maxVec.sub(minVec);
+        const biggestSideLength = Math.max(Math.abs(difVec.x), Math.abs(difVec.z));
+        const scaleFactor = this.#gridCellSize/biggestSideLength;
+        object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
+    }
     //
     // /**
     //  * Shows roll mesh overlay (preview of the object to build)

@@ -7,6 +7,8 @@ import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
 import {ViewManager} from "./Controller/ViewManager.js";
+import {AssetManager} from "./Controller/AssetManager.js";
+
 class App {
     /**
      * create the app
@@ -42,9 +44,10 @@ class App {
         this.cameraManager.camera.lookAt(500,0,0);
         this.playerController = null;
         this.minionControllers = [];
+        this.AssetManager = new AssetManager();
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager});
-        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager});
+        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.AssetManager});
 
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
@@ -88,6 +91,7 @@ class App {
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.cameraManager.target = this.worldManager.world.player;
+        await this.AssetManager.loadViews();
     }
     start(){
         if ( WebGL.isWebGLAvailable()) {

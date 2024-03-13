@@ -1,5 +1,5 @@
 import {Factory} from "../Controller/Factory.js";
-import {Fireball} from "./Spell.js";
+import {Fireball, BuildSpell} from "./Spell.js";
 
 export class World{
     constructor(params) {
@@ -11,6 +11,7 @@ export class World{
         });
         this.player = this.factory.createPlayer();
         this.player.changeEquippedSpell(0,new Fireball({position: null}));
+        this.player.changeEquippedSpell(1,new BuildSpell({position: null}));
         this.entities = [];
     }
     exportWorld(json){
