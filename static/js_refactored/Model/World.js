@@ -10,8 +10,8 @@ export class World{
             this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
         });
         this.player = this.factory.createPlayer();
-        this.player.changeEquippedSpell(0,new Fireball({position: null}));
-        this.player.changeEquippedSpell(1,new BuildSpell({position: null}));
+        this.player.changeEquippedSpell(0,new BuildSpell({position: null}));
+        this.player.changeEquippedSpell(1,new Fireball({position: null}));
         this.entities = [];
     }
     exportWorld(json){

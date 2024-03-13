@@ -24,6 +24,6 @@ export class AssetManager{
     }
     }
     getModel(name){
-        return this.#modelList[name];
+        return this.#modelList[name].clone();
     }
 }
