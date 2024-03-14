@@ -128,5 +128,5 @@ def attach_resource(app: Flask) -> None:
     blueprint = Blueprint('api_builder_minion', __name__)
     api = Api(blueprint)
     api.add_resource(BuilderMinionResource, '/api/entity/builder_minion')
-    app.register_blueprint(blueprint, url_prefix='/') # Relative to api.add_resource path
+    app.register_blueprint(blueprint, url_prefix='/')  # Relative to api.add_resource path
     add_swagger(api)

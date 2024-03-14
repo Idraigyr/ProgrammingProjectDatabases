@@ -3,6 +3,7 @@ from flask_restful_swagger_3 import Resource
 from src.model.entity import Entity
 from src.swagger_patches import Schema
 
+
 class EntitySchema(Schema):
     """
     Schema for the Entity model.

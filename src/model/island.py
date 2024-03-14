@@ -19,6 +19,10 @@ class Island(current_app.db.Model):
     def entities(self):
         return relationship("Entity", back_populates="island")
 
+    @declared_attr
+    def placeables(self):
+        return relationship("Placeable", back_populates="island")
+
     def __init__(self, owner: Player = None):
         self.owner = owner
         self.owner_id = owner.user_profile_id
