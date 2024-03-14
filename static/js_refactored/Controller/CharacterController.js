@@ -123,7 +123,7 @@ export class CharacterController extends Subject{
                 this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {position: vec, direction: new THREE.Vector3(1,0,0).applyQuaternion(this._character.rotation)}));
                 this._character.cooldownSpell();
             }
-        } else if (this._character.getCurrentSpell() && this._character.getCurrentSpell() === BuildSpell){
+        } else if (this._character.getCurrentSpell() instanceof BuildSpell){
             this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
         this._character.updateCooldowns(deltaTime);

@@ -12,6 +12,7 @@ export class World{
             this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
         });
         this.player = this.factory.createPlayer();
+        // Set default values for the inventory slots
         this.player.changeEquippedSpell(0,new BuildSpell({position: null}));
         this.player.changeEquippedSpell(1,new Fireball({position: null}));
         this.entities = [];
