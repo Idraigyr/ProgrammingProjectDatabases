@@ -95,6 +95,7 @@ export class Island extends IView{
 
         group.add(this.createPlane());
         group.add(this.createGrassField());
+        this.charModel = group;
         return group;
     }
 }

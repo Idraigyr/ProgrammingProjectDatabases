@@ -8,6 +8,7 @@ import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
 import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
+import {RaycastController} from "./Controller/RaycastController.js";
 
 class App {
     /**
@@ -33,6 +34,7 @@ class App {
         this.blockedInput = true;
 
         this.viewManager = new ViewManager();
+        this.raycastController = new RaycastController({viewManager: this.viewManager});
         this.inputManager = new Controller.InputManager();
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -44,10 +46,10 @@ class App {
         this.cameraManager.camera.lookAt(500,0,0);
         this.playerController = null;
         this.minionControllers = [];
-        this.AssetManager = new AssetManager();
+        this.assetManager = new AssetManager();
 
-        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager});
-        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.AssetManager});
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
+        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
 
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
@@ -86,12 +88,13 @@ class App {
     }
 
     async loadAssets(){
+        await this.assetManager.loadViews();
         this.worldManager = await new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
+        this.playerController.addEventListener("updateBuildSpell", this.raycastController.updateBuildSpell.bind(this.raycastController));
         this.cameraManager.target = this.worldManager.world.player;
-        await this.AssetManager.loadViews();
     }
     start(){
         if ( WebGL.isWebGLAvailable()) {

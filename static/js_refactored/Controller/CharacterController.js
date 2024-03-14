@@ -3,6 +3,7 @@ import {horizontalSensitivity, movementSpeed, sprintMultiplier, verticalSensitiv
 import * as THREE from "three";
 import {max} from "../helpers.js";
 import {Factory} from "./Factory.js";
+import {BuildSpell} from "../Model/Spell.js";
 
 export class CharacterController extends Subject{
     _character;
@@ -20,6 +21,10 @@ export class CharacterController extends Subject{
 
     createSpellCastEvent(type, params){
         return new CustomEvent("castSpell", {detail: {type: type, params: params}});
+    }
+
+    createUpdateBuildSpellEvent(type, params){
+        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
 
     updateRotation(event){
@@ -118,6 +123,8 @@ export class CharacterController extends Subject{
                 this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {position: vec, direction: new THREE.Vector3(1,0,0).applyQuaternion(this._character.rotation)}));
                 this._character.cooldownSpell();
             }
+        } else if (this._character.getCurrentSpell() && this._character.getCurrentSpell() === BuildSpell){
+            this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
         this._character.updateCooldowns(deltaTime);
     }

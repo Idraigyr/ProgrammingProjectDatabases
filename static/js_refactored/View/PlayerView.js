@@ -1,11 +1,9 @@
 import * as THREE from "three";
 import {IAnimatedView} from "./View.js";
-import {wizardPath} from "../configs/ViewConfigs.js";
 
 export class Player extends IAnimatedView{
-    constructor() {
-        super();
-        this.assetPath = wizardPath;
+    constructor(params) {
+        super(params);
         this.horizontalRotation = 180;
     }
 

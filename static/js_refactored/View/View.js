@@ -1,9 +1,8 @@
 import * as THREE from "three";
 
 export class IView {
-    constructor() {
-        this.charModel = null;
-        this.assetPath = null;
+    constructor(params) {
+        this.charModel = params?.charModel;
         this.horizontalRotation = 0;
     }
     update(deltaTime) {}
@@ -20,10 +19,10 @@ export class IView {
 }
 
 export class IAnimatedView extends IView{
-    constructor() {
-        super();
+    constructor(params) {
+        super(params);
         this.animated = true;
-        this.mixer = null;
+        this.mixer = new THREE.AnimationMixer(params.charModel);
         this.animations = {};
     }
     update(deltaTime) {

@@ -9,17 +9,7 @@ export class Factory{
     constructor(params) {
         this.scene = params.scene;
         this.viewManager = params.viewManager;
-        this.AssetLoader = new Controller.AssetLoader(this.scene);
-    }
-    loadAsset(view){
-        let extension = getFileExtension(view.assetPath);
-        if(extension === "glb" || extension === "gltf"){
-            this.AssetLoader.loadGLTF(view.assetPath,view);
-        } else if(extension === "fbx"){
-            this.AssetLoader.loadFBX(view.assetPath,view);
-        } else {
-            throw new Error(`cannot load model with .${extension} extension`);
-        }
+        this.assetManager = params.assetManager;
     }
 
     createMinion(){
@@ -28,10 +18,11 @@ export class Factory{
 
     createPlayer(){
         let player = new Model.Wizard();
-        let view = new View.Player();
+        let view = new View.Player({charModel: this.assetManager.getModel("Player")});
+        this.scene.add(view.charModel);
+        view.loadAnimations(this.assetManager.getAnimations("Player"));
 
         player.fsm = new PlayerFSM(view.animations);
-        this.loadAsset(view);
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
 
@@ -41,10 +32,11 @@ export class Factory{
     createIsland(position, rotation, buildingsList){
         let islandModel = new Model.Island(position, rotation);
         let view = new View.Island();
-
+        view.initScene()
         //TODO: island asset?
+        //this.AssetLoader.loadAsset(view);
+        this.scene.add(view.charModel);
         this.#addBuildings(islandModel.buildings, buildingsList);
-        this.scene.add(view.initScene());
 
         this.viewManager.addPair(islandModel, view);
         return islandModel;
@@ -52,11 +44,12 @@ export class Factory{
     #addBuildings(islandModel, buildingsList){
         buildingsList.forEach((building) => {
             try {
-                let model = new Model[building.type](building.position,building.rotation);
-                let view = new View[building.type](building.position,building.rotation);
+                console.log(building);
+                let model = new Model[building.type]({position: building.position, rotation: building.rotation});
+                let view = new View[building.type]({charModel: this.assetManager.getModel(building.type)});
+                this.scene.add(view.charModel);
                 model.addEventListener("updatePosition",view.updatePosition.bind(view));
                 model.addEventListener("updateRotation",view.updateRotation.bind(view));
-                this.AssetLoader.loadGLTF(view.assetPath,view);
                 islandModel.push(model);
                 this.viewManager.addPair(model, view);
             } catch (e){

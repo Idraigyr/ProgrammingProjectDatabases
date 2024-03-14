@@ -50,7 +50,7 @@ export class SpellFactory{
             position: details.params.position
         });
         let view = new Building();
-        view.charModel = this.AssetManager.getModel("tree");
+        view.charModel = this.AssetManager.getModel("Tree");
 
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));

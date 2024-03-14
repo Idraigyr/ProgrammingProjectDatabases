@@ -12,6 +12,7 @@ export class Character extends Entity{
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
         this.fsm = null;
+        this.health = 0;
     }
 
     get quatFromHorizontalRotation(){
