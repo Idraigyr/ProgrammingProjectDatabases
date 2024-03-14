@@ -5,19 +5,23 @@ export class BuildManager {
     ritualToPlace;
     previewMaterial;
     #gridCellSize;
+    planes = [];
     /**
      * Creates objects that controls which ritual to put
-     * @param plane Plane on which the objects could be placed
-     * @param gridCellsize length of the grid square side
+     * @param gridCellSize length of the grid square side
      * @param previewMaterial Material of the ritual preview
      */
     // TODO: connect gridcellsize from here to the gridcellsize of the terrain
-    constructor(plane, gridCellsize= 10, previewMaterial=undefined) {
-        this.#gridCellSize = gridCellsize;
+    // TODO: if center NOT 0,0,0 + rotation
+    constructor(gridCellSize= 10, previewMaterial=undefined) {
+        this.#gridCellSize = gridCellSize;
         if(!previewMaterial){
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
         this.setPreviewMaterial(previewMaterial);
+    }
+    addBuildPlane(plane){
+        this.planes.push(plane);
     }
     setPreviewMaterial(material){
         this.previewMaterial = material;

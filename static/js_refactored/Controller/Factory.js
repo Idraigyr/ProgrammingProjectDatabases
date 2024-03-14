@@ -41,7 +41,13 @@ export class Factory{
         this.viewManager.addPair(islandModel, view);
         return islandModel;
     }
-    #addBuildings(islandModel, buildingsList){
+
+    /**
+     * Creates models of the buildings
+     * @param islandModels (output) models
+     * @param buildingsList list of the buildings to add
+     */
+    #addBuildings(islandModels, buildingsList){
         buildingsList.forEach((building) => {
             try {
                 console.log(building);
@@ -50,7 +56,7 @@ export class Factory{
                 this.scene.add(view.charModel);
                 model.addEventListener("updatePosition",view.updatePosition.bind(view));
                 model.addEventListener("updateRotation",view.updateRotation.bind(view));
-                islandModel.push(model);
+                islandModels.push(model);
                 this.viewManager.addPair(model, view);
             } catch (e){
                 console.log(`no ctor for ${building.type} building: ${e.message}`);

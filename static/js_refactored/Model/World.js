@@ -1,10 +1,12 @@
 import {Factory} from "../Controller/Factory.js";
 import {Fireball, BuildSpell} from "./Spell.js";
+import {BuildManager} from "../Controller/BuildManager.js";
 
 export class World{
     constructor(params) {
         this.factory = params.Factory;
         this.spellFactory = params.SpellFactory;
+        this.BuildManager = new BuildManager();
         this.islands = [];
         params.islands.forEach((island) => {
             this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
