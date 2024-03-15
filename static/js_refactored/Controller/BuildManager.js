@@ -43,6 +43,9 @@ export class BuildManager {
 
     #extractObject(object){
         if(!object || object instanceof Object3D) return;
+        // TODO: get model by the address
+        let view = this.#raycaster.viewManager.getPair(object)
+        if(view) return view.charModel;
         return object.charModel;
     }
     correctRitualPosition(object){

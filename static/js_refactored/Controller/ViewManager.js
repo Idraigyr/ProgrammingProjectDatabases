@@ -25,6 +25,13 @@ export class ViewManager{
             this.pairs[model.type][model] = view;
         }
     }
+    getPair(model){
+        if(model.type === "player"){
+            return this.pairs.player[model];
+        } else {
+            return this.pairs[model.type][model];
+        }
+    }
     /**
     * callback to delete view when model is deleted. Should be called with every deletion of a model object
     * @param {{detail: model}} event
