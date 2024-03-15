@@ -9,7 +9,19 @@ export class RaycastController{
         this.raycaster.setFromCamera(new THREE.Vector2(0,0),event.detail.camera);
     }
     getIntersects(touchableObjects){
-        // TODO: problem of the raycaster: it can only be applied on threejs objects
-        return this.raycaster.intersectObjects(touchableObjects, true);
+        let extracted = []
+        for (const object of touchableObjects){
+            extracted.push(this.extractObject(object));
+        }
+        return this.raycaster.intersectObjects(extracted, true);
+    }
+
+    /**
+     * Extracts three js object from custom classes
+     * @param toExtract class from which you have to extract
+     */
+    extractObject(toExtract){
+        if(toExtract.isObject3D) return toExtract;
+        return toExtract.charModel;
     }
 }

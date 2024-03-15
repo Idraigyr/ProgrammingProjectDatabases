@@ -55,8 +55,11 @@ export class BuildManager {
     }
 
     updateBuildSpell(event){
-        let closedCollided = this.getIntersects(this.#raycaster.ritualTouchables)?.[0];
+        let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables)?.[0];
         if(closedCollided){
+            let object = closedCollided.object;
+            object.position.copy( closedCollided.point ).add( closedCollided.face.normal );
+            this.scaleAndCorrectPosition(object);
             // TODO: just move the mesh
             // TODO: just place and scale it correctly
             // TODO: just put them on the ground

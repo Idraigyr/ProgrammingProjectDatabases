@@ -9,7 +9,7 @@ import {SpellFactory} from "./Controller/SpellFactory.js";
 import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
-import {BuildManager} from "./Controller/BuildManager";
+import {BuildManager} from "./Controller/BuildManager.js";
 
 class App {
     /**
