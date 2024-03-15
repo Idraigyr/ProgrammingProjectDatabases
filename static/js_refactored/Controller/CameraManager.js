@@ -64,6 +64,11 @@ export class CameraManager {
 
         this.camera.position.copy(copy);
         this.camera.lookAt(idealLookAt);
+        let camera = this.camera;
+        const customEvent = new CustomEvent('updateCameraPosition', { detail: { camera } });
+        // Dispatching the custom event on a specific DOM element
+        document.dispatchEvent(customEvent);
+
     }
 
     set target(target){

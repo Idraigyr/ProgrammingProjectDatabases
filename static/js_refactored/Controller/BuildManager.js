@@ -1,10 +1,12 @@
 import {RaycastController} from "./RaycastController.js";
 import * as THREE from "three";
+import {Object3D} from "three";
 
 export class BuildManager {
     ritualToPlace;
     previewMaterial;
     #gridCellSize;
+    #previewObject;
     planes = [];
     #raycaster;
     /**
@@ -22,6 +24,7 @@ export class BuildManager {
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
         this.setPreviewMaterial(previewMaterial);
+        document.addEventListener('placeBuildSpell', this.placeBuildSpell.bind(this));
     }
     addBuildPlane(plane){
         this.planes.push(plane);
@@ -33,10 +36,15 @@ export class BuildManager {
         this.ritualToPlace = ritual;
     }
     scaleAndCorrectPosition(object){
-        this.correctRitualScale(object);
-        this.correctRitualPosition(object);
+        let extracted = this.#extractObject(object)
+        this.correctRitualScale(extracted);
+        this.correctRitualPosition(extracted);
     }
-    // TODO: refactor the code below
+
+    #extractObject(object){
+        if(!object || object instanceof Object3D) return;
+        return object.charModel;
+    }
     correctRitualPosition(object){
         object.position.x = Math.floor(object.position.x/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
         object.position.z = Math.floor(object.position.z/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
@@ -55,18 +63,32 @@ export class BuildManager {
     }
 
     updateBuildSpell(event){
-        let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables)?.[0];
-        if(closedCollided){
-            let object = closedCollided.object;
-            object.position.copy( closedCollided.point ).add( closedCollided.face.normal );
-            this.scaleAndCorrectPosition(object);
-            // TODO: just move the mesh
-            // TODO: just place and scale it correctly
-            // TODO: just put them on the ground
-            // TODO: just add transparency roll over mesh logic
-            // TODO: just say 'Finally!'
+        let collision = this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0];
+        if(collision){
+            this.#extractObject(this.ritualToPlace).position.copy( collision.point ).add( collision.face.normal );
+            this.scaleAndCorrectPosition(this.ritualToPlace);
         }
     }
+    placeBuildSpell(event){
+        // let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables)?.[0];
+        // if(closedCollided){
+        //     let object = closedCollided.object;
+        //     let planes = this.#raycaster.viewManager.planes;
+        //     if(planes.indexOf(object) === -1){
+        //         console.log("touched plane");
+        //         return;
+        //     }else{
+        //         console.log("touched something else");
+        //         return;
+        //     }
+        //     object.position.copy( closedCollided.point ).add( closedCollided.face.normal );
+        //     this.scaleAndCorrectPosition(object);
+        //     // TODO: just put them on the ground
+        //     // TODO: just add transparency roll over mesh logic
+        //     // TODO: just say 'Finally!'
+        // }
+    }
+    // TODO: refactor the code below
     //
     // /**
     //  * Shows roll mesh overlay (preview of the object to build)

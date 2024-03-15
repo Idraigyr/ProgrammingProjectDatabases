@@ -10,6 +10,12 @@ export class ViewManager{
             spellEntity: {}
         };
     }
+
+    /**
+     * Add pairs to the pairs list of the manager
+     * @param model model to add
+     * @param view view to add
+     */
     addPair(model, view){
         if(model.type === "player" && Object.keys(this.pairs.player).length === 0){
             this.pairs.player[model] = view;
@@ -29,6 +35,7 @@ export class ViewManager{
 
     get ritualTouchables(){
         let touchables = [];
+        // TODO: proper version of this
         for(const model in this.pairs.building){
             touchables.push(this.pairs.building[model]);
         }
@@ -37,7 +44,19 @@ export class ViewManager{
         }
         return touchables;
     }
+    get planes(){
+        let planes = [];
+        for(const islandKey in this.pairs.island){
+            let island = this.pairs.island[islandKey];
+            planes.push(island.blockPlane);
+        }
+        return planes;
+    }
 
+    /**
+     * Updates all views with the given delta time
+     * @param deltaTime time difference
+     */
     updateAnimatedViews(deltaTime){
         for(const type in this.pairs){
             for(const model in this.pairs[type]){

@@ -26,6 +26,7 @@ export class AssetManager{
         console.log(this.#modelList);
     }
     getModel(name){
+        console.log(this.#modelList)
         if(this.#modelList[name]){
             return clone(this.#modelList[name].model);
         } else {

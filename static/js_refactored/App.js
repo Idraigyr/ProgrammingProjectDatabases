@@ -36,7 +36,6 @@ class App {
 
         this.viewManager = new ViewManager();
         this.raycastController = new RaycastController({viewManager: this.viewManager});
-        this.BuildManager = new BuildManager(this.raycastController);
         this.inputManager = new Controller.InputManager();
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -52,7 +51,7 @@ class App {
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
-
+        this.BuildManager = new BuildManager(this.raycastController);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
     }
@@ -125,8 +124,12 @@ class App {
 
         this.renderer.render( this.scene, this.cameraManager.camera );
     }
+    postAssetLoadingFunction(){
+        this.BuildManager.setCurrentRitual(this.spellFactory.createTree());
+    }
 }
 
 let app = new App({});
 await app.loadAssets();
+app.postAssetLoadingFunction();
 app.start();

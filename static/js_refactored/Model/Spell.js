@@ -133,7 +133,7 @@ export class BuildSpell extends ConcreteSpell{
             }),
             effects: [
                 new Build({
-                    building: "tree"
+                    building: "Tree"
                 })
             ]
         });

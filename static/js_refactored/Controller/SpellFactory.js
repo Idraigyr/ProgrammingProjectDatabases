@@ -19,10 +19,11 @@ export class SpellFactory{
                 entityModel = this._createFireball(event.detail);
                 break;
             case BuildSpell:
-                // TODO: change this
-                entityModel = this._createTree(event.detail);
+                const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
+                document.dispatchEvent(customEvent);
                 break;
         }
+        if(!entityModel) return;
         this.models.push(entityModel);
     }
 
@@ -41,19 +42,13 @@ export class SpellFactory{
         this.viewManager.addPair(model,view);
         return model;
     }
-    _createTree(details){
-        let model = new Model.Projectile({
-            spellType: details.type,
-            direction: details.params.direction,
-            velocity: details.type.spell.velocity,
-            fallOf: details.type.fallOf,
-            position: details.params.position
-        });
-        let view = new Building();
+    createTree(){
+        let model = new Model.Tree();
+        let view = new View.Tree();
         view.charModel = this.AssetManager.getModel("Tree");
 
         this.scene.add(view.charModel);
-        model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        document.addEventListener("updatePosition", view.updatePosition.bind(view));
         this.viewManager.addPair(model,view);
         return model;
     }
