@@ -6,15 +6,18 @@ export class BuildManager {
     previewMaterial;
     #gridCellSize;
     planes = [];
+    #raycaster;
     /**
      * Creates objects that controls which ritual to put
+     * @param raycastController raycaster for the builder
      * @param gridCellSize length of the grid square side
      * @param previewMaterial Material of the ritual preview
      */
     // TODO: connect gridcellsize from here to the gridcellsize of the terrain
     // TODO: if center NOT 0,0,0 + rotation
-    constructor(gridCellSize= 10, previewMaterial=undefined) {
+    constructor(raycastController, gridCellSize= 10, previewMaterial=undefined) {
         this.#gridCellSize = gridCellSize;
+        this.#raycaster = raycastController;
         if(!previewMaterial){
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
@@ -49,6 +52,17 @@ export class BuildManager {
         const biggestSideLength = Math.max(Math.abs(difVec.x), Math.abs(difVec.z));
         const scaleFactor = this.#gridCellSize/biggestSideLength;
         object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
+    }
+
+    updateBuildSpell(event){
+        let closedCollided = this.getIntersects(this.#raycaster.ritualTouchables)?.[0];
+        if(closedCollided){
+            // TODO: just move the mesh
+            // TODO: just place and scale it correctly
+            // TODO: just put them on the ground
+            // TODO: just add transparency roll over mesh logic
+            // TODO: just say 'Finally!'
+        }
     }
     //
     // /**

@@ -9,6 +9,7 @@ import {SpellFactory} from "./Controller/SpellFactory.js";
 import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
+import {BuildManager} from "./Controller/BuildManager";
 
 class App {
     /**
@@ -35,6 +36,7 @@ class App {
 
         this.viewManager = new ViewManager();
         this.raycastController = new RaycastController({viewManager: this.viewManager});
+        this.BuildManager = new BuildManager(this.raycastController);
         this.inputManager = new Controller.InputManager();
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -93,7 +95,7 @@ class App {
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
-        this.playerController.addEventListener("updateBuildSpell", this.raycastController.updateBuildSpell.bind(this.raycastController));
+        this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         this.cameraManager.target = this.worldManager.world.player;
     }
     start(){

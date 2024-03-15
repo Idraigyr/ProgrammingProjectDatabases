@@ -124,37 +124,18 @@ class ConcreteSpell{
 
 export class BuildSpell extends ConcreteSpell{
     // TODO: change this
-    // constructor(params) {
-    //     super({
-    //         spell: new HitScan({
-    //             duration: 0,
-    //             cooldown: 0,
-    //             castTime: 0,
-    //         }),
-    //         effects: [
-    //             new Build({
-    //                 building: "tree"
-    //             })
-    //         ]
-    //     });
-    // }
-        constructor(params) {
+    constructor(params) {
         super({
-            spell: new Projectile({
-                duration: 5,
-                cooldown: 1.34,
+            spell: new HitScan({
+                duration: 0,
+                cooldown: 0,
                 castTime: 0,
-                velocity: 10,
-                fallOf: 0
             }),
             effects: [
-                new InstantDamage({
-                    damage: 0
-            }), new DoT({
-                    damage: 0,
-                    interval: 0,
-                    duration: 0
-            })]
+                new Build({
+                    building: "tree"
+                })
+            ]
         });
     }
 }
