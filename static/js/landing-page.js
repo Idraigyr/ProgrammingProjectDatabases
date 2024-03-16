@@ -10,7 +10,9 @@ let imgHeight = 1280;
 init();
 animate();
 
-// Function to initialize the scene
+/**
+ * Function to initialize the scene
+ */
 function init() {
     // Set up scene
     scene = new THREE.Scene();
@@ -54,7 +56,9 @@ function init() {
     scaleBackground();
 }
 
-// Scales background image
+/**
+ * Function to scale the background image
+ */
 function scaleBackground(){
     if(!scene.background) return;
     const targetAspect = window.innerWidth / window.innerHeight;
@@ -68,7 +72,9 @@ function scaleBackground(){
     scene.background.repeat.y = factor > 1 ? 1 : factor;
 }
 
-// Animate the scene
+/**
+ * Function to animate the scene
+ */
 function animate() {
     requestAnimationFrame(animate);
 
@@ -81,7 +87,10 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Handle window resize
+
+/**
+ * Event listener for window resize
+ */
 window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();

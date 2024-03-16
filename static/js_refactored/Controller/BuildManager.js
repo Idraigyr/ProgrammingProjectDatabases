@@ -7,6 +7,7 @@ export class BuildManager {
     previewMaterial;
     #gridCellSize;
     #scene;
+    #copyable;
     #previewObject;
     planes = [];
     #raycaster;
@@ -28,6 +29,7 @@ export class BuildManager {
         }
         this.setPreviewMaterial(previewMaterial);
         document.addEventListener('placeBuildSpell', this.placeBuildSpell.bind(this));
+        document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
     }
     addBuildPlane(plane){
         this.planes.push(plane);
@@ -35,8 +37,9 @@ export class BuildManager {
     setPreviewMaterial(material){
         this.previewMaterial = material;
     }
-    setCurrentRitual(ritual){
+    setCurrentRitual(ritual, copyable=false){
         this.ritualToPlace = ritual;
+        this.#copyable = copyable;
         this.scaleAndCorrectPosition(ritual);
         // Set overmesh
         this.#previewObject = this.#extractObject(ritual).clone();
@@ -81,66 +84,18 @@ export class BuildManager {
             this.scaleAndCorrectPosition(this.#previewObject);
         }
     }
+    turnPreviewSpell(event){
+        this.#previewObject.rotation.y += Math.PI/2;
+    }
     placeBuildSpell(event){
         if(!this.ritualToPlace) return;
-        let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables);
-        if(closedCollided){
-            // TODO: TAKE POSITION OF THE RITUALTOPLACE
-            let object = closedCollided[0].object;
-            let planes = this.#raycaster.viewManager.planes;
-            // Touched plane
-            if(planes.indexOf(object) === -1){
-                this.#extractObject(this.ritualToPlace).position.copy( closedCollided[0].point ).add( closedCollided[0].face.normal );
-                this.scaleAndCorrectPosition(this.ritualToPlace);
-            }
+        let extracted = this.#extractObject(this.ritualToPlace);
+        if(this.#copyable) {
+            extracted = extracted.clone(true);
+            this.#scene.add(extracted);
         }
+        extracted.position.copy( this.#previewObject.position );
+        extracted.rotation.y = this.#previewObject.rotation.y;
+        this.scaleAndCorrectPosition(this.ritualToPlace);
     }
-    // TODO: refactor the code below
-    //
-    // /**
-    //  * Shows roll mesh overlay (preview of the object to build)
-    //  * @param event mouse movement event
-    //  */
-    // ritualManipulator(event){
-    //     if(!enableBuilding || rollOverMesh === undefined) return;
-    //     raycaster.setFromCamera( new THREE.Vector2(0,0), camera );
-    //     const intersects = this.intersectObjects( this.touchableObjects, true );
-	// 			if ( intersects.length > 0 ) {
-    //
-	// 				const intersect = intersects[ 0 ];
-    //
-	// 				rollOverMesh.position.copy( intersect.point ).add( intersect.face.normal );
-    //                 this.correctRitualPosition(rollOverMesh);
-	// 			}
-    // }
-    // ritualBuilder(event){
-    //     if(!enableBuilding || !currentThingToPlace.getModel()) return;
-    //     // For object rotation. TODO: encapsulate in an apart function?
-    //     if(event.which === 3 || event.button === 2){
-    //         rollOverMesh.rotation.y += Math.PI/2;
-    //         currentThingToPlace.getModel().rotation.y += Math.PI/2;
-    //         return;
-    //     }
-    //     if( this.#input.keys.build ){
-    //                     //pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
-    //                     raycaster.setFromCamera( new THREE.Vector2(0,0), camera );
-    //                     const intersects = raycaster.intersectObjects( touchableObjects, true );
-    //                     if (intersects.length > 0 ){
-    //                         const intersect = intersects[0];
-    //                         if(intersect.object !== this.plane){
-    //                             console.log("object touched");
-    //                             intersect.object.parent.position.copy( intersect.point ).add( intersect.face.normal );
-    //                             updateObjectToPlace(intersect.object.parent.parent);
-    //                             return;
-    //                         }
-    //                         let smth = currentThingToPlace.getModel();
-    //                         const voxel = smth.clone();
-    //                         voxel.position.copy( intersect.point ).add( intersect.face.normal );
-    //                         this.scaleAndCorrectPosition(voxel);
-    //                         // TODO: voxel for further interaction
-    //                         // touchableObjects.push(voxel);
-    //                         scene.add( voxel );
-    //                     }
-    //                 }
-    // }
 }

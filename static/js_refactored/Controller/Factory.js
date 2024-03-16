@@ -4,6 +4,9 @@ import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
 import {getFileExtension} from "../helpers.js";
 
+/**
+ * Factory class that creates models and views for the entities
+ */
 export class Factory{
     //TODO: add factory itself and model class of object to view.userData
     constructor(params) {
@@ -16,6 +19,10 @@ export class Factory{
 
     }
 
+    /**
+     * Creates player model and view
+     * @returns {Wizard}
+     */
     createPlayer(){
         let player = new Model.Wizard();
         let view = new View.Player({charModel: this.assetManager.getModel("Player")});
@@ -29,6 +36,14 @@ export class Factory{
         this.viewManager.addPair(player, view);
         return player;
     }
+
+    /**
+     * Creates island model and view
+     * @param position position of the island
+     * @param rotation rotation of the island
+     * @param buildingsList list of the buildings to add
+     * @returns model of the island
+     */
     createIsland(position, rotation, buildingsList){
         let islandModel = new Model.Island(position, rotation);
         let view = new View.Island();

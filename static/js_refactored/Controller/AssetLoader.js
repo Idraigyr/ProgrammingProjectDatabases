@@ -4,6 +4,9 @@ import * as THREE from "three";
 import {getFileExtension} from "../helpers.js";
 import {AnimationMixer} from "three";
 
+/**
+ * Class to load assets
+ */
 export class AssetLoader{
     constructor() {
         //code to update loading screen progress bar via loadingmanager
@@ -20,19 +23,28 @@ export class AssetLoader{
         };
     }
 
-    loadAsset(path) {
+    /**
+     * Load asset
+     * @param path path to the asset
+     * @returns {*} the model and its animations
+     */
+    loadAsset(path){
         let extension = getFileExtension(path);
-        if (extension === "glb" || extension === "gltf") {
+        if(extension === "glb" || extension === "gltf"){
             return this.loadGLTF(path);
-        } else if (extension === "fbx") {
+        } else if(extension === "fbx"){
             return this.loadFBX(path);
         } else {
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
 
-
     //TODO:: add timeout error handler
+    /**
+     * Load a gltf model
+     * @param path path to the model
+     * @returns {*} the model and its animations
+     */
     loadGLTF(path){
         let loader = new GLTFLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
@@ -53,6 +65,12 @@ export class AssetLoader{
             throw new Error(err);
         });
     }
+
+    /**
+     * Load a fbx model
+     * @param path path to the model
+     * @returns {*} the model and its animations
+     */
     loadFBX(path){
         let loader = new FBXLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {

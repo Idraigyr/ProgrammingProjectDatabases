@@ -3,11 +3,21 @@ import {IView} from "./View.js";
 import {generateGrassField} from "../external/grass.js";
 
 
+/**
+ * Island view
+ */
 export class Island extends IView{
     #gridCellSize;
     #cellsInRow;
     #islandThickness;
     blockPlane;
+
+    /**
+     * Constructor for Island view
+     * @param gridCellSize size of grid cell
+     * @param cellsInRow number of cells in a row
+     * @param islandThickness thickness of the island plane
+     */
     constructor(gridCellSize = 10, cellsInRow = 15, islandThickness = 10) {
         super();
         this.#gridCellSize = gridCellSize;
@@ -17,6 +27,11 @@ export class Island extends IView{
     createIsland(){
 
     }
+
+    /**
+     * Create lights for the scene
+     * @returns {Group} group of lights
+     */
     createLights(){
         const group = new THREE.Group();
         const light = new THREE.AmbientLight( 0xFFFFFF, 2);
@@ -31,6 +46,10 @@ export class Island extends IView{
         return group;
     }
 
+    /**
+     * Create plane for the island
+     * @returns {Group} group of plane object
+     */
     createPlane(){
         const group = new THREE.Group();
         let pos = {x: 0, y: -this.#islandThickness/2, z: 0};
@@ -51,12 +70,20 @@ export class Island extends IView{
         return group;
     }
 
+    /**
+     * Create grass field
+     * @returns {Group} group of grass field
+     */
     createGrassField(){
         const group = new THREE.Group();
         generateGrassField(group);
         return group;
     }
 
+    /**
+     * Create axes for the scene
+     * @returns {Group} group of axes
+     */
     createAxes(){
         const group = new THREE.Group();
         const points = [];
@@ -88,6 +115,10 @@ export class Island extends IView{
         return group;
     }
 
+    /**
+     * Initialize the scene
+     * @returns {Group} group of scene objects
+     */
     initScene(){
         const group = new THREE.Group();
 

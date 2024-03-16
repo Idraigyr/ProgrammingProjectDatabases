@@ -1,6 +1,9 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
 
+/**
+ * @class SpellEntity - represents a spell entity
+ */
 class SpellEntity extends Entity{
     constructor(params) {
         super(params);
@@ -13,6 +16,9 @@ class SpellEntity extends Entity{
     }
 }
 
+/**
+ * @class Projectile - class for projectile spells. Determines how the spell collides with enemies
+ */
 export class Projectile extends SpellEntity{
     constructor(params) {
         super(params);

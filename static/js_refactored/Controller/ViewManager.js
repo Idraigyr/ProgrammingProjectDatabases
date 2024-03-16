@@ -1,5 +1,8 @@
 import {IAnimatedView} from "../View/View.js";
 
+/**
+ * Class that manages the views of the models
+ */
 export class ViewManager{
     constructor() {
         this.pairs = {
@@ -25,6 +28,12 @@ export class ViewManager{
             this.pairs[model.type][model] = view;
         }
     }
+
+    /**
+     * Returns the corresponding view of the given model
+     * @param model model to get the view
+     * @returns {*} view
+     */
     getPair(model){
         if(model.type === "player"){
             return this.pairs.player[model];
@@ -40,6 +49,10 @@ export class ViewManager{
         delete this.pairs[event.detail.model.type][event.detail.model];
     }
 
+    /**
+     * Returns all touchable objects
+     * @returns {*[]} list of touchable objects
+     */
     get ritualTouchables(){
         let touchables = [];
         // TODO: proper version of this
@@ -51,6 +64,11 @@ export class ViewManager{
         }
         return touchables;
     }
+
+    /**
+     * Returns all building planes
+     * @returns {*[]} list of building planes
+     */
     get planes(){
         let planes = [];
         for(const islandKey in this.pairs.island){
