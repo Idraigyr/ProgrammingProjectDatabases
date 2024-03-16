@@ -125,7 +125,7 @@ class App {
         this.renderer.render( this.scene, this.cameraManager.camera );
     }
     postAssetLoadingFunction(){
-        this.BuildManager.setCurrentRitual(this.spellFactory.createTree());
+        this.BuildManager.setCurrentRitual(this.spellFactory.createTree(), true);
     }
 }
 

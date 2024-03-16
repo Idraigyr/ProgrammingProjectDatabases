@@ -7,6 +7,7 @@ export class BuildManager {
     previewMaterial;
     #gridCellSize;
     #scene;
+    #copyable;
     #previewObject;
     planes = [];
     #raycaster;
@@ -36,8 +37,9 @@ export class BuildManager {
     setPreviewMaterial(material){
         this.previewMaterial = material;
     }
-    setCurrentRitual(ritual){
+    setCurrentRitual(ritual, copyable=false){
         this.ritualToPlace = ritual;
+        this.#copyable = copyable;
         this.scaleAndCorrectPosition(ritual);
         // Set overmesh
         this.#previewObject = this.#extractObject(ritual).clone();
@@ -88,6 +90,10 @@ export class BuildManager {
     placeBuildSpell(event){
         if(!this.ritualToPlace) return;
         let extracted = this.#extractObject(this.ritualToPlace);
+        if(this.#copyable) {
+            extracted = extracted.clone(true);
+            this.#scene.add(extracted);
+        }
         extracted.position.copy( this.#previewObject.position );
         extracted.rotation.y = this.#previewObject.rotation.y;
         this.scaleAndCorrectPosition(this.ritualToPlace);
