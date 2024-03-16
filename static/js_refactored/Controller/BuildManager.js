@@ -6,20 +6,23 @@ export class BuildManager {
     ritualToPlace;
     previewMaterial;
     #gridCellSize;
+    #scene;
     #previewObject;
     planes = [];
     #raycaster;
     /**
      * Creates objects that controls which ritual to put
      * @param raycastController raycaster for the builder
+     * @param scene scene where to build
      * @param gridCellSize length of the grid square side
      * @param previewMaterial Material of the ritual preview
      */
     // TODO: connect gridcellsize from here to the gridcellsize of the terrain
     // TODO: if center NOT 0,0,0 + rotation
-    constructor(raycastController, gridCellSize= 10, previewMaterial=undefined) {
+    constructor(raycastController, scene, gridCellSize= 10, previewMaterial=undefined) {
         this.#gridCellSize = gridCellSize;
         this.#raycaster = raycastController;
+        this.#scene = scene;
         if(!previewMaterial){
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
@@ -34,6 +37,13 @@ export class BuildManager {
     }
     setCurrentRitual(ritual){
         this.ritualToPlace = ritual;
+        this.scaleAndCorrectPosition(ritual);
+        // Set overmesh
+        this.#previewObject = this.#extractObject(ritual).clone();
+        this.#previewObject.traverse((o) => {
+            if (o.isMesh) o.material = this.previewMaterial;
+        })
+        this.#scene.add(this.#previewObject);
     }
     scaleAndCorrectPosition(object){
         let extracted = this.#extractObject(object)
@@ -42,9 +52,8 @@ export class BuildManager {
     }
 
     #extractObject(object){
-        if(!object || object instanceof Object3D) return;
-        // TODO: get model by the address
-        let view = this.#raycaster.viewManager.getPair(object)
+        if(!object || object instanceof Object3D) return object;
+        let view = this.#raycaster.viewManager.getPair(object);
         if(view) return view.charModel;
         return object.charModel;
     }
@@ -68,8 +77,8 @@ export class BuildManager {
     updateBuildSpell(event){
         let collision = this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0];
         if(collision){
-            this.#extractObject(this.ritualToPlace).position.copy( collision.point ).add( collision.face.normal );
-            this.scaleAndCorrectPosition(this.ritualToPlace);
+            this.#extractObject(this.#previewObject).position.copy( collision.point ).add( collision.face.normal );
+            this.scaleAndCorrectPosition(this.#previewObject);
         }
     }
     placeBuildSpell(event){
