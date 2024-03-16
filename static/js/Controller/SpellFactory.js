@@ -83,9 +83,7 @@ export class SpellFactory{
      */
     createTree(){
         let model = new Model.Tree();
-        let view = new View.Tree();
-        view.charModel = this.AssetManager.getModel("Tree");
-
+        let view = new View.Tree({charModel: this.assetManager.getAsset("Tree")});
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         this.viewManager.addPair(model,view);

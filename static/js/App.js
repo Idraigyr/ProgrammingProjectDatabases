@@ -61,6 +61,7 @@ class App {
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
     }
+
     /**
      * scopes updateRotation function of member playerController
      * @callback updateRotationListener

@@ -154,5 +154,6 @@ export class CharacterController extends Subject{
         } else if (this._character.getCurrentSpell() instanceof BuildSpell) {
             this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
+        this._character.updateCooldowns(deltaTime);
     }
 }

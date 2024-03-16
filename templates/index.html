@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
-   <script defer src="static/js_refactored/external/chatBox.js"></script>
+   <script defer src="static/js/external/chatBox.js"></script>
     <script type="importmap">
       {
         "imports": {
@@ -24,7 +24,7 @@
 <body id="body">
     <div id="container">
     </div>
-    <script type="module" src="static/js_refactored/App.js"></script>
+    <script type="module" src="static/js/App.js"></script>
     <div class="button-container">
         <button id="chatButton" class="bottom-left-button">Chat</button>
 
@@ -73,7 +73,7 @@
     </script>
 
     <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js_refactored/external/socketio.js")  }}">
+    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}">
     </script>
 
 

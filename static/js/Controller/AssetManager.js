@@ -48,13 +48,13 @@ export class AssetManager{
      * @returns {*} the 3d model
      */
     getAsset(name){
-        if(this.#assetList[name]){
-            if(this.#assetList[name].model){
+        if(this.#assetList[name]) {
+            if (this.#assetList[name].model) {
                 return clone(this.#assetList[name].model);
-            } else if(this.#assetList[name].texture){
+            } else if (this.#assetList[name].texture) {
                 return this.#assetList[name].texture.clone();
             }
-        throw new Error(`no asset exists for ${name}.`);
+            throw new Error(`no asset exists for ${name}.`);
         }
     }
     /**

@@ -34,9 +34,15 @@ export class ViewManager{
      */
     getPair(model){
         if(model.type === "player"){
-            return this.pairs.player[model];
+            return this.pairs.player[0];
         } else {
-            return this.pairs[model.type][model];
+            let found = null
+            this.pairs[model.type].forEach((pair) => {
+                if(pair.model === model){
+                    found = pair;
+                }
+            });
+            return found;
         }
     }
     /**
@@ -65,8 +71,8 @@ export class ViewManager{
     get planes(){
         let planes = [];
         for(const islandKey in this.pairs.island){
-            let island = this.pairs.island[islandKey];
-            planes.push(island.blockPlane);
+            let islandView = this.pairs.island[islandKey].view;
+            planes.push(islandView.blockPlane);
         }
         return planes;
     }
