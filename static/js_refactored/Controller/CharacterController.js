@@ -51,20 +51,20 @@ export class CharacterController extends Subject{
         return qHorizontal;
     }
 
-    update(deltaTime){
-        if(!this._character.fsm.currentState){
+    update(deltaTime) {
+        if (!this._character.fsm.currentState) {
             return;
         }
 
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
-        if(this._character.fsm.currentState.movementPossible){
+        if (this._character.fsm.currentState.movementPossible) {
             //TODO: add collision checks for movement
             const qHorizontal = this.quatFromHorizontalRotation;
 
-            let velocity = new THREE.Vector3(1,0,0);
-            let strafe = new THREE.Vector3(0,0,1);
+            let velocity = new THREE.Vector3(1, 0, 0);
+            let strafe = new THREE.Vector3(0, 0, 1);
             velocity.applyQuaternion(qHorizontal);
             strafe.applyQuaternion(qHorizontal);
 
@@ -85,48 +85,55 @@ export class CharacterController extends Subject{
 
             velocity.normalize();
 
-            velocity.multiplyScalar(movementSpeed*deltaTime);
+            velocity.multiplyScalar(movementSpeed * deltaTime);
 
             if (this.#inputManager.keys.sprint && forwardScalar === 1) {
                 velocity.multiplyScalar(sprintMultiplier);
             }
 
             //TODO: add floor collision instead of this.position.y check
-            if (this.#inputManager.keys.up && this._character.position.y === 0){
+            if (this.#inputManager.keys.up && this._character.position.y === 0) {
                 this.#jumping = true;
             }
 
-            if (this._character.position.y > 4){
+            if (this._character.position.y > 4) {
                 this.#jumping = false;
                 this.#falling = true;
             }
 
-            if(this.#jumping){
-                velocity.add(new THREE.Vector3(0,10*deltaTime,0));
+            if (this.#jumping) {
+                velocity.add(new THREE.Vector3(0, 10 * deltaTime, 0));
             }
-            if(this.#falling){
-                velocity.add(new THREE.Vector3(0,-8*deltaTime,0));
+            if (this.#falling) {
+                velocity.add(new THREE.Vector3(0, -8 * deltaTime, 0));
             }
 
             this._character.position = (this._character.position.add(velocity));
-            if(this._character.position.y < 0){
+            if (this._character.position.y < 0) {
                 this._character.position.y = 0;
                 this.#falling = false;
             }
         }
 
-        if(this.#inputManager.mouse.leftClick){
-            if(this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0){
+        if (this.#inputManager.mouse.leftClick) {
+            if (this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0) {
                 //cast current spell
                 let vec = new THREE.Vector3().copy(this._character.position);
                 vec.y += 2;
-                this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {position: vec, direction: new THREE.Vector3(1,0,0).applyQuaternion(this._character.rotation)}));
+                this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {
+                    position: vec,
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
+                }));
                 this._character.cooldownSpell();
             }
-        } else if (this._character.getCurrentSpell() instanceof BuildSpell){
+        } else if (this._character.getCurrentSpell() instanceof BuildSpell) {
             this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
-        this._character.updateCooldowns(deltaTime);
+        if (this.#inputManager.mouse.rightClick) {
+            if (this._character.getCurrentSpell() instanceof BuildSpell) {
+                const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
+                document.dispatchEvent(customEvent);
+            }
+        }
     }
-
 }

@@ -28,6 +28,7 @@ export class BuildManager {
         }
         this.setPreviewMaterial(previewMaterial);
         document.addEventListener('placeBuildSpell', this.placeBuildSpell.bind(this));
+        document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
     }
     addBuildPlane(plane){
         this.planes.push(plane);
@@ -81,9 +82,14 @@ export class BuildManager {
             this.scaleAndCorrectPosition(this.#previewObject);
         }
     }
+    turnPreviewSpell(event){
+        this.#previewObject.rotation.y += Math.PI/2;
+    }
     placeBuildSpell(event){
         if(!this.ritualToPlace) return;
-        this.#extractObject(this.ritualToPlace).position.copy( this.#previewObject.position );
+        let extracted = this.#extractObject(this.ritualToPlace);
+        extracted.position.copy( this.#previewObject.position );
+        extracted.rotation.y = this.#previewObject.rotation.y;
         this.scaleAndCorrectPosition(this.ritualToPlace);
     }
     // TODO: refactor the code below
