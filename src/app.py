@@ -196,6 +196,8 @@ def setup(app: Flask):
                                              title=app.config['APP_NAME'])
             app.register_blueprint(resource, url_prefix=swagger_url)
         socketio.init_app(app)
+        from documentation import generate_pdoc
+        generate_pdoc()  # to generate documentation set parameter to true: generate_pdoc(True)
     return app, socketio
 
 

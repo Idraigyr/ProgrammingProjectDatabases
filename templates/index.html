@@ -17,6 +17,7 @@
         }
       }
     </script>
+    <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
 </head>
 <body id="body">
 <script id="grassVert" type="x-shader/x-fragment">
@@ -164,6 +165,41 @@ void main() {
             <img src="../static/images/crystal_01a.png" class = "NewCrystalIcon">
         </div>
     </div>
+    <!-- Script for toggling FPS counter -->
+    <script>
+        // Create the Stats instance outside the event listeners to use it globally
+        var stats = new Stats();
+
+        // Configuration object
+        var config = {
+            showFPS: false, // Default is off, change to true if you want it on by default
+        };
+
+        // Animation frame function
+        function animate() {
+            if (config.showFPS && !stats.dom.parentElement) {
+                document.body.appendChild(stats.dom);
+            } else if (!config.showFPS && stats.dom.parentElement) {
+                stats.dom.remove();
+            }
+            stats.update();
+            requestAnimationFrame(animate);
+        }
+
+        // Start the animation loop
+        requestAnimationFrame(animate);
+
+        // Event listener for keydown to toggle FPS display
+        document.addEventListener('keydown', function(e) {
+            if (document.activeElement === chatInput) {
+                return;
+            }
+            if (e.key === 'f' || e.key === 'F') {
+                config.showFPS = !config.showFPS;
+            }
+        });
+    </script>
+
 
 </body>
 </html>
