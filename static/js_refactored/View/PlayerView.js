@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import {IAnimatedView} from "./View.js";
 
+/**
+ * Player view
+ */
 export class Player extends IAnimatedView{
     constructor(params) {
         super(params);
@@ -8,6 +11,10 @@ export class Player extends IAnimatedView{
         this.horizontalRotation = 180;
     }
 
+    /**
+     * Load player model's animations
+     * @param clips
+     */
     loadAnimations(clips){
         const getAnimation =  (animName, alias) => {
             let clip = THREE.AnimationClip.findByName(clips, animName);

@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import {Vector3} from "three";
 
+/**
+ * View base class
+ */
 export class IView {
     constructor(params) {
         this.position = params?.position ?? new THREE.Vector3(0,0,0);
@@ -30,6 +33,9 @@ export class IView {
     }
 }
 
+/**
+ * Animated view pure virtual base class
+ */
 export class IAnimatedView extends IView{
     constructor(params) {
         super(params);
@@ -37,9 +43,19 @@ export class IAnimatedView extends IView{
         this.mixer = new THREE.AnimationMixer(params.charModel);
         this.animations = {};
     }
+
+    /**
+     * Update animations
+     * @param deltaTime time since last update
+     */
     update(deltaTime) {
         if(this.mixer) this.mixer.update(deltaTime);
     }
+
+    /**
+     * Load animations
+     * @param clips clips to load
+     */
     loadAnimations(clips){
         throw new Error("pure virtual function called (IAnimatedView.loadAnimations)");
     }

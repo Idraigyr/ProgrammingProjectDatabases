@@ -5,6 +5,9 @@ import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js"
 
+/**
+ * Namespace for all the view classes
+ */
 export let View = {
     Player: Player,
     Island: Island,

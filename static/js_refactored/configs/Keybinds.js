@@ -1,3 +1,6 @@
+/**
+ * @file Keybinds.js is a file that contains the keybinds for the game
+ */
 export let primaryForwardKey = "KeyW";
 export let secondaryForwardKey = "ArrowUp";
 

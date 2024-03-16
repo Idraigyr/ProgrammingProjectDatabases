@@ -3,6 +3,9 @@ import {Controller} from "./Controller.js";
 import * as THREE from "three";
 import {clone} from "three-SkeletonUtils";
 
+/**
+ * Class to manage assets
+ */
 export class AssetManager{
     #assetList;
     #assetLoader;
@@ -10,6 +13,11 @@ export class AssetManager{
         this.#assetLoader = new Controller.AssetLoader();
         this.#assetList = {};
     }
+
+    /**
+     * Load the 3d models and their animations
+     * @returns {Promise<void>} a promise that resolves when all the models are loaded
+     */
     async loadViews(){
         let promises = [];
         for(const key in assetPaths) {
@@ -34,6 +42,11 @@ export class AssetManager{
             }
         });
     }
+    /**
+     * Get a clone of a 3d model
+     * @param name name of the model
+     * @returns {*} the 3d model
+     */
     getAsset(name){
         if(this.#assetList[name]){
             if(this.#assetList[name].model){
@@ -41,10 +54,14 @@ export class AssetManager{
             } else if(this.#assetList[name].texture){
                 return this.#assetList[name].texture.clone();
             }
-        }
         throw new Error(`no asset exists for ${name}.`);
+        }
     }
-
+    /**
+     * Get the animations of a 3d model
+     * @param name name of the model
+     * @returns {*} the animations
+     */
     getAnimations(name){
         if(this.#assetList?.[name].animations){
             return this.#assetList[name].animations;

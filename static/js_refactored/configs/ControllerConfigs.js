@@ -1,3 +1,7 @@
+/**
+ * In this file you can see default configuration settings for the controller
+ *
+ */
 export const API_URL = 'https://team2.ua-ppdb.me:8081';
 export const TIMEOUT_SEC = 5;
 

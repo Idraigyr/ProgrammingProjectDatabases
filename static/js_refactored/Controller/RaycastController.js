@@ -1,21 +1,46 @@
 import * as THREE from "three";
 
+/**
+ * Class for raycasting
+ */
 export class RaycastController{
+    /**
+     * Constructs raycaster with the given parameters
+     * @param params parameters (with viewManager)
+     */
     constructor(params) {
         this.raycaster = new THREE.Raycaster();
         this.viewManager = params.viewManager;
+        document.addEventListener('updateCameraPosition', this.updatePosition.bind(this));
     }
+
+    /**
+     * Updates camera position of the raycaster
+     * @param event event with updated camera
+     */
     updatePosition(event){
         this.raycaster.setFromCamera(new THREE.Vector2(0,0),event.detail.camera);
     }
+
+    /**
+     * Returns extracted from models intersected objects
+     * @param touchableObjects list with models
+     * @returns {[]} three js intersection objects
+     */
     getIntersects(touchableObjects){
-        return this.raycaster.intersectObjects(touchableObjects, false);
+        let extracted = []
+        for (const object of touchableObjects){
+            extracted.push(this.extractObject(object));
+        }
+        return this.raycaster.intersectObjects(extracted, true);
     }
 
-    updateBuildSpell(event){
-        let closedCollided = this.getIntersects(this.viewManager.ritualTouchables)?.[0];
-        if(closedCollided){
-            
-        }
+    /**
+     * Extracts three js object from custom classes
+     * @param toExtract class from which you have to extract
+     */
+    extractObject(toExtract){
+        if(toExtract.isObject3D) return toExtract;
+        return toExtract.charModel;
     }
 }

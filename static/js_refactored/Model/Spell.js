@@ -1,4 +1,7 @@
 //abstract classes
+/**
+ * @class Spell - abstract class for all spells
+ */
 class Spell{
     constructor(params) {
         this.duration = params.duration;
@@ -6,6 +9,11 @@ class Spell{
         this.cooldown = params.cooldown;
         this.timer = 0;
     }
+
+    /**
+     * Updates the spell
+     * @param deltaTime - time since last update
+     */
     update(deltaTime){
         this.timer += deltaTime;
         if(this.timer > this.duration){
@@ -13,6 +21,10 @@ class Spell{
         }
     }
 }
+
+/**
+ * @class EntitySpell - abstract class for spells with entities
+ */
 class EntitySpell extends Spell{
     constructor(params) {
         super(params);
@@ -21,8 +33,9 @@ class EntitySpell extends Spell{
 
     }
 }
-
-//determines how the spell collides with enemies;
+/**
+ * @class Projectile - class for projectile spells. Determines how the spell collides with enemies
+ */
 class Projectile extends EntitySpell{
     constructor(params) {
         super(params);
@@ -33,6 +46,9 @@ class Projectile extends EntitySpell{
     }
 }
 
+/**
+ * @class Cloud - class for cloud spells
+ */
 class Cloud extends EntitySpell{
     constructor(params) {
         super(params);
@@ -42,6 +58,9 @@ class Cloud extends EntitySpell{
     }
 }
 
+/**
+ * @class Hitscan - class for hitscan spells
+ */
 class HitScan extends Spell{
     constructor(params) {
         super(params);
@@ -49,6 +68,9 @@ class HitScan extends Spell{
     }
 }
 
+/**
+ * @class InstantSpell - class for instant spells
+ */
 class InstantSpell extends Spell{
     constructor() {
         super();
@@ -56,18 +78,25 @@ class InstantSpell extends Spell{
     }
 
 }
-
-// Effects of spell (second component of spell)
-
+/**
+ * @class Effect - abstract class for all effects (second component of spell)
+ */
 class Effect{
     constructor(params) {
     }
 
+    /**
+     * Applies the effect to the target
+     * @param target - the target of the effect
+     */
     apply(target){
 
     }
 }
 
+/**
+ * @class InstantDamage - class for instant damage effects
+ */
 class InstantDamage extends Effect{
     constructor(params) {
         super(params);
@@ -75,6 +104,9 @@ class InstantDamage extends Effect{
     }
 }
 
+/**
+ * @class DoT - class for damage over time effects
+ */
 class DoT extends Effect{
     constructor(params) {
         super(params);
@@ -85,6 +117,9 @@ class DoT extends Effect{
 
 }
 
+/**
+ * @class HealEffect - class for healing effects
+ */
 class HealEffect extends Effect{
     constructor() {
         super();
@@ -92,6 +127,9 @@ class HealEffect extends Effect{
 
 }
 
+/**
+ * @class Shield - class for shield effects
+ */
 class Shield extends Effect{
     constructor() {
         super();
@@ -99,20 +137,37 @@ class Shield extends Effect{
 
 }
 
+/**
+ * @class Build - class for building effects
+ */
 class Build extends Effect{
     constructor(params) {
         super(params);
         this.building = params.building;
     }
 }
+
+/**
+ * @class ConcreteSpell - class for concrete spells
+ */
 class ConcreteSpell{
     constructor(params) {
         this.spell = params.spell;
         this.effects = params.effects;
     }
+
+    /**
+     * Get cooldown of the spell
+     * @returns {number|*}
+     */
     getCooldown(){
         return this.spell.cooldown;
     }
+
+    /**
+     * Update the spell and apply effects to targets
+     * @param deltaTime
+     */
     update(deltaTime){
         let targets = this.spell.update(deltaTime);
         if(targets){
@@ -121,43 +176,30 @@ class ConcreteSpell{
     }
 }
 
+/**
+ * @class BuildSpell - class for building spells
+ */
 export class BuildSpell extends ConcreteSpell{
     // TODO: change this
-    // constructor(params) {
-    //     super({
-    //         spell: new HitScan({
-    //             duration: 0,
-    //             cooldown: 0,
-    //             castTime: 0,
-    //         }),
-    //         effects: [
-    //             new Build({
-    //                 building: "tree"
-    //             })
-    //         ]
-    //     });
-    // }
-        constructor(params) {
+    constructor(params) {
         super({
-            spell: new Projectile({
-                duration: 5,
-                cooldown: 1.34,
+            spell: new HitScan({
+                duration: 0,
+                cooldown: 0,
                 castTime: 0,
-                velocity: 10,
-                fallOf: 0
             }),
             effects: [
-                new InstantDamage({
-                    damage: 0
-            }), new DoT({
-                    damage: 0,
-                    interval: 0,
-                    duration: 0
-            })]
+                new Build({
+                    building: "Tree"
+                })
+            ]
         });
     }
 }
 
+/**
+ * @class Fireball - class for fireball spells
+ */
 export class Fireball extends ConcreteSpell{
     constructor(params) {
         super({
@@ -180,6 +222,9 @@ export class Fireball extends ConcreteSpell{
     }
 }
 
+/**
+ * @class Zap - class for zap spells
+ */
 export class Zap extends ConcreteSpell{
     constructor() {
         super({
@@ -189,6 +234,9 @@ export class Zap extends ConcreteSpell{
     }
 }
 
+/**
+ * @class Thunder - class for thunder spells
+ */
 class ThunderCloud extends ConcreteSpell{
     constructor() {
         super({
@@ -198,6 +246,9 @@ class ThunderCloud extends ConcreteSpell{
     }
 }
 
+/**
+ * @class Heal - class for heal spells
+ */
 class Heal extends ConcreteSpell{
     constructor() {
         super({

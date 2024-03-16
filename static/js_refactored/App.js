@@ -9,14 +9,19 @@ import {SpellFactory} from "./Controller/SpellFactory.js";
 import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
+import {BuildManager} from "./Controller/BuildManager.js";
 
 const canvas = document.getElementById("canvas");
 
+/**
+ * Main class of the game
+ */
 class App {
     /**
-     * create the app
+     * Create the app. Setups clock, scene, renderer, deltaTime, blockedInput, viewManager, raycastController,
+     * inputManager, cameraManager, playerController, minionControllers, assetManager, factory, spellFactory,
+     * BuildManager and adds a pointerlock event listener
      * @param {object} params
-     *
      */
     constructor(params) {
         this.clock = new THREE.Clock();
@@ -52,7 +57,7 @@ class App {
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
-
+        this.BuildManager = new BuildManager(this.raycastController, this.scene);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
     }
@@ -81,23 +86,46 @@ class App {
         }
     }
 
+    /**
+     * Adds a new minionController to the list of minionControllers
+     * @param controller - the controller to add
+     */
     addMinionController(controller){
         this.minionControllers.push(controller);
     }
 
+    /**
+     * Removes a minionController from the list of minionControllers
+     * @param controller - the controller to remove
+     */
     removeMinionController(controller){
         this.minionControllers.filter((c) => controller !== c);
     }
 
+    /**
+     * Loads the assets, creates the worldManager, the playerController and sets the cameraManager target to the player
+     * @returns {Promise<void>} - a promise that resolves when the assets are loaded
+     */
     async loadAssets(){
         await this.assetManager.loadViews();
         this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
-        this.playerController.addEventListener("updateBuildSpell", this.raycastController.updateBuildSpell.bind(this.raycastController));
+        this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         this.cameraManager.target = this.worldManager.world.player;
     }
+
+    /**
+     * Executes functions that only possible after assets are loaded
+     */
+    postAssetLoadingFunction(){
+        this.BuildManager.setCurrentRitual(this.spellFactory.createTree(), true);
+    }
+
+    /**
+     * Starts the game loop
+     */
     start(){
         if ( WebGL.isWebGLAvailable()) {
             //init();
@@ -107,6 +135,10 @@ class App {
             document.getElementById( 'container' ).appendChild( warning );
         }
     }
+
+    /**
+     * Updates the game loop
+     */
     update(){
         requestAnimationFrame(() => {
             this.update();
@@ -129,4 +161,5 @@ class App {
 
 let app = new App({});
 await app.loadAssets();
+app.postAssetLoadingFunction();
 app.start();

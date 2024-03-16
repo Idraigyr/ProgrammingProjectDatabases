@@ -5,10 +5,19 @@ import * as THREE from "three";
 import {getFileExtension} from "../helpers.js";
 import {AnimationMixer} from "three";
 
+/**
+ * Class to load assets
+ */
 export class AssetLoader{
     constructor() {
         this.loadingManager = new THREE.LoadingManager();
     }
+
+    /**
+     * Load asset
+     * @param path path to the asset
+     * @returns {*} the model and its animations
+     */
     loadAsset(path){
         let extension = getFileExtension(path);
         if(extension === "glb" || extension === "gltf"){
@@ -23,6 +32,11 @@ export class AssetLoader{
     }
 
     //TODO:: add timeout error handler
+    /**
+     * Load a gltf model
+     * @param path path to the model
+     * @returns {*} the model and its animations
+     */
     loadGLTF(path){
         let loader = new GLTFLoader();
         return loader.loadAsync(path, function (xhr) {
@@ -44,6 +58,12 @@ export class AssetLoader{
             throw new Error(err);
         });
     }
+
+    /**
+     * Load a fbx model
+     * @param path path to the model
+     * @returns {*} the model and its animations
+     */
     loadFBX(path){
         let loader = new FBXLoader();
         return loader.loadAsync(path, function (xhr) {

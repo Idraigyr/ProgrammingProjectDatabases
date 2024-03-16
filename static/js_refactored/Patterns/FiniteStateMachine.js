@@ -6,15 +6,29 @@ import {
     WalkForwardState
 } from "../Model/States/CharacterStates.js";
 
+/**
+ * @class FiniteStateMachine - A class that represents a finite state machine
+ */
 export class FiniteStateMachine{
     #states = {};
     constructor() {
         this.currentState = null;
     }
+
+    /**
+     * @function updateState - updates the current state
+     * @param deltaTime - time between frames
+     * @param input - input from the user
+     */
     updateState(deltaTime, input){
         if(!this.currentState) return;
         this.currentState.updateState(deltaTime, input);
     }
+
+    /**
+     * @function setState - sets the current state
+     * @param name - name of the state
+     */
     setState(name){
         const prevState = this.currentState
         if(prevState && prevState.name === name){
@@ -25,6 +39,12 @@ export class FiniteStateMachine{
         this.currentState = new this.#states[name](this);
         this.currentState.enter(prevState);
     }
+
+    /**
+     * @function addState - adds a state to the state machine
+     * @param name - name of the state
+     * @param type - type of the state
+     */
     addState(name, type){
         this.#states[name] = type;
     }

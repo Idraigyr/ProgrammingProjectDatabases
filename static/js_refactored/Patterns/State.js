@@ -1,3 +1,6 @@
+/**
+ * Base class for all states
+ */
 export class State{
     constructor(fsm) {
         this.manager = fsm;

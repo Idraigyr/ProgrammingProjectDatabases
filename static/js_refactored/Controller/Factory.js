@@ -5,6 +5,9 @@ import {PlayerFSM} from "./CharacterFSM.js";
 import {getFileExtension} from "../helpers.js";
 import * as THREE from "three";
 
+/**
+ * Factory class that creates models and views for the entities
+ */
 export class Factory{
     //TODO: add factory itself and model class of object to view.userData
     constructor(params) {
@@ -17,6 +20,10 @@ export class Factory{
 
     }
 
+    /**
+     * Creates player model and view
+     * @returns {Wizard}
+     */
     createPlayer(){
         let player = new Model.Wizard();
         let view = new View.Player({charModel: this.assetManager.getAsset("Player")});
@@ -36,6 +43,14 @@ export class Factory{
         this.viewManager.addPair(player, view);
         return player;
     }
+
+    /**
+     * Creates island model and view
+     * @param position position of the island
+     * @param rotation rotation of the island
+     * @param buildingsList list of the buildings to add
+     * @returns model of the island
+     */
     createIsland(position, rotation, buildingsList){
         let islandModel = new Model.Island(position, rotation);
         let view = new View.Island();
@@ -52,7 +67,13 @@ export class Factory{
         this.viewManager.addPair(islandModel, view);
         return islandModel;
     }
-    #addBuildings(islandModel, buildingsList){
+
+    /**
+     * Creates models of the buildings
+     * @param islandModels (output) models
+     * @param buildingsList list of the buildings to add
+     */
+    #addBuildings(islandModels, buildingsList){
         buildingsList.forEach((building) => {
             try {
                 let model = new Model[building.type]({position: building.position, rotation: building.rotation});
@@ -65,7 +86,7 @@ export class Factory{
 
                 model.addEventListener("updatePosition",view.updatePosition.bind(view));
                 model.addEventListener("updateRotation",view.updateRotation.bind(view));
-                islandModel.push(model);
+                islandModels.push(model);
                 this.viewManager.addPair(model, view);
             } catch (e){
                 console.log(`no ctor for ${building.type} building: ${e.message}`);

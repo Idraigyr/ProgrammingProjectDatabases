@@ -1,6 +1,9 @@
 import {Model} from "../Model/Model.js";
 
 
+/**
+ * Class that manages the world
+ */
 export class WorldManager {
     constructor(params) {
         this.world = null;

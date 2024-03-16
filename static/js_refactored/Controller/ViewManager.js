@@ -11,6 +11,12 @@ export class ViewManager{
             spellEntity: []
         };
     }
+
+    /**
+     * Add pairs to the pairs list of the manager
+     * @param model model to add
+     * @param view view to add
+     */
     addPair(model, view){
         if(model.type === "player" && Object.keys(this.pairs.player).length === 0){
             this.pairs.player.push({model, view});
@@ -18,6 +24,19 @@ export class ViewManager{
             throw new Error("player already exists");
         } else {
             this.pairs[model.type].push({model, view});
+        }
+    }
+
+    /**
+     * Returns the corresponding view of the given model
+     * @param model model to get the view
+     * @returns {*} view
+     */
+    getPair(model){
+        if(model.type === "player"){
+            return this.pairs.player[model];
+        } else {
+            return this.pairs[model.type][model];
         }
     }
     /**
@@ -28,6 +47,10 @@ export class ViewManager{
         this.pairs[event.detail.model.type].filter((pair) => pair.model !== event.detail.model);
     }
 
+    /**
+     * Returns all touchable objects
+     * @returns {*[]} list of touchable objects
+     */
     get ritualTouchables(){
         let touchables = [];
         this.pairs.building.forEach((pair) => touchables.push(pair.view));
@@ -35,6 +58,23 @@ export class ViewManager{
         return touchables;
     }
 
+    /**
+     * Returns all building planes
+     * @returns {*[]} list of building planes
+     */
+    get planes(){
+        let planes = [];
+        for(const islandKey in this.pairs.island){
+            let island = this.pairs.island[islandKey];
+            planes.push(island.blockPlane);
+        }
+        return planes;
+    }
+
+    /**
+     * Updates all views with the given delta time
+     * @param deltaTime time difference
+     */
     updateAnimatedViews(deltaTime){
         for(const type in this.pairs){
             this.pairs[type].forEach((pair) => {

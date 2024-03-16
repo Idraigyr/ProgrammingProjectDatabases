@@ -4,7 +4,14 @@ import {View} from "../View/ViewNamespace.js";
 import {Fireball, BuildSpell} from "../Model/Spell.js";
 import {Building} from "../View/BuildingView.js";
 
+/**
+ * Factory class that creates models and views for the spells
+ */
 export class SpellFactory{
+    /**
+     * Constructs the factory with the given parameters
+     * @param params parameters (with scene, viewManager and AssetManager)
+     */
     constructor(params) {
         this.scene = params.scene;
         this.camera = params.camera;
@@ -14,6 +21,11 @@ export class SpellFactory{
         //TODO: change this
         this.models = [];
     }
+
+    /**
+     * Creates spell for the given event
+     * @param event event with spell details
+     */
     createSpell(event){
         let entityModel = null;
         switch (event.detail.type.constructor){
@@ -21,14 +33,21 @@ export class SpellFactory{
                 entityModel = this._createFireball(event.detail);
                 break;
             case BuildSpell:
-                // TODO: change this
-                entityModel = this._createTree(event.detail);
+                const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
+                document.dispatchEvent(customEvent);
                 break;
         }
+        if(!entityModel) return;
         this.models.push(entityModel);
         return entityModel;
     }
 
+    /**
+     * Creates fireball model and view
+     * @param details details of the fireball (with type and params)
+     * @returns {Projectile} model of the fireball
+     * @private private method
+     */
     _createFireball(details){
         let model = new Model.Projectile({
             spellType: details.type,
@@ -57,16 +76,15 @@ export class SpellFactory{
         this.viewManager.addPair(model,view);
         return model;
     }
-    _createTree(details){
-        let model = new Model.Projectile({
-            spellType: details.type,
-            direction: details.params.direction,
-            velocity: details.type.spell.velocity,
-            fallOf: details.type.fallOf,
-            position: details.params.position
-        });
-        let view = new Building();
-        view.charModel = this.assetManager.getAsset("Tree");
+
+    /**
+     * Creates building model and view for a tree
+     * @returns {Tree} model of the tree
+     */
+    createTree(){
+        let model = new Model.Tree();
+        let view = new View.Tree();
+        view.charModel = this.AssetManager.getModel("Tree");
 
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));

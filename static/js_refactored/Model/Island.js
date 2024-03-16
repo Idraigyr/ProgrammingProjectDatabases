@@ -1,5 +1,8 @@
 import {Entity} from "./Entity.js";
 
+/**
+ * Model of an island
+ */
 export class Island extends Entity{
     #phi = 0;
     #theta = 0;
@@ -8,7 +11,6 @@ export class Island extends Entity{
         this.buildings = [];
         this.rotation = rotation;
     }
-
     get type(){
         return "island";
     }

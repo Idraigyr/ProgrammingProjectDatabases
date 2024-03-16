@@ -1,9 +1,9 @@
 import {Placeable} from "./Placeable.js";
 
 /**
- * Class for the mine model
+ * Class for the Tree model
  */
-export class Mine extends Placeable{
+export class Tree extends Placeable{
     constructor(params) {
         super(params);
     }
