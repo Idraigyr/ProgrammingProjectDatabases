@@ -6,22 +6,35 @@ import {AnimationMixer} from "three";
 
 export class AssetLoader{
     constructor() {
+        //code to update loading screen progress bar via loadingmanager
         this.loadingManager = new THREE.LoadingManager();
+        // Use arrow functions or bind `this` to retain the correct context
+        const progressBar = document.getElementById('progress-bar');
+        this.loadingManager.onProgress = (url, loaded, total) => {
+            progressBar.value = (loaded / total) * 100;
+        };
+
+        const progressBarContainer = document.querySelector('.progress-bar-container');
+        this.loadingManager.onLoad = () => {
+            progressBarContainer.style.display = 'none';
+        };
     }
-    loadAsset(path){
+
+    loadAsset(path) {
         let extension = getFileExtension(path);
-        if(extension === "glb" || extension === "gltf"){
+        if (extension === "glb" || extension === "gltf") {
             return this.loadGLTF(path);
-        } else if(extension === "fbx"){
+        } else if (extension === "fbx") {
             return this.loadFBX(path);
         } else {
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
 
+
     //TODO:: add timeout error handler
     loadGLTF(path){
-        let loader = new GLTFLoader();
+        let loader = new GLTFLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((gltf) => {
@@ -41,7 +54,7 @@ export class AssetLoader{
         });
     }
     loadFBX(path){
-        let loader = new FBXLoader();
+        let loader = new FBXLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((fbx) => {
