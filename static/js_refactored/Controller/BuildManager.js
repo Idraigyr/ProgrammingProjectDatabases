@@ -83,20 +83,16 @@ export class BuildManager {
     }
     placeBuildSpell(event){
         if(!this.ritualToPlace) return;
-        let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables)?.[0];
+        let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables);
         if(closedCollided){
-            let object = closedCollided.object;
+            // TODO: TAKE POSITION OF THE RITUALTOPLACE
+            let object = closedCollided[0].object;
             let planes = this.#raycaster.viewManager.planes;
+            // Touched plane
             if(planes.indexOf(object) === -1){
-                console.log("touched plane");
-                this.#extractObject(this.ritualToPlace).position.copy( closedCollided.point ).add( closedCollided.face.normal );
+                this.#extractObject(this.ritualToPlace).position.copy( closedCollided[0].point ).add( closedCollided[0].face.normal );
                 this.scaleAndCorrectPosition(this.ritualToPlace);
-                return;
-            }else{
-                console.log("touched something else");
-                return;
             }
-            // TODO: just say 'Finally!'
         }
     }
     // TODO: refactor the code below
