@@ -62,6 +62,9 @@ export class InputManager {
     addMouseMoveListener(callback){
         document.addEventListener("mousemove",callback);
     }
+    addMouseDownListener(callback){
+        document.addEventListener("mousedown",callback);
+    }
 
     addScrollListener(callback){
         document.addEventListener("wheel",callback);

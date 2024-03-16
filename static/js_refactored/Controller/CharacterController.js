@@ -16,7 +16,7 @@ export class CharacterController extends Subject{
         super();
         this._character = params.Character;
         this.#inputManager = params.InputManager;
-
+        this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
     }
 
     createSpellCastEvent(type, params){
@@ -49,6 +49,15 @@ export class CharacterController extends Subject{
         const qHorizontal = new THREE.Quaternion();
         qHorizontal.setFromAxisAngle(new THREE.Vector3(0,1,0), this._character.phi);
         return qHorizontal;
+    }
+    onClickEvent(event){
+        // RightClick
+        if (event.which === 3 || event.button === 2) {
+            if (this._character.getCurrentSpell() instanceof BuildSpell) {
+                const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
+                document.dispatchEvent(customEvent);
+            }
+        } // TODO: also for left click to place the buildings?
     }
 
     update(deltaTime) {
@@ -128,12 +137,6 @@ export class CharacterController extends Subject{
             }
         } else if (this._character.getCurrentSpell() instanceof BuildSpell) {
             this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
-        }
-        if (this.#inputManager.mouse.rightClick) {
-            if (this._character.getCurrentSpell() instanceof BuildSpell) {
-                const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
-                document.dispatchEvent(customEvent);
-            }
         }
     }
 }
