@@ -1,36 +1,76 @@
-import WebGL from "three/addons/capabilities/WebGL";
+import WebGL from "three-WebGL";
 import * as THREE from "three";
-import {Controller} from "./Controller/Controller";
-import {API_URL} from "./Controller/config";
-import {CharacterController} from "./Controller/CharacterController";
-import {WorldManager} from "./Controller/WorldManager";
-import {Factory} from "./Controller/Factory";
+import {Controller} from "./Controller/Controller.js";
+import {API_URL} from "./configs/ControllerConfigs.js";
+import {CharacterController} from "./Controller/CharacterController.js";
+import {WorldManager} from "./Controller/WorldManager.js";
+import {Factory} from "./Controller/Factory.js";
+import {SpellFactory} from "./Controller/SpellFactory.js";
+import {ViewManager} from "./Controller/ViewManager.js";
+import {AssetManager} from "./Controller/AssetManager.js";
+import {RaycastController} from "./Controller/RaycastController.js";
+import {BuildManager} from "./Controller/BuildManager.js";
+
 class App {
+    /**
+     * create the app
+     * @param {object} params
+     *
+     */
     constructor(params) {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        this.renderer = new THREE.WebGLRenderer();
+        this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture
+
+        canvas.addEventListener("mousedown", async (e) => {
+            if(!app.blockedInput) return;
+            await canvas.requestPointerLock();
+        });
+
         this.renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( this.renderer.domElement );
+        this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
+
+        this.viewManager = new ViewManager();
+        this.raycastController = new RaycastController({viewManager: this.viewManager});
         this.inputManager = new Controller.InputManager();
-        this.cameraManager = new Controller.CameraManager({camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 )});
-        this.cameraManager.camera.position.set(-10,10,-10);
-        this.cameraManager.camera.lookAt(0,0,0);
+        this.cameraManager = new Controller.CameraManager({
+            camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
+            offset: new THREE.Vector3(-5,2,1),
+            lookAt: new THREE.Vector3(500,0,0),
+            target: null
+        });
+        this.cameraManager.camera.position.set(-5,2,1);
+        this.cameraManager.camera.lookAt(500,0,0);
         this.playerController = null;
         this.minionControllers = [];
+        this.assetManager = new AssetManager();
 
-        this.factory = new Factory(this.scene);
-
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
+        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
+        this.BuildManager = new BuildManager(this.raycastController, this.scene);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
+        //this.inputManager.addMouseMoveListener(this.updateRotationListener);
     }
-
+    /**
+     * scopes updateRotation function of member playerController
+     * @callback updateRotationListener
+     * @param {{movementX: number, movementY: number}} event
+     *
+     */
     updateRotationListener = (event) => {
         this.playerController.updateRotation(event);
     }
-    blockInput(){
+    /**
+     * switches value of boolean member blockedInput and adds or removes updateRotationListener from mousemovement
+     * @callback blockInput
+     * @param {object} event - unused
+     *
+     */
+    blockInput(event){
         if(this.blockedInput){
             this.inputManager.addMouseMoveListener(this.updateRotationListener);
             this.blockedInput = false;
@@ -38,7 +78,6 @@ class App {
             this.inputManager.removeMouseMoveListener(this.updateRotationListener);
             this.blockedInput = true;
         }
-        console.log("blocked: ", this.blockedInput);
     }
 
     addMinionController(controller){
@@ -50,10 +89,12 @@ class App {
     }
 
     async loadAssets(){
-        this.worldManager = await new WorldManager(this.factory);
+        await this.assetManager.loadViews();
+        this.worldManager = await new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
-
+        this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
+        this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         this.cameraManager.target = this.worldManager.world.player;
     }
     start(){
@@ -72,19 +113,23 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        if(!this.blockedInput) {}
-        this.playerController.update(this.deltaTime);
+        if(!this.blockedInput) {
+            this.playerController.update(this.deltaTime);
+            this.cameraManager.update(this.deltaTime);
+        }
         this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
         this.worldManager.world.update(this.deltaTime);
         //...
+        this.viewManager.updateAnimatedViews(this.deltaTime);
+
         this.renderer.render( this.scene, this.cameraManager.camera );
     }
+    postAssetLoadingFunction(){
+        this.BuildManager.setCurrentRitual(this.spellFactory.createTree());
+    }
 }
-let body = document.getElementById("body");
-body.addEventListener("mousedown", async (e) => {
-    await body.requestPointerLock();
-});
 
-let app = await new App();
+let app = new App({});
 await app.loadAssets();
+app.postAssetLoadingFunction();
 app.start();

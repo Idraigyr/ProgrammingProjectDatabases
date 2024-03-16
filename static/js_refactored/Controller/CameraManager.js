@@ -1,8 +1,9 @@
 import * as THREE from "three";
-import {maxZoomIn, minZoomIn} from "../../js/config";
-import {max, min} from "../../js/helpers";
+import {maxZoomIn, minZoomIn, minCameraY} from "../configs/ControllerConfigs.js";
+import {max, min} from "../helpers.js";
 
 export class CameraManager {
+    //TODO: convert to observer (for target position and rotation)
     #target;
     #offset;
     #lookAt;
@@ -52,8 +53,8 @@ export class CameraManager {
 
         //don't uncomment; freezes screen;
         //copy = copy.add(zoom);
-        if(copy.y < 0){
-            while(copy.y < 0){
+        if(copy.y < minCameraY){
+            while(copy.y < minCameraY){
                 copy = new THREE.Vector3().copy(idealOffset);
                 zoomIn -= 0.1;
                 zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);
@@ -63,10 +64,19 @@ export class CameraManager {
 
         this.camera.position.copy(copy);
         this.camera.lookAt(idealLookAt);
+        let camera = this.camera;
+        const customEvent = new CustomEvent('updateCameraPosition', { detail: { camera } });
+        // Dispatching the custom event on a specific DOM element
+        document.dispatchEvent(customEvent);
+
     }
 
     set target(target){
         this.#target = target;
+    }
+
+    get target(){
+        return this.#target;
     }
 
 }

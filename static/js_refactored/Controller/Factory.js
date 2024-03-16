@@ -1,14 +1,15 @@
-import {Model} from "../Model/Model";
-import {View} from "../View/View";
-import {Controller} from "./Controller";
-import {PlayerFSM} from "../Patterns/FiniteStateMachine";
+import {Model} from "../Model/Model.js";
+import {View} from "../View/ViewNamespace.js";
+import {Controller} from "./Controller.js";
+import {PlayerFSM} from "./CharacterFSM.js";
+import {getFileExtension} from "../helpers.js";
 
 export class Factory{
     //TODO: add factory itself and model class of object to view.userData
-    constructor(scene) {
-        this.scene = scene;
-        this.AssetLoader = new Controller.AssetLoader(this.scene);
-        this.views = [];
+    constructor(params) {
+        this.scene = params.scene;
+        this.viewManager = params.viewManager;
+        this.assetManager = params.assetManager;
     }
 
     createMinion(){
@@ -17,29 +18,49 @@ export class Factory{
 
     createPlayer(){
         let player = new Model.Wizard();
-        player.fsm = new PlayerFSM();
-        let view = new View.Player();
-        this.AssetLoader.loadGLTF("./assets/Wizard.glb",view);
-        console.log(view);
+        let view = new View.Player({charModel: this.assetManager.getModel("Player")});
+        this.scene.add(view.charModel);
+        view.loadAnimations(this.assetManager.getAnimations("Player"));
+
+        player.fsm = new PlayerFSM(view.animations);
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
-        console.log(view);
-        this.views.push(view);
+
+        this.viewManager.addPair(player, view);
         return player;
     }
-    createIsland(){
-        let island = new Model.Island();
+    createIsland(position, rotation, buildingsList){
+        let islandModel = new Model.Island(position, rotation);
         let view = new View.Island();
-        //TODO:: load island;
-        this.scene.add(view.initScene());
-        //this.AssetLoader.loadGLTF("./assets/Wizard.glb",view);
-        this.views.push(view);
-        return island;
+        view.initScene()
+        //TODO: island asset?
+        //this.AssetLoader.loadAsset(view);
+        this.scene.add(view.charModel);
+        this.#addBuildings(islandModel.buildings, buildingsList);
+
+        this.viewManager.addPair(islandModel, view);
+        return islandModel;
     }
-    createFireball(){
-        // let fireball = new Model.Fireball();
-        // let view = new View.Fireball();
-        // this.AssetLoader.loadGLTF("./assets/Wizard.glb",view);
-        // return fireball;
+
+    /**
+     * Creates models of the buildings
+     * @param islandModels (output) models
+     * @param buildingsList list of the buildings to add
+     */
+    #addBuildings(islandModels, buildingsList){
+        buildingsList.forEach((building) => {
+            try {
+                console.log(building);
+                let model = new Model[building.type]({position: building.position, rotation: building.rotation});
+                let view = new View[building.type]({charModel: this.assetManager.getModel(building.type)});
+                this.scene.add(view.charModel);
+                model.addEventListener("updatePosition",view.updatePosition.bind(view));
+                model.addEventListener("updateRotation",view.updateRotation.bind(view));
+                islandModels.push(model);
+                this.viewManager.addPair(model, view);
+            } catch (e){
+                console.log(`no ctor for ${building.type} building: ${e.message}`);
+            }
+        });
     }
 }

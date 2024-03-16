@@ -1,27 +1,13 @@
-import * as THREE from 'three';
-import WebGL from 'three/addons/capabilities/WebGL.js';
-import {
-    horizontalSensitivity, maxZoomDistance, minZoomDistance,
-    primaryBackwardKey,
-    DownKey, primaryForwardKey,
-    primaryLeftKey,
-    primaryRightKey,
-    upKey, secondaryBackwardKey, secondaryForwardKey,
-    secondaryLeftKey,
-    secondaryRightKey, movementSpeed, verticalSensitivity, zoomSensitivity, sprintMultiplier
-} from "./config";
-import {max, min} from "../helpers";
-import {FBXLoader, GLTFLoader} from "three/addons";
-import {WorldManager} from "./WorldManager";
-import {CameraManager} from "./CameraManager";
-import {CharacterController} from "./CharacterController";
-import {InputManager} from "./InputManager";
-import {AssetLoader} from "./AssetLoader";
+import {WorldManager} from "./WorldManager.js";
+import {CameraManager} from "./CameraManager.js";
+import {CharacterController} from "./CharacterController.js";
+import {InputManager} from "./InputManager.js";
+import {AssetLoader} from "./AssetLoader.js";
 
 export let Controller = {
     WorldLoader: WorldManager,
     CameraManager: CameraManager,
     InputManager: InputManager,
     CharacterController: CharacterController,
-    AssetLoader: AssetLoader
+    AssetLoader: AssetLoader,
 }

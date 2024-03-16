@@ -1,12 +1,20 @@
-import {Character} from "./Character";
-import {Factory} from "../Controller/Factory";
+import {Factory} from "../Controller/Factory.js";
+import {Fireball, BuildSpell} from "./Spell.js";
+import {BuildManager} from "../Controller/BuildManager.js";
 
 export class World{
     constructor(params) {
         this.factory = params.Factory;
-        this.islands = this.factory.createIsland();
+        this.spellFactory = params.SpellFactory;
+        this.islands = [];
+        params.islands.forEach((island) => {
+            this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
+        });
         this.player = this.factory.createPlayer();
-        this.characters = [];
+        // Set default values for the inventory slots
+        this.player.changeEquippedSpell(0,new BuildSpell({position: null}));
+        this.player.changeEquippedSpell(1,new Fireball({position: null}));
+        this.entities = [];
     }
     exportWorld(json){
 
@@ -16,6 +24,7 @@ export class World{
 
     }
     update(deltaTime){
-
+        //update whole model
+        this.spellFactory.models.forEach((model) => model.update(deltaTime));
     }
 }

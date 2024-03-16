@@ -1,46 +1,63 @@
-import {FBXLoader, GLTFLoader} from "three/addons";
+import {GLTFLoader} from "three-GLTFLoader";
+import {FBXLoader} from "three-FBXLoader";
 import * as THREE from "three";
-import * as model from "../../js/model";
+import {getFileExtension} from "../helpers.js";
+import {AnimationMixer} from "three";
 
 export class AssetLoader{
-    constructor(scene) {
-        this.scene = scene;
+    constructor() {
+        this.loadingManager = new THREE.LoadingManager();
     }
-    loadGLTF(path, view){
+    loadAsset(path){
+        let extension = getFileExtension(path);
+        if(extension === "glb" || extension === "gltf"){
+            return this.loadGLTF(path);
+        } else if(extension === "fbx"){
+            return this.loadFBX(path);
+        } else {
+            throw new Error(`cannot load model with .${extension} extension`);
+        }
+    }
+
+    //TODO:: add timeout error handler
+    loadGLTF(path){
         let loader = new GLTFLoader();
-        loader.load(path, (gltf) => {
-            view.charModel = gltf.scene;
-            console.log(view);
-            view.charModel.traverse(c => {
+        return loader.loadAsync(path, function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        }).then((gltf) => {
+            let charModel;
+            let animations = null;
+
+            charModel = gltf.scene;
+            charModel.traverse(c => {
                 c.castShadow = true;
             });
-            this.scene.add(view.charModel);
-            view.mixer = new THREE.AnimationMixer(model);
-            view.animations = gltf.animations;
-        },function (xhr) {
-
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-
-        }, (err) => {
-            console.log(err);
+            if(gltf.animations.length > 0){
+                animations = gltf.animations;
+            }
+            return {charModel, animations};
+        },(err) => {
+            throw new Error(err);
         });
     }
-    loadFBX(path, view){
+    loadFBX(path){
         let loader = new FBXLoader();
-        loader.load(path, (fbx) => {
-            view.charModel = fbx;
-            view.charModel.traverse(c => {
+        return loader.loadAsync(path, function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        }).then((fbx) => {
+            let charModel;
+            let animations = null;
+
+            charModel = fbx;
+            charModel.traverse(c => {
                 c.castShadow = true;
             });
-            this.scene.add(view.charModel);
-            view.mixer = new THREE.AnimationMixer(model);
-            view.animations = fbx.animations;
-        },function (xhr) {
-
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-
+            if(fbx.animations.length > 0){
+                animations = fbx.animations;
+            }
+            return {charModel, animations};
         }, (err) => {
-            console.log(err);
+            throw new Error(err);
         });
     }
 }

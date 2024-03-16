@@ -1,8 +1,9 @@
-import {Subject} from "../Patterns/Subject";
-import {horizontalSensitivity, movementSpeed, sprintMultiplier, verticalSensitivity} from "../../js/config";
+import {Subject} from "../Patterns/Subject.js";
+import {horizontalSensitivity, movementSpeed, sprintMultiplier, verticalSensitivity} from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
-import {max} from "../../js/helpers";
-import {Factory} from "./Factory";
+import {max} from "../helpers.js";
+import {Factory} from "./Factory.js";
+import {BuildSpell} from "../Model/Spell.js";
 
 export class CharacterController extends Subject{
     _character;
@@ -16,6 +17,14 @@ export class CharacterController extends Subject{
         this._character = params.Character;
         this.#inputManager = params.InputManager;
 
+    }
+
+    createSpellCastEvent(type, params){
+        return new CustomEvent("castSpell", {detail: {type: type, params: params}});
+    }
+
+    createUpdateBuildSpellEvent(type, params){
+        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
 
     updateRotation(event){
@@ -47,8 +56,8 @@ export class CharacterController extends Subject{
             return;
         }
 
-        this._character.currentSpellSlot = this.#inputManager.keys.spellSlot - 1;
-        this._character.fsm.changeState(this.#inputManager);
+        this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
+        this._character.fsm.updateState(deltaTime, this.#inputManager);
 
         if(this._character.fsm.currentState.movementPossible){
             //TODO: add collision checks for movement
@@ -70,20 +79,20 @@ export class CharacterController extends Subject{
 
             velocity.multiplyScalar(forwardScalar);
 
-            if (this.#inputManager.keys.shift && forwardScalar === 1) {
-                velocity.multiplyScalar(sprintMultiplier);
-            }
-
             strafe.multiplyScalar(strafeScalar);
 
             velocity.add(strafe);
 
             velocity.normalize();
 
-            velocity.multiplyScalar(movementSpeed);
+            velocity.multiplyScalar(movementSpeed*deltaTime);
+
+            if (this.#inputManager.keys.sprint && forwardScalar === 1) {
+                velocity.multiplyScalar(sprintMultiplier);
+            }
 
             //TODO: add floor collision instead of this.position.y check
-            if (this.#inputManager.keys.up && this.position.y === 0){
+            if (this.#inputManager.keys.up && this._character.position.y === 0){
                 this.#jumping = true;
             }
 
@@ -93,13 +102,13 @@ export class CharacterController extends Subject{
             }
 
             if(this.#jumping){
-                velocity.add(new THREE.Vector3(0,0.3,0));
+                velocity.add(new THREE.Vector3(0,10*deltaTime,0));
             }
             if(this.#falling){
-                velocity.add(new THREE.Vector3(0,-0.2,0));
+                velocity.add(new THREE.Vector3(0,-8*deltaTime,0));
             }
 
-            this._character.position.add(velocity);
+            this._character.position = (this._character.position.add(velocity));
             if(this._character.position.y < 0){
                 this._character.position.y = 0;
                 this.#falling = false;
@@ -107,13 +116,15 @@ export class CharacterController extends Subject{
         }
 
         if(this.#inputManager.mouse.leftClick){
-            if(this._character.currentSpellCooldown === 0){
+            if(this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0){
                 //cast current spell
-                let vec = new THREE.Vector3().copy(this.position);
-                vec.y = 2;
-                //factory.createProjectile(new THREE.Vector3(1,0,0).applyQuaternion(this.#character.rotation),vec,20);
-                this.fireballCooldown = 2;
+                let vec = new THREE.Vector3().copy(this._character.position);
+                vec.y += 2;
+                this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {position: vec, direction: new THREE.Vector3(1,0,0).applyQuaternion(this._character.rotation)}));
+                this._character.cooldownSpell();
             }
+        } else if (this._character.getCurrentSpell() instanceof BuildSpell){
+            this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
         this._character.updateCooldowns(deltaTime);
     }
