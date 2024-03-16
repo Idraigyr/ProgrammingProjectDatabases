@@ -10,6 +10,11 @@ from src.swagger_patches import summary
 
 
 class BuilderMinionSchema(EntitySchema):
+    """
+    The JSON schema for Builder Minion representation
+    Please refer to the Swagger documentation for the complete schema (due to inheritance)
+    """
+
     properties = {
         'level': {
             'type': 'integer',

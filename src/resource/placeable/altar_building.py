@@ -10,6 +10,10 @@ from src.swagger_patches import summary
 
 
 class AltarBuildingSchema(BuildingSchema):
+    """
+    The JSON schema for Altar Building representation
+    Please refer to the Swagger documentation for the complete schema (due to inheritance)
+    """
 
     properties = {}
     required = []
@@ -30,7 +34,7 @@ class AltarBuildingResource(Resource):
     No new altar can be made as only one may exist on an island. Therefore, no POST endpoint exits
     """
 
-    @swagger.tags('placeable')
+    @swagger.tags('building')
     @summary("Retrieve the altar building object with the given id")
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The builder minion id to retrieve')
     @swagger.response(response_code=200, description="The altar building in JSON format", schema=AltarBuildingSchema)

@@ -2,6 +2,7 @@ from flask import request, Flask, Blueprint
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
+from src.resource.placeable.placeable import PlaceableSchema
 from src.resource import add_swagger
 from src.resource.entity import EntitySchema
 from src.schema import ErrorSchema
@@ -24,6 +25,11 @@ class IslandSchema(Schema):
             'type': 'array',
             'items': EntitySchema,
             'description': 'The entities on the island. This includes buildings, builder minions and other entities. The illustrated schema might be incomplete, refer to the type-sepcific schema for more information'
+        },
+        'placeables': {
+            'type': 'array',
+            'items': PlaceableSchema,
+            'description': 'The placeables on the island. This includes buildings, builder minions and other entities. The illustrated schema might be incomplete, refer to the type-sepcific schema for more information'
         }
     }
     required = []
@@ -34,16 +40,48 @@ class IslandSchema(Schema):
     def __init__(self, island: Island = None, **kwargs):
         if island is not None: # island -> schema
             super().__init__(owner_id=island.owner_id,
-                             entities=[self._resolve_schema_for_type(entity) for entity in island.entities])
+                             entities=[self._resolve_entity_schema_for_type(entity) for entity in island.entities],
+                             placeables=[self._resolve_placeable_schema_for_type(placeable) for placeable in island.placeables])
         else: # schema -> island
             super().__init__(**kwargs)
 
-    def _resolve_schema_for_type(self, entity: any):
+    def _resolve_entity_schema_for_type(self, entity: any):
+        """
+        Resolve the schema for the given entity type
+        :param entity: The entity object to resolve the schema for
+        :return: The schema for the given entity type
+        :raises ValueError: If the entity type is unknown to this function
+        """
         if entity.type == 'builder_minion':
             from src.resource.builder_minion import BuilderMinionSchema
             return BuilderMinionSchema(entity)
 
         raise ValueError(f'Cannot find Schema for unknown entity type {entity.type}')
+
+    def _resolve_placeable_schema_for_type(self, placeable: any):
+        """
+        Resolve the schema for the given placeable type
+        :param placeable: The placeable object to resolve the schema for
+        :return: THe schema for the given placeable type
+        :raises ValueError: If the placeable type is unknown to this function
+        """
+        if placeable.type == 'fuse_table_building':
+            from src.resource.placeable.fuse_table_building import FuseTableBuildingSchema
+            return FuseTableBuildingSchema(placeable)
+        elif placeable.type == 'altar_building':
+            from src.resource.placeable.altar_building import AltarBuildingSchema
+            return AltarBuildingSchema(placeable)
+        elif placeable.type == 'mine_building':
+            from src.resource.placeable.mine_building import MineBuildingSchema
+            return MineBuildingSchema(placeable)
+        elif placeable.type == 'warrior_hut_building':
+            from src.resource.placeable.warrior_hut_building import WarriorHutBuildingSchema
+            return WarriorHutBuildingSchema(placeable)
+        elif placeable.type == 'tower_building':
+            from src.resource.placeable.tower_building import TowerBuildingSchema
+            return TowerBuildingSchema(placeable)
+
+        raise ValueError(f'Cannot find Schema for unknown placeable type {placeable.type}')
 
 
 class IslandResource(Resource):

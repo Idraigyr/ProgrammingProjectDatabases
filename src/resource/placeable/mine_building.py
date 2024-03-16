@@ -11,6 +11,11 @@ from src.swagger_patches import summary
 
 
 class MineBuildingSchema(BuildingSchema):
+    """
+    The JSON schema for Mine Building representation
+    Please refer to the Swagger documentation for the complete schema (due to inheritance)
+    """
+
     properties = {
         'mine_type': {
             'type': 'string',
@@ -40,7 +45,7 @@ class MineBuildingResource(Resource):
     new and existing mines.
     """
 
-    @swagger.tags('placeable')
+    @swagger.tags('building')
     @summary("Retrieve a mine building by its placeable id")
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The mine building id to retrieve')
     @swagger.response(response_code=200, description="The altar building in JSON format", schema=MineBuildingSchema)

@@ -71,6 +71,9 @@ def attach_resources(app: Flask) -> None:
     import src.resource.builder_minion as builder_minion_module
     import src.resource.placeable.mine_building as mine_building_module
     import src.resource.placeable.altar_building as altar_building_module
+    import src.resource.placeable.fuse_table_building as fuse_table_building_module
+    import src.resource.placeable.warrior_hut_building as warrior_hut_building_module
+    import src.resource.placeable.tower_building as tower_building_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -79,6 +82,9 @@ def attach_resources(app: Flask) -> None:
     builder_minion_module.attach_resource(app)
     mine_building_module.attach_resource(app)
     altar_building_module.attach_resource(app)
+    fuse_table_building_module.attach_resource(app)
+    warrior_hut_building_module.attach_resource(app)
+    tower_building_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:
