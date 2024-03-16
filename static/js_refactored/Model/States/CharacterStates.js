@@ -1,5 +1,8 @@
 import {State} from "../../Patterns/State.js";
 
+/**
+ * Class for the character state
+ */
 class BaseCharState extends State{
     constructor(fsm) {
         super(fsm);
@@ -13,6 +16,10 @@ class BaseCharState extends State{
 
     exit(){}
 }
+
+/**
+ * Idle state for the character
+ */
 export class IdleState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
@@ -21,6 +28,12 @@ export class IdleState extends BaseCharState{
     get name(){
         return "Idle"
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time passed since last update
+     * @param input input from the user
+     */
     updateState(deltaTime, input){
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
@@ -40,6 +53,11 @@ export class IdleState extends BaseCharState{
             this.manager.setState("DefaultAttack");
         }
     }
+
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
     enter(prevState){
         const curAction = this.manager.animations["Idle"];
         if(prevState){
@@ -60,14 +78,28 @@ export class IdleState extends BaseCharState{
     }
 }
 
+/**
+ * Run state for the character
+ */
 export class RunForwardState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
         this.movementPossible = true;
     }
+
+    /**
+     * Get the name of the state
+     * @returns {string} name of the state
+     */
     get name(){
         return "Run"
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time passed since last update
+     * @param input input from the user
+     */
     updateState(deltaTime, input){
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if((input.keys.forward || input.keys.left || input.keys.right) && !input.keys.sprint){
@@ -86,6 +118,10 @@ export class RunForwardState extends BaseCharState{
         }
     }
 
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
     enter(prevState){
         const curAction = this.manager.animations["Run"];
         if(prevState){
@@ -105,14 +141,29 @@ export class RunForwardState extends BaseCharState{
         }
     }
 }
+
+/**
+ * Walk forward state for the character
+ */
 export class WalkForwardState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
         this.movementPossible = true;
     }
+
+    /**
+     * Get the name of the state
+     * @returns {string} name of the state
+     */
     get name(){
         return "WalkForward"
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time passed since last update
+     * @param input input from the user
+     */
     updateState(deltaTime, input){
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
@@ -131,6 +182,10 @@ export class WalkForwardState extends BaseCharState{
         }
     }
 
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
     enter(prevState){
         const curAction = this.manager.animations["WalkForward"];
         if(prevState){
@@ -151,14 +206,28 @@ export class WalkForwardState extends BaseCharState{
     }
 }
 
+/**
+ * Walk backward state for the character
+ */
 export class WalkBackWardState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
         this.movementPossible = true;
     }
+
+    /**
+     * Get the name of the state
+     * @returns {string}
+     */
     get name(){
         return "WalkBackward"
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time passed since last update
+     * @param input input from the user
+     */
     updateState(deltaTime, input){
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
@@ -176,6 +245,11 @@ export class WalkBackWardState extends BaseCharState{
             this.manager.setState("Idle");
         }
     }
+
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
     enter(prevState){
         const curAction = this.manager.animations["WalkBackward"];
         if(prevState){
@@ -196,6 +270,9 @@ export class WalkBackWardState extends BaseCharState{
     }
 }
 
+/**
+ * Sneak state for the character
+ */
 export class SneakState extends BaseCharState{
     constructor() {
         super();
@@ -206,6 +283,9 @@ export class SneakState extends BaseCharState{
     }
 }
 
+/**
+ * Jump attack state for the character
+ */
 export class JumpAttackState extends BaseCharState{
     constructor() {
         super();
@@ -223,15 +303,29 @@ export class SneakAttackState extends BaseCharState{
     }
 }
 
+/**
+ * Default attack state for the character
+ */
 export class DefaultAttackState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
         this.timer = 0;
         this.movementPossible = false;
     }
+
+    /**
+     * Get the name of the state
+     * @returns {string} name of the state
+     */
     get name(){
         return "DefaultAttack"
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time passed since last update
+     * @param input input from the user
+     */
     updateState(deltaTime, input) {
         if(!this.checkTimer(deltaTime)) return;
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
@@ -248,6 +342,12 @@ export class DefaultAttackState extends BaseCharState{
             this.manager.setState("Idle");
         }
     }
+
+    /**
+     * Check if the timer has reached the end of the animation
+     * @param deltaTime time passed since last update
+     * @returns {boolean} true if the timer has reached the end of the animation
+     */
     checkTimer(deltaTime) {
         this.timer += deltaTime;
         if (this.timer > this.manager.animations["DefaultAttack"].getClip().duration) {
@@ -257,6 +357,10 @@ export class DefaultAttackState extends BaseCharState{
         return false;
     }
 
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
     enter(prevState){
         const curAction = this.manager.animations["DefaultAttack"];
         if(prevState){
@@ -278,6 +382,9 @@ export class DefaultAttackState extends BaseCharState{
 
 }
 
+/**
+ * Take damage state for the character
+ */
 export class TakeDamageState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
@@ -306,12 +413,18 @@ export class TakeDamageState extends BaseCharState{
     }
 }
 
+/**
+ * Frozen state for the character
+ */
 export class FrozenState extends BaseCharState{
     constructor() {
         super();
     }
 }
 
+/**
+ * Healing state for the character
+ */
 export class HealingState extends BaseCharState{
     constructor() {
         super();

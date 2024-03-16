@@ -5,6 +5,9 @@ import {max} from "../helpers.js";
 import {Factory} from "./Factory.js";
 import {BuildSpell} from "../Model/Spell.js";
 
+/**
+ * Class to manage the character and its actions
+ */
 export class CharacterController extends Subject{
     _character;
     #inputManager;
@@ -27,6 +30,10 @@ export class CharacterController extends Subject{
         return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
 
+    /**
+     * Update the rotation of the character
+     * @param event event
+     */
     updateRotation(event){
         const {movementX, movementY} = event;
         const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/360);
@@ -50,6 +57,11 @@ export class CharacterController extends Subject{
         qHorizontal.setFromAxisAngle(new THREE.Vector3(0,1,0), this._character.phi);
         return qHorizontal;
     }
+
+    /**
+     * Handle the click event
+     * @param event event
+     */
     onClickEvent(event){
         // RightClick
         if (event.which === 3 || event.button === 2) {
@@ -60,6 +72,10 @@ export class CharacterController extends Subject{
         } // TODO: also for left click to place the buildings?
     }
 
+    /**
+     * Update the character (e.g. state, position, spells, etc.
+     * @param deltaTime
+     */
     update(deltaTime) {
         if (!this._character.fsm.currentState) {
             return;

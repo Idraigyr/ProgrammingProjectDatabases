@@ -1,5 +1,8 @@
 import * as THREE from "three";
 
+/**
+ * Class for raycasting
+ */
 export class RaycastController{
     /**
      * Constructs raycaster with the given parameters

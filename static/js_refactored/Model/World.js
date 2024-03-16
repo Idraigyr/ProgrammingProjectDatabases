@@ -2,6 +2,9 @@ import {Factory} from "../Controller/Factory.js";
 import {Fireball, BuildSpell} from "./Spell.js";
 import {BuildManager} from "../Controller/BuildManager.js";
 
+/**
+ * World class that contains all the islands and the player
+ */
 export class World{
     constructor(params) {
         this.factory = params.Factory;
@@ -23,6 +26,11 @@ export class World{
     importWorld(json){
 
     }
+
+    /**
+     * Update the world and all its components
+     * @param deltaTime
+     */
     update(deltaTime){
         //update whole model
         this.spellFactory.models.forEach((model) => model.update(deltaTime));

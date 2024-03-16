@@ -4,7 +4,14 @@ import {View} from "../View/ViewNamespace.js";
 import {Fireball, BuildSpell} from "../Model/Spell.js";
 import {Building} from "../View/BuildingView.js";
 
+/**
+ * Factory class that creates models and views for the spells
+ */
 export class SpellFactory{
+    /**
+     * Constructs the factory with the given parameters
+     * @param params parameters (with scene, viewManager and AssetManager)
+     */
     constructor(params) {
         this.scene = params.scene;
         this.viewManager = params.viewManager;
@@ -12,6 +19,11 @@ export class SpellFactory{
         this.AssetManager = params.assetManager;
         this.models = [];
     }
+
+    /**
+     * Creates spell for the given event
+     * @param event event with spell details
+     */
     createSpell(event){
         let entityModel = null;
         switch (event.detail.type.constructor){
@@ -27,6 +39,12 @@ export class SpellFactory{
         this.models.push(entityModel);
     }
 
+    /**
+     * Creates fireball model and view
+     * @param details details of the fireball (with type and params)
+     * @returns {Projectile} model of the fireball
+     * @private private method
+     */
     _createFireball(details){
         let model = new Model.Projectile({
             spellType: details.type,
@@ -42,6 +60,11 @@ export class SpellFactory{
         this.viewManager.addPair(model,view);
         return model;
     }
+
+    /**
+     * Creates building model and view for a tree
+     * @returns {Tree} model of the tree
+     */
     createTree(){
         let model = new Model.Tree();
         let view = new View.Tree();
