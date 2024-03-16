@@ -122,6 +122,12 @@ body {
 body {
     /*cursor: url('/sprites/mouse.png'), auto;*/
     display: flex;
+    --currentHP: 20;
+    --maxHP: 100;
+    --currentMana: 50;
+    --maxMana: 100;
+    --percentageHP: calc(100% - (var(--currentHP) / var(--maxHP) * 100%));
+    --percentageMana: calc(100% - (var(--currentMana) / var(--maxMana) * 100%));;
 
 }
 
@@ -149,6 +155,16 @@ body {
     width: 11%;
     height: auto;
     transform: scaleX(-1);
+    clip-path: polygon(0 calc(4.9% + (var(--percentageHP)/1.1086)), 100% calc(4.9% + (var(--percentageHP)/1.1086)), 100% 100%, 0% 100%);
+
+}
+.Greypotion-left {
+    position: absolute;
+    bottom: 0%;
+    left: 24%;
+    width: 11%;
+    height: auto;
+    transform: scaleX(-1);
 
 }
 
@@ -158,7 +174,15 @@ body {
     right: 24%;
     width: 11%;
     height: auto;
+    clip-path: polygon(0 calc(4.9% + (var(--percentageMana)/1.1086)), 100% calc(4.9% + (var(--percentageMana)/1.1086)), 100% 100%, 0% 100%);
+}
 
+.Greypotion-right {
+    position: absolute;
+    bottom: 0%;
+    right: 24%;
+    width: 11%;
+    height: auto;
 }
 
 .ManaAmount {
@@ -168,6 +192,8 @@ body {
     position: absolute; /* Relative positioning */
     bottom: 5%;
     right: 27.3%;
+
+
 }
 
 .HealthAmount {
@@ -177,6 +203,8 @@ body {
     position: absolute; /* Relative positioning */
     bottom: 5%;
     left: 27.3%;
+
+
 }
 
 .Banner {
