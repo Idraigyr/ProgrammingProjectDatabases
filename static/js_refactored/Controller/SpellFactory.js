@@ -7,9 +7,11 @@ import {Building} from "../View/BuildingView.js";
 export class SpellFactory{
     constructor(params) {
         this.scene = params.scene;
+        this.camera = params.camera;
         this.viewManager = params.viewManager;
         this.AssetLoader = new Controller.AssetLoader(this.scene);
-        this.AssetManager = params.assetManager;
+        this.assetManager = params.assetManager;
+        //TODO: change this
         this.models = [];
     }
     createSpell(event){
@@ -24,6 +26,7 @@ export class SpellFactory{
                 break;
         }
         this.models.push(entityModel);
+        return entityModel;
     }
 
     _createFireball(details){
@@ -34,8 +37,21 @@ export class SpellFactory{
             fallOf: details.type.fallOf,
             position: details.params.position
         });
-        let view = new View.Fireball();
-        view.initModel(); //TODO: implement particle system instead of sphere
+        let uniforms = {
+            diffuseTexture: {
+                value: this.assetManager.getAsset("fire")
+            },
+            pointMultiplier: {
+                value: window.innerHeight / (2.0 * Math.tan(0.5 * 60.0 * Math.PI / 180.0))
+            }
+        };
+        let view = new View.Fireball({
+            scene: this.scene,
+            camera: this.camera,
+            position: details.params.position,
+            uniforms: uniforms
+        });
+
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         this.viewManager.addPair(model,view);
@@ -50,7 +66,7 @@ export class SpellFactory{
             position: details.params.position
         });
         let view = new Building();
-        view.charModel = this.AssetManager.getModel("Tree");
+        view.charModel = this.assetManager.getAsset("Tree");
 
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));

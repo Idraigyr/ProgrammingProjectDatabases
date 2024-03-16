@@ -28,7 +28,7 @@ function init() {
 
     // Load island model
     const loader = new THREE.GLTFLoader();
-    loader.load('../static/3d-models/island-landing-page.glb', (gltf) => {
+    loader.load('../static/assets/3d-models/island-landing-page.glb', (gltf) => {
         planet = gltf.scene;
         scene.add(planet);
         planet.rotation.x += 0.5
@@ -48,7 +48,7 @@ function init() {
     const ambientLight = new THREE.AmbientLight(0x404040); // soft white light
     scene.add(ambientLight);
 
-    const texture = new THREE.TextureLoader().load( "../static/images/background-landing.jpg" );
+    const texture = new THREE.TextureLoader().load( "../static/assets/images/background-landing.jpg" );
     scene.background = texture;
 
     scaleBackground();

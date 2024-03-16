@@ -29,9 +29,9 @@ export class InputManager {
         x: 0,
         y: 0
     }
+    #callbacks = {};
     constructor() {
         document.addEventListener("keydown", this.#onKeyDown.bind(this));
-        //document.addEventListener("keydown", (e) => this.onKeyDown(e)); better?
         document.addEventListener("keyup", this.#onKeyUp.bind(this));
         document.addEventListener("mousedown", (e) => {
             switch (e.button){
@@ -59,6 +59,14 @@ export class InputManager {
         });
     }
 
+    addKeyDownEventListener(key, callback){
+        this.#callbacks[key] = callback;
+    }
+
+    removeKeyDownEventListener(key){
+        delete this.#callbacks[key];
+    }
+
     addMouseMoveListener(callback){
         document.addEventListener("mousemove",callback);
     }
@@ -76,7 +84,7 @@ export class InputManager {
     }
 
     #onKey(KeyBoardEvent, bool){
-        switch (event.code){
+        switch (KeyBoardEvent.code){
             case upKey:
                 this.keys.up = bool;
                 break;
@@ -121,6 +129,8 @@ export class InputManager {
                 this.keys.spellSlot = 5;
                 break;
         }
+
+        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
     #onKeyDown(KeyBoardEvent){

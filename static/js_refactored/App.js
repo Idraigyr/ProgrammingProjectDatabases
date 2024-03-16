@@ -10,6 +10,8 @@ import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 
+const canvas = document.getElementById("canvas");
+
 class App {
     /**
      * create the app
@@ -21,7 +23,7 @@ class App {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
-        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture
+        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
 
         canvas.addEventListener("mousedown", async (e) => {
             if(!app.blockedInput) return;
@@ -49,7 +51,7 @@ class App {
         this.assetManager = new AssetManager();
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
-        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
+        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
 
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
@@ -89,7 +91,7 @@ class App {
 
     async loadAssets(){
         await this.assetManager.loadViews();
-        this.worldManager = await new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
+        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));

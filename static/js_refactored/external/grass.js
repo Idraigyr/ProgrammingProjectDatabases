@@ -53,8 +53,8 @@ const BLADE_HEIGHT = 0.8;
 const BLADE_HEIGHT_VARIATION = 0.6;
 
 // Grass Texture
-const grassTexture = new THREE.TextureLoader().load('../static/images/grass.jpg');
-const cloudTexture = new THREE.TextureLoader().load('../static/images/cloud.jpg');
+const grassTexture = new THREE.TextureLoader().load('../static/assets/images/grass.jpg');
+const cloudTexture = new THREE.TextureLoader().load('../static/assets/images/cloud.jpg');
 cloudTexture.wrapS = cloudTexture.wrapT = THREE.RepeatWrapping;
 
 // Time Uniform

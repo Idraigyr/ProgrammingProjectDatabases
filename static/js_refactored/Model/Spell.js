@@ -36,7 +36,6 @@ class Projectile extends EntitySpell{
 class Cloud extends EntitySpell{
     constructor(params) {
         super(params);
-        this.area = params.area;
     }
     update(deltaTime){
 
@@ -166,7 +165,7 @@ export class Fireball extends ConcreteSpell{
                 duration: 5,
                 cooldown: 1.34, //TODO: need animations that last equally long
                 castTime: 0,
-                velocity: 10,
+                velocity: 5,
                 fallOf: 0
             }),
             effects: [

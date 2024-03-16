@@ -13,11 +13,11 @@
 }
 
 html {
-    cursor: url('../images/wand.png'), auto;
+    cursor: url('../assets/images/wand.png'), auto;
 }
 
 body {
-    background: url("../images/background-landing.jpg") no-repeat center center fixed;
+    background: url("../assets/images/background-landing.jpg") no-repeat center center fixed;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;

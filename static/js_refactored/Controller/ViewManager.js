@@ -1,22 +1,23 @@
 import {IAnimatedView} from "../View/View.js";
+import {Fireball} from "../View/SpellView.js"
 
 export class ViewManager{
     constructor() {
         this.pairs = {
-            building: {},
-            island: {},
-            player: {},
-            entity: {},
-            spellEntity: {}
+            building: [],
+            island: [],
+            player: [],
+            entity: [],
+            spellEntity: []
         };
     }
     addPair(model, view){
         if(model.type === "player" && Object.keys(this.pairs.player).length === 0){
-            this.pairs.player[model] = view;
+            this.pairs.player.push({model, view});
         } else if(model.type === "player"){
             throw new Error("player already exists");
         } else {
-            this.pairs[model.type][model] = view;
+            this.pairs[model.type].push({model, view});
         }
     }
     /**
@@ -24,26 +25,25 @@ export class ViewManager{
     * @param {{detail: model}} event
     */
     deleteView(event){
-        delete this.pairs[event.detail.model.type][event.detail.model];
+        this.pairs[event.detail.model.type].filter((pair) => pair.model !== event.detail.model);
     }
 
     get ritualTouchables(){
         let touchables = [];
-        for(const model in this.pairs.building){
-            touchables.push(this.pairs.building[model]);
-        }
-        for(const model in this.pairs.island){
-            touchables.push(this.pairs.island[model]);
-        }
+        this.pairs.building.forEach((pair) => touchables.push(pair.view));
+        this.pairs.island.forEach((pair) => touchables.push(pair.view));
         return touchables;
     }
 
     updateAnimatedViews(deltaTime){
         for(const type in this.pairs){
-            for(const model in this.pairs[type]){
-                if(!(this.pairs[type][model] instanceof IAnimatedView)) continue;
-                this.pairs[type][model].update(deltaTime)
-            }
+            this.pairs[type].forEach((pair) => {
+                if(pair.view instanceof IAnimatedView) {
+                    pair.view.update(deltaTime);
+                } else if(pair.view instanceof Fireball){
+                    pair.view.particleSystem.update(deltaTime);
+                }
+            });
         }
     }
 }
