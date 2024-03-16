@@ -82,23 +82,22 @@ export class BuildManager {
         }
     }
     placeBuildSpell(event){
-        // let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables)?.[0];
-        // if(closedCollided){
-        //     let object = closedCollided.object;
-        //     let planes = this.#raycaster.viewManager.planes;
-        //     if(planes.indexOf(object) === -1){
-        //         console.log("touched plane");
-        //         return;
-        //     }else{
-        //         console.log("touched something else");
-        //         return;
-        //     }
-        //     object.position.copy( closedCollided.point ).add( closedCollided.face.normal );
-        //     this.scaleAndCorrectPosition(object);
-        //     // TODO: just put them on the ground
-        //     // TODO: just add transparency roll over mesh logic
-        //     // TODO: just say 'Finally!'
-        // }
+        if(!this.ritualToPlace) return;
+        let closedCollided = this.#raycaster.getIntersects(this.#raycaster.viewManager.ritualTouchables)?.[0];
+        if(closedCollided){
+            let object = closedCollided.object;
+            let planes = this.#raycaster.viewManager.planes;
+            if(planes.indexOf(object) === -1){
+                console.log("touched plane");
+                this.#extractObject(this.ritualToPlace).position.copy( closedCollided.point ).add( closedCollided.face.normal );
+                this.scaleAndCorrectPosition(this.ritualToPlace);
+                return;
+            }else{
+                console.log("touched something else");
+                return;
+            }
+            // TODO: just say 'Finally!'
+        }
     }
     // TODO: refactor the code below
     //
