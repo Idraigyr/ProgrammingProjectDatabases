@@ -1,15 +1,16 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 0;
+  margin: 60px;
   padding: 0;
   background-color: #f1f5f9;
 }
 
-.container {
-  max-width: 800px;
+.altar {
+  max-width: 1000px;
+  max-height: 1000px;
   margin: 20px auto;
   padding: 20px;
-  background-color: #ffffff;
+  background-color: #46e2ff;
   border: 2px solid #0f172a;
   border-radius: 10px;
 }
@@ -20,7 +21,7 @@ h1 {
   color: #0f172a;
 }
 
-.altar {
+.combat {
   border: 2px solid #0f172a;
   padding: 20px;
   margin-bottom: 20px;
@@ -36,13 +37,13 @@ h1 {
   cursor: pointer;
 }
 
-.items {
+.containers {
   display: flex;
   justify-content: space-between;
 }
 
-.stakes, .gems, .spells {
-  width: 30%;
+.container {
+  width: 250px;
   border: 2px solid #0f172a;
   padding: 20px;
   background-color: #f9f3d2;
@@ -50,13 +51,59 @@ h1 {
 }
 
 .item {
+  text-align: center;
+  height: 55px; /* Set height to 100% to fill the container */
   margin-bottom: 10px;
   background-color: #0f172a;
   color: #ffffff;
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  position: relative; /* Set position to relative */
 }
 
 .item:hover {
-  background-color: #b1bd17;
+  background-color: #ce8519;
+}
+
+.fireSpell{
+    height: 50px;
+    width: 50px;
+    transform: translate(100%, 0%);
+}
+
+.freezeSpell{
+    height: 50px;
+    width: 80px;
+    transform: translate(50%, 0%);
+}
+
+.shieldSpell{
+    height: 55px;
+    width: 95px;
+    transform: translate(45%, 0%);
+}
+
+.diamond{
+    height: 35px;
+    width: 35px;
+    transform: translate(120%, 25%);
+}
+
+.emerald{
+    height: 50px;
+    width: 50px;
+    transform: translate(90%, 0%);
+}
+
+.ruby{
+    height: 55px;
+    width: 55px;
+    transform: translate(105%, 0%);
+}
+
+.sapphire{
+    height: 60px;
+    width: 60px;
+    transform: translate(75%, 0%);
 }
