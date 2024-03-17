@@ -1,20 +1,10 @@
-from enum import Enum
-
-from sqlalchemy import String, Column, BigInteger, ForeignKey
+from sqlalchemy import Column, BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import Enum as SqlEnum
 
+from src.model.enums import TowerBuildingType, MineBuildingType
 from src.model.placeable.building import Building
 
-class MineBuildingType(Enum):
-    """
-    An enum for the different types of mines
-    """
-    CRYSTAL = 'crystal'
-
-    @classmethod
-    def has_value(cls, value):
-        return value in cls._value2member_map_
 
 class MineBuilding(Building):
     """
@@ -65,16 +55,6 @@ class MineBuilding(Building):
         'polymorphic_identity': 'mine_building'
     }
 
-
-class TowerBuildingType(Enum):
-    """
-    An enum for the different types of towers
-    """
-    MAGIC = 'magic'
-
-    @classmethod
-    def has_value(cls, value):
-        return value in cls._value2member_map_
 
 class TowerBuilding(Building):
     """
