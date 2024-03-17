@@ -23,6 +23,17 @@ class Island(current_app.db.Model):
     def placeables(self):
         return relationship("Placeable", back_populates="island")
 
-    def __init__(self, owner: Player = None):
+    # Only one altar building can exist on an island
+    # So we have a one-to-one relationship with the altar building
+    # It should also be non-null as it's the central hub of the island and thus created at the same time as the island
+    # It however CAN be null in the database, as it's created after the island is created (circular dependency problem)
+    altar_id: Mapped[int] = mapped_column(ForeignKey('building.placeable_id', use_alter=True), nullable=True)
+
+    @declared_attr
+    def altar(self):
+        return relationship("AltarBuilding", foreign_keys=[self.altar_id], uselist=False)
+
+    def __init__(self, owner: Player = None, altar_id: int = None):
         self.owner = owner
         self.owner_id = owner.user_profile_id
+        self.altar_id = altar_id

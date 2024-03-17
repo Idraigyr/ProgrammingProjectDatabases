@@ -5,10 +5,14 @@ $("#loginForm").on("submit", function(event) {
     let password = $("#password").val();
     $.ajax({url: "/api/auth/login?username=" + username + "&password=" + password, type: "POST", error: function (xhr, ajaxOption, thrownError) {
         if (xhr.status !== 200) {
-                      // Handle error
+            if (xhr.status >= 500) {
+                alert("Server error. Please try again later.")
+            } else {
+                                      // Handle error
             // let msg = data.message
             let message = xhr.responseJSON.message
             alert(message)
+            }
         }
         }}).done(function (data) {
         if (data.status === 'success') {
@@ -35,6 +39,8 @@ if (form) { // If the form exists, it's not always present like on the login pag
             if(xhr.status === 409){
                 let message = xhr.responseJSON.message;
                 alert(message);
+            } else if (xhr.status >= 500) {
+                alert("Server error. Please try again later.")
             }
                       // Handle error
             // let msg = data.message

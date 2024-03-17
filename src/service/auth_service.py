@@ -5,6 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.placeable.buildings import AltarBuilding
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
 from src.model.user_profile import UserProfile
@@ -103,10 +104,8 @@ class AuthService:
         current_app.db.session.add(user)
 
         # Create island for the user
-        island = Island(user.player)
-        current_app.db.session.add(island)
+        self.create_island(user.player)
 
-        current_app.db.session.commit()
         return user
 
 
@@ -123,6 +122,28 @@ class AuthService:
         credentials: Credentials = OAuth2Credentials(sso_id)
         return self.create_user(credentials, username, firstname, lastname)
 
+    def create_island(self, player: 'Player') -> Island:
+        """
+        Create a new island for the given player
+        This will also create all objects that are required for the island
+        :param player: The player to create the island for
+        :return: The new island
+        """
+        # Create the island without the altar linked
+        island = Island(player)
+        current_app.db.session.add(island)
+        current_app.db.session.commit()
+
+        # Create a new altar building
+        altar_building = AltarBuilding(island_id=island.owner_id, x=7, z=7, level=0)
+        current_app.db.session.add(altar_building)
+        current_app.db.session.commit()
+
+        # Create update the id of the altar in island so we have a ref from island to altar
+        island.altar_id = altar_building.placeable_id
+        current_app.db.session.commit()
+
+        return island
 
 
 AUTH_SERVICE = AuthService()
