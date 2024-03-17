@@ -66,7 +66,7 @@ class BuilderMinionResource(EntityResource):
     @swagger.tags('entity')
     @summary('Create a new builder minion')
     @swagger.expected(schema=BuilderMinionSchema, required=True)
-    @swagger.response(response_code=200, description='Builder minion created', schema=SuccessSchema)
+    @swagger.response(response_code=200, description='Builder minion created', schema=BuilderMinionSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
     @jwt_required()
     def post(self):
@@ -91,12 +91,12 @@ class BuilderMinionResource(EntityResource):
 
         current_app.db.session.add(builder_minion)
         current_app.db.session.commit()
-        return SuccessSchema(f'Builder minion {builder_minion.entity_id} created'), 200
+        return BuilderMinionSchema(builder_minion), 200
 
     @swagger.tags('entity')
     @summary('Update an existing builder minion')
     @swagger.expected(schema=BuilderMinionSchema, required=True)
-    @swagger.response(200, description='Builder minion successfully updated', schema=SuccessSchema)
+    @swagger.response(200, description='Builder minion successfully updated. The up-to-date object is returned', schema=BuilderMinionSchema)
     @swagger.response(404, description="Builder minion not found", schema=ErrorSchema)
     @swagger.response(400, description="Invalid input", schema=ErrorSchema)
     @jwt_required()
@@ -111,17 +111,18 @@ class BuilderMinionResource(EntityResource):
         try:
             BuilderMinionSchema(**data)
             id = int(data['entity_id'])
+
+
+            minion = BuilderMinion.query.get(id)
+            if minion is None:
+                return ErrorSchema(f"Builder minion with id {id} not found"), 404
+
+            minion.update(data)
+
+            current_app.db.session.commit()
+            return BuilderMinionSchema(minion), 200
         except (ValueError, KeyError) as e:
             return ErrorSchema(str(e)), 400
-
-        minion = BuilderMinion.query.get(id)
-        if minion is None:
-            return ErrorSchema(f"Builder minion with id {id} not found"), 404
-
-        minion.update(data)
-
-        current_app.db.session.commit()
-        return SuccessSchema(f"Updated builder minion {id}"), 200
 
 
 def attach_resource(app: Flask) -> None:

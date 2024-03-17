@@ -66,7 +66,7 @@ class SpellResource(Resource):
 
     @swagger.tags('spell')
     @summary('Create a new spell profile')
-    @swagger.response(200, description='Success', schema=SuccessSchema)
+    @swagger.response(200, description='Success', schema=SpellSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
     @swagger.expected(SpellSchema, required=True) # The expected input is a spell profile in JSON format, as defined by the SpellSchema class
     @jwt_required() # for security
@@ -87,11 +87,11 @@ class SpellResource(Resource):
         spell = Spell(**data)
         current_app.db.session.add(spell)
         current_app.db.session.commit()
-        return SuccessSchema(f"Spell {spell.id} succesfully created"), 200
+        return SpellSchema(spell), 200
 
     @swagger.tags('spell')
     @summary('Update the spell profile by id')
-    @swagger.response(200, description='Success', schema=SuccessSchema)
+    @swagger.response(200, description='Success', schema=SpellSchema)
     @jwt_required()  # for security
     def put(self):
         """
@@ -113,7 +113,7 @@ class SpellResource(Resource):
             return ErrorSchema(f"Spell {id} not found"), 404
         spell.update(data)
         current_app.db.session.commit()
-        return SuccessSchema(f"Spell {id} successfully updated"), 200
+        return SpellSchema(spell), 200
 
 
 class SpellListResource(Resource):
@@ -123,7 +123,7 @@ class SpellListResource(Resource):
 
     @swagger.tags('spell')
     @summary('Get all spell profiles')
-    @swagger.response(200, description='Success, returns all spell profiles in JSON format', schema=SpellSchema)
+    @swagger.response(200, description='Success, returns all spell profiles in JSON array with SpellSchema objects in it', schema=SpellSchema)
     @jwt_required()  # for security
     def get(self):
         """

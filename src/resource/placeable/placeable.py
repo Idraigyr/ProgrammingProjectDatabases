@@ -42,7 +42,7 @@ class PlaceableSchema(Schema):
     def __init__(self, placeable: Placeable = None, **kwargs):
         if placeable is not None:
             super().__init__(placeable_id=placeable.placeable_id, island_id=placeable.island_id,
-                             x=placeable.xpos, z=placeable.zpos, type=placeable.type)
+                             x=placeable.xpos, z=placeable.zpos, type=placeable.type, **kwargs)
         else:
             super().__init__(**kwargs)
 

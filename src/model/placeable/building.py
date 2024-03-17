@@ -13,14 +13,15 @@ class Building(Placeable):
 
     level: Mapped[int] = Column(SmallInteger(), default=0, nullable=False)
 
-    def __init__(self, xpos: int = 0, zpos: int = 0, level: int = 0) -> None:
+    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0) -> None:
         """
         Create a new building object with the given parameters
+        :param island_id: The id of the island that this building belongs to
         :param xpos: The x position of the building on the grid
         :param zpos: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(xpos, zpos)
+        super().__init__(island_id, xpos, zpos)
         self.level = level
 
 

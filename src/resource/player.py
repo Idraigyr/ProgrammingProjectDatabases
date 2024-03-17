@@ -84,7 +84,7 @@ class PlayerResource(Resource):
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
     @summary('Update the player profile by id')
-    @swagger.response(200, description='Succesfully updated the player profile', schema=SuccessSchema)
+    @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
     @jwt_required()
@@ -114,7 +114,7 @@ class PlayerResource(Resource):
 
             current_app.db.session.commit()  # Submit the changes to the database
 
-            return SuccessSchema(f"Player profile {user_id} updated"), 200
+            return PlayerSchema(player), 200
         except ValueError as e:
             return ErrorSchema(str(e)), 400
 

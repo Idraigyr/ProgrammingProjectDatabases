@@ -1,9 +1,9 @@
-from flask import request, Flask, Blueprint
+from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
 from src.model.placeable.buildings import WarriorHutBuilding
-from src.resource import add_swagger
+from src.resource import add_swagger, clean_dict_input
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -24,7 +24,7 @@ class WarriorHutBuildingSchema(BuildingSchema):
 
     def __init__(self, warrior_hut_building: WarriorHutBuilding = None, **kwargs):
         if warrior_hut_building:
-            super().__init__(warrior_hut_building)
+            super().__init__(warrior_hut_building, **kwargs)
         else:
             super().__init__(**kwargs)
 
@@ -36,7 +36,7 @@ class WarriorHutBuildingResource(BuildingResource):
 
     @swagger.tags('building')
     @summary("Retrieve the warrior hut building object with the given id")
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The warrior hut id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The warrior hut id to retrieve')
     @swagger.response(response_code=200, description="The warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
     @swagger.response(response_code=404, description='Warrior hut with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
@@ -47,15 +47,82 @@ class WarriorHutBuildingResource(BuildingResource):
         The id is given as a query parameter
         :return:
         """
-        id = request.args.get('id', type=int)
+        id = request.args.get('placeable_id', type=int)
         if id is None:
-            return ErrorSchema('No id given'), 400
+            return ErrorSchema('No placeable_id given'), 400
 
         warrior_hut_building = WarriorHutBuilding.query.get(id)
         if not warrior_hut_building:
             return ErrorSchema(f'Warrior hut with id {id} not found'), 404
 
         return WarriorHutBuildingSchema(warrior_hut_building), 200
+
+
+    @swagger.tags('building')
+    @summary("Update the warrior hut building object with the given id")
+    @swagger.expected(schema=WarriorHutBuildingSchema, required=True)
+    @swagger.response(response_code=200, description="The updated warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
+    @swagger.response(response_code=404, description='Warrior hut with given id not found', schema=ErrorSchema)
+    @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @jwt_required()
+    def put(self):
+        """
+        Update the warrior hut building with the given placeable id
+        The id is given as a query parameter
+        :return:
+        """
+        # Get the JSON data from the request
+        data = request.get_json()
+        data = clean_dict_input(data)
+
+        try:
+            WarriorHutBuildingSchema(**data)
+            id = int(data['placeable_id'])
+
+            # Get the existing warrior hut building
+            warrior_hut_building = WarriorHutBuilding.query.get(id)
+            if not warrior_hut_building:
+                return ErrorSchema(f'Warrior hut with id {id} not found'), 404
+
+            # Update the warrior hut building
+            warrior_hut_building.update(data)
+
+            current_app.db.session.commit()
+            return WarriorHutBuildingSchema(warrior_hut_building), 200
+        except (KeyError, ValueError) as e:
+            return ErrorSchema(str(e)), 400
+
+
+    @swagger.tags('building')
+    @summary("Create a new warrior hut building")
+    @swagger.expected(schema=WarriorHutBuildingSchema, required=True)
+    @swagger.response(response_code=200, description="The created warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
+    @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @jwt_required()
+    def post(self):
+        """
+        Create a new warrior hut building
+        :return:
+        """
+        # Get the JSON data from the request
+        data = request.get_json()
+        data = clean_dict_input(data)
+
+        try:
+            WarriorHutBuildingSchema(**data)
+
+            # Create the tower model & add it to the database
+            if 'placeable_id' in data:
+                data.pop('placeable_id')  # let SQLAlchemy initialize the id
+
+            warrior_hut_building = WarriorHutBuilding(**data)
+            current_app.db.session.add(warrior_hut_building)
+            current_app.db.session.commit()
+
+            return WarriorHutBuildingSchema(warrior_hut_building), 200
+        except (KeyError, ValueError) as e:
+            return ErrorSchema(str(e)), 400
+
 
 
 def attach_resource(app: Flask) -> None:

@@ -22,12 +22,14 @@ class Placeable(current_app.db.Model):
     zpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
 
 
-    def __init__(self, xpos: int = 0, zpos: int = 0):
+    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0):
         """
         Initializes a placeable object
+        :param island_id: The id of the island that this placeable belongs to
         :param xpos: The x position of the building, in the grid. So it is bound by [0,15]
         :param zpos: The z position of the building, in the grid. So it is bound by [0,15]
         """
+        self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
 
@@ -35,7 +37,7 @@ class Placeable(current_app.db.Model):
     def update(self, data: dict):
         """
         Updates the placeable object new data
-        Updating the id and type are not allowed
+        Updating the id, island_id and type are not allowed
         :param data: The new data
         :return:
         """

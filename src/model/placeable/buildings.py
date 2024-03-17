@@ -1,10 +1,20 @@
+from enum import Enum
+
 from sqlalchemy import String, Column, BigInteger, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Enum as SqlEnum
 
 from src.model.placeable.building import Building
 
-MINE_BUILDING_TYPES = ['crystal']
-TOWER_BUILDING_TYPES = ['magic']
+class MineBuildingType(Enum):
+    """
+    An enum for the different types of mines
+    """
+    CRYSTAL = 'crystal'
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
 
 class MineBuilding(Building):
     """
@@ -14,22 +24,26 @@ class MineBuilding(Building):
     """
     placeable_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), primary_key=True)
 
-    mine_type: Mapped[str] = Column(String, nullable=False, default='crystal')
+    mine_type: Mapped[MineBuildingType] = Column(SqlEnum(MineBuildingType), nullable=False, default='crystal')
     mined_amount: Mapped[int] = Column(BigInteger, nullable=False, default=0)
 
 
-    def __init__(self, xpos:int = 0, zpos: int = 0, level: int = 0, mine_type: str = '', mined_amount: int = 0) -> None:
+    def __init__(self, island_id:int = 0, x:int = 0, z: int = 0, level: int = 0, mine_type: str = 'crystal', mined_amount: int = 0) -> None:
         """
         Create a new mine building object with the given parameters
-        :param xpos: The x position of the building on the grid
-        :param zpos: The z position of the building on the grid
+        :param island_id: The id of the island that this building belongs to
+        :param x: The x position of the building on the grid
+        :param z: The z position of the building on the grid
         :param level: The level of the building
         :param mine_type: The type of the mine (default is 'crystal')
         :param mined_amount: The amount the mine has already mined since the last pickup by the player
         After pickup, this is reset to 0 and the player crystal count is increased
         """
-        super().__init__(xpos, zpos, level)
-        self.mine_type = mine_type
+        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        if not MineBuildingType.has_value(mine_type):
+            raise ValueError('Invalid mine_type')
+
+        self.mine_type = MineBuildingType[mine_type.upper()]
         self.mined_amount = mined_amount
 
 
@@ -41,15 +55,26 @@ class MineBuilding(Building):
         :return:
         """
         super().update(data)
-        if data.get('mine_type', self.mine_type) not in MINE_BUILDING_TYPES:
+        if not MineBuildingType.has_value(data.get('mine_type', self.mine_type)):
             raise ValueError('Invalid mine_type')
 
-        self.mine_type = data.get('mine_type', self.mine_type)
+        # Ignore pycharm warning, it's wrong
+        self.mine_type = MineBuildingType[data.get('mine_type', self.mine_type).upper()]
 
     __mapper_args__ = {
         'polymorphic_identity': 'mine_building'
     }
 
+
+class TowerBuildingType(Enum):
+    """
+    An enum for the different types of towers
+    """
+    MAGIC = 'magic'
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
 
 class TowerBuilding(Building):
     """
@@ -59,18 +84,22 @@ class TowerBuilding(Building):
 
     placeable_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), primary_key=True)
 
-    tower_type: Mapped[str] = Column(String, nullable=False, default='magic')
+    tower_type: Mapped[TowerBuildingType] = Column(SqlEnum(TowerBuildingType), nullable=False, default='magic')
 
-    def __init__(self, tower_type: str = 'magic', xpos: int = 0, zpos: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, tower_type: TowerBuildingType = TowerBuildingType.MAGIC, x: int = 0, z: int = 0, level: int = 0):
         """
         Create a new tower building object with the given parameters
+        :param island_id: The id of the island that this building belongs to
         :param tower_type: The type of the tower (default is 'magic')
-        :param xpos: The x position of the building on the grid
-        :param zpos: The z position of the building on the grid
+        :param x: The x position of the building on the grid
+        :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(xpos, zpos, level)
-        self.tower_type = tower_type
+        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        if not TowerBuildingType.has_value(tower_type):
+            raise ValueError('Invalid tower_type')
+
+        self.tower_type = TowerBuildingType[tower_type.upper()]
 
     def update(self, data: dict):
         """
@@ -81,10 +110,11 @@ class TowerBuilding(Building):
         :return:
         """
         super().update(data)
-        if data.get('tower_type', self.tower_type) not in TOWER_BUILDING_TYPES:
+        if not TowerBuildingType.has_value(data.get('tower_type', self.tower_type)):
             raise ValueError('Invalid tower_type')
 
-        self.tower_type = data.get('tower_type', self.tower_type)
+        # Ignore pycharm warning, it's wrong
+        self.tower_type = TowerBuildingType[data.get('tower_type', self.tower_type).upper()]
 
     __mapper_args__ = {
         'polymorphic_identity': 'tower_building'
@@ -100,14 +130,15 @@ class AltarBuilding(Building):
     Only one altar can exist on an island
     """
 
-    def __init__(self, xpos: int = 0, zpos: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0):
         """
         Create a new altar building object with the given parameters
-        :param xpos: The x position of the building on the grid
-        :param zpos: The z position of the building on the grid
+        :param island_id: The id of the island that this building belongs to
+        :param x: The x position of the building on the grid
+        :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(xpos, zpos, level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level)
 
     def update(self, data: dict):
         """
@@ -129,14 +160,15 @@ class FuseTableBuilding(Building):
     This process requires some idle time
     """
 
-    def __init__(self, xpos: int = 0, zpos: int = 0, level: int = 0):
+    def __init__(self, island_id:int = 0, x: int = 0, z: int = 0, level: int = 0):
         """
         Create a new fuse table building object with the given parameters
-        :param xpos: THe x position of the building on the grid
-        :param zpos: The z position of the building on the grid
+        :param island_id: The id of the island that this building belongs to
+        :param x: THe x position of the building on the grid
+        :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(xpos, zpos, level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level)
 
     def update(self, data: dict):
         """
@@ -159,14 +191,15 @@ class WarriorHutBuilding(Building):
     It has no function in single player mode
     """
 
-    def __init__(self, xpos: int = 0, zpos: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0):
         """
         Create a new warrior hut building object with the given parameters
-        :param xpos: The x position of the building on the grid
-        :param zpos: The z position of the building on the grid
+        :param island_id: The id of the island that this building belongs to
+        :param x: The x position of the building on the grid
+        :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(xpos, zpos, level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level)
 
     def update(self, data: dict):
         """

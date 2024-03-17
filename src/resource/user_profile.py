@@ -44,7 +44,7 @@ class UserProfileSchema(Schema):
 class UserProfileResource(Resource):
     """
     A UserProfile resource is a resource/api endpoint that allows for the retrieval and modification of user profiles
-
+    No POST endpoint is available, as user profiles are created by the registration process. See AUTHENTICATION.md for more information
     This resource is protected by JWT, and requires a valid JWT token to access
     """
 
@@ -90,7 +90,7 @@ class UserProfileResource(Resource):
     @swagger.parameter(_in='query', name='firstname', schema={'type': 'string'}, description='The new firstname')
     @swagger.parameter(_in='query', name='lastname', schema={'type': 'string'}, description='The new lastname')
     @swagger.parameter(_in='query', name='admin', schema={'type': 'bool'}, description='The new admin status (only allowed if current user is admin)')
-    @swagger.response(200, description='Succesfully updated the user profile', schema=SuccessSchema)
+    @swagger.response(200, description='Succesfully updated the user profile', schema=UserProfileSchema)
     @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token', schema=ErrorSchema)
     @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @jwt_required()
@@ -133,7 +133,7 @@ class UserProfileResource(Resource):
         target_user.update(clean_dict_input(copy))
         current_app.db.session.commit() # Save changes to db
 
-        return SuccessSchema(f"User {target_user_id} updated"), 200
+        return UserProfileSchema(target_user), 200
 
 
 

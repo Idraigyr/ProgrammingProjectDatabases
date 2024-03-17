@@ -22,7 +22,7 @@ class BuildingSchema(PlaceableSchema):
 
     def __init__(self, building: Building = None, **kwargs):
         if building is not None:
-            super().__init__(building, level=building.level)
+            super().__init__(building, level=building.level, **kwargs)
         else:
             super().__init__(**kwargs)
 
