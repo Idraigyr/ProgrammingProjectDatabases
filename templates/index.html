@@ -6,7 +6,11 @@
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
-   <script defer src="static/js/external/chatBox.js"></script>
+    <!-- Inline load jQuery so that inline scripts such as socketio.js can use it -->
+    <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
+    <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script defer src="{{ url_for('static', filename='js/external/chatBox.js') }}"></script>
     <script type="importmap">
       {
         "imports": {
@@ -15,19 +19,28 @@
           "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
           "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
           "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
-          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
-          "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
+          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js"
         }
       }
     </script>
+    <!--SocketIO JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
+            integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
+            crossorigin="anonymous">
+
+    </script>
+
+    <!-- Custom SocketIO JS -->
+    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}"></script>
 </head>
 <body id="body">
     <div id="container">
     </div>
-    <script type="module" src="static/js/App.js"></script>
+    <!-- Load App -->
+    <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
+
     <div class="button-container">
         <button id="chatButton" class="bottom-left-button">Chat</button>
-
     </div>
     <div id="chatPopup" class="chat-popup" style="display: none;">
         <!-- Chat interface -->
@@ -58,25 +71,6 @@
 
         </div>
     </div>
-
-    <!-- Get username -->
-    <script type="text/javascript">
-        const username = `{{ username }}`;
-
-    </script>
-
-    <!--SocketIO JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
-            integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
-            crossorigin="anonymous">
-
-    </script>
-
-    <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}">
-    </script>
-
-
     <!-- UI/HUD -->
 
 
