@@ -54,7 +54,7 @@ When implementing CSRF protection for the JWT cookie, please refer to [this page
 The app currently supports the OAuth2 protocol for external authentication. The current design works for Google login, but should be usable for any OAuth2 complient provider (slight modifications may or may not be required).
 For more information about the workings of the OAuth2 protocol & implementation, see the [oauthlib documentation](https://oauthlib.readthedocs.io/en/latest/).
 
-To enable OAuth2, set the following environment variables in the `.env` file (see [env.md](env.md) for a complete list):
+To enable OAuth2, set the following environment variables in the `.env` file (see [env.md](ENV.md) for a complete list):
 ```bash
 APP_OAUTH_ENABLED=true
 APP_OAUTH_CLIENT_ID=<client_id>

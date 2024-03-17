@@ -74,7 +74,7 @@ def register():
         }
     }), status=200, mimetype='application/json')
 
-    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    set_access_cookies(response, jwt, max_age=int(current_app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 
@@ -109,7 +109,7 @@ def login():
 
     # Return response
     response = Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
-    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    set_access_cookies(response, jwt, max_age=int(current_app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 @blueprint.route("/logout", methods=['POST', 'GET'])
@@ -255,7 +255,7 @@ def oauth2_callback():
     response = redirect(f"{current_app.config['APP_HOST_SCHEME']}://{current_app.config['APP_HOST']}/", code=302)
 
     # Attach JWT to the response as a cookie
-    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    set_access_cookies(response, jwt, max_age=int(current_app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 

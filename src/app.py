@@ -83,7 +83,7 @@ def setup_jwt(app: Flask):
         app.config['JWT_SECRET_KEY'] = f.read()
 
     app.config['JWT_TOKEN_LOCATION'] = ['cookies']  # only look for tokens in the cookies
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # token expiers 1 hour
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))  # token expires, defaults to 1h
     app.config['JWT_SESSION_COOKIE'] = True  # Use cookies for session, removed once browser closes
     app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF protection (for now)
     app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME',

@@ -37,7 +37,7 @@ Execute all the following commands from the root directory of the project.
     APP_NAME=Ordinary Wizards
     APP_JWT_SECRET_KEY=jwtRS256.key
     ```
-    For a full, detailed list of environment variables, see the [.env.md](env.md) file.
+    For a full, detailed list of environment variables, see the [.env.md](docs/ENV.md) file.
 
 4. Generate secret `jwtRS256.key` using the (`keygen.py`)[keygen.py] script:
     ```bash
