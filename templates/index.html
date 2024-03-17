@@ -6,12 +6,15 @@
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
-   <script defer src="static/js/chatBox.js"></script>
+   <script defer src="static/js/external/chatBox.js"></script>
     <script type="importmap">
       {
         "imports": {
           "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
           "three-GLTFLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/GLTFLoader.js",
+          "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
+          "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
+          "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
           "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
           "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
         }
@@ -20,59 +23,9 @@
     <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
 </head>
 <body id="body">
-<script id="grassVert" type="x-shader/x-fragment">
-    varying vec2 vUv;
-varying vec2 cloudUV;
-
-varying vec3 vColor;
-uniform float iTime;
-
-void main() {
-  vUv = uv;
-  cloudUV = uv;
-  vColor = color;
-  vec3 cpos = position;
-
-  float waveSize = 10.0f;
-  float tipDistance = 0.3f;
-  float centerDistance = 0.1f;
-
-  if (color.x > 0.6f) {
-    cpos.x += sin((iTime / 500.) + (uv.x * waveSize)) * tipDistance;
-  }else if (color.x > 0.0f) {
-    cpos.x += sin((iTime / 500.) + (uv.x * waveSize)) * centerDistance;
-  }
-
-  float diff = position.x - cpos.x;
-  cloudUV.x += iTime / 20000.;
-  cloudUV.y += iTime / 10000.;
-
-  vec4 worldPosition = vec4(cpos, 1.);
-  vec4 mvPosition = projectionMatrix * modelViewMatrix * vec4(cpos, 1.0);
-  gl_Position = mvPosition;
-}
-</script>
-<script id="grassFrag" type="x-shader/x-fragment">
-    uniform sampler2D texture1;
-uniform sampler2D textures[4];
-
-varying vec2 vUv;
-varying vec2 cloudUV;
-varying vec3 vColor;
-
-void main() {
-  float contrast = 1.5;
-  float brightness = 0.1;
-  vec3 color = texture2D(textures[0], vUv).rgb * contrast;
-  color = color + vec3(brightness, brightness, brightness);
-  color = mix(color, texture2D(textures[1], cloudUV).rgb, 0.4);
-  gl_FragColor.rgb = color;
-  gl_FragColor.a = 1.;
-}
-</script>
     <div id="container">
     </div>
-    <script type="module" src="static/js/controller.js"></script>
+    <script type="module" src="static/js/App.js"></script>
     <div class="button-container">
         <button id="chatButton" class="bottom-left-button">Chat</button>
 
@@ -116,10 +69,13 @@ void main() {
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
             integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
-            crossorigin="anonymous"></script>
+            crossorigin="anonymous">
+
+    </script>
 
     <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/socketio.js")  }}"></script>
+    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}">
+    </script>
 
 
     <!-- UI/HUD -->
@@ -127,22 +83,31 @@ void main() {
 
 
 
-<div class="settings-button" id="settings-btn">
-        <img src="../static/images/Button_Blue.png"  class="button">
-        <img src="../static/images/Regular_02.png" class="icon">
+    <div class="settings-button" id="settings-btn">
+            <img src="../static/assets/images/Button_Blue.png" class="button">
+            <img src="../static/assets/images/Regular_02.png" class="icon">
     </div>
 
     <div class="HotBar">
-        <div class="item BuildSpell"><img src="../static/images/Button_Blue_9Slides.png"  class="button">
-            </div>
-        <div class="item Spell1"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
-        <div class="item Spell2"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
-        <div class="item Spell3"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
-        <div class="item Spell4"><img src="../static/images/Button_Blue_9Slides.png"  class="button"></div>
+        <div class="item BuildSpell">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
+        <div class="item Spell1">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
+        <div class="item Spell2">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
+        <div class="item Spell3">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
+        <div class="item Spell4">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
     </div>
 
     <div class="Health">
-        <img src="../static/images/Potion-red.png"  class="HealthPotion">
+        <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
         <div class = "HealthAmount">
             100/100
         </div>
@@ -150,21 +115,22 @@ void main() {
 
 
     <div class="Mana">
-        <img src="../static/images/Potion-blue.png"  class="ManaPotion">
+        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
         <div class = "ManaAmount">
             100/100
         </div>
     </div>
 
     <div class="Crystals">
-        <img src="../static/images/Ribbon_Blue_3Slides.png"  class="Banner">
+        <img src="../static/assets/images/Ribbon_Blue_3Slides.png" class="Banner">
         <div class = "CrystalAmount">
             2746
         </div>
         <div class = "CrystalIcon">
-            <img src="../static/images/crystal_01a.png" class = "NewCrystalIcon">
+            <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
         </div>
     </div>
+    <canvas id="canvas"></canvas>
     <!-- Script for toggling FPS counter -->
     <script>
         // Create the Stats instance outside the event listeners to use it globally

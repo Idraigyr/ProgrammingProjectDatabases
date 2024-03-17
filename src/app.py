@@ -77,7 +77,7 @@ def setup_jwt(app: Flask):
     app.config['JWT_ALGORITHM'] = 'HS256'  # HMAC SHA-256
 
     # Load the secret key from file
-    with open(app.config['APP_JWT_SECRET_KEY'], 'rb') as f:  # The secret key to sign our JWTs with
+    with open(app.config.get('APP_JWT_SECRET_KEY', 'jwtRS256.key'), 'rb') as f:  # The secret key to sign our JWTs with
         app.config['JWT_SECRET_KEY'] = f.read()
 
     app.config['JWT_TOKEN_LOCATION'] = ['cookies']  # only look for tokens in the cookies
@@ -131,9 +131,8 @@ def setup(app: Flask):
             app.config[var] = environ.get(var)
 
     # Check if requires config variables are set
-    assert app.config.get('APP_POSTGRES_USER') is not None, "POSTGRES_USER not set"
-    assert app.config.get('APP_POSTGRES_DATABASE') is not None, "POSTGRES_DATABASE not set"
-    assert app.config.get('APP_NAME') is not None, "APP_NAME not set"
+    assert app.config.get('APP_POSTGRES_USER') is not None, "APP_POSTGRES_USER not set"
+    assert app.config.get('APP_POSTGRES_DATABASE') is not None, "APP_POSTGRES_DATABASE not set"
 
     # Configure SQLAlchemy
     app.config['SQLALCHEMY_DATABASE_URI'] = \
