@@ -80,6 +80,10 @@ class GemSchema(Schema):
         'attributes': {
             'type': 'array',
             'items': GemAttributeAssociationSchema
+        },
+        'building_id': {
+            'type': 'integer',
+            'format': 'int64'
         }
     }
 
@@ -89,7 +93,11 @@ class GemSchema(Schema):
 
     def __init__(self, gem: Gem = None, **kwargs):
         if gem:
-            super().__init__(id=gem.id, type=gem.type.value, attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association], **kwargs)
+            super().__init__(id=gem.id,
+                             type=gem.type.value,
+                             attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association],
+                             building_id=gem.building_id,
+                             **kwargs)
         else:
             super().__init__(**kwargs)
 

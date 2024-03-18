@@ -30,7 +30,8 @@ class MineBuildingSchema(BuildingSchema):
     required = []
 
     title = 'MineBuilding'
-    description = 'A mine that mines a certain type of resource and keeps it until it is emptied by the player'
+    description = ('A mine that mines a certain type of resource and keeps it until it is emptied by the player. '
+                   'Note: removal of gems from a building is done through the gem endpoint by removing its association with this building')
 
     def __init__(self, mine: MineBuilding = None, **kwargs):
         if mine is not None:

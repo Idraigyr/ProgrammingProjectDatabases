@@ -1,3 +1,4 @@
+from src.resource.gems import GemSchema
 from src.model.placeable.building import Building
 from src.resource.placeable.placeable import PlaceableSchema, PlaceableResource
 
@@ -12,6 +13,10 @@ class BuildingSchema(PlaceableSchema):
         'level': {
             'type': 'integer',
             'description': 'Level of the building'
+        },
+        'gems': {
+            'type': 'array',
+            'items': GemSchema
         }
     }
 
@@ -22,7 +27,7 @@ class BuildingSchema(PlaceableSchema):
 
     def __init__(self, building: Building = None, **kwargs):
         if building is not None:
-            super().__init__(building, level=building.level, **kwargs)
+            super().__init__(building, level=building.level, gems=[GemSchema(gem) for gem in building.gems], **kwargs)
         else:
             super().__init__(**kwargs)
 

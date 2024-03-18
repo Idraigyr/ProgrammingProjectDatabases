@@ -25,7 +25,8 @@ class TowerBuildingSchema(BuildingSchema):
     required = []
 
     title = 'TowerBuilding'
-    description = 'A tower that shoots at enemy warior minions in multiplayer mode'
+    description = ('A tower that shoots at enemy warior minions in multiplayer mode. '
+                   'Note: removal of gems from a building is done through the gem endpoint by removing its association with this building')
 
     def __init__(self, tower_building: TowerBuilding = None, **kwargs):
         if tower_building is not None:

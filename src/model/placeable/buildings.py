@@ -1,7 +1,8 @@
 from sqlalchemy import Column, BigInteger, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SqlEnum
 
+from src.model.gems import Gem
 from src.model.enums import TowerBuildingType, MineBuildingType
 from src.model.placeable.building import Building
 

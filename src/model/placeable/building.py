@@ -1,6 +1,9 @@
-from sqlalchemy import ForeignKey, BigInteger, SmallInteger, Column
-from sqlalchemy.orm import mapped_column, Mapped
+from typing import List
 
+from sqlalchemy import ForeignKey, BigInteger, SmallInteger, Column
+from sqlalchemy.orm import mapped_column, Mapped, relationship
+
+from src.model.gems import Gem
 from src.model.placeable.placeable import Placeable
 
 
@@ -12,6 +15,8 @@ class Building(Placeable):
     placeable_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('placeable.placeable_id'), primary_key=True)
 
     level: Mapped[int] = Column(SmallInteger(), default=0, nullable=False)
+
+    gems: Mapped[List[Gem]] = relationship('Gem')
 
     def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0) -> None:
         """

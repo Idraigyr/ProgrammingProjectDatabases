@@ -19,7 +19,8 @@ class AltarBuildingSchema(BuildingSchema):
     required = []
 
     title = "Altar Building"
-    description = "A model representing the Altar Building in the game."
+    description = ("A model representing the Altar Building in the game. Note: Only one altar building can exist on an island. "
+                   "Note: removal of gems from a building is done through the gem endpoint by removing its association with this building")
 
     def __init__(self, altar_building: AltarBuilding = None, **kwargs):
         if altar_building:

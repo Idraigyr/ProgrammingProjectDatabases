@@ -19,7 +19,7 @@ class FuseTableBuildingSchema(BuildingSchema):
     required = []
     title = "Fuse table"
 
-    description = "A schema representing the Fuse table model"
+    description = "A schema representing the Fuse table model. Note: removal of gems from a building is done through the gem endpoint by removing its association with this building"
 
     def __init__(self, fuse_table_building: FuseTableBuilding = None, **kwargs):
         if fuse_table_building:

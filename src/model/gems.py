@@ -18,6 +18,9 @@ class Gem(current_app.db.Model):
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     type: Mapped[GemType] = Column(Enum(GemType), default=GemType, nullable=False)
 
+    # The many-to-one relationsip between gems and buildings
+    building_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), nullable=True)
+
     # attributes: Mapped[list] = relationship('GemAttribute', secondary=association_table)
     attributes_association = relationship("GemAttributeAssociation")
 
@@ -50,6 +53,11 @@ class Gem(current_app.db.Model):
         :param data: The new data
         :return:
         """
+        if len(list(data.keys() & ['building_id'])) > 1:
+            raise ValueError('Invalid data object, at most one of the following keys is allowed: "building_id". '
+                             'Note that the absence of the key will unlink it from its relation with said attribute')
+
+
         if 'type' in data:
             if not GemType.has_value(data['type']):
                 raise ValueError('Invalid gem type')
@@ -72,6 +80,13 @@ class Gem(current_app.db.Model):
                 if not found: # If the for loop didn't run
                     # Create new entries
                     self.attributes_association.append(GemAttributeAssociation(**obj))
+
+        if 'building_id' in data:
+            self.building_id = int(data['building_id'])
+        else:
+            # If the building_id is not in the data, set it to None (NULL), therefore unlinking its relation with
+            # (in this case) the building
+            self.building_id = None
 
 class GemAttribute(current_app.db.Model):
     """

@@ -20,7 +20,7 @@ class WarriorHutBuildingSchema(BuildingSchema):
     required = []
 
     title = "Warrior hut"
-    description = "A schema representing the Warrior hut model"
+    description = "A schema representing the Warrior hut model. Note: removal of gems from a building is done through the gem endpoint by removing its association with this building"
 
     def __init__(self, warrior_hut_building: WarriorHutBuilding = None, **kwargs):
         if warrior_hut_building:
