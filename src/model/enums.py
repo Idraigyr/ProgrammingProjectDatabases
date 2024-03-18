@@ -21,3 +21,25 @@ class MineBuildingType(Enum):
     @classmethod
     def has_value(cls, value):
         return value in cls._value2member_map_
+
+
+class GemType(Enum):
+    """
+    An enum for the different types of gems
+    """
+    JUMMY = 'jummy'
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
+
+
+class GemAttributeType(Enum):
+    """
+    An enum for the different types of gem attributes
+    """
+    # TODO
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
