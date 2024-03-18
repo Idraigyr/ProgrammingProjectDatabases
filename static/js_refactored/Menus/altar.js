@@ -2,7 +2,7 @@
 
 // lists for spells, gems and stakes
 let spells = ["fireSpell", "freezeSpell", "shieldSpell"];
-let gems = ["diamond", "ruby", "emerald", 'sapphire'];
+let gems = ["diamondGem", "rubyGem", "emeraldGem", 'sapphireGem'];
 let stakes = [];
 
 
@@ -25,16 +25,49 @@ function allowDrop(event) {
 
 function drag(event) {
     event.dataTransfer.setData("text", event.target.id);
+    event.dataTransfer.setData("startContainer", event.target.parentNode.id);
 }
 
 function drop(event, containerId) {
     event.preventDefault();
-    var data = event.dataTransfer.getData("text");
-    var draggedItem = document.getElementById(data);
-    var targetContainer = document.getElementById(containerId);
+    let data = event.dataTransfer.getData("text");
+    let draggedItem = document.getElementById(data);
+    let startContainer = event.dataTransfer.getData("startContainer");
+    let targetContainer = document.getElementById(containerId);
 
-    // Append the dragged item to the target container
-    targetContainer.appendChild(draggedItem);
+    // Append the dragged item to the target container on right conditions and update lists
+    if(draggedItem.id.includes('Spell')){
+        if(targetContainer.id === 'container1' || targetContainer.id === 'container3'){
+            targetContainer.appendChild(draggedItem);
+            if(startContainer === 'container1' && targetContainer.id === 'container3'){
+                removeByString(spells, draggedItem.id);
+                stakes.push(draggedItem.id);
+            }
+            else if(startContainer === 'container3' && targetContainer.id === 'container1'){
+                removeByString(stakes, draggedItem.id);
+                spells.push(draggedItem.id);
+            }
+        }
+    }
+    else if(targetContainer.id === 'container2' || targetContainer.id === 'container3'){
+            targetContainer.appendChild(draggedItem);
+            if(startContainer === 'container2' && targetContainer.id === 'container3'){
+                removeByString(gems, draggedItem.id);
+                stakes.push(draggedItem.id);
+            }
+            else if(startContainer === 'container3' && targetContainer.id === 'container2'){
+                removeByString(stakes, draggedItem.id);
+                gems.push(draggedItem.id);
+            }
+    }
+}
+
+// Function to remove an element by its string value
+function removeByString(array, value) {
+    const index = array.indexOf(value);
+    if (index !== -1) {
+        array.splice(index, 1);
+    }
 }
 
 // create and populate items in the container
@@ -50,7 +83,8 @@ function populateContainer(containerId, itemList) {
 
     // Clear existing items
     container.innerHTML = '';
-    container.innerHTML = '<label><h2>' + type + '</h2></label>';
+
+    container.innerHTML = '<label><h3>' + type + '</h3></label>';
 
     // Create and append items based on the itemList
     itemList.forEach((itemName, index) => {
@@ -58,22 +92,22 @@ function populateContainer(containerId, itemList) {
         const item = document.createElement('div');
         item.textContent = itemName;
         item.draggable = true;
-        item.id = 'item' + (index + 1);
+        item.id = itemName;
         item.classList.add('item');
         item.addEventListener('dragstart', drag);
 
         // add img to item
         const img = document.createElement('img');
         img.classList.add(itemName);
-        // temporary link to png because js changes prefix
+        // link to images
         if(type === 'Spells') {
-            img.src = "http://localhost:63342/ProgrammingProjectDatabases/static/images/spells/" + itemName + ".png";
+            img.src = "/static/images/spells/" + itemName + ".png";
         }
         else if(type === "Gems"){
-            img.src = "http://localhost:63342/ProgrammingProjectDatabases/static/images/gems/" + itemName + ".png";
+            img.src = "/static/images/gems/" + itemName + ".png";
         }
         img.alt = itemName;
-        img.draggable = true; // Make sure the image is draggable
+        img.draggable = false; // Make sure the image is draggable
         img.addEventListener('dragstart', drag); // Handle dragstart event for the image
         item.appendChild(img);
         container.appendChild(item);

@@ -10,32 +10,72 @@ body {
   max-height: 1000px;
   margin: 20px auto;
   padding: 20px;
-  background-color: #46e2ff;
+  background-image: url('/static/images/background-landing.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
   border: 2px solid #0f172a;
   border-radius: 10px;
 }
 
 h1 {
   text-align: center;
+    margin-top: 0;
+  margin-bottom: 10px;
+  color: #0f172a;
+  font-size: 50px;
+}
+
+h2 {
+  text-align: center;
+  margin-top: 2px;
+  margin-bottom: 0;
+  color: #0f172a;
+}
+
+h3 {
+  font-size: 25px;
+  text-align: center;
+  margin-top: 2px;
   margin-bottom: 20px;
   color: #0f172a;
 }
 
 .combat {
   border: 2px solid #0f172a;
-  padding: 20px;
+  padding: 10px;
   margin-bottom: 20px;
   background-color: #f9f3d2;
+  border-radius: 10px;
+  background-image: url('/static/images/menu/listBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
 .play-button {
-  padding: 10px 20px;
-  background-color: #37c924;
+  margin-left: 45%;
+  margin-top: 0;
+  padding: 0; /* Remove padding */
+  background-color: transparent; /* Remove background color */
   color: white;
   border: none;
-  border-radius: 5px;
   cursor: pointer;
+  display: inline-block; /* Change display to inline-block */
+  width: 100px; /* Set a fixed width */
+  height: 100px; /* Set a fixed height */
+  background-image: url('/static/images/menu/playButton.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
 }
+
+.play-button:hover {
+  transform: scale(1.10); /* Scale up the button on hover */
+
+}
+
 
 .containers {
   display: flex;
@@ -48,23 +88,31 @@ h1 {
   padding: 20px;
   background-color: #f9f3d2;
   border-radius: 10px;
+  background-image: url('/static/images/menu/listBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
 .item {
   text-align: center;
-  height: 55px; /* Set height to 100% to fill the container */
+  height: 55px;
   margin-bottom: 10px;
-  background-color: #0f172a;
   color: #ffffff;
   padding: 10px;
   border-radius: 10px;
   transition: background-color 0.2s ease;
   position: relative; /* Set position to relative */
+  background-image: url('/static/images/menu/itemBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
 }
 
 .item:hover {
-  background-color: #ce8519;
+  background-color: rgba(206, 133, 25, 0.8); /* Adjust the background color with transparency */
 }
+
 
 .fireSpell{
     height: 50px;
@@ -84,25 +132,25 @@ h1 {
     transform: translate(45%, 0%);
 }
 
-.diamond{
+.diamondGem{
     height: 35px;
     width: 35px;
     transform: translate(120%, 25%);
 }
 
-.emerald{
+.emeraldGem{
     height: 50px;
     width: 50px;
     transform: translate(90%, 0%);
 }
 
-.ruby{
+.rubyGem{
     height: 55px;
     width: 55px;
     transform: translate(105%, 0%);
 }
 
-.sapphire{
+.sapphireGem{
     height: 60px;
     width: 60px;
     transform: translate(75%, 0%);
