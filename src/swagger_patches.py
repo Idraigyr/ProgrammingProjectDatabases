@@ -15,7 +15,7 @@ def check_type(self, type_, key, value):
                     return # no schema to check
                 cls = temp.get('items')
                 if cls and getattr(cls, '__name__') is not None and cls.__name__ in REGISTRY_SCHEMA:
-                    if getattr(cls, '_abstract_class') is not None and cls._abstract_class:
+                    if hasattr(cls, '_abstract_class') and cls._abstract_class:
                         for v in value:
                             if v.__class__.__name__ not in REGISTRY_SCHEMA:
                                 raise ValueError(f'{v.__name__} is not a registered schema')

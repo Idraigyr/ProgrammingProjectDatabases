@@ -74,6 +74,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.placeable.fuse_table_building as fuse_table_building_module
     import src.resource.placeable.warrior_hut_building as warrior_hut_building_module
     import src.resource.placeable.tower_building as tower_building_module
+    import src.resource.gems as gems_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -85,6 +86,7 @@ def attach_resources(app: Flask) -> None:
     fuse_table_building_module.attach_resource(app)
     warrior_hut_building_module.attach_resource(app)
     tower_building_module.attach_resource(app)
+    gems_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:
