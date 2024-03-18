@@ -43,7 +43,7 @@ export class ThunderCloud extends IView{
         this.NrPlanes = params?.NrPlanes ?? 40;
         this.scale = params?.scale ?? 0.3;
         this.texture = params.texture;
-        this.color = params?.color ?? '#444444';
+        this.color = params?.color ?? '#999999';
         this.planesRotation = [];
 
         this.timer = 0;

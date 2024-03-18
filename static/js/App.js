@@ -158,6 +158,8 @@ class App {
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
+
+        this.BuildManager.makePreviewObjectInvisible();
     }
 }
 
