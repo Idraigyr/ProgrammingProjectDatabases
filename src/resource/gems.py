@@ -2,9 +2,9 @@ from flask import Flask, Blueprint, request, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
-from src.model.gems import GemAttributeAssociation, Gem
+from src.model.gems import GemAttributeAssociation, Gem, GemAttribute
 from src.resource import add_swagger, clean_dict_input
-from src.schema import ErrorSchema
+from src.schema import ErrorSchema, ArraySchema
 from src.swagger_patches import Schema, summary
 
 
@@ -36,6 +36,33 @@ class GemAttributeAssociationSchema(Schema):
             super().__init__(gem_attribute_id=assoc.gem_attribute_id, gem_attribute_type=assoc.attribute.type, multiplier=assoc.multiplier, **kwargs)
         else:
             super().__init__(**kwargs)
+
+class GemAttributeSchema(Schema):
+    """
+    The schema for the gem attribute model. Get a list of all gem attributes
+    """
+
+    properties = {
+        'id': {
+            'type': 'integer',
+            'format': 'int64'
+        },
+        'type': {
+            'type': 'string'
+        }
+    }
+
+    required = []
+
+    description = 'A gem attribute object'
+
+    def __init__(self, gem_attribute: GemAttribute = None, **kwargs):
+        if gem_attribute:
+            super().__init__(id=gem_attribute.id, type=gem_attribute.type, **kwargs)
+        else:
+            super().__init__(**kwargs)
+
+
 
 class GemSchema(Schema):
     """
@@ -181,6 +208,21 @@ class GemResource(Resource):
             return ErrorSchema(str(e)), 400
 
 
+class GemAttributeListResource(Resource):
+    """
+    A resource/api endpoint that allows for the listing of all gem attributes
+    """
+
+    @swagger.tags('gems')
+    @summary('Get a list of all gem attributes')
+    @swagger.reorder_list_with(schema=GemAttributeSchema, response_code=200, description='Success, returns a list of all gem attributes in JSON format')
+    @jwt_required()
+    def get(self):
+        """
+        Get a list of all gem attributes
+        :return: A list of all gem attributes in JSON format
+        """
+        return [GemAttributeSchema(assoc) for assoc in GemAttribute.query.all()], 200
 
 
 def attach_resource(app: Flask) -> None:
@@ -192,6 +234,7 @@ def attach_resource(app: Flask) -> None:
     blueprint = Blueprint('api_gems', __name__)
     api = Api(blueprint)
     api.add_resource(GemResource, '/api/gem')
+    api.add_resource(GemAttributeListResource, '/api/gem/attributes/list')
     app.register_blueprint(blueprint, url_prefix='/') # Relative to api.add_resource path
     add_swagger(api)
 
