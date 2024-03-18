@@ -32,6 +32,10 @@ def check_type(self, type_, key, value):
                     else:
                         for v in value:
                             self.check_type(cls.type,  key, v)
+            if value is None:
+                if not self.properties[key].get('nullable', True):
+                    raise ValueError(f'The attribute "{key}" must not be null')
+
             if type_ == 'integer' and not isinstance(value, int):
                 raise ValueError(f'The attribute "{key}" must be an int, but was "{type(value)}"')
             if type_ == 'number' and not isinstance(value, int) and not isinstance(value, float):

@@ -18,6 +18,9 @@ class MineBuilding(Building):
     mine_type: Mapped[MineBuildingType] = Column(SqlEnum(MineBuildingType), nullable=False, default='crystal')
     mined_amount: Mapped[int] = Column(BigInteger, nullable=False, default=0)
 
+    collected_gem: Mapped[Gem] = relationship(back_populates='mine')
+
+
 
     def __init__(self, island_id:int = 0, x:int = 0, z: int = 0, level: int = 0, mine_type: str = 'crystal', mined_amount: int = 0) -> None:
         """

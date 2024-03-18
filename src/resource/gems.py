@@ -83,7 +83,13 @@ class GemSchema(Schema):
         },
         'building_id': {
             'type': 'integer',
-            'format': 'int64'
+            'format': 'int64',
+            'nullable': True,
+        },
+        'mine_id': {
+            'type': 'integer',
+            'format': 'int64',
+            'nullable': True,
         }
     }
 
@@ -97,6 +103,7 @@ class GemSchema(Schema):
                              type=gem.type.value,
                              attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association],
                              building_id=gem.building_id,
+                             mine_id=gem.mine_id,
                              **kwargs)
         else:
             super().__init__(**kwargs)

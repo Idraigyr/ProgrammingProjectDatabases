@@ -2,10 +2,10 @@ from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
 
-from src.model.placeable.building import Building
 from src.model.placeable.buildings import MineBuilding
 from src.resource import add_swagger, clean_dict_input
-from src.resource.placeable.building import BuildingSchema, BuildingResource
+from src.resource.gems import GemSchema
+from src.resource.placeable.building import BuildingSchema
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
 
@@ -24,18 +24,23 @@ class MineBuildingSchema(BuildingSchema):
         'mined_amount': {
             'type': 'integer',
             'description': 'The amount the mine has mined since the last time it was emptied'
-        }
+        },
+        'collected_gem': GemSchema
     }
 
     required = []
 
     title = 'MineBuilding'
     description = ('A mine that mines a certain type of resource and keeps it until it is emptied by the player. '
-                   'Note: removal of gems from a building is done through the gem endpoint by removing its association with this building')
+                   'Note: removal of gems from a building (or here, the collected gem) is done through the gem endpoint by removing its association with this building')
 
     def __init__(self, mine: MineBuilding = None, **kwargs):
         if mine is not None:
-            super().__init__(mine, mine_type=mine.mine_type.value, mined_amount=mine.mined_amount, **kwargs)
+            super().__init__(mine,
+                             mine_type=mine.mine_type.value,
+                             mined_amount=mine.mined_amount,
+                             collected_gem=GemSchema(mine.collected_gem) if mine.collected_gem else None,
+                             **kwargs)
         else:
             super().__init__(**kwargs)
 
