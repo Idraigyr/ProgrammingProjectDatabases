@@ -25,6 +25,9 @@ class Gem(current_app.db.Model):
     mine_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('mine_building.placeable_id'), nullable=True)
     mine: Mapped['MineBuilding'] = relationship('MineBuilding', back_populates='collected_gem', foreign_keys=[mine_id])
 
+    # The many-to-one relationship between gems and players
+    player_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player.user_profile_id'), nullable=True)
+
     # attributes: Mapped[list] = relationship('GemAttribute', secondary=association_table)
     attributes_association = relationship("GemAttributeAssociation")
 
@@ -110,6 +113,17 @@ class Gem(current_app.db.Model):
             # If the mine_id is not in the data, set it to None (NULL), therefore unlinking its relation with
             # (in this case) the mine
             self.mine_id = None
+
+        if 'player_id' in data:
+            from src.model.player import Player
+            if not Player.query.get(data['player_id']):
+                raise ValueError('Invalid player_id')
+
+            self.player_id = int(data['player_id'])
+        else:
+            # If the player_id is not in the data, set it to None (NULL), therefore unlinking its relation with
+            # (in this case) the player
+            self.player_id = None
 
 class GemAttribute(current_app.db.Model):
     """

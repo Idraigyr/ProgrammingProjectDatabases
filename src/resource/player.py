@@ -5,6 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful_swagger_3 import Resource, swagger, Api
 from markupsafe import escape
 
+from src.resource.gems import GemSchema
 from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
 from src.model.player import Player
@@ -33,7 +34,11 @@ class PlayerSchema(Schema):
         'mana': {
             'type': 'integer'
         },
-        'spells': IntArraySchema
+        'spells': IntArraySchema,
+        'gems': {
+            'type': 'array',
+            'items': GemSchema
+        }
     }
 
     required = [] # nothing is required, but not giving anything is just doing nothing
@@ -42,7 +47,9 @@ class PlayerSchema(Schema):
         if player is not None: # player -> schema
             super().__init__(user_profile_id=player.user_profile_id, level=player.level,
                              crystals=player.crystals, mana=player.mana,
-                             spells=[spell.id for spell in player.spells])
+                             spells=[spell.id for spell in player.spells],
+                             gems=[GemSchema(gem) for gem in player.gems],
+                             **kwargs)
         else: # schema -> player
             super().__init__(**kwargs)
 

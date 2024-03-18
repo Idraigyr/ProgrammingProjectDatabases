@@ -27,8 +27,11 @@ class Player(current_app.db.Model):
     # lazy=False means that the spells are loaded when the player is loaded
     spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
 
+    # The island of the player
     island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True)
 
+    # The gem inventory of the player
+    gems: Mapped[List["Gem"]] = relationship("Gem")
 
     def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0):
         """

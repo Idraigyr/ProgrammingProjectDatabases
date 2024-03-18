@@ -90,6 +90,11 @@ class GemSchema(Schema):
             'type': 'integer',
             'format': 'int64',
             'nullable': True,
+        },
+        'player_id': {
+            'type': 'integer',
+            'format': 'int64',
+            'nullable': True,
         }
     }
 
@@ -104,6 +109,7 @@ class GemSchema(Schema):
                              attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association],
                              building_id=gem.building_id,
                              mine_id=gem.mine_id,
+                             player_id=gem.player_id,
                              **kwargs)
         else:
             super().__init__(**kwargs)
