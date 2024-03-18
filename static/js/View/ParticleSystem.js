@@ -209,5 +209,6 @@ export class ParticleSystem{
         this.#bufferGeometry.attributes.size.needsUpdate = true;
         this.#bufferGeometry.attributes.colour.needsUpdate = true;
         this.#bufferGeometry.attributes.angle.needsUpdate = true;
+        this.#bufferGeometry.computeBoundingSphere();
     }
 }
