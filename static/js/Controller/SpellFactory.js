@@ -1,8 +1,8 @@
 import {Controller} from "./Controller.js";
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Fireball, BuildSpell} from "../Model/Spell.js";
-import {Building} from "../View/BuildingView.js";
+import {Fireball, BuildSpell, ThunderCloud} from "../Model/Spell.js";
+import * as THREE from "three";
 
 /**
  * Factory class that creates models and views for the spells
@@ -30,7 +30,10 @@ export class SpellFactory{
         let entityModel = null;
         switch (event.detail.type.constructor){
             case Fireball:
-                entityModel = this._createFireball(event.detail);
+                entityModel = this.#createFireball(event.detail);
+                break;
+            case ThunderCloud:
+                entityModel = this.#createThunderCloud(event.detail);
                 break;
             case BuildSpell:
                 const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
@@ -48,10 +51,11 @@ export class SpellFactory{
      * @returns {Projectile} model of the fireball
      * @private private method
      */
-    _createFireball(details){
+    #createFireball(details){
         let model = new Model.Projectile({
             spellType: details.type,
             direction: details.params.direction,
+            duration: details.type.spell.duration,
             velocity: details.type.spell.velocity,
             fallOf: details.type.fallOf,
             position: details.params.position
@@ -73,9 +77,35 @@ export class SpellFactory{
 
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
         return model;
     }
+
+    #createThunderCloud(details){
+        let model = new Model.Immobile({
+            spellType: details.type,
+            position: details.params.position,
+            duration: details.type.spell.duration
+        });
+        let position = new THREE.Vector3().copy(details.params.position);
+        position.y += 15;
+        let view = new View.ThunderCloud({
+            camera: this.camera,
+            texture: this.assetManager.getAsset("cloud"),
+            position: position,
+        });
+
+        this.scene.add(view.charModel);
+        model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        this.viewManager.addPair(model,view);
+        console.log(model,view)
+        return model;
+    }
+
+
+
 
     /**
      * Creates building model and view for a tree
@@ -86,6 +116,7 @@ export class SpellFactory{
         let view = new View.Tree({charModel: this.assetManager.getAsset("Tree")});
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
         return model;
     }
