@@ -1,37 +1,31 @@
+import { Controller } from "./Controller.js";
 
-import {InputManager} from "./InputManager"
-import {Controller} from "./Controller";
 export class HUD {
-    constructor(inputManager) {
-        this.inputManager = inputManager;
-        this.setupSpellButtons();
-        this.setupEventListeners();
+    #inputManager = Controller.InputManager;
+
+    constructor(InputManager) {
+        this.#inputManager = InputManager;
+        // Add event listener for spell slot index change
+        this.#inputManager.addSpellSlotChangeListener(this.updateHoveredButton.bind(this));
     }
 
-    setupSpellButtons() {
-        // Add data-spell-slot attribute to each button to identify their corresponding spell slot index
-        document.querySelectorAll('.hotbar-button').forEach((button, index) => {
-            button.dataset.spellSlot = index + 1;
-        });
-    }
-
-    setupEventListeners() {
-        // Add event listener to update the hovered button when the spell slot index changes
-        this.inputManager.addEventListener('spellSlotChange', this.updateHoveredButton.bind(this));
-    }
-
+    /**
+     * Function to visualy update the selected spell slot when called
+     *
+     */
     updateHoveredButton() {
-        const spellSlotIndex = this.inputManager.keys.spellSlot;
+        const spellSlotIndex = this.#inputManager.keys.spellSlot;
+
+        console.log("Spell Slot Index:", spellSlotIndex);
 
         // Remove hover class from all buttons
-        document.querySelectorAll('.hotbar-button').forEach(button => {
+        document.querySelectorAll('.HotBar .item').forEach(button => {
             button.classList.remove('hovered');
         });
 
         // Add hover class to the button corresponding to the spell slot index
-        const hoveredButton = document.querySelector(`.hotbar-button[data-spell-slot="${spellSlotIndex}"]`);
-        if (hoveredButton) {
-            hoveredButton.classList.add('hovered');
-        }
+        const hoveredButton = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
+        hoveredButton.parentElement.classList.add('hovered');
+
     }
 }

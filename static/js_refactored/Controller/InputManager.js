@@ -32,6 +32,8 @@ export class InputManager {
         x: 0,
         y: 0
     }
+    spellSlotChangeCallbacks = [];
+
 
     /**
      * Constructor that adds event listeners for the input
@@ -147,18 +149,23 @@ export class InputManager {
                 break;
             case slot1Key:
                 this.keys.spellSlot = 1;
+                this.invokeSpellSlotChangeCallbacks();
                 break;
             case slot2Key:
                 this.keys.spellSlot = 2;
+                this.invokeSpellSlotChangeCallbacks();
                 break;
             case slot3Key:
                 this.keys.spellSlot = 3;
+                this.invokeSpellSlotChangeCallbacks();
                 break;
             case slot4Key:
                 this.keys.spellSlot = 4;
+                this.invokeSpellSlotChangeCallbacks();
                 break;
             case slot5Key:
                 this.keys.spellSlot = 5;
+                this.invokeSpellSlotChangeCallbacks();
                 break;
         }
     }
@@ -177,5 +184,19 @@ export class InputManager {
      */
     #onKeyUp(KeyBoardEvent){
         this.#onKey(KeyBoardEvent, false);
+    }
+        /**
+     * Listener for when the spell slot changes
+     *
+     */
+    addSpellSlotChangeListener(callback) {
+        this.spellSlotChangeCallbacks.push(callback);
+    }
+
+    /**
+     * Invokes all spell slot change callbacks
+     */
+    invokeSpellSlotChangeCallbacks() {
+        this.spellSlotChangeCallbacks.forEach(callback => callback());
     }
 }

@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{app_name}}</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
@@ -76,11 +77,46 @@
     </script>
 
     <!-- loading screen -->
+    <div class = "loading-animation">
     <div class="progress-bar-container">
 
         <label for="progress-bar">Loading...</label> <!-- preff?-->
         <progress id="progress-bar" value="0" max="100"></progress>
     </div>
+
+    <div class="scene">
+      <div class="objects">
+        <div class="square"></div>
+        <div class="circle"></div>
+        <div class="triangle"></div>
+      </div>
+      <div class="wizard">
+        <div class="body"></div>
+        <div class="right-arm">
+          <div class="right-hand"></div>
+        </div>
+        <div class="left-arm">
+          <div class="left-hand"></div>
+        </div>
+        <div class="head">
+          <div class="beard"></div>
+          <div class="face">
+            <div class="adds"></div>
+          </div>
+          <div class="hat">
+            <div class="hat-of-the-hat"></div>
+            <div class="four-point-star --first"></div>
+            <div class="four-point-star --second"></div>
+            <div class="four-point-star --third"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="noise"></div>
+        </div>
+
+
+
 
 
     <!-- UI/HUD -->
@@ -94,10 +130,7 @@
     </div>
 
     <div class="HotBar">
-        <div class="item BuildSpell">
-            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
-        </div>
-        <div class="item Spell1">
+        <div class="item Spell1 hovered">
             <img src="../static/images/Button_Blue_9Slides.png"  class="button">
         </div>
         <div class="item Spell2">
@@ -107,6 +140,9 @@
             <img src="../static/images/Button_Blue_9Slides.png"  class="button">
         </div>
         <div class="item Spell4">
+            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+        </div>
+        <div class="item Spell5">
             <img src="../static/images/Button_Blue_9Slides.png"  class="button">
         </div>
     </div>

@@ -10,6 +10,7 @@ import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
+import {HUD} from "./Controller/HUD.js"
 
 /**
  * Main class of the game
@@ -52,11 +53,13 @@ class App {
         this.playerController = null;
         this.minionControllers = [];
         this.assetManager = new AssetManager();
+        this.hud = new HUD(this.inputManager)
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
+
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
     }
     /**

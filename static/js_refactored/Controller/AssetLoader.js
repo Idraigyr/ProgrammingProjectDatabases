@@ -17,7 +17,7 @@ export class AssetLoader{
             progressBar.value = (loaded / total) * 100;
         };
 
-        const progressBarContainer = document.querySelector('.progress-bar-container');
+        const progressBarContainer = document.querySelector('.loading-animation');
         this.loadingManager.onLoad = () => {
             progressBarContainer.style.display = 'none';
         };
