@@ -116,6 +116,18 @@ h3 {
   background-position: center center;
 }
 
+.containerBuildings {
+  border: 2px solid #0f172a;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #f9f3d2;
+  border-radius: 10px;
+  background-image: url('/static/images/menu/listBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
 .item {
   text-align: center;
   height: 55px;
@@ -135,6 +147,24 @@ h3 {
   background-color: rgba(206, 133, 25, 0.8); /* Adjust the background color with transparency */
 }
 
+.building {
+  text-align: center;
+  height: 55px;
+  margin-bottom: 10px;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  position: relative; /* Set position to relative */
+  background-image: url('/static/images/menu/itemBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.building:hover {
+  background-color: rgba(206, 133, 25, 0.8); /* Adjust the background color with transparency */
+}
 
 .fireSpell{
     height: 50px;
@@ -198,4 +228,16 @@ h3 {
     height: 60px;
     width: 60px;
     transform: translate(95%, -5%);
+}
+
+.tree{
+    height: 50px;
+    width: 50px;
+    transform: translate(150%, 5%);
+}
+
+.tower{
+    height: 70px;
+    width: 70px;
+    transform: translate(97%, -10%);
 }
