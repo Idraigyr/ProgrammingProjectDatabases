@@ -10,10 +10,11 @@
    <script defer src="static/js/external/chatBox.js"></script>
     <script type="importmap">
       {
-        "imports": {
+         "imports": {
           "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
           "three-GLTFLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/GLTFLoader.js",
           "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
+          "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
           "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
           "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
           "jquery": "https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"
@@ -130,29 +131,27 @@
     </div>
 
     <div class="HotBar">
-        <div class="item BuildSpell">
+        <div class="item Spell1 Hovered">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
-        </div>
-        <div class="item Spell1">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
-        <div class="item Spell1 hovered">
-            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
         </div>
         <div class="item Spell2">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
-        </div>
+            </div>
         <div class="item Spell3">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell4">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
+        <div class="item Spell5">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
     </div>
 
     <div class="Health">
         <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
-        <img src="../static/images/Potion-grey.png"  class="Greypotion-left">
-        <img src="../static/images/Potion-red.png"  class="HealthPotion">
+        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
+        <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
         <div class = "HealthAmount">
             20/100
         </div>
@@ -161,8 +160,8 @@
 
     <div class="Mana">
         <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
-        <img src="../static/images/Potion-grey.png"  class="Greypotion-right">
-                <img src="../static/images/Potion-blue.png"  class="ManaPotion">
+        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
+                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
 
         <div class = "ManaAmount">
             50/100

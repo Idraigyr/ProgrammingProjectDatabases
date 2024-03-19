@@ -918,7 +918,7 @@ body {
 }
 
 .item.hovered .button {
-    content: url('../images/Button_Hover_9Slides.png');
+    content: url('../assets/images/Button_Hover_9Slides.png');
 }
 
 .item:active  {
