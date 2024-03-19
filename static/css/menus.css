@@ -5,7 +5,7 @@ body {
   background-color: #f1f5f9;
 }
 
-.altar {
+.menu {
   max-width: 1000px;
   max-height: 1000px;
   margin: 20px auto;
@@ -76,6 +76,28 @@ h3 {
 
 }
 
+.fusionButton {
+  margin-left: 45%;
+  margin-top: 20px;
+  margin-bottom: 10px;
+  background-color: transparent; /* Remove background color */
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: inline-block; /* Change display to inline-block */
+  width: 100px; /* Set a fixed width */
+  height: 100px; /* Set a fixed height */
+  background-image: url('/static/images/menu/fuseButton.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+}
+
+.fusionButton:hover {
+  transform: scale(1.10); /* Scale up the button on hover */
+
+}
 
 .containers {
   display: flex;
@@ -154,4 +176,26 @@ h3 {
     height: 60px;
     width: 60px;
     transform: translate(75%, 0%);
+}
+
+.arrow{
+    width: 250px;
+    padding: 20px;
+    border-radius: 10px;
+    background-image: url('/static/images/menu/arrow.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.hp{
+    height: 50px;
+    width: 50px;
+    transform: translate(150%, 5%);
+}
+
+.damage{
+    height: 60px;
+    width: 60px;
+    transform: translate(95%, -5%);
 }
