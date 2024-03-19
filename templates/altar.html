@@ -4,43 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Altar</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="stylesheet" href="../static/css/menus.css">
 </head>
 <body>
 
-<div class="container">
+<div class="menu">
   <h1>Altar</h1>
 
-  <div class="altar">
-    <h2>Battle</h2>
-    <button class="play-button">Play</button>
+  <div class="combat">
+    <h2>Multiplayer Battle</h2>
+    <button class="play-button" id="playButton"></button>
   </div>
 
-  <div class="items">
-    <div class="stakes">
-      <h2>Stakes</h2>
-      <div class="item">Stake 1</div>
-      <div class="item">Stake 2</div>
-      <div class="item">Stake 3</div>
-      <div class="item">Stake 4</div>
-    </div>
-
-    <div class="gems">
-      <h2>Gems</h2>
-      <div class="item">Ruby</div>
-      <div class="item">Emerald</div>
-      <div class="item">Sapphire</div>
-    </div>
-
-    <div class="spells">
-      <h2>Spells</h2>
-      <div class="item">Fireball</div>
-      <div class="item">Lightning Bolt</div>
-      <div class="item">Healing Touch</div>
-    </div>
+  <div class="containers">
+        <div class="container" id="container1" ondrop="drop(event, 'container1')" ondragover="allowDrop(event)">
+            <label><h2>Spells</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="container" id="container2" ondrop="drop(event, 'container2')" ondragover="allowDrop(event)">
+            <label><h2>Gems</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="container" id="container3" ondrop="drop(event, 'container3')" ondragover="allowDrop(event)">
+            <label><h2>Stakes</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
   </div>
 
 </div>
 
 </body>
+<script src="/static/js_refactored/Menus/altar.js"></script>
 </html>
