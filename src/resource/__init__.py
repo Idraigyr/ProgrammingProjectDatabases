@@ -66,8 +66,27 @@ def attach_resources(app: Flask) -> None:
     # This will automatically create a RESTFUL API endpoint for each Resource
     import src.resource.player as player_module
     import src.resource.user_profile as user_profile_module
+    import src.resource.spell as spell_module
+    import src.resource.island as island_module
+    import src.resource.builder_minion as builder_minion_module
+    import src.resource.placeable.mine_building as mine_building_module
+    import src.resource.placeable.altar_building as altar_building_module
+    import src.resource.placeable.fuse_table_building as fuse_table_building_module
+    import src.resource.placeable.warrior_hut_building as warrior_hut_building_module
+    import src.resource.placeable.tower_building as tower_building_module
+    import src.resource.gems as gems_module
+
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
+    spell_module.attach_resource(app)
+    island_module.attach_resource(app)
+    builder_minion_module.attach_resource(app)
+    mine_building_module.attach_resource(app)
+    altar_building_module.attach_resource(app)
+    fuse_table_building_module.attach_resource(app)
+    warrior_hut_building_module.attach_resource(app)
+    tower_building_module.attach_resource(app)
+    gems_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:
@@ -77,5 +96,9 @@ def clean_dict_input(d: dict) -> dict:
     :return: The cleaned dictionary
     """
     for key, val in d.items():
-        d[escape(key)] = escape(val)
+        if isinstance(val, str):
+            d[str(escape(key))] = str(escape(val))
+        elif isinstance(val, dict): # recursive call
+            d[escape(key)] = clean_dict_input(val)
+
     return d

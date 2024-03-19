@@ -12,4 +12,4 @@ def message(data):
     msg = data['message']
     username = data['username']
     time_stamp = strftime("%b-%d %I:%M%p", localtime())
-    send({"usersname": username, "message": msg, "time_stamp": time_stamp}, broadcast=True)
+    send({"username": username, "message": msg, "time_stamp": time_stamp}, broadcast=True)

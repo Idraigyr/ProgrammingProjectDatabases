@@ -1,3 +1,12 @@
+let username = "Unknown user";
+
+$(document).ready(function(){
+   $.ajax({url: '/api/user_profile', type: 'GET'}).done(function(data){
+       username = data.username;
+       console.log("Logged in as " + username)
+   });
+});
+
 document.addEventListener('DOMContentLoaded', ()=>{
     let socket = io();
 
@@ -14,12 +23,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         messageText.classList.add('message');
         span_time.classList.add('time');
            // Conditionally set the alignment based on the username
-        if (data.usersname === username) {
+        if (data.username === username) {
             messageContainer.classList.add('MyMsg');
         } else{
             messageContainer.classList.add('OtherMsg');
             const span_username = document.createElement('div');
-            span_username.textContent = data.usersname;
+            span_username.textContent = data.username;
             span_username.classList.add('user');
             messageContainer.appendChild(span_username);
         }
@@ -32,7 +41,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     //Sends message to the server
     document.querySelector('#sendMessage').onclick = () =>{
-        const messageData = {message: document.querySelector('#chatInput').value, 'username': username};
+        const message = document.querySelector('#chatInput').value;
+        const messageData = {'message': message, 'username': username};
         socket.emit('message', messageData);
     }
 })

@@ -1,4 +1,5 @@
 import logging
+import os
 from json import JSONEncoder
 
 from dotenv import load_dotenv
@@ -9,6 +10,7 @@ from flask_migrate import check as check_db_schema
 from flask_migrate import upgrade as upgrade_db_schema
 from flask_restful_swagger_3 import get_swagger_blueprint
 from flask_sqlalchemy import SQLAlchemy
+from oauthlib.oauth2 import WebApplicationClient
 from sqlalchemy.orm import DeclarativeBase
 
 
@@ -30,14 +32,14 @@ class JSONClassEncoder:
         pass
 
     def default(self, o):
-        if hasattr(o, 'to_json'):
-            return JSONEncoder().default(o.to_json())
+        if hasattr(o, '_to_json'):
+            return JSONEncoder().default(o._to_json())
         else:
             return JSONEncoder().default(o)
 
     def encode(self, o):
-        if hasattr(o, 'to_json'):
-            return JSONEncoder().encode(o.to_json())
+        if hasattr(o, '_to_json'):
+            return JSONEncoder().encode(o._to_json())
         else:
             return JSONEncoder().encode(o)
 
@@ -81,7 +83,7 @@ def setup_jwt(app: Flask):
         app.config['JWT_SECRET_KEY'] = f.read()
 
     app.config['JWT_TOKEN_LOCATION'] = ['cookies']  # only look for tokens in the cookies
-    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = 3600  # token expiers 1 hour
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = int(app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))  # token expires, defaults to 1h
     app.config['JWT_SESSION_COOKIE'] = True  # Use cookies for session, removed once browser closes
     app.config['JWT_COOKIE_CSRF_PROTECT'] = False  # Disable CSRF protection (for now)
     app.config['JWT_COOKIE_SECURE'] = app.config.get('APP_HOST_SCHEME',
@@ -94,6 +96,7 @@ def setup_jwt(app: Flask):
     _jwt_log = logging.getLogger("_jwt")
 
     @app.jwt.invalid_token_loader
+    @app.jwt.token_verification_failed_loader
     def custom_invalid_token_loader(callback):
         _jwt_log.debug(f"Invalid token (check format?): {callback}")
         return jsonify({'status': 'error', 'message': 'Unauthorized', 'type': 'jwt_invalid_token'}), 401
@@ -150,6 +153,16 @@ def setup(app: Flask):
     # Initialize the db with our Flask instance
     db.init_app(app)
     app.db = db
+
+    # Configure OAuth2 client
+    if app.config.get("APP_DEBUG", "false") == "true":
+        # Allow insecure transport in debug mode
+        os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+    # Initialize the OAuth2 client, this client will be used to authenticate users with the OAuth2 (Google) server
+    app.oauth_client = None
+    if app.config.get('APP_OAUTH_ENABLED', 'false') == 'true':
+        app.oauth_client = WebApplicationClient(app.config['APP_OAUTH_CLIENT_ID'])
 
     # Lock the app context
     with app.app_context():
@@ -208,5 +221,5 @@ if __name__ == "__main__":
     # don't put this in the setup() as the WSGI server uses that function as well
     logging.info("Booting Flask Debug server")
     app_bind = app.config['APP_BIND']
-    debug = app.config['APP_DEBUG'] or False
+    debug = app.config.get('APP_DEBUG', 'False').lower() == 'true'
     socketio.run(app, debug=debug, allow_unsafe_werkzeug=True)
