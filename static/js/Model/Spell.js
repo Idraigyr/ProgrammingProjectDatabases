@@ -29,6 +29,13 @@ export class EntitySpell extends Spell{
 
     }
 }
+class Follower extends EntitySpell{
+    constructor(params) {
+        super(params);
+        this.offset = params.offset;
+    }
+}
+
 /**
  * @class Projectile - class for projectile spells. Determines how the spell collides with enemies
  */
@@ -126,7 +133,7 @@ class HealEffect extends Effect{
 /**
  * @class Shield - class for shield effects
  */
-class Shield extends Effect{
+class ShieldEffect extends Effect{
     constructor() {
         super();
     }
@@ -243,6 +250,22 @@ export class ThunderCloud extends ConcreteSpell{
                 castTime: 0,
             }),
             effects: [new InstantDamage({
+                damage: 0
+            })]
+        });
+    }
+}
+
+export class Shield extends ConcreteSpell{
+    constructor() {
+        super({
+            spell: new Follower({
+                duration: 10,
+                cooldown: 10, //TODO: need animations that last equally long
+                castTime: 0,
+                offset: null
+            }),
+            effects: [new ShieldEffect({
                 damage: 0
             })]
         });

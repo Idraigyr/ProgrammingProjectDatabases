@@ -1,7 +1,7 @@
 import {Controller} from "./Controller.js";
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Fireball, BuildSpell, ThunderCloud} from "../Model/Spell.js";
+import {Fireball, BuildSpell, ThunderCloud, Shield} from "../Model/Spell.js";
 import * as THREE from "three";
 
 /**
@@ -34,6 +34,9 @@ export class SpellFactory{
                 break;
             case ThunderCloud:
                 entityModel = this.#createThunderCloud(event.detail);
+                break;
+            case Shield:
+                entityModel = this.#createShield(event.detail);
                 break;
             case BuildSpell:
                 const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
@@ -93,17 +96,35 @@ export class SpellFactory{
         let view = new View.ThunderCloud({
             camera: this.camera,
             texture: this.assetManager.getAsset("cloud"),
-            position: position,
+            position: position
         });
 
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
-        console.log(model,view)
         return model;
     }
 
+    #createShield(details){
+        let model = new Model.FollowPlayer({
+            target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
+            spellType: details.type,
+            position: details.params.position,
+            duration: details.type.spell.duration
+        });
+
+        let view = new View.Shield({
+            camera: this.camera,
+            position: details.params.position
+        });
+
+        this.scene.add(view.charModel);
+        model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        this.viewManager.addPair(model,view);
+        return model;
+    }
 
 
 

@@ -64,3 +64,16 @@ export class Immobile extends SpellEntity{
         super(params);
     }
 }
+
+export class FollowPlayer extends SpellEntity{
+    constructor(params) {
+        super(params);
+        this.target = params.target;
+        this.offset = params?.offset ?? new THREE.Vector3(0,0,0);
+    }
+    update(deltaTime){
+        super.update(deltaTime);
+        this._position.copy(this.target._position);
+        this.dispatchEvent(this._createUpdatePositionEvent());
+    }
+}

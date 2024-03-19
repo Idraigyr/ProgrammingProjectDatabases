@@ -20,6 +20,9 @@ export class Fireball extends IView{
         this.charModel.parent.remove(this.charModel);
         this.particleSystem.cleanUp();
     }
+    update(deltaTime){
+        this.particleSystem.update(deltaTime);
+    }
 
     /**
      * Update fireball position
@@ -131,7 +134,6 @@ export class ThunderCloud extends IView{
     }
 
     update(deltaTime){
-        console.log("cloud update")
         this.#updateLight(deltaTime);
         this.#updateClouds(deltaTime);
     }
