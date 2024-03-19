@@ -18,6 +18,7 @@ export class World{
         this.player.changeEquippedSpell(0,new BuildSpell({position: null}));
         this.player.changeEquippedSpell(1,new Fireball({position: null}));
         this.entities = [];
+        this.spellEntities = [];
     }
     exportWorld(json){
 

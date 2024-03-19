@@ -56,7 +56,7 @@ export class BuildManager {
 
     #extractObject(object){
         if(!object || object instanceof Object3D) return object;
-        let view = this.#raycaster.viewManager.getPair(object);
+        const {_, view} = this.#raycaster.viewManager.getPair(object);
         if(view) return view.charModel;
         return object.charModel;
     }

@@ -7,7 +7,7 @@
     <link rel="stylesheet" type="text/css" href="static/css/index.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
-   <script defer src="static/js/chatBox.js"></script>
+   <script defer src="static/js/external/chatBox.js"></script>
     <script type="importmap">
       {
         "imports": {
@@ -24,7 +24,7 @@
 <body id="body">
     <div id="container">
     </div>
-    <script type="module" src="static/js_refactored/App.js"></script>
+    <script type="module" src="static/js/App.js"></script>
     <div class="button-container">
         <button id="chatButton" class="bottom-left-button">Chat</button>
 
@@ -73,7 +73,7 @@
     </script>
 
     <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/socketio.js")  }}">
+    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}">
     </script>
 
     <!-- loading screen -->
@@ -125,39 +125,42 @@
 
 
     <div class="settings-button" id="settings-btn">
-            <img src="../static/images/Button_Blue.png"  class="button">
-            <img src="../static/images/Regular_02.png" class="icon">
+            <img src="../static/assets/images/Button_Blue.png" class="button">
+            <img src="../static/assets/images/Regular_02.png" class="icon">
     </div>
 
     <div class="HotBar">
+        <div class="item BuildSpell">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
+        <div class="item Spell1">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         <div class="item Spell1 hovered">
             <img src="../static/images/Button_Blue_9Slides.png"  class="button">
         </div>
         <div class="item Spell2">
-            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell3">
-            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell4">
-            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
-        </div>
-        <div class="item Spell5">
-            <img src="../static/images/Button_Blue_9Slides.png"  class="button">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
     </div>
 
     <div class="Health">
+        <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
         <img src="../static/images/Potion-grey.png"  class="Greypotion-left">
         <img src="../static/images/Potion-red.png"  class="HealthPotion">
         <div class = "HealthAmount">
             20/100
         </div>
-
     </div>
 
 
     <div class="Mana">
+        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
         <img src="../static/images/Potion-grey.png"  class="Greypotion-right">
                 <img src="../static/images/Potion-blue.png"  class="ManaPotion">
 
@@ -167,12 +170,12 @@
     </div>
 
     <div class="Crystals">
-        <img src="../static/images/Ribbon_Blue_3Slides.png"  class="Banner">
+        <img src="../static/assets/images/Ribbon_Blue_3Slides.png" class="Banner">
         <div class = "CrystalAmount">
             2746
         </div>
         <div class = "CrystalIcon">
-            <img src="../static/images/crystal_01a.png" class = "NewCrystalIcon">
+            <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
         </div>
     </div>
     <canvas id="canvas"></canvas>

@@ -32,6 +32,7 @@ export class InputManager {
         x: 0,
         y: 0
     }
+    #callbacks = {};
     spellSlotChangeCallbacks = [];
 
 
@@ -40,7 +41,6 @@ export class InputManager {
      */
     constructor() {
         document.addEventListener("keydown", this.#onKeyDown.bind(this));
-        //document.addEventListener("keydown", (e) => this.onKeyDown(e)); better?
         document.addEventListener("keyup", this.#onKeyUp.bind(this));
         // Add event listener for mouse down
         document.addEventListener("mousedown", (e) => {
@@ -68,6 +68,14 @@ export class InputManager {
                     break;
             }
         });
+    }
+
+    addKeyDownEventListener(key, callback){
+        this.#callbacks[key] = callback;
+    }
+
+    removeKeyDownEventListener(key){
+        delete this.#callbacks[key];
     }
 
     /**
@@ -118,7 +126,7 @@ export class InputManager {
      */
 
     #onKey(KeyBoardEvent, bool){
-        switch (event.code){
+        switch (KeyBoardEvent.code){
             case upKey:
                 this.keys.up = bool;
                 break;
@@ -168,6 +176,8 @@ export class InputManager {
                 this.invokeSpellSlotChangeCallbacks();
                 break;
         }
+
+        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
     /**

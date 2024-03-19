@@ -1,4 +1,4 @@
-body { margin: 0; overflow: hidden; cursor: url('../images/wand.png'), auto;}
+body { margin: 0; overflow: hidden; cursor: url('../assets/images/wand.png'), auto;}
         body::before {
             content: "";
             position: absolute;
@@ -56,7 +56,7 @@ body { margin: 0; overflow: hidden; cursor: url('../images/wand.png'), auto;}
             background-color: rgba(0,0,0.7,0);
             color: #ffffff;
             margin-bottom: 1vh;
-            cursor: url('../images/wand.png'), auto;
+            cursor: url('../assets/images/wand.png'), auto;
             transition: all .25s;
         }
         .roundButton:hover {

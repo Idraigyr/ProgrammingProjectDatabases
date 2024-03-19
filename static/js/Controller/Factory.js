@@ -3,6 +3,7 @@ import {View} from "../View/ViewNamespace.js";
 import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
 import {getFileExtension} from "../helpers.js";
+import * as THREE from "three";
 
 /**
  * Factory class that creates models and views for the entities
@@ -25,8 +26,14 @@ export class Factory{
      */
     createPlayer(){
         let player = new Model.Wizard();
-        let view = new View.Player({charModel: this.assetManager.getModel("Player")});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player")});
+
         this.scene.add(view.charModel);
+
+        //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
+        view.boundingBox.set(new THREE.Vector3(-0.5,0,-0.5), new THREE.Vector3(0.5,3,0.5));
+        this.scene.add(view.boxHelper);
+
         view.loadAnimations(this.assetManager.getAnimations("Player"));
 
         player.fsm = new PlayerFSM(view.animations);
@@ -51,6 +58,10 @@ export class Factory{
         //TODO: island asset?
         //this.AssetLoader.loadAsset(view);
         this.scene.add(view.charModel);
+
+        view.boundingBox.setFromObject(view.charModel.children[1]);
+        this.scene.add(view.boxHelper);
+
         this.#addBuildings(islandModel.buildings, buildingsList);
 
         this.viewManager.addPair(islandModel, view);
@@ -65,10 +76,14 @@ export class Factory{
     #addBuildings(islandModels, buildingsList){
         buildingsList.forEach((building) => {
             try {
-                console.log(building);
                 let model = new Model[building.type]({position: building.position, rotation: building.rotation});
-                let view = new View[building.type]({charModel: this.assetManager.getModel(building.type)});
+                let view = new View[building.type]({charModel: this.assetManager.getAsset(building.type)});
+
                 this.scene.add(view.charModel);
+
+                view.boundingBox.setFromObject(view.charModel);
+                this.scene.add(view.boxHelper);
+
                 model.addEventListener("updatePosition",view.updatePosition.bind(view));
                 model.addEventListener("updateRotation",view.updateRotation.bind(view));
                 islandModels.push(model);

@@ -48,7 +48,7 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-image: url("../images/background-landing.jpg");
+    background-image: url("../assets/images/background-landing.jpg");
     background-size: cover; /* Cover ensures the image covers the entire div */
     background-repeat: no-repeat; /* Prevents the image from repeating */
     background-position: center; /* Centers the image in the div */
@@ -914,7 +914,7 @@ body {
 
 }
 .item:hover {
-    content: url('../images/Button_Hover_9Slides.png');
+    content: url('../assets/images/Button_Hover_9Slides.png');
 }
 
 .item.hovered .button {
@@ -922,7 +922,7 @@ body {
 }
 
 .item:active  {
-    content: url('../images/Button_Blue_9Slides_Pressed.png');
+    content: url('../assets/images/Button_Blue_9Slides_Pressed.png');
 }
 
 .HotBar {
@@ -956,15 +956,15 @@ body {
 
 /* Settings Button Hover and Press Effects */
 .settings-button:hover .button {
-    content: url('../images/Button_Hover.png');
+    content: url('../assets/images/Button_Hover.png');
 }
 
 .settings-button:active .button {
-    content: url('../images/Button_Blue_Pressed.png');
+    content: url('../assets/images/Button_Blue_Pressed.png');
 }
 
 .settings-button:active .icon {
-    content: url('../images/Pressed_02.png');
+    content: url('../assets/images/Pressed_02.png');
 }
 
 

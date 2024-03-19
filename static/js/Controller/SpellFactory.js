@@ -14,9 +14,11 @@ export class SpellFactory{
      */
     constructor(params) {
         this.scene = params.scene;
+        this.camera = params.camera;
         this.viewManager = params.viewManager;
         this.AssetLoader = new Controller.AssetLoader(this.scene);
-        this.AssetManager = params.assetManager;
+        this.assetManager = params.assetManager;
+        //TODO: change this
         this.models = [];
     }
 
@@ -37,6 +39,7 @@ export class SpellFactory{
         }
         if(!entityModel) return;
         this.models.push(entityModel);
+        return entityModel;
     }
 
     /**
@@ -53,8 +56,21 @@ export class SpellFactory{
             fallOf: details.type.fallOf,
             position: details.params.position
         });
-        let view = new View.Fireball();
-        view.initModel(); //TODO: implement particle system instead of sphere
+        let uniforms = {
+            diffuseTexture: {
+                value: this.assetManager.getAsset("fire")
+            },
+            pointMultiplier: {
+                value: window.innerHeight / (2.0 * Math.tan(0.5 * 60.0 * Math.PI / 180.0))
+            }
+        };
+        let view = new View.Fireball({
+            scene: this.scene,
+            camera: this.camera,
+            position: details.params.position,
+            uniforms: uniforms
+        });
+
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         this.viewManager.addPair(model,view);
@@ -67,11 +83,9 @@ export class SpellFactory{
      */
     createTree(){
         let model = new Model.Tree();
-        let view = new View.Tree();
-        view.charModel = this.AssetManager.getModel("Tree");
-
+        let view = new View.Tree({charModel: this.assetManager.getAsset("Tree")});
         this.scene.add(view.charModel);
-        document.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("updatePosition", view.updatePosition.bind(view));
         this.viewManager.addPair(model,view);
         return model;
     }

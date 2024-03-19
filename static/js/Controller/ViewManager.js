@@ -1,16 +1,14 @@
 import {IAnimatedView} from "../View/View.js";
+import {Fireball} from "../View/SpellView.js"
 
-/**
- * Class that manages the views of the models
- */
 export class ViewManager{
     constructor() {
         this.pairs = {
-            building: {},
-            island: {},
-            player: {},
-            entity: {},
-            spellEntity: {}
+            building: [],
+            island: [],
+            player: [],
+            entity: [],
+            spellEntity: []
         };
     }
 
@@ -21,11 +19,11 @@ export class ViewManager{
      */
     addPair(model, view){
         if(model.type === "player" && Object.keys(this.pairs.player).length === 0){
-            this.pairs.player[model] = view;
+            this.pairs.player.push({model, view});
         } else if(model.type === "player"){
             throw new Error("player already exists");
         } else {
-            this.pairs[model.type][model] = view;
+            this.pairs[model.type].push({model, view});
         }
     }
 
@@ -36,9 +34,15 @@ export class ViewManager{
      */
     getPair(model){
         if(model.type === "player"){
-            return this.pairs.player[model];
+            return this.pairs.player[0];
         } else {
-            return this.pairs[model.type][model];
+            let found = null
+            this.pairs[model.type].forEach((pair) => {
+                if(pair.model === model){
+                    found = pair;
+                }
+            });
+            return found;
         }
     }
     /**
@@ -46,7 +50,7 @@ export class ViewManager{
     * @param {{detail: model}} event
     */
     deleteView(event){
-        delete this.pairs[event.detail.model.type][event.detail.model];
+        this.pairs[event.detail.model.type].filter((pair) => pair.model !== event.detail.model);
     }
 
     /**
@@ -55,13 +59,8 @@ export class ViewManager{
      */
     get ritualTouchables(){
         let touchables = [];
-        // TODO: proper version of this
-        for(const model in this.pairs.building){
-            touchables.push(this.pairs.building[model]);
-        }
-        for(const model in this.pairs.island){
-            touchables.push(this.pairs.island[model]);
-        }
+        this.pairs.building.forEach((pair) => touchables.push(pair.view));
+        this.pairs.island.forEach((pair) => touchables.push(pair.view));
         return touchables;
     }
 
@@ -72,8 +71,8 @@ export class ViewManager{
     get planes(){
         let planes = [];
         for(const islandKey in this.pairs.island){
-            let island = this.pairs.island[islandKey];
-            planes.push(island.blockPlane);
+            let islandView = this.pairs.island[islandKey].view;
+            planes.push(islandView.blockPlane);
         }
         return planes;
     }
@@ -84,10 +83,13 @@ export class ViewManager{
      */
     updateAnimatedViews(deltaTime){
         for(const type in this.pairs){
-            for(const model in this.pairs[type]){
-                if(!(this.pairs[type][model] instanceof IAnimatedView)) continue;
-                this.pairs[type][model].update(deltaTime)
-            }
+            this.pairs[type].forEach((pair) => {
+                if(pair.view instanceof IAnimatedView) {
+                    pair.view.update(deltaTime);
+                } else if(pair.view instanceof Fireball){
+                    pair.view.particleSystem.update(deltaTime);
+                }
+            });
         }
     }
 }

@@ -1,4 +1,4 @@
-import {assetPaths, hasAnimations} from "../configs/ViewConfigs.js";
+import {assetPaths} from "../configs/ViewConfigs.js";
 import {Controller} from "./Controller.js";
 import * as THREE from "three";
 import {clone} from "three-SkeletonUtils";
@@ -7,11 +7,11 @@ import {clone} from "three-SkeletonUtils";
  * Class to manage assets
  */
 export class AssetManager{
-    #modelList;
+    #assetList;
     #assetLoader;
     constructor() {
         this.#assetLoader = new Controller.AssetLoader();
-        this.#modelList = {};
+        this.#assetList = {};
     }
 
     /**
@@ -26,8 +26,18 @@ export class AssetManager{
         await Promise.all(promises).then((values) => {
             let index = 0;
             for(const key in assetPaths) {
-                const {charModel, animations} = values[index];
-                this.#modelList[key] = {model: charModel, animations: animations };
+                const {charModel = null, animations = null, texture = null} = values[index];
+                this.#assetList[key] = {};
+
+                if(charModel){
+                    this.#assetList[key].model = charModel;
+                }
+                if(animations){
+                    this.#assetList[key].animations = animations;
+                }
+                if(texture){
+                    this.#assetList[key].texture = texture;
+                }
                 index++;
             }
         });
@@ -37,23 +47,24 @@ export class AssetManager{
      * @param name name of the model
      * @returns {*} the 3d model
      */
-    getModel(name){
-        console.log(this.#modelList)
-        if(this.#modelList[name]){
-            return clone(this.#modelList[name].model);
-        } else {
-            throw new Error(`no model exists for ${name}.`);
+    getAsset(name){
+        if(this.#assetList[name]) {
+            if (this.#assetList[name].model) {
+                return clone(this.#assetList[name].model);
+            } else if (this.#assetList[name].texture) {
+                return this.#assetList[name].texture.clone();
+            }
+            throw new Error(`no asset exists for ${name}.`);
         }
     }
-
     /**
      * Get the animations of a 3d model
      * @param name name of the model
      * @returns {*} the animations
      */
     getAnimations(name){
-        if(this.#modelList?.[name].animations){
-            return this.#modelList[name].animations;
+        if(this.#assetList?.[name].animations){
+            return this.#assetList[name].animations;
         } else {
             throw new Error(`no animations exists for ${name}.`);
         }
