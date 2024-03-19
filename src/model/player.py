@@ -4,8 +4,15 @@ from flask import current_app
 from sqlalchemy import BigInteger, ForeignKey, Column, Integer
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
+from src.model.blueprint import Blueprint
 from src.model.spell import Spell
 from src.model.spell import association_table as player_spell_association_table
+
+blueprint_association_table = current_app.db.Table(
+    'blueprint_association', current_app.db.Model.metadata,
+    Column('player_id', BigInteger, ForeignKey('player.user_profile_id')),
+    Column('blueprint_id', BigInteger, ForeignKey('blueprint.id'))
+)
 
 
 class Player(current_app.db.Model):
@@ -32,6 +39,9 @@ class Player(current_app.db.Model):
 
     # The gem inventory of the player
     gems: Mapped[List["Gem"]] = relationship("Gem")
+
+    # The unlocked blueprints of the player
+    blueprints: Mapped[List["Blueprint"]] = relationship("Blueprint", secondary=blueprint_association_table)
 
     def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0):
         """
@@ -65,7 +75,18 @@ class Player(current_app.db.Model):
                 new_spellset.append(spell)
 
             # Update the spells after checking if the spell id's exist. Otherwise we might remove all spells if the input is invalid
-            # The type hinting is wrong here, but it's a bug in pyCharm
+            # Also, don't simply clear the map as this would mess with SQLAlchemy's internal workings
+            # The type hinting is correct here, it's a pyCharm reporting it as wrong
             self.spells = new_spellset
+
+        if 'blueprints' in data:
+            new_blueprintset = []
+            for blueprint_id in data.get('blueprints'):
+                blueprint = Blueprint.query.get(blueprint_id)
+                if blueprint is None:
+                    raise ValueError(f"Blueprint {blueprint_id} not found")
+                new_blueprintset.append(blueprint)
+            # See notes of spells above as well
+            self.blueprints = new_blueprintset
 
 

@@ -1,5 +1,6 @@
 from flask_restful_swagger_3 import Resource
 
+from src.resource.blueprint import BlueprintSchema
 from src.model.placeable.placeable import Placeable
 from src.swagger_patches import Schema
 
@@ -31,6 +32,10 @@ class PlaceableSchema(Schema):
         'type': {
             'type': 'string',
             'description': 'The type of this placeable'
+        },
+        'blueprint': {
+            'type': 'object',
+            'items': BlueprintSchema,
         }
     }
 
@@ -41,8 +46,13 @@ class PlaceableSchema(Schema):
 
     def __init__(self, placeable: Placeable = None, **kwargs):
         if placeable is not None:
-            super().__init__(placeable_id=placeable.placeable_id, island_id=placeable.island_id,
-                             x=placeable.xpos, z=placeable.zpos, type=placeable.type, **kwargs)
+            super().__init__(placeable_id=placeable.placeable_id,
+                             island_id=placeable.island_id,
+                             x=placeable.xpos,
+                             z=placeable.zpos,
+                             type=placeable.type,
+                             blueprint=BlueprintSchema(placeable.blueprint),
+                             **kwargs)
         else:
             super().__init__(**kwargs)
 

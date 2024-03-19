@@ -5,6 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.enums import BlueprintType
 from src.model.placeable.buildings import AltarBuilding
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
@@ -142,6 +143,9 @@ class AuthService:
         # Create update the id of the altar in island so we have a ref from island to altar
         island.altar_id = altar_building.placeable_id
         current_app.db.session.commit()
+
+        # The player can initially only build the altar
+        player.update({'blueprints': [BlueprintType.ALTAR.value]})
 
         return island
 

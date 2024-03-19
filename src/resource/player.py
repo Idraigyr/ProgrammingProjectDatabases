@@ -38,7 +38,8 @@ class PlayerSchema(Schema):
         'gems': {
             'type': 'array',
             'items': GemSchema
-        }
+        },
+        'blueprints': IntArraySchema
     }
 
     required = [] # nothing is required, but not giving anything is just doing nothing
@@ -49,6 +50,7 @@ class PlayerSchema(Schema):
                              crystals=player.crystals, mana=player.mana,
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
+                             blueprints=[blueprint.id for blueprint in player.blueprints],
                              **kwargs)
         else: # schema -> player
             super().__init__(**kwargs)
@@ -65,7 +67,9 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The player profile id to retrieve. Defaults to the current user id (by JWT)')
-    @swagger.response(200, description='Success, returns the player profile in JSON format', schema=PlayerSchema)
+    @swagger.response(200, description='Succesfully updated the player profile. The blueprint and spells '
+                                       'are only an array of the ids of said object. Do a new fetch on the other endpoints '
+                                       'to get more info about those objects.', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @summary('Get the player profile by id')
@@ -91,7 +95,9 @@ class PlayerResource(Resource):
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
     @summary('Update the player profile by id')
-    @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
+    @swagger.response(200, description='Succesfully updated the player profile. The blueprint and spells '
+                                       'are only an array of the ids of said object. Do a new fetch on the other endpoints '
+                                       'to get more info about those objects.', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
     @jwt_required()
