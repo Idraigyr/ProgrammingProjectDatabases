@@ -33,26 +33,33 @@ def generate_pdoc(generate=False):
 
             # Generate documentation for each Python file
             for file in filter(is_python_file, files):
-                file_path = os.path.join(dirpath, file)
-                if is_package(dirpath):
-                    # Create a module name from the directory path for packages
-                    module_name = os.path.relpath(file_path, root_directory).replace(os.sep, '.')
-                    module_name = module_name.rsplit('.', 1)[0]  # Remove the .py extension
+                try:
+                    file_path = os.path.join(dirpath, file)
+                    if is_package(dirpath):
+                        # Create a module name from the directory path for packages
+                        module_name = os.path.relpath(file_path, root_directory).replace(os.sep, '.')
+                        module_name = module_name.rsplit('.', 1)[0]  # Remove the .py extension
 
-                    # Generate the HTML documentation for the module
-                    module_doc = pdoc.html(module_name)
+                        # Generate the HTML documentation for the module
+                        module_doc = pdoc.html(module_name)
 
-                    # Define the output file path
-                    relative_dirpath = os.path.relpath(dirpath, root_directory)
-                    doc_dir = os.path.join(output_directory, relative_dirpath)
-                    os.makedirs(doc_dir, exist_ok=True)
-                    output_file = os.path.join(doc_dir, f'{file[:-3]}.html')
+                        # Define the output file path
+                        relative_dirpath = os.path.relpath(dirpath, root_directory)
+                        doc_dir = os.path.join(output_directory, relative_dirpath)
+                        os.makedirs(doc_dir, exist_ok=True)
+                        output_file = os.path.join(doc_dir, f'{file[:-3]}.html')
 
-                    # Write the documentation to the file
-                    with open(output_file, 'w') as html_file:
-                        print("generating file")
-                        html_file.write(module_doc)
-                    documentation_files.append(os.path.join(relative_dirpath, f'{file[:-3]}.html'))
+                        # Write the documentation to the file
+                        with open(output_file, 'wb') as html_file:
+                            print("generating file")
+                            html_file.write(module_doc.encode('utf-8'))
+                        documentation_files.append(os.path.join(relative_dirpath, f'{file[:-3]}.html'))
+                except Exception as e:
+                    if 'venv.Lib' in str(e):
+                        continue
+                    print(f'Error: {e}')
+                    continue
+
         # Generate the main index page
         index_content = '<html><head><title>Project Documentation</title></head><body>'
         index_content += '<h1>Project Documentation Index</h1>'
