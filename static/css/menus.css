@@ -10,7 +10,7 @@ body {
   max-height: 1000px;
   margin: 20px auto;
   padding: 20px;
-  background-image: url('/static/images/background-landing.jpg');
+  background-image: url('/static/assets/images/background-landing.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
