@@ -7,7 +7,7 @@ socketio = SocketIO()
 def message(data):
     """
     sends message to all the clients
-    :param data: message form the client
+    :param data: message from the client
     """
     msg = data['message']
     username = data['username']

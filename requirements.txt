@@ -19,3 +19,4 @@ flask-socketio==5.3.6
 oauthlib==3.2.2
 alembic-postgresql-enum==1.1.2
 requests==2.31.0
+pdoc3==0.10.0
