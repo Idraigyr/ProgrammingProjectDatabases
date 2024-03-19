@@ -2,12 +2,14 @@ import logging
 
 from flask import Flask, Blueprint, request, current_app
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from flask_restful_swagger_3 import Resource, swagger, Api, Schema
+from flask_restful_swagger_3 import Resource, swagger, Api
 from markupsafe import escape
 
 from src.schema import ErrorSchema, SuccessSchema
 from src.resource import add_swagger, clean_dict_input
 from src.service.auth_service import AUTH_SERVICE
+from src.swagger_patches import Schema, summary
+
 
 class UserProfileSchema(Schema):
     """
@@ -16,7 +18,7 @@ class UserProfileSchema(Schema):
     type = 'object'
     properties = {
         'id': {
-            'type': 'int'
+            'type': 'integer'
         },
         'username': {
             'type': 'string'
@@ -42,11 +44,12 @@ class UserProfileSchema(Schema):
 class UserProfileResource(Resource):
     """
     A UserProfile resource is a resource/api endpoint that allows for the retrieval and modification of user profiles
-
+    No POST endpoint is available, as user profiles are created by the registration process. See AUTHENTICATION.md for more information
     This resource is protected by JWT, and requires a valid JWT token to access
     """
 
     @swagger.tags('user_profile')
+    @summary('Retrieve the user profile with the given id')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.response(200, description='Success, returns the user profile in JSON format', schema=UserProfileSchema)
     @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
@@ -82,11 +85,12 @@ class UserProfileResource(Resource):
 
 
     @swagger.tags('user_profile')
+    @summary('Update the user profile by id')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.parameter(_in='query', name='firstname', schema={'type': 'string'}, description='The new firstname')
     @swagger.parameter(_in='query', name='lastname', schema={'type': 'string'}, description='The new lastname')
     @swagger.parameter(_in='query', name='admin', schema={'type': 'bool'}, description='The new admin status (only allowed if current user is admin)')
-    @swagger.response(200, description='Succesfully updated the user profile', schema=SuccessSchema)
+    @swagger.response(200, description='Succesfully updated the user profile', schema=UserProfileSchema)
     @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token', schema=ErrorSchema)
     @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @jwt_required()
@@ -129,7 +133,7 @@ class UserProfileResource(Resource):
         target_user.update(clean_dict_input(copy))
         current_app.db.session.commit() # Save changes to db
 
-        return SuccessSchema(f"User {target_user_id} updated"), 200
+        return UserProfileSchema(target_user), 200
 
 
 

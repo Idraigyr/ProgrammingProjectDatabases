@@ -31,18 +31,34 @@ void main() {
   gl_FragColor = texture2D(diffuseTexture, coords) * vColour;
 }`;
 
+/**
+ * class for a linear spline
+*/
 class LinearSpline{
     #points;
     #lerp;
+    /**
+     * initialises class
+     * @param {function} lerp
+     */
     constructor(lerp) {
         this.#points = [];
         this.#lerp = lerp;
     }
 
+    /**
+     * add a point to the spline
+     * @param {number} t
+     * @param {number} d
+     */
     addPoint(t, d){
         this.#points.push([t, d]);
     }
 
+    /**
+     * interpolate corresponding value to t from the spline according to its given lerp
+     * @param {number} t
+     */
     getPoint(t){
         let p1 = 0;
 
@@ -61,7 +77,9 @@ class LinearSpline{
         return this.#lerp((t - this.#points[p1][0]) / (this.#points[p2][0] - this.#points[p1][0]), this.#points[p1][1], this.#points[p2][1]);
     }
 }
-
+/**
+ * class for a simple particle system
+*/
 export class ParticleSystem{
     #material;
     #bufferGeometry;
@@ -70,6 +88,10 @@ export class ParticleSystem{
     #colourSpline;
     #alphaSpline;
     #sizeSpline;
+    /**
+     * initialises class, adds splines for some particle attributes (colour, size, alpha)
+     * @param {{scene: THREE.Scene, camera: THREE.Camera, position: THREE.Vector3, uniforms: object}} params
+     */
     constructor(params) {
         this.scene = params.scene;
         this.camera = params.camera;
@@ -125,7 +147,20 @@ export class ParticleSystem{
         this.updateGeometry();
     }
 
+    /**
+     * cleans up object for garbage collection
+     * removes existing particles from the scene
+     */
+    cleanUp(){
+        this.scene.remove(this.#points);
+    }
+
+    /**
+     * adds 10 particles to the system
+     * @param {number} deltaTime
+     */
     addParticles(deltaTime){
+        if(this.#particles.length > 1000) return;
         let n = 10;
         for(let i = 0; i < n; i++){
             const life = (Math.random() * 0.75 + 0.25);
@@ -145,7 +180,10 @@ export class ParticleSystem{
             });
         }
     }
-
+    /**
+     * updates particles
+     * @param {number} deltaTime
+     */
     updateParticles(deltaTime){
         for (let p of this.#particles) {
           p.lifetime -= deltaTime;
@@ -181,12 +219,19 @@ export class ParticleSystem{
         });
     }
 
+    /**
+     * updates entire system (couples multiple functions together)
+     * @param {number} deltaTime
+     */
     update(deltaTime){
         this.addParticles(deltaTime);
         this.updateParticles(deltaTime);
         this.updateGeometry();
     }
 
+    /**
+     * updates geometry based on particle update
+     */
     updateGeometry(){
         const positions = [];
         const sizes = [];

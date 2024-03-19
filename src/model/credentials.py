@@ -15,7 +15,7 @@ class Credentials(current_app.db.Model):
     """
     __tablename__ = "credentials"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    type: Mapped[str] = Column(String(32))
+    type: Mapped[str] = Column(String(32)) # Keep track of polymorphic identities
     user_profile_id: Mapped[int] = mapped_column(ForeignKey('user_profile.id'))
     user_profile = relationship("UserProfile", back_populates="credentials", uselist=False)
 
@@ -52,6 +52,7 @@ class PasswordCredentials(Credentials):
         :return: True if the password matches, False otherwise
         """
         assert 'password' in loginData, "Password not provided"
+        # Timing attack safe function
         match = bcrypt.checkpw(loginData['password'].encode('utf-8'), self.password_hash)
         return match
 
@@ -73,5 +74,32 @@ class PasswordCredentials(Credentials):
         'polymorphic_identity': 'password_credentials'
     }
 
-# class OAuthCredentials(Credentials):
-#     sso_id = current_app.db.Column(current_app.db.String(255), nullable=False)
+
+class OAuth2Credentials(Credentials):
+    """
+    An OAuth2Credentials object that stores the OAuth2 user ID (eg Google ID)
+    """
+    id: Mapped[int] = mapped_column(BigInteger, ForeignKey("credentials.id"), primary_key=True)
+
+    # The OAuth2 ID of the user
+    # Stored as a string since the ID can be longer than a number or contain characters
+    sso_id = Column(String(21), nullable=False, unique=True)
+
+    def __init__(self, sso_id: str):
+        self.sso_id = sso_id
+
+
+    def authenticate(self, loginData: dict) -> bool:
+        """
+        Attempts authentication by checking if the user provided SSO ID matches the stored SSO ID
+        The SSO ID is unique and cannot be changed, so it's safe to use it for authentication
+        :param loginData: The logindata, containing the SSO ID in a dict
+        :return: True if the SSO IDs match, False otherwise
+        """
+        assert 'sso_id' in loginData, "sso_id not provided"
+        return loginData['sso_id'] == self.sso_id
+
+
+    __mapper_args__ = {
+        'polymorphic_identity': 'oauth2_credentials'
+    }

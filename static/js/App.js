@@ -115,6 +115,7 @@ class App {
         this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
         await this.worldManager.importWorld(`${API_URL}/...`,"request");
         this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
+        this.playerController.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         this.cameraManager.target = this.worldManager.world.player;
@@ -160,6 +161,8 @@ class App {
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
+
+        this.BuildManager.makePreviewObjectInvisible();
     }
 }
 

@@ -7,9 +7,9 @@ socketio = SocketIO()
 def message(data):
     """
     sends message to all the clients
-    :param data: message form the client
+    :param data: message from the client
     """
     msg = data['message']
     username = data['username']
     time_stamp = strftime("%b-%d %I:%M%p", localtime())
-    send({"usersname": username, "message": msg, "time_stamp": time_stamp}, broadcast=True)
+    send({"username": username, "message": msg, "time_stamp": time_stamp}, broadcast=True)

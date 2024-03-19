@@ -2,9 +2,12 @@ import json
 import logging
 from datetime import datetime, timezone, timedelta
 
-from flask import Blueprint, current_app, Response, request
+import requests
+from flask import Blueprint, current_app, Response, request, redirect
 from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt, get_jwt_identity
 from markupsafe import escape
+from oauthlib.oauth2 import WebApplicationClient, OAuth2Error
+
 from src.resource import add_endpoint_to_swagger
 
 from src.service.auth_service import AUTH_SERVICE
@@ -71,7 +74,7 @@ def register():
         }
     }), status=200, mimetype='application/json')
 
-    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    set_access_cookies(response, jwt, max_age=int(current_app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 
@@ -96,16 +99,17 @@ def login():
     password = escape(request.args.get('password'))
 
     # Attempt authentication
-    user = AUTH_SERVICE.authenticate(username, password)
-    if user is None: # either username does not exist or password is incorrect
-        return Response(json.dumps({'status': 'error', 'message': 'username not found or incorrect password'}), status=401, mimetype='application/json')
+    try:
+        user = AUTH_SERVICE.authenticate_password(username, password)
+    except RuntimeError as e:
+        return Response(json.dumps({'status': 'error', 'message': str(e)}), status=401, mimetype='application/json')
 
     # Generate JWT token
     jwt = AUTH_SERVICE.create_jwt(user)
 
     # Return response
     response = Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
-    set_access_cookies(response, jwt, max_age=3600) # Set the JWT in the response as a cookie, valid for 1 hour
+    set_access_cookies(response, jwt, max_age=int(current_app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))) # Set the JWT in the response as a cookie, valid for 1 hour
     return response
 
 @blueprint.route("/logout", methods=['POST', 'GET'])
@@ -143,10 +147,117 @@ def refresh_expiring_jwts(response):
         return response
 
 
-@blueprint.route("/ssologin")
-def sso_login():
-    # implement SSO login
-    return Response("Not implemented yet", status=501, mimetype='application/json')
+@blueprint.route("/oauth2/login", methods=["GET"])
+def oauth2_login():
+    """
+    Redirects the user to the OAuth2 server for login
+    :return: 302 Redirect with the Oauth2 server URL in Location header
+    """
+    # oauth_client object is None (but defined) if OAuth2 login is not enabled
+    oauth_client = current_app.oauth_client
+    if oauth_client is None or current_app.config.get('APP_LOGIN_ENABLED', 'false') != 'true':
+        return Response(json.dumps({'status': 'error', 'message': 'OAuth2 not enabled'}), status=409, mimetype='application/json')
+
+    # Get the URL to the OAuth2 server
+    provider_config = requests.get(current_app.config['APP_OAUTH_DISCOVERY_URL']).json()
+
+    # Prepare client
+    url, headers, body = oauth_client.prepare_authorization_request(
+        authorization_url=provider_config['authorization_endpoint'],
+        redirect_url=f"{current_app.config['APP_HOST_SCHEME']}://{current_app.config['APP_HOST']}/api/auth/oauth2/callback",
+        scope=['openid', 'email', 'profile']
+    )
+
+    # Redirect the user to the OAuth2 server
+    return Response(status=302, headers={'Location': url})
+
+
+@blueprint.route("/oauth2/callback", methods=["GET"])
+def oauth2_callback():
+    """
+    Callback endpoint for the OAuth2 server. Only the OAuth2 server should redirect the client to this endpoint.
+    Calling this directly will result in an HTTP 400 error
+    :return:
+    """
+    # oauth_client object is None (but defined) if OAuth2 login is not enabled
+    oauth_client = current_app.oauth_client
+    if oauth_client is None or current_app.config.get('APP_LOGIN_ENABLED', 'false') != 'true':
+        return Response(json.dumps({'status': 'error', 'message': 'OAuth2 not enabled'}), status=409, mimetype='application/json')
+
+    # Check if the OAuth2 server redirected the client with the correct (basic) parameters
+    if not 'code' in request.args or not 'state' in request.args:
+        return Response(json.dumps({'status': 'error', 'message': 'Invalid request'}), status=400, mimetype='application/json')
+
+    # Get the URL to the OAuth2 server
+    provider_config = requests.get(current_app.config['APP_OAUTH_DISCOVERY_URL']).json()
+
+    try:
+        # Prepare the request to retrieve the token from the OAuth2 server
+        token_url, headers, body = oauth_client.prepare_token_request(
+            provider_config['token_endpoint'],
+            authorization_response=request.url,
+            redirect_url=f"{current_app.config['APP_HOST_SCHEME']}://{current_app.config['APP_HOST']}/api/auth/oauth2/callback",
+            code=request.args.get('code')
+        )
+        # Get the token
+        token_response = requests.post(token_url,
+                                       headers=headers,
+                                       data=body,
+                                       auth=(current_app.config['APP_OAUTH_CLIENT_ID'],
+                                             current_app.config['APP_OAUTH_CLIENT_SECRET'])
+                                       )
+        # Parse the token
+        oauth_client.parse_request_body_response(token_response.text)
+
+        # Get the user info from the response
+        userinfo_url, headers, body = oauth_client.add_token(provider_config['userinfo_endpoint'])
+        userinfo_response = requests.get(userinfo_url, headers=headers, data=body)
+        userinfo = userinfo_response.json()
+
+    except OAuth2Error as e:
+        # Regular errors, such as malformed or invalid codes and states
+        return Response(json.dumps({'status': 'error', 'message': f'OAuth2 error: {e.description}'}), status=400, mimetype='application/json')
+    except Exception as e:
+        # Exceptional error, should not happen
+        _log.error(f'OAuth2 error: unknown error {e}')
+        return Response(json.dumps({'status': 'error', 'message': f'OAuth2 error: unknown error'}), status=500, mimetype='application/json')
+
+    ### OAUTH2 procedure complete, now we can verify the user data
+
+    try:
+        # Check if user is already in the database
+        # username is build of the first + lastname with whitespaces stripped
+        username = (userinfo['name'] + " " + userinfo.get('family_name', '')).strip()
+        user = AUTH_SERVICE.get_user(username=username)
+        sso_id = userinfo['sub']
+    except KeyError as e:
+        # Missing userinfo field, should not happen though
+        _log.error(f'OAuth2 error: missing userinfo field {e}')
+        return Response(json.dumps({'status': 'error', 'message': f'OAuth2 error: The provider did not return required field {e}.'}), status=500, mimetype='application/json')
+
+    ### Parsed the userinfo, now we can verify the user data with our own database
+
+    if user is None:
+        # Create user
+        user = AUTH_SERVICE.create_user_oauth2(sso_id=sso_id, username=username, firstname=userinfo['given_name'], lastname=userinfo.get('family_name', ''))
+    elif not user.uses_oauth2():
+        return Response(json.dumps({'status': 'error', 'message': 'User already exists and does not use OAuth2. Please use the regular login instead'}), status=409, mimetype='application/json')
+    else:
+        # Check SSO ID, should be fine since username implies sso_id and both are unique
+        if not user.credentials.authenticate({'sso_id': sso_id}):
+            return Response(json.dumps({'status': 'error', 'message': 'OAuth2 ID mismatch'}), status=409, mimetype='application/json')
+
+    ### Verification done, we can now generate the JWT token
+    # Generate JWT token
+    jwt = AUTH_SERVICE.create_jwt(user)
+
+    # Redirect user to the main page
+    response = redirect(f"{current_app.config['APP_HOST_SCHEME']}://{current_app.config['APP_HOST']}/", code=302)
+
+    # Attach JWT to the response as a cookie
+    set_access_cookies(response, jwt, max_age=int(current_app.config.get('APP_JWT_TOKEN_EXPIRES', 3600))) # Set the JWT in the response as a cookie, valid for 1 hour
+    return response
+
 
 
 # Add the register endpoint to the Swagger docs
@@ -165,10 +276,25 @@ add_endpoint_to_swagger('/api/auth/login', 'post', ['auth'], 'Login a user', 'Lo
                         parameters=[{'name': 'username', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The username of the user'},
                          {'name': 'password', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The password of the user'}],
                         response_schemas={200: {'description': 'Success, returns the JWT token and user profile in JSON format', 'schema': {}},
-                         401: {'description': 'username not found or incorrect password', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                         401: {'description': 'Username not found, invalid password or user uses OAuth2 login', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
                          409: {'description': 'Login not enabled', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})
 
 # Add the logout endpoint to the Swagger docs
 add_endpoint_to_swagger('/api/auth/logout', ['get', 'post'], ['auth'], 'Logout a user', 'Logout a user',
                         parameters=[],
                         response_schemas={200: {'description': 'Success, returns a message', 'schema': {'$ref': '#/components/schemas/SuccessSchema'}}})
+
+# Add the OAuth2 login endpoint to the Swagger docs
+add_endpoint_to_swagger('/api/auth/oauth2/login', 'get', ['auth'], 'Login with OAuth2.', 'Login with OAuth2.  This will start an OAuth2 login procedure and create a redirect URL to the OAuth2 provider login endpoint',
+                        parameters=[],
+                        response_schemas={302: {'description': 'Redirects the user to the OAuth2 server for login', 'schema': {}},
+                                          409: {'description': 'OAuth2 not enabled', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})
+
+# Add the OAuth2 callback endpoint to the Swagger docs
+add_endpoint_to_swagger('/api/auth/oauth2/callback', 'get', ['auth'], 'OAuth2 callback.', 'OAuth2 callback. Should only be used by a redirect from the OAuth2 provider.',
+                        parameters=[{'name': 'code', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The OAuth2 code (recieved from the provider)'},
+                                    {'name': 'state', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The OAuth2 state (recieved from calling /api/auth/oauth2/login)'}],
+                        response_schemas={302: {'description': 'Redirects the user to the main page (success)', 'schema': {}},
+                                          400: {'description': 'Invalid request, OAuth2 error (specified)', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                                          409: {'description': 'OAuth2 not enabled or OAuth2 ID mismatch (rare)', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                                          500: {'description': 'OAuth2 error (unspecified or invalid response from provider)', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})

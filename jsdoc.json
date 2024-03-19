@@ -1,0 +1,16 @@
+{
+  "source": {
+    "include": ["static/js"],
+    "includePattern": ".+\\.js(doc|x)?$",
+    "excludePattern": "(^|\\/|\\\\)_"
+  },
+  "plugins": [
+    "plugins/markdown",
+    "./node_modules/@ckeditor/jsdoc-plugins/lib/export-fixer/export-fixer.js"
+  ],
+  "opts": {
+    "encoding": "utf8",
+    "destination": "./jsDocs/",
+    "recurse": true
+  }
+}

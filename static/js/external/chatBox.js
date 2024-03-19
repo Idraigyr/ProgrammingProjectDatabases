@@ -10,12 +10,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function scrollToBottom() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
-
     chatButton.onclick = function() {
+        openChat();
+    };
+
+    function openChat() {
         chatPopup.style.display = 'block';
         chatButton.hidden = true;
         scrollToBottom(); // Scroll to bottom when chat is opened
-    };
+        chatInput.focus(); // Set focus to the chat input field
+    }
 
     closeChat.onclick = function() {
         chatButton.hidden = false;
@@ -53,4 +57,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     // When the page loads, scroll to the bottom of the chat
     scrollToBottom();
+
+        // Listen for the "C" key to open the chat box
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'c' || e.key === 'C') {
+            // Check if the current active element is the chat input field
+            if (document.activeElement !== chatInput) {
+                // Check if the chatPopup is already displayed before toggling
+                if (chatPopup.style.display !== 'block') {
+                    e.preventDefault();
+                    openChat();
+                } else {
+                    // Close the chat popup only if chat input is not focused
+                    chatButton.hidden = false;
+                    chatPopup.style.display = 'none';
+                }
+            }
+        }
+        if (e.key === 'Control'){
+            if (chatPopup.style.display === 'block'){
+                // Close the chat popup only if chat input is not focused
+                chatButton.hidden = false;
+                chatPopup.style.display = 'none';
+            }
+        }
+    });
 });

@@ -108,3 +108,9 @@ ENV/
 # private keys
 *.key
 *.key.pub
+
+#node_modules
+node_modules
+jsDocs
+package-lock.json
+pydocs

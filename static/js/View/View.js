@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import {Vector3} from "three";
 
 /**
  * View base class
@@ -11,6 +10,7 @@ export class IView {
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
+        this.boxHelper.visible = false;
         this.horizontalRotation = 0;
     }
     update(deltaTime) {}

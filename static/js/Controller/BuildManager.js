@@ -34,6 +34,10 @@ export class BuildManager {
     addBuildPlane(plane){
         this.planes.push(plane);
     }
+    makePreviewObjectInvisible(){
+        this.#previewObject.visible = false;
+    }
+
     setPreviewMaterial(material){
         this.previewMaterial = material;
     }
@@ -80,6 +84,7 @@ export class BuildManager {
     updateBuildSpell(event){
         let collision = this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0];
         if(collision){
+            this.#previewObject.visible = true;
             this.#extractObject(this.#previewObject).position.copy( collision.point ).add( collision.face.normal );
             this.scaleAndCorrectPosition(this.#previewObject);
         }

@@ -3,7 +3,7 @@ import {horizontalSensitivity, movementSpeed, sprintMultiplier, verticalSensitiv
 import * as THREE from "three";
 import {max} from "../helpers.js";
 import {Factory} from "./Factory.js";
-import {BuildSpell} from "../Model/Spell.js";
+import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
 
 /**
  * Class to manage the character and its actions
@@ -15,6 +15,10 @@ export class CharacterController extends Subject{
     //TODO: temporary values move logic to charFSM
     #jumping = false;
     #falling = false;
+    /**
+     * adds a listener to inputManager mousedown event
+     * @param {{Character: Wizard, InputManager: InputManager}} params
+     */
     constructor(params) {
         super();
         this._character = params.Character;
@@ -22,10 +26,52 @@ export class CharacterController extends Subject{
         this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
     }
 
+    /**
+     * creates a custom event notifying an EntitySpell being cast
+     * @param {ConcreteSpell} type
+     * @param {object} params
+     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
+     */
+    createSpellEntityEvent(type, params){
+        return new CustomEvent("createSpellEntity", {detail: {type: type, params: params}});
+    }
+
+    /**
+     * creates a custom event notifying a BuildSpell being cast
+     * @param {ConcreteSpell} type
+     * @param {object} params
+     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
+     */
     createSpellCastEvent(type, params){
         return new CustomEvent("castSpell", {detail: {type: type, params: params}});
     }
 
+    /**
+     * creates a custom event notifying a HitScanSpell being cast
+     * @param {ConcreteSpell} type
+     * @param {object} params
+     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
+     */
+    createHitScanSpellEvent(type, params){
+        return new CustomEvent("hitScanSpell", {detail: {type: type, params: params}});
+    }
+
+    /**
+     * creates a custom event notifying an InstantSpell being cast
+     * @param {ConcreteSpell} type
+     * @param {object} params
+     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
+     */
+    createInstantSpellEvent(type, params){
+        return new CustomEvent("InstantSpell", {detail: {type: type, params: params}});
+    }
+
+    /**
+     * creates a custom event notifying an EntitySpell being cast
+     * @param {ConcreteSpell} type
+     * @param {object} params
+     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
+     */
     createUpdateBuildSpellEvent(type, params){
         return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
@@ -52,6 +98,10 @@ export class CharacterController extends Subject{
         this._character.rotation = q;
     }
 
+    /**
+     * returns horizontal rotation as a quaternion
+     * @returns {THREE.Quaternion}
+     */
     get quatFromHorizontalRotation(){
         const qHorizontal = new THREE.Quaternion();
         qHorizontal.setFromAxisAngle(new THREE.Vector3(0,1,0), this._character.phi);
@@ -73,7 +123,7 @@ export class CharacterController extends Subject{
     }
 
     /**
-     * Update the character (e.g. state, position, spells, etc.
+     * Update the character (e.g. state, position, spells, etc.)
      * @param deltaTime
      */
     update(deltaTime) {
@@ -140,18 +190,31 @@ export class CharacterController extends Subject{
             }
         }
 
+        //TODO: move spellCasting logic into a seperate class
         if (this.#inputManager.mouse.leftClick) {
             if (this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0) {
                 //cast current spell
                 let vec = new THREE.Vector3().copy(this._character.position);
                 vec.y += 2;
-                this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {
-                    position: vec,
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
-                }));
+                if(this._character.getCurrentSpell().spell instanceof EntitySpell){
+                    this.dispatchEvent(this.createSpellEntityEvent(this._character.getCurrentSpell(), {
+                        position: vec,
+                        direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
+                    }));
+                } else if(false && this._character.getCurrentSpell().spell instanceof HitScanSpell){
+                    this.dispatchEvent(this.createHitScanSpellEvent(this._character.getCurrentSpell(), {}));
+                } else if(this._character.getCurrentSpell().spell instanceof InstantSpell){
+                    this.dispatchEvent(this.createInstantSpellEvent(this._character.getCurrentSpell(), {}));
+                }  else if (this._character.getCurrentSpell() instanceof BuildSpell) {
+                    this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {
+                        position: vec,
+                        direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
+                    }));
+                }
                 this._character.cooldownSpell();
             }
         } else if (this._character.getCurrentSpell() instanceof BuildSpell) {
+            //TODO: make building placeholder invisible if buildspell not equipped (Object3D.visible = false)
             this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
         this._character.updateCooldowns(deltaTime);

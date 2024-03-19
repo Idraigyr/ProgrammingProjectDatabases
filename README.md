@@ -37,7 +37,7 @@ Execute all the following commands from the root directory of the project.
     APP_NAME=Ordinary Wizards
     APP_JWT_SECRET_KEY=jwtRS256.key
     ```
-    For a full, detailed list of environment variables, see the [.env.md](env.md) file.
+    For a full, detailed list of environment variables, see the [.env.md](docs/ENV.md) file.
 
 4. Generate secret `jwtRS256.key` using the (`keygen.py`)[keygen.py] script:
     ```bash
@@ -56,19 +56,8 @@ Execute all the following commands from the root directory of the project.
    
 ## Documentation
 For more detailed information about the project, please refer to the appropriate documentation files:
-- REST API: see Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally WITH `APP_SWAGGER_ENABLED=true`)
+- General documentation (auth flows, database schema, etc.): see [docs/](docs/ )
+- REST API: see [API.md](docs/API.md) and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally WITH `APP_SWAGGER_ENABLED=true`)
 - Entity-Releationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)
 - Backend code documentation: see PyDoc documentation at `TODOOOOO`
 - Frontend code documentation: see JSDoc documentation at `TODOOOOO`
-
-### OAuth2
-The app currently supports the OAuth2 protocol for external authentication. The current design works for Google login, but should be usable for any OAuth2 complient provider (slight modifications may or may not be required).
-For more information about the workings of the OAuth2 protocol & implementation, see the [oauthlib documentation](https://oauthlib.readthedocs.io/en/latest/).
-
-To enable OAuth2, set the following environment variables in the `.env` file (see [env.md](env.md) for a complete list):
-```bash
-APP_OAUTH_ENABLED=true
-APP_OAUTH_CLIENT_ID=<client_id>
-APP_OAUTH_CLIENT_SECRET=<client_secret>
-APP_OAUTH_DISCOVERY_URL=<discovery_url> # for Google, this is https://accounts.google.com/.well-known/openid-configuration
-```

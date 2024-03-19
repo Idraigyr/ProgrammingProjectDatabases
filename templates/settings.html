@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Settings</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/settingsStyle.css') }}">
+  <link rel="stylesheet" href="../static/css/settingsStyle.css">
 </head>
 <body>
 
@@ -27,21 +27,6 @@
       <label for="music">Background Music</label>
     </div>
 
-    <div class="radio-group">
-      <div class="radio">
-        <input type="radio" id="easy" name="difficulty" value="easy" checked>
-        <label for="easy">Easy</label>
-      </div>
-      <div class="radio">
-        <input type="radio" id="medium" name="difficulty" value="medium">
-        <label for="medium">Medium</label>
-      </div>
-      <div class="radio">
-        <input type="radio" id="hard" name="difficulty" value="hard">
-        <label for="hard">Hard</label>
-      </div>
-    </div>
-
     <div class="dropdown">
       <label for="resolution">Resolution:</label>
       <select id="resolution" name="resolution">
@@ -54,39 +39,41 @@
     <div class="key-binds">
       <div class="key-bind">
         <label for="move-forward">Move forward:</label>
-        <input type="text" id="move-forward" name="move-forward" placeholder="w">
+        <input type="text" id="move-forward" name="move-forward" placeholder="w" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="move-left">Move left:</label>
-        <input type="text" id="move-left" name="move-left" placeholder="a">
+        <input type="text" id="move-left" name="move-left" placeholder="a" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="move-right">Move right:</label>
-        <input type="text" id="move-right" name="move-right" placeholder="d">
+        <input type="text" id="move-right" name="move-right" placeholder="d" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="move-backwards">Move backwards:</label>
-        <input type="text" id="move-backwards" name="move-backwards" placeholder="s">
+        <input type="text" id="move-backwards" name="move-backwards" placeholder="s" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="jump">Jump:</label>
-        <input type="text" id="jump" name="jump" placeholder="Space">
+        <input type="text" id="jump" name="jump" placeholder="Space" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="open-inventory">Open inventory:</label>
-        <input type="text" id="open-inventory" name="open-inventory" placeholder="e">
+        <input type="text" id="open-inventory" name="open-inventory" placeholder="e" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="attack">Attack:</label>
-        <input type="text" id="attack" name="attack" placeholder="Left Mouse Button">
+        <input type="text" id="attack" name="attack" placeholder="Left Mouse Button" maxlength="1">
       </div>
       <div class="key-bind">
         <label for="pause">Pause:</label>
-        <input type="text" id="pause" name="pause" placeholder="Esc">
+        <input type="text" id="pause" name="pause" placeholder="Esc" maxlength="1">
       </div>
     </div>
   </div>
+  <button class="applyButton" id="applyButton">Apply</button>
 </div>
 
 </body>
+<script src="/static/js/Menus/settings.js"></script>
 </html>
