@@ -1,6 +1,6 @@
 {
   "source": {
-    "include": ["static/js_refactored"],
+    "include": ["static/js"],
     "includePattern": ".+\\.js(doc|x)?$",
     "excludePattern": "(^|\\/|\\\\)_"
   },
