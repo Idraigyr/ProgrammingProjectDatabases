@@ -1,5 +1,5 @@
 import {Factory} from "../Controller/Factory.js";
-import {Fireball, BuildSpell} from "./Spell.js";
+import {Fireball, BuildSpell, ThunderCloud, Shield} from "./Spell.js";
 import {BuildManager} from "../Controller/BuildManager.js";
 
 /**
@@ -15,8 +15,10 @@ export class World{
         });
         this.player = this.factory.createPlayer();
         // Set default values for the inventory slots
-        this.player.changeEquippedSpell(0,new BuildSpell({position: null}));
-        this.player.changeEquippedSpell(1,new Fireball({position: null}));
+        this.player.changeEquippedSpell(0,new BuildSpell({}));
+        this.player.changeEquippedSpell(1,new Fireball({}));
+        this.player.changeEquippedSpell(2,new ThunderCloud({}));
+        this.player.changeEquippedSpell(3,new Shield({}));
         this.entities = [];
         this.spellEntities = [];
     }
@@ -35,5 +37,6 @@ export class World{
     update(deltaTime){
         //update whole model
         this.spellFactory.models.forEach((model) => model.update(deltaTime));
+        this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
     }
 }

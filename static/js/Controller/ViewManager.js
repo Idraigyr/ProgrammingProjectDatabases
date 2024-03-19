@@ -1,5 +1,6 @@
 import {IAnimatedView} from "../View/View.js";
-import {Fireball} from "../View/SpellView.js"
+import {Fireball, ThunderCloud} from "../View/SpellView.js";
+import {Shield} from "../View/Shield.js";
 
 export class ViewManager{
     constructor() {
@@ -50,7 +51,13 @@ export class ViewManager{
     * @param {{detail: model}} event
     */
     deleteView(event){
-        this.pairs[event.detail.model.type].filter((pair) => pair.model !== event.detail.model);
+        this.pairs[event.detail.model.type] = this.pairs[event.detail.model.type].filter((pair) => {
+            if(pair.model === event.detail.model){
+                pair.view.cleanUp();
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
@@ -86,8 +93,12 @@ export class ViewManager{
             this.pairs[type].forEach((pair) => {
                 if(pair.view instanceof IAnimatedView) {
                     pair.view.update(deltaTime);
-                } else if(pair.view instanceof Fireball){
-                    pair.view.particleSystem.update(deltaTime);
+                } else if(pair.view instanceof Fireball){ //TODO: make new superclass for 1 else if instanceof SpellView
+                    pair.view.update(deltaTime);
+                } else if(pair.view instanceof ThunderCloud){
+                    pair.view.update(deltaTime);
+                } else if(pair.view instanceof Shield){
+                    pair.view.update(deltaTime);
                 }
             });
         }

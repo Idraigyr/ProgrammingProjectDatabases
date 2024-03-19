@@ -5,6 +5,10 @@ import * as THREE from "three";
  * @class Entity - abstract class for all entities in the game
  */
 export class Entity extends Subject{
+    /**
+     * initialises Entity
+     * @param {{position: THREE.Vector3} | {}} params
+     */
     constructor(params) {
         super();
         this._position =  params?.position ?? new THREE.Vector3(0,0,0);
@@ -12,14 +16,25 @@ export class Entity extends Subject{
 
     /**
      * Create an event that position of entity has changed
-     * @returns {CustomEvent<{position: Vector3}>} - event with new position
-     * @private - should not be called from outside the class and its inheritors
+     * @returns {CustomEvent<{position: THREE.Vector3}>} - event with new position
+     * @protected - should not be called from outside the class and its inheritors
      */
     _createUpdatePositionEvent(){
         return new CustomEvent("updatePosition", {detail: {position: new THREE.Vector3().copy(this._position)}});
     }
+    /**
+     * NYI
+     */
     update(deltaTime){
 
+    }
+
+    /**
+     * creates a delete event, tells viewManager to delete view
+     * @returns {CustomEvent<{model: this}>}
+     */
+    createDeleteEvent(){
+        return new CustomEvent("delete", {detail: {model: this}});
     }
 
     /**
