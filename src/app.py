@@ -170,10 +170,17 @@ def setup(app: Flask):
         from src.chatBox import socketio
 
         # import routes INSIDE the app context
-
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
         app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
+
+        # Register custom JSON Encoder to call to_json() on objects
+        # This is so that Flask can jsonify our SQLAlchemy models
+        app.config['RESTFUL_JSON'] = {'cls': JSONClassEncoder}
+
+        # Create all API endpoints
+        from src.resource import attach_resources
+        attach_resources(app)
 
         # Create the tables in the db, AFTER entities are imported
         # Create the DB migration manager
@@ -187,14 +194,6 @@ def setup(app: Flask):
             # Check if the database schema is up to date
             # We allow inconsistencies in debug mode, but not in production
             check_db_schema()
-
-        # Register custom JSON Encoder to call to_json() on objects
-        # This is so that Flask can jsonify our SQLAlchemy models
-        app.config['RESTFUL_JSON'] = {'cls': JSONClassEncoder}
-
-        # Create all API endpoints
-        from src.resource import attach_resources
-        attach_resources(app)
 
         # Setup SWAGGER API documentation (only when enabled)
         if app.config.get('APP_SWAGGER_ENABLED', "false") == 'true':
