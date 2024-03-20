@@ -121,6 +121,74 @@
         </div>
 
 
+        <!-- Setting menu -->
+
+
+        <div class="container hide">
+      <h1>Game Settings</h1>
+
+      <div class="settings">
+        <div class="slider">
+          <label for="volume">Volume:</label>
+          <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+        </div>
+
+        <div class="checkbox">
+          <input type="checkbox" id="sound" name="sound" checked>
+          <label for="sound">Sound Effects</label>
+        </div>
+
+        <div class="checkbox">
+          <input type="checkbox" id="music" name="music">
+          <label for="music">Background Music</label>
+        </div>
+
+        <div class="dropdown">
+          <label for="resolution">Resolution:</label>
+          <select id="resolution" name="resolution">
+            <option value="720p">720p</option>
+            <option value="1080p">1080p</option>
+            <option value="4k">4K</option>
+          </select>
+        </div>
+
+        <div class="key-binds">
+          <div class="key-bind">
+            <label for="move-forward">Move forward:</label>
+            <input type="text" id="move-forward" name="move-forward" placeholder="w" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="move-left">Move left:</label>
+            <input type="text" id="move-left" name="move-left" placeholder="a" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="move-right">Move right:</label>
+            <input type="text" id="move-right" name="move-right" placeholder="d" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="move-backwards">Move backwards:</label>
+            <input type="text" id="move-backwards" name="move-backwards" placeholder="s" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="jump">Jump:</label>
+            <input type="text" id="jump" name="jump" placeholder="Space" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="open-inventory">Open inventory:</label>
+            <input type="text" id="open-inventory" name="open-inventory" placeholder="e" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="attack">Attack:</label>
+            <input type="text" id="attack" name="attack" placeholder="Left Mouse Button" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="pause">Pause:</label>
+            <input type="text" id="pause" name="pause" placeholder="Esc" maxlength="1">
+          </div>
+        </div>
+      </div>
+      <button class="applyButton" id="applyButton">Apply</button>
+    </div>
 
 
 
@@ -135,7 +203,7 @@
     </div>
 
     <div class="HotBar">
-        <div class="item Spell1 Hovered">
+        <div class="item Spell1 hovered">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell2">
@@ -149,6 +217,23 @@
         </div>
         <div class="item Spell5">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+        </div>
+    </div>
+
+    <div class="HotBarIcons">
+        <div class="Spell1Icon">
+            <img src="../static/assets/images/spell-cast-plant.png" class= "buildimage">
+        </div>
+        <div class="Spell2Icon">
+            <img src="../static/assets/images/spell-cast-fire.png" class= "firebalimage">
+            </div>
+        <div class="Spell3Icon">
+            <img src="../static/assets/images/spell-cast-bolt.png" class= "lighningimage">
+        </div>
+        <div class="Spell4Icon">
+            <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
+        </div>
+        <div class="Spell5Icon">
         </div>
     </div>
 

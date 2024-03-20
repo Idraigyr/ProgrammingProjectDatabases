@@ -209,4 +209,9 @@ export class InputManager {
     invokeSpellSlotChangeCallbacks() {
         this.spellSlotChangeCallbacks.forEach(callback => callback());
     }
+
+    addSettingButtonListener(callback) {
+        const settingsButton = document.querySelector('.settings-button');
+        settingsButton.addEventListener('click', callback);
+    }
 }

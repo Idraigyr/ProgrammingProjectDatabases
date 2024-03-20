@@ -7,6 +7,7 @@ export class HUD {
         this.#inputManager = InputManager;
         // Add event listener for spell slot index change
         this.#inputManager.addSpellSlotChangeListener(this.updateHoveredButton.bind(this));
+        this.#inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
     }
 
     /**
@@ -27,5 +28,10 @@ export class HUD {
         const hoveredButton = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
         hoveredButton.parentElement.classList.add('hovered');
 
+    }
+    toggleSettingsMenu()
+    {
+        const settingsMenu = document.querySelector(`.container`);
+        settingsMenu.classList.toggle('hide');
     }
 }
