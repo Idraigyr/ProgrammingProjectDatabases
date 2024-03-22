@@ -7,9 +7,9 @@ from flask_sqlalchemy import SQLAlchemy
 
 from src.model.enums import BlueprintType
 from src.model.placeable.buildings import AltarBuilding
+from src.model.user_profile import UserProfile
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
-from src.model.user_profile import UserProfile
 db: SQLAlchemy = current_app.db
 
 class AuthService:

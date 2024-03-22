@@ -7,6 +7,7 @@ from sqlalchemy.orm import mapped_column, Mapped, relationship
 from src.model.blueprint import Blueprint
 from src.model.spell import Spell
 from src.model.spell import association_table as player_spell_association_table
+from src.model.user_profile import UserProfile
 
 blueprint_association_table = current_app.db.Table(
     'blueprint_association', current_app.db.Model.metadata,
@@ -18,18 +19,25 @@ blueprint_association_table = current_app.db.Table(
 class Player(current_app.db.Model):
     """
     A Player is a profile for a user, containing information about their level, crystals, mana, and spells
-    It has a one-to-one, weak relationship with the UserProfile (that holds more sensitive information such as username and password hash)
+    It has a one-to-one, weak relationship with the UserProfile (that holds more sensitive information such as username
+    and password hash)
 
     Everything game related is stored in the Player profile
+    It is not an entity, that is the task of the one-to-one associated PlayerEntity object. This is because an
+    userprofile id (PK of UserProfile & Player) differs from an entity id (PK of Entity)
     For more details, see the ER diagram in the docs
     """
 
     user_profile_id: Mapped[BigInteger] = mapped_column(ForeignKey('user_profile.id'), primary_key=True)
-    user_profile: Mapped["UserProfile"] = relationship("UserProfile", back_populates="player", single_parent=True)
+    user_profile: Mapped[UserProfile] = relationship("UserProfile", back_populates="player", single_parent=True, foreign_keys=[user_profile_id])
 
     level: Mapped[int] = Column(BigInteger, nullable=False, default=0)
     crystals: Mapped[int] = Column(BigInteger, nullable=False, default=0)
     mana: Mapped[int] = Column(Integer, nullable=False, default=0)
+
+    # entity_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player_entity.entity_id'))
+    # entity: Mapped["PlayerEntity"] = relationship("PlayerEntity", foreign_keys=[entity_id], back_populates="player")
+    entity: Mapped['PlayerEntity'] = relationship(back_populates="player")
 
     # lazy=False means that the spells are loaded when the player is loaded
     spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
@@ -43,14 +51,18 @@ class Player(current_app.db.Model):
     # The unlocked blueprints of the player
     blueprints: Mapped[List["Blueprint"]] = relationship("Blueprint", secondary=blueprint_association_table)
 
-    def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0):
+    def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0, xpos: int = 0,
+                 zpos: int = 0):
         """
         Initialize the player class
         :param user_profile: The UserProfile of this player. Should be unique to this player (one-to-one)
         :param level: The level of the player. Should be >= 0
         :param crystals: The amount of crystals of the player. Should be >= 0
         :param mana: The amount of mana of the player. Should be >= 0
+        :param xpos: The x position of the player.
+        :param zpos: The z position of the player.
         """
+        super().__init__(island_id=user_profile.id, xpos=xpos, zpos=zpos)
         self.user_profile = user_profile
         self.level = level
         self.crystals = crystals
@@ -90,3 +102,6 @@ class Player(current_app.db.Model):
             self.blueprints = new_blueprintset
 
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'player'
+    }

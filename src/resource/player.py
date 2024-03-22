@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful_swagger_3 import Resource, swagger, Api
 from markupsafe import escape
 
+from src.model.player_entity import PlayerEntity
+from src.resource.entity import EntitySchema
 from src.resource.gems import GemSchema
 from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
@@ -15,6 +17,31 @@ from src.resource import add_swagger, clean_dict_input
 This module contains the PlayerResource, which is a resource/api endpoint that allows for the retrieval and modification of player profiles
 The PlayerSchema is used to define the JSON response for the player profile, used in the PlayerResource
 """
+
+class PlayerEntitySchema(EntitySchema):
+    """
+    The schema for the player entity
+    """
+    type = 'object'
+    properties = {
+        'player_id': {
+            'type': 'integer'
+        }
+    }
+
+    required = []
+
+    description = 'The player entity - represents a player in the physical world'
+
+    def __init__(self, player: PlayerEntity = None, **kwargs):
+        if player is not None:
+            super().__init__(player_id=player.user_profile_id,
+                             island_id=player.user_profile_id,
+                             type="player",
+                             **kwargs)
+        else:
+            super().__init__(**kwargs)
+
 
 class PlayerSchema(Schema):
     """
@@ -39,20 +66,23 @@ class PlayerSchema(Schema):
             'type': 'array',
             'items': GemSchema
         },
-        'blueprints': IntArraySchema
+        'blueprints': IntArraySchema,
+        'entity': PlayerEntitySchema
     }
 
-    required = [] # nothing is required, but not giving anything is just doing nothing
+    required = []  # nothing is required, but not giving anything is just doing nothing
 
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
-            super().__init__(user_profile_id=player.user_profile_id, level=player.level,
+            super().__init__(level=player.level,
+                             island_id=player.user_profile_id,
                              crystals=player.crystals, mana=player.mana,
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
+                             entity=PlayerEntitySchema(player),
                              blueprints=[blueprint.id for blueprint in player.blueprints],
                              **kwargs)
-        else: # schema -> player
+        else:  # schema -> player
             super().__init__(**kwargs)
 
 
@@ -67,9 +97,7 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The player profile id to retrieve. Defaults to the current user id (by JWT)')
-    @swagger.response(200, description='Succesfully updated the player profile. The blueprint and spells '
-                                       'are only an array of the ids of said object. Do a new fetch on the other endpoints '
-                                       'to get more info about those objects.', schema=PlayerSchema)
+    @swagger.response(200, description='Success, returns the player profile in JSON format', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @summary('Get the player profile by id')
@@ -95,9 +123,7 @@ class PlayerResource(Resource):
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
     @summary('Update the player profile by id')
-    @swagger.response(200, description='Succesfully updated the player profile. The blueprint and spells '
-                                       'are only an array of the ids of said object. Do a new fetch on the other endpoints '
-                                       'to get more info about those objects.', schema=PlayerSchema)
+    @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
     @jwt_required()
