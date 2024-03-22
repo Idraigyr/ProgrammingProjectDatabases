@@ -35,9 +35,8 @@ class PlayerEntitySchema(EntitySchema):
 
     def __init__(self, player: PlayerEntity = None, **kwargs):
         if player is not None:
-            super().__init__(player_id=player.user_profile_id,
-                             island_id=player.user_profile_id,
-                             type="player",
+            super().__init__(player,
+                             player_id=player.player_id,
                              **kwargs)
         else:
             super().__init__(**kwargs)
@@ -75,11 +74,10 @@ class PlayerSchema(Schema):
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
             super().__init__(level=player.level,
-                             island_id=player.user_profile_id,
                              crystals=player.crystals, mana=player.mana,
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
-                             entity=PlayerEntitySchema(player),
+                             entity=PlayerEntitySchema(player=player.entity),
                              blueprints=[blueprint.id for blueprint in player.blueprints],
                              **kwargs)
         else:  # schema -> player

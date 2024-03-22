@@ -5,6 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
 from src.model.placeable.buildings import AltarBuilding
 from src.model.user_profile import UserProfile
@@ -105,8 +106,8 @@ class AuthService:
         current_app.db.session.add(user)
 
         # Create island for the user
-        self.create_island(user.player)
-
+        user.player = self.setup_player(user.player)
+        current_app.db.session.commit()
         return user
 
 
@@ -123,7 +124,7 @@ class AuthService:
         credentials: Credentials = OAuth2Credentials(sso_id)
         return self.create_user(credentials, username, firstname, lastname)
 
-    def create_island(self, player: 'Player') -> Island:
+    def setup_player(self, player: 'Player') -> 'Player':
         """
         Create a new island for the given player
         This will also create all objects that are required for the island
@@ -144,10 +145,18 @@ class AuthService:
         island.altar_id = altar_building.placeable_id
         current_app.db.session.commit()
 
+        # Create the player entity
+        player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=7, zpos=7)
+        player_entity.player = player
+        player.entity = player_entity
+        current_app.db.session.add(player_entity)
+        current_app.db.session.commit()
+
         # The player can initially only build the altar
         player.update({'blueprints': [BlueprintType.ALTAR.value]})
+        current_app.db.session.commit()
 
-        return island
+        return player
 
 
 AUTH_SERVICE = AuthService()
