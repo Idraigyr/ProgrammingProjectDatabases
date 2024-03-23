@@ -23,14 +23,14 @@ class FuseTableBuildingSchema(BuildingSchema):
 
     def __init__(self, fuse_table_building: FuseTableBuilding = None, **kwargs):
         if fuse_table_building:
-            super().__init__(fuse_table_building, **kwargs)
+            super().__init__(building=fuse_table_building, **kwargs)
         else:
             super().__init__(**kwargs)
 
 
 class FuseTableBuildingResource(BuildingResource):
     """
-    A resource/api endpoint that allows the retrieval and modification of an Fuse Table Building
+    A resource/api endpoint that allows the retrieval and modification of a Fuse Table Building
     """
 
     @swagger.tags('building')
@@ -44,7 +44,7 @@ class FuseTableBuildingResource(BuildingResource):
     def get(self):
         """
         Retrieve the fuse table building with the given placeable id
-
+        The placeable id is in the query parameter 'placeable_id'
         :return:
         """
         id = request.args.get('placeable_id', type=int)
