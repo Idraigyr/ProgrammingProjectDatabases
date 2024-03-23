@@ -12,6 +12,10 @@
     <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script defer src="{{ url_for('static', filename='js/external/chatBox.js') }}"></script>
+    <script defer src="static/js/external/chatBox.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
+
+
     <script type="importmap">
       {
         "imports": {
@@ -40,6 +44,10 @@
     </div>
     <!-- Load App -->
     <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
+
+    <script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetImages.js') }}"></script>
+
+
 
     <div class="button-container">
         <button id="chatButton" class="bottom-left-button">Chat</button>
@@ -198,72 +206,71 @@
 
 
     <div class="settings-button" id="settings-btn">
-            <img src="../static/assets/images/Button_Blue.png" class="button">
-            <img src="../static/assets/images/Regular_02.png" class="icon">
+            <img src="" class="button" id="Button_Blue">
+            <img src="" class="icon" id="Regular_02">
     </div>
 
     <div class="HotBar">
         <div class="item Spell1 hovered">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="" class="button" id="Spell1">
         </div>
         <div class="item Spell2">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="" class="button" id="Spell2">
             </div>
         <div class="item Spell3">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="" class="button" id="Spell3">
         </div>
         <div class="item Spell4">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="" class="button" id="Spell4">
         </div>
         <div class="item Spell5">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="" class="button" id="Spell5">
         </div>
     </div>
 
     <div class="HotBarIcons">
         <div class="Spell1Icon">
-            <img src="../static/assets/images/spell-cast-plant.png" class= "buildimage">
+            <img src="" class= "buildimage" id="Plant">
         </div>
         <div class="Spell2Icon">
-            <img src="../static/assets/images/spell-cast-fire.png" class= "firebalimage">
+            <img src="" class= "firebalimage" id="Fire">
             </div>
         <div class="Spell3Icon">
-            <img src="../static/assets/images/spell-cast-bolt.png" class= "lighningimage">
+            <img src="" class= "lighningimage" id="Bolt">
         </div>
         <div class="Spell4Icon">
-            <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
+            <img src="" class= "shieldimage" id="Shield">
         </div>
         <div class="Spell5Icon">
         </div>
     </div>
 
     <div class="Health">
-        <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
-        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
-        <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
+        <img src="" class="HealthPotion" id="Health">
+        <img src=""  class="Greypotion-left" id="Left">
+        <img src=""  class="HealthPotion" id="Health2">
         <div class = "HealthAmount">
-            20/100
+            100/100
         </div>
     </div>
 
 
     <div class="Mana">
-        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
-        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
-                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
-
+        <img src="" class="ManaPotion" id="Mana">
+        <img src=""  class="Greypotion-right" id="Right">
+            <img src=""  class="ManaPotion" id="Mana2">
         <div class = "ManaAmount">
             50/100
         </div>
     </div>
 
     <div class="Crystals">
-        <img src="../static/assets/images/Ribbon_Blue_3Slides.png" class="Banner">
+        <img src="" class="Banner" id="crystals">
         <div class = "CrystalAmount">
             2746
         </div>
         <div class = "CrystalIcon">
-            <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
+            <img src="" class = "NewCrystalIcon" id="CrystalIcon">
         </div>
     </div>
     <canvas id="canvas"></canvas>

@@ -11,6 +11,8 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
+import {fetchAndStoreModels} from "./indexedDB/assetModels.js"
+import {assetPaths} from "./configs/ViewConfigs.js";
 
 const canvas = document.getElementById("canvas");
 
@@ -165,7 +167,7 @@ class App {
         this.BuildManager.makePreviewObjectInvisible();
     }
 }
-
+await fetchAndStoreModels('http://127.0.0.1:5000');
 let app = new App({});
 await app.loadAssets();
 app.postAssetLoadingFunction();
