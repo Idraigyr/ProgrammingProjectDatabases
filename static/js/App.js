@@ -122,13 +122,6 @@ class App {
     }
 
     /**
-     * Executes functions that only possible after assets are loaded
-     */
-    postAssetLoadingFunction(){
-        this.BuildManager.setCurrentRitual(this.spellFactory.createTree(), true);
-    }
-
-    /**
      * Starts the game loop
      */
     start(){

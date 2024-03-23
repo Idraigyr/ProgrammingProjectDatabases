@@ -107,6 +107,12 @@ export class BuildManager {
         this.#previewObject.rotation.y += Math.PI/2;
     }
     placeBuildSpell(event){
+        if(this.ritualToPlace === this.defaultPreviewObject){
+            // TODO: Call event one time to open build menu, instead of polling
+            // Call event to open build menu
+            document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {position: this.#previewObject.position}}));
+            return;
+        }
         if(!this.ritualToPlace) return;
         let extracted = this.#extractObject(this.ritualToPlace);
         if(this.#copyable) {

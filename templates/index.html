@@ -124,7 +124,7 @@
         <!-- Setting menu -->
 
 
-        <div class="container hide">
+        <div class="container hide" style="z-index: 1000">
       <h1>Game Settings</h1>
 
       <div class="settings">
@@ -191,6 +191,7 @@
     </div>
 
         <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
 
     <!-- UI/HUD -->
 

@@ -7,7 +7,8 @@ export class HUD {
         this.#inputManager = InputManager;
         // Add event listener for spell slot index change
         this.#inputManager.addSpellSlotChangeListener(this.updateHoveredButton.bind(this));
-        this.#inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
+        this.#inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this));
+        document.addEventListener("openBuildMenu", this.openBuildMenu.bind(this));
     }
 
     /**
@@ -33,5 +34,10 @@ export class HUD {
     {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');
+    }
+    openBuildMenu()
+    {
+        const buildMenu = document.querySelector(`#buildMenu`);
+        buildMenu.classList.remove('hide');
     }
 }
