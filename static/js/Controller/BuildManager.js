@@ -5,6 +5,7 @@ import {Object3D} from "three";
 export class BuildManager {
     ritualToPlace;
     previewMaterial;
+    defaultPreviewObject;
     #gridCellSize;
     #scene;
     #copyable;
@@ -28,8 +29,21 @@ export class BuildManager {
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
         this.setPreviewMaterial(previewMaterial);
+        this._setDefaultPreviewObject();
         document.addEventListener('placeBuildSpell', this.placeBuildSpell.bind(this));
         document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
+    }
+
+    /**
+     * Sets the default preview object (currently a green cube)
+     * @private function to be called in the constructor
+     */
+    _setDefaultPreviewObject(){
+        const gridCellSize = this.#gridCellSize;
+        const geometry2 = new THREE.BoxGeometry( gridCellSize, gridCellSize, gridCellSize );
+        geometry2.rotateX( - Math.PI / 2 );
+        this.defaultPreviewObject = new THREE.Mesh( geometry2, this.previewMaterial );
+        this.setCurrentRitual(this.defaultPreviewObject);
     }
     addBuildPlane(plane){
         this.planes.push(plane);

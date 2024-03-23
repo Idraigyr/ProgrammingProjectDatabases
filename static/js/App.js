@@ -168,5 +168,4 @@ class App {
 
 let app = new App({});
 await app.loadAssets();
-app.postAssetLoadingFunction();
 app.start();
