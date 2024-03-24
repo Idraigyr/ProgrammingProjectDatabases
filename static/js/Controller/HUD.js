@@ -9,6 +9,7 @@ export class HUD {
         this.#inputManager.addSpellSlotChangeListener(this.updateHoveredButton.bind(this));
         this.#inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this));
         document.addEventListener("openBuildMenu", this.openBuildMenu.bind(this));
+        document.addEventListener("closeBuildMenu", this.closeBuildMenu.bind(this));
     }
 
     /**
@@ -39,5 +40,10 @@ export class HUD {
     {
         const buildMenu = document.querySelector(`#buildMenu`);
         buildMenu.classList.remove('hide');
+    }
+    closeBuildMenu()
+    {
+        const buildMenu = document.querySelector(`#buildMenu`);
+        buildMenu.classList.add('hide');
     }
 }

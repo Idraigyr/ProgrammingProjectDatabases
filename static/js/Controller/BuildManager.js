@@ -108,7 +108,6 @@ export class BuildManager {
     }
     placeBuildSpell(event){
         if(this.ritualToPlace === this.defaultPreviewObject){
-            // TODO: Call event one time to open build menu, instead of polling
             // Call event to open build menu
             document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {position: this.#previewObject.position}}));
             return;
