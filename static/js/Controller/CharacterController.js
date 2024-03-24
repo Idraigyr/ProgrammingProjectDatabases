@@ -5,7 +5,8 @@ import {
     sprintMultiplier,
     gravity,
     verticalSensitivity,
-    spellCastMovementSpeed
+    spellCastMovementSpeed,
+    jumpHeight
 } from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
 import {max, min} from "../helpers.js";
@@ -148,7 +149,7 @@ export class CharacterController extends Subject{
 
         this.tempPosition.addScaledVector( this._character.velocity, correctedDeltaTime );
 
-        let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, correctedDeltaTime);
+        let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
 
         if ( ! this._character.onGround ) {
             deltaVector.normalize();
@@ -192,7 +193,7 @@ export class CharacterController extends Subject{
             // }
 
             if(this.#inputManager.keys.up && this._character.onGround) {
-                this._character.velocity.y = 10;
+                this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;
             }
 
@@ -251,9 +252,9 @@ export class CharacterController extends Subject{
             // }
         }
 
-        //TODO: move spellCasting logic into a seperate class
+        //TODO: move spellCasting logic into a seperate class, move this to a mousedown eventListener now multiple spellcast tries are done
         if (this.#inputManager.mouse.leftClick) {
-            if (this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0) {
+            if (this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0 && this._character.mana >= this._character.getCurrentSpell().cost) {
                 //cast current spell
                 let vec = new THREE.Vector3().copy(this._character.position);
                 vec.y += 2;
@@ -267,12 +268,14 @@ export class CharacterController extends Subject{
                 } else if(this._character.getCurrentSpell().spell instanceof InstantSpell){
                     this.dispatchEvent(this.createInstantSpellEvent(this._character.getCurrentSpell(), {}));
                 }  else if (this._character.getCurrentSpell() instanceof BuildSpell) {
+                    console.log("tree built")
                     this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {
                         position: vec,
                         direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
                     }));
                 }
                 this._character.cooldownSpell();
+                console.log(this._character.mana);
             }
         } else if (this._character.getCurrentSpell() instanceof BuildSpell) {
             //TODO: make building placeholder invisible if buildspell not equipped (Object3D.visible = false)

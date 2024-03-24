@@ -7,7 +7,6 @@ class Spell{
         this.duration = params.duration;
         this.castTime = params.castTime;
         this.cooldown = params.cooldown;
-        this.timer = 0;
     }
 
     /**
@@ -156,6 +155,7 @@ class Build extends Effect{
 class ConcreteSpell{
     constructor(params) {
         this.hitScan = false;
+        this.cost = 0;
         this.spell = params.spell;
         this.effects = params.effects;
     }
@@ -189,7 +189,7 @@ export class BuildSpell extends ConcreteSpell{
         super({
             spell: new HitScanSpell({
                 duration: 0,
-                cooldown: 0,
+                cooldown: 1,
                 castTime: 0,
             }),
             effects: [
@@ -198,6 +198,7 @@ export class BuildSpell extends ConcreteSpell{
                 })
             ]
         });
+        this.cost = 10;
     }
 }
 
@@ -223,6 +224,7 @@ export class Fireball extends ConcreteSpell{
                     duration: 0
             })]
         });
+        this.cost = 5;
     }
 }
 
@@ -253,6 +255,7 @@ export class ThunderCloud extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.cost = 20;
     }
 }
 
@@ -269,6 +272,7 @@ export class Shield extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.cost = 15;
     }
 }
 

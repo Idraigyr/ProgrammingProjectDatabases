@@ -25,12 +25,13 @@ export class Factory{
      * Creates player model and view
      * @returns {Wizard}
      */
-    createPlayer(){
+    createPlayer(position){
         // let sp = new THREE.Vector3(-8,15,12);
         let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
+        let currentPos = new THREE.Vector3(position.x,position.y,position.z);
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: sp, height: height});
-        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: sp});
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
 
         this.scene.add(view.charModel);
 

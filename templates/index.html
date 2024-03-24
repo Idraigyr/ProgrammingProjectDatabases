@@ -85,43 +85,42 @@
     </script>
 
     <!-- loading screen -->
-    <div class = "loading-animation">
-    <div class="progress-bar-container">
+    <div class="loading-animation">
+        <div class="progress-bar-container">
+            <label for="progress-bar">Loading...</label> <!-- preff?-->
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
 
-        <label for="progress-bar">Loading...</label> <!-- preff?-->
-        <progress id="progress-bar" value="0" max="100"></progress>
-    </div>
-
-    <div class="scene">
-      <div class="objects">
-        <div class="square"></div>
-        <div class="circle"></div>
-        <div class="triangle"></div>
-      </div>
-      <div class="wizard">
-        <div class="body"></div>
-        <div class="right-arm">
-          <div class="right-hand"></div>
-        </div>
-        <div class="left-arm">
-          <div class="left-hand"></div>
-        </div>
-        <div class="head">
-          <div class="beard"></div>
-          <div class="face">
-            <div class="adds"></div>
+        <div class="scene">
+          <div class="objects">
+            <div class="square"></div>
+            <div class="circle"></div>
+            <div class="triangle"></div>
           </div>
-          <div class="hat">
-            <div class="hat-of-the-hat"></div>
-            <div class="four-point-star --first"></div>
-            <div class="four-point-star --second"></div>
-            <div class="four-point-star --third"></div>
+          <div class="wizard">
+            <div class="body"></div>
+            <div class="right-arm">
+              <div class="right-hand"></div>
+            </div>
+            <div class="left-arm">
+              <div class="left-hand"></div>
+            </div>
+            <div class="head">
+              <div class="beard"></div>
+              <div class="face">
+                <div class="adds"></div>
+              </div>
+              <div class="hat">
+                <div class="hat-of-the-hat"></div>
+                <div class="four-point-star --first"></div>
+                <div class="four-point-star --second"></div>
+                <div class="four-point-star --third"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="noise"></div>
     </div>
-    <div class="noise"></div>
-        </div>
 
 
         <!-- Setting menu -->
@@ -299,7 +298,7 @@
             if (document.activeElement === chatInput) {
                 return;
             }
-            if (e.key === 'f' || e.key === 'F') {
+            if (e.code === 'KeyF') {
                 config.showFPS = !config.showFPS;
             }
         });

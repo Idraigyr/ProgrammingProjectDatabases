@@ -16,7 +16,7 @@ export class Character extends Entity{
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
         this.velocity = new THREE.Vector3();
-        this.#onGround = false;
+        this.#onGround = true;
         this.fsm = null;
         this.health = params?.health ?? 0;
         this.height = params.height;

@@ -1,7 +1,7 @@
 import WebGL from "three-WebGL";
 import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
-import {API_URL, cameraPosition, playerSpawn} from "./configs/ControllerConfigs.js";
+import {cameraPosition} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
@@ -12,6 +12,7 @@ import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
 import {OrbitControls} from "three-orbitControls";
+import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 
 const canvas = document.getElementById("canvas");
 
@@ -83,8 +84,16 @@ class App {
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
+        document.addEventListener("visibilitychange", this.onClose.bind(this));
 
-        //this.inputManager.addMouseMoveListener(this.updateRotationListener);
+        this.playerInfo = new Controller.UserInfo();
+    }
+
+    onClose(){
+        // let playerData = {"level": 1}; //TODO: fill with method from
+        // let islandData = {}; //TODO: fill with method from worldManager
+        // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
+        // console.log("test save");
     }
 
     /**
@@ -133,9 +142,12 @@ class App {
      * @returns {Promise<void>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
+        //TODO: try to remove awaits
+        await this.playerInfo.retrieveInfo();
         await this.assetManager.loadViews();
         this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
-        await this.worldManager.importWorld(`${API_URL}/...`,"request");
+        await this.worldManager.importWorld(this.playerInfo.islandID);
+        console.log(this.worldManager)
         this.collisionDetector.generateCollider();
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,

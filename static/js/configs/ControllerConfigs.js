@@ -2,7 +2,6 @@
  * In this file you can see default configuration settings for the controller
  *
  */
-export const API_URL = 'https://team2.ua-ppdb.me:8081';
 export const TIMEOUT_SEC = 5;
 
 export let horizontalSensitivity = 0.5;
@@ -21,6 +20,8 @@ export const movementSpeed = 7;
 export const spellCastMovementSpeed = 2;
 
 export const gravity = -40;
+
+export const jumpHeight = 13;
 
 export const sprintMultiplier = 2;
 

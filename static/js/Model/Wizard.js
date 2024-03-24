@@ -10,6 +10,7 @@ export class Wizard extends Character{
         this.spells = [null,null,null,null,null];
         this.spellCooldowns = [0,0,0,0,0];
         this.currentSpell = 0;
+        this.mana = 100;
     }
 
     /**
@@ -37,6 +38,7 @@ export class Wizard extends Character{
      */
     cooldownSpell(){
         this.spellCooldowns[this.currentSpell] = this.spells[this.currentSpell].getCooldown();
+        this.mana -= this.spells[this.currentSpell].cost;
     }
 
     /**
