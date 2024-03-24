@@ -26,6 +26,7 @@ export class Player extends IAnimatedView{
         getAnimation('CharacterArmature|Walk',"WalkForward");
         getAnimation('CharacterArmature|Roll',"WalkBackward");
         getAnimation('CharacterArmature|Spell1',"DefaultAttack");
+        getAnimation('CharacterArmature|PickUp', 'Eating')
     }
 
 }

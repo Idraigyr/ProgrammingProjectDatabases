@@ -77,6 +77,16 @@ export class CharacterController extends Subject{
     }
 
     /**
+     * creates a custom event notifying eating being initiated
+     * @param
+     * @returns {CustomEvent<{}>}
+     */
+    createEatingEvent(){
+        return new CustomEvent("eating", {});
+    }
+
+
+    /**
      * Update the rotation of the character
      * @param event event
      */
@@ -189,6 +199,9 @@ export class CharacterController extends Subject{
                 this.#falling = false;
             }
         }
+        if (this.#inputManager.keys.eating) {
+            this.dispatchEvent(this.createEatingEvent());
+        }
 
         //TODO: move spellCasting logic into a seperate class
         if (this.#inputManager.mouse.leftClick) {
@@ -218,5 +231,7 @@ export class CharacterController extends Subject{
             this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
         }
         this._character.updateCooldowns(deltaTime);
+
+
     }
 }

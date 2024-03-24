@@ -1,6 +1,6 @@
 import {
     buildKey,
-    DownKey, primaryBackwardKey,
+    DownKey, eatingKey, primaryBackwardKey,
     primaryForwardKey,
     primaryLeftKey,
     primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
@@ -22,7 +22,8 @@ export class InputManager {
         down: false,
         spellSlot: 1,
         sprint: false,
-        build: false
+        build: false,
+        eating: false
     }
     mouse = {
         leftClick: false,
@@ -174,6 +175,9 @@ export class InputManager {
             case slot5Key:
                 this.keys.spellSlot = 5;
                 this.invokeSpellSlotChangeCallbacks();
+                break;
+            case eatingKey:
+                this.keys.eating = bool;
                 break;
         }
 
