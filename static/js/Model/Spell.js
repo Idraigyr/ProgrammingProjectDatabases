@@ -295,6 +295,8 @@ class Heal extends ConcreteSpell{
 // ice wall (creates an ice wall)
 // freeze ray (slow down targets)
 // confusion ball (inverts movement)
+// digging spell (move underground, becoming immune and leave a trail of dirt where you travel)
+// sword spell (shoot an array of swords)
 
 
 //use dependency injection pattern?

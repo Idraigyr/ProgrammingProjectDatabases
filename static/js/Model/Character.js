@@ -6,16 +6,23 @@ import {Entity} from "./Entity.js";
  */
 export class Character extends Entity{
     #rotation;
-    constructor() {
-        super();
+    #onGround;
+    constructor(params) {
+        super(params);
         if(this.constructor === Character){
             throw new Error("cannot instantiate abstract class Character");
         }
         this.phi = 0; // current horizontal rotation
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
+        this.velocity = new THREE.Vector3();
+        this.#onGround = false;
         this.fsm = null;
-        this.health = 0;
+        this.health = params?.health ?? 0;
+        this.height = params.height;
+        this.segment = new THREE.Line3();
+        this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
+        this.setSegmentFromPosition(this.spawnPoint);
     }
 
     /**
@@ -26,6 +33,13 @@ export class Character extends Entity{
         const qHorizontal = new THREE.Quaternion();
         qHorizontal.setFromAxisAngle(new THREE.Vector3(0,1,0), this.phi);
         return qHorizontal;
+    }
+
+    setSegmentFromPosition(vec3){
+        this.segment.start.copy(vec3);
+        this.segment.end.copy(vec3);
+        this.segment.start.y += this.height - this.radius;
+        this.segment.end.y +=  this.radius;
     }
 
     /**
@@ -41,7 +55,8 @@ export class Character extends Entity{
      * @param vector {Vector3} the new position of the character
      */
     set position(vector){
-        this._position = vector;
+        this._position.copy(vector);
+        this.setSegmentFromPosition(this._position);
         //update view
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
@@ -52,6 +67,14 @@ export class Character extends Entity{
      */
     get position(){
         return this._position;
+    }
+
+    get onGround(){
+        return this.#onGround;
+    }
+
+    set onGround(bool){
+        this.#onGround = bool;
     }
 
     /**

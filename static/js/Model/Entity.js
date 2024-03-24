@@ -7,10 +7,11 @@ import * as THREE from "three";
 export class Entity extends Subject{
     /**
      * initialises Entity
-     * @param {{position: THREE.Vector3} | {}} params
+     * @param {{position: THREE.Vector3, radius: number} | {}} params - optional
      */
     constructor(params) {
         super();
+        this.radius = params?.radius ?? 0.5;
         this._position =  params?.position ?? new THREE.Vector3(0,0,0);
     }
 
@@ -44,5 +45,6 @@ export class Entity extends Subject{
         if(this.constructor === Entity){
             throw new Error("cannot get type of abstract class Entity");
         }
+        throw new Error("cannot get type of abstract class Entity");
     }
 }

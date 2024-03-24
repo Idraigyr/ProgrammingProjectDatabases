@@ -17,8 +17,6 @@ export class HUD {
     updateHoveredButton() {
         const spellSlotIndex = this.#inputManager.keys.spellSlot;
 
-        console.log("Spell Slot Index:", spellSlotIndex);
-
         // Remove hover class from all buttons
         document.querySelectorAll('.HotBar .item').forEach(button => {
             button.classList.remove('hovered');

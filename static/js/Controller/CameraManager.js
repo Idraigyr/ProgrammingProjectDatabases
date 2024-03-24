@@ -82,14 +82,14 @@ export class CameraManager {
 
         //don't uncomment; freezes screen;
         //copy = copy.add(zoom);
-        if(copy.y < minCameraY){
-            while(copy.y < minCameraY){
-                copy = new THREE.Vector3().copy(idealOffset);
-                zoomIn -= 0.1;
-                zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);
-                copy = copy.add(zoom);
-            }
-        }
+        // if(copy.y < minCameraY){
+        //     while(copy.y < minCameraY){
+        //         copy = new THREE.Vector3().copy(idealOffset);
+        //         zoomIn -= 0.1;
+        //         zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);
+        //         copy = copy.add(zoom);
+        //     }
+        // }
 
         this.camera.position.copy(copy);
         this.camera.lookAt(idealLookAt);

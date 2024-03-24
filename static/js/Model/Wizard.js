@@ -5,8 +5,8 @@ import {max} from "../helpers.js";
  * @class Wizard - class for the player character
  */
 export class Wizard extends Character{
-    constructor() {
-        super();
+    constructor(params) {
+        super(params);
         this.spells = [null,null,null,null,null];
         this.spellCooldowns = [0,0,0,0,0];
         this.currentSpell = 0;

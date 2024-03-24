@@ -1,9 +1,17 @@
 import {Subject} from "../Patterns/Subject.js";
-import {horizontalSensitivity, movementSpeed, sprintMultiplier, verticalSensitivity} from "../configs/ControllerConfigs.js";
+import {
+    horizontalSensitivity,
+    movementSpeed,
+    sprintMultiplier,
+    gravity,
+    verticalSensitivity,
+    spellCastMovementSpeed
+} from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
-import {max} from "../helpers.js";
+import {max, min} from "../helpers.js";
 import {Factory} from "./Factory.js";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
+import {BaseCharAttackState} from "../Model/States/CharacterStates.js";
 
 /**
  * Class to manage the character and its actions
@@ -22,8 +30,12 @@ export class CharacterController extends Subject{
     constructor(params) {
         super();
         this._character = params.Character;
+        this.tempPosition = this._character.position.clone();
+        this.collisionDetector = params.collisionDetector;
         this.#inputManager = params.InputManager;
         this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
+
+        this.tempTemp = new THREE.Vector3();
     }
 
     /**
@@ -122,6 +134,39 @@ export class CharacterController extends Subject{
         } // TODO: also for left click to place the buildings?
     }
 
+
+    updatePhysics(deltaTime){
+        //TODO: this is necessary to prevent falling through ground, find out why and remove this
+        const correctedDeltaTime = min(deltaTime, 0.1);
+        this.tempTemp.copy(this.tempPosition);
+
+        if ( this._character.onGround ) {
+                this._character.velocity.y = correctedDeltaTime * gravity;
+        } else {
+            this._character.velocity.y += correctedDeltaTime * gravity;
+        }
+
+        this.tempPosition.addScaledVector( this._character.velocity, correctedDeltaTime );
+
+        let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, correctedDeltaTime);
+
+        if ( ! this._character.onGround ) {
+            deltaVector.normalize();
+            this._character.velocity.addScaledVector( deltaVector, - deltaVector.dot( this._character.velocity ) );
+        } else {
+            this._character.velocity.set( 0, 0, 0 );
+        }
+
+        if ( this._character.position.y < - 50 ) {
+            //respawn
+            this._character.velocity.set(0,0,0);
+            this._character.position = this._character.spawnPoint;
+            this.tempPosition.copy(this._character.spawnPoint);
+        } else {
+            this._character.position = this.tempPosition;
+        }
+    }
+
     /**
      * Update the character (e.g. state, position, spells, etc.)
      * @param deltaTime
@@ -135,12 +180,29 @@ export class CharacterController extends Subject{
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
         if (this._character.fsm.currentState.movementPossible) {
-            //TODO: add collision checks for movement
+            // if ( this._character.onGround ) {
+            //     if(this.#inputManager.keys.up) {
+            //         this._character.velocity.y = 10;
+            //         this._character.onGround = false;
+            //     } else {
+            //         this._character.velocity.y = deltaTime * gravity;
+            //     }
+            // } else {
+            //     this._character.velocity.y += deltaTime * gravity;
+            // }
+
+            if(this.#inputManager.keys.up && this._character.onGround) {
+                this._character.velocity.y = 10;
+                this._character.onGround = false;
+            }
+
+            // this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
+
             const qHorizontal = this.quatFromHorizontalRotation;
 
-            let velocity = new THREE.Vector3(1, 0, 0);
+            let movement = new THREE.Vector3(1, 0, 0);
             let strafe = new THREE.Vector3(0, 0, 1);
-            velocity.applyQuaternion(qHorizontal);
+            movement.applyQuaternion(qHorizontal);
             strafe.applyQuaternion(qHorizontal);
 
             let forwardScalar = 0;
@@ -152,42 +214,41 @@ export class CharacterController extends Subject{
             strafeScalar += this.#inputManager.keys.right ? 1 : 0;
             strafeScalar -= this.#inputManager.keys.left ? 1 : 0;
 
-            velocity.multiplyScalar(forwardScalar);
-
+            movement.multiplyScalar(forwardScalar);
             strafe.multiplyScalar(strafeScalar);
 
-            velocity.add(strafe);
+            movement.add(strafe);
+            movement.normalize();
 
-            velocity.normalize();
-
-            velocity.multiplyScalar(movementSpeed * deltaTime);
-
-            if (this.#inputManager.keys.sprint && forwardScalar === 1) {
-                velocity.multiplyScalar(sprintMultiplier);
+            let speedMultiplier = 0;
+            //TODO: keep momentum when in the air
+            if(this._character.fsm.currentState instanceof BaseCharAttackState){
+                speedMultiplier = spellCastMovementSpeed;
+            } else {
+                if (this.#inputManager.keys.sprint && forwardScalar === 1) {
+                    movement.multiplyScalar(sprintMultiplier);
+                }
+                speedMultiplier = movementSpeed;
             }
 
-            //TODO: add floor collision instead of this.position.y check
-            if (this.#inputManager.keys.up && this._character.position.y === 0) {
-                this.#jumping = true;
-            }
+            this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
 
-            if (this._character.position.y > 4) {
-                this.#jumping = false;
-                this.#falling = true;
-            }
-
-            if (this.#jumping) {
-                velocity.add(new THREE.Vector3(0, 10 * deltaTime, 0));
-            }
-            if (this.#falling) {
-                velocity.add(new THREE.Vector3(0, -8 * deltaTime, 0));
-            }
-
-            this._character.position = (this._character.position.add(velocity));
-            if (this._character.position.y < 0) {
-                this._character.position.y = 0;
-                this.#falling = false;
-            }
+            // let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, position, deltaTime);
+            //
+            // if ( ! this._character.onGround ) {
+            //     deltaVector.normalize();
+            //     this._character.velocity.addScaledVector( deltaVector, - deltaVector.dot( this._character.velocity ) );
+            // } else {
+            //     this._character.velocity.set( 0, 0, 0 );
+            // }
+            //
+            // if ( this._character.position.y < - 50 ) {
+            //     //respawn
+            //     this._character.velocity.set(0,0,0);
+            //     this._character.position = this._character.spawnPoint;
+            // } else {
+            //     this._character.position = position;
+            // }
         }
 
         //TODO: move spellCasting logic into a seperate class

@@ -1,9 +1,11 @@
 import {IAnimatedView} from "../View/View.js";
 import {Fireball, ThunderCloud} from "../View/SpellView.js";
 import {Shield} from "../View/Shield.js";
+import {Subject} from "../Patterns/Subject.js";
 
-export class ViewManager{
+export class ViewManager extends Subject{
     constructor() {
+        super();
         this.pairs = {
             building: [],
             island: [],
@@ -19,13 +21,10 @@ export class ViewManager{
      * @param view view to add
      */
     addPair(model, view){
-        if(model.type === "player" && Object.keys(this.pairs.player).length === 0){
-            this.pairs.player.push({model, view});
-        } else if(model.type === "player"){
+        if(model.type === "player" && this.pairs.player.length > 0){
             throw new Error("player already exists");
-        } else {
-            this.pairs[model.type].push({model, view});
         }
+        this.pairs[model.type].push({model, view});
     }
 
     /**
@@ -82,6 +81,13 @@ export class ViewManager{
             planes.push(islandView.blockPlane);
         }
         return planes;
+    }
+
+    get colliderModels(){
+        let models = [];
+        this.pairs.building.forEach((pair) => models.push(pair.view.charModel));
+        this.pairs.island.forEach((pair) => models.push(pair.view.charModel));
+        return models;
     }
 
     /**
