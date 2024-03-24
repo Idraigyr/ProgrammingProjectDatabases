@@ -21,17 +21,21 @@ class Placeable(current_app.db.Model):
     xpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
     zpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
 
+    blueprint_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey('blueprint.id'), nullable=False, default=0)
+    blueprint: Mapped["Blueprint"] = relationship('Blueprint')
 
-    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0):
+    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, blueprint_id: int = 0):
         """
         Initializes a placeable object
         :param island_id: The id of the island that this placeable belongs to
         :param xpos: The x position of the building, in the grid. So it is bound by [0,15]
         :param zpos: The z position of the building, in the grid. So it is bound by [0,15]
+        :param blueprint_id: The id of the blueprint that builds this placeable
         """
         self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
+        self.blueprint_id = blueprint_id
 
 
     def update(self, data: dict):
