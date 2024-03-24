@@ -215,6 +215,7 @@ body {
 
 /* loading screen style */
 .loading-animation{
+    height: 100vh;
     z-index: 10;
 }
 

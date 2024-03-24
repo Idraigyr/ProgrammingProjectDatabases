@@ -1,7 +1,7 @@
 import WebGL from "three-WebGL";
 import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
-import {API_URL} from "./configs/ControllerConfigs.js";
+import {cameraPosition} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
@@ -11,8 +11,17 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
+import {OrbitControls} from "three-orbitControls";
+import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 
 const canvas = document.getElementById("canvas");
+
+//---test statement---
+// let orbitCam = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+// orbitCam.position.set(50,20,50);
+// orbitCam.lookAt(0,0,0);
+// let orbitControls = null;
+//---test statement---
 
 /**
  * Main class of the game
@@ -31,6 +40,18 @@ class App {
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
 
+        //---test statement---
+        // orbitControls = new OrbitControls( orbitCam, this.renderer.domElement );
+        // orbitControls.target.set(0,0,0);
+        //
+        // document.addEventListener("keydown", async (e) => {
+        //     if(!app.blockedInput) return;
+        //     if(e.code === "KeyU"){
+        //         await canvas.requestPointerLock();
+        //     }
+        // });
+        //---test statement---
+
         canvas.addEventListener("mousedown", async (e) => {
             if(!app.blockedInput) return;
             await canvas.requestPointerLock();
@@ -46,12 +67,14 @@ class App {
         this.inputManager = new Controller.InputManager();
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
-            offset: new THREE.Vector3(-5,2,1),
-            lookAt: new THREE.Vector3(500,0,0),
+            offset: new THREE.Vector3(cameraPosition.offset.x,cameraPosition.offset.y,cameraPosition.offset.z),
+            lookAt: new THREE.Vector3(cameraPosition.lookAt.x,cameraPosition.lookAt.y,cameraPosition.lookAt.z),
             target: null
         });
-        this.cameraManager.camera.position.set(-5,2,1);
-        this.cameraManager.camera.lookAt(500,0,0);
+        this.cameraManager.camera.position.set(0,0,0);
+        this.cameraManager.camera.lookAt(0,0,0);
+
+        this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.playerController = null;
         this.minionControllers = [];
         this.assetManager = new AssetManager();
@@ -61,8 +84,16 @@ class App {
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
+        document.addEventListener("visibilitychange", this.onClose.bind(this));
 
-        //this.inputManager.addMouseMoveListener(this.updateRotationListener);
+        this.playerInfo = new Controller.UserInfo();
+    }
+
+    onClose(){
+        // let playerData = {"level": 1}; //TODO: fill with method from
+        // let islandData = {}; //TODO: fill with method from worldManager
+        // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
+        // console.log("test save");
     }
 
     /**
@@ -111,10 +142,18 @@ class App {
      * @returns {Promise<void>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
+        //TODO: try to remove awaits
+        await this.playerInfo.retrieveInfo();
         await this.assetManager.loadViews();
         this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
-        await this.worldManager.importWorld(`${API_URL}/...`,"request");
-        this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
+        await this.worldManager.importWorld(this.playerInfo.islandID);
+        console.log(this.worldManager)
+        this.collisionDetector.generateCollider();
+        this.playerController = new CharacterController({
+            Character: this.worldManager.world.player,
+            InputManager: this.inputManager,
+            collisionDetector: this.collisionDetector
+        });
         this.playerController.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
@@ -153,15 +192,19 @@ class App {
 
         if(!this.blockedInput) {
             this.playerController.update(this.deltaTime);
-            this.cameraManager.update(this.deltaTime);
         }
+        this.playerController.updatePhysics(this.deltaTime);
+
+        this.cameraManager.update(this.deltaTime);
         this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
         this.worldManager.world.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
-
+        //---test statement---
+        // this.renderer.render( this.scene, orbitCam );
+        //---test statement---
         this.BuildManager.makePreviewObjectInvisible();
     }
 }
