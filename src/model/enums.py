@@ -34,3 +34,18 @@ class GemType(Enum):
         return value in cls._value2member_map_
 
 
+class BlueprintType(Enum):
+    """
+    An enum for the different types of blueprints associated with their id in the db
+    """
+    ALTAR = 1
+    MINE = 2
+    TOWER = 3
+    FUSE_TABLE = 4
+    WARRIOR_HUT = 5
+
+    @classmethod
+    def has_value(cls, value):
+        return value in cls._value2member_map_
+
+

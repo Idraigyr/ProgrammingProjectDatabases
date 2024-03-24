@@ -1,3 +1,4 @@
+from src.resource.blueprint import BlueprintSchema
 from src.resource.gems import GemSchema
 from src.model.placeable.building import Building
 from src.resource.placeable.placeable import PlaceableSchema, PlaceableResource
@@ -20,14 +21,17 @@ class BuildingSchema(PlaceableSchema):
         }
     }
 
-    required_properties = []
+    required = []
 
     title = 'Building'
     description = 'A model representing a building in the game.'
 
     def __init__(self, building: Building = None, **kwargs):
         if building is not None:
-            super().__init__(building, level=building.level, gems=[GemSchema(gem) for gem in building.gems], **kwargs)
+            super().__init__(building,
+                             level=building.level,
+                             gems=[GemSchema(gem) for gem in building.gems],
+                             **kwargs)
         else:
             super().__init__(**kwargs)
 

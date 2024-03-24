@@ -170,7 +170,7 @@ class GemResource(Resource):
             current_app.db.session.commit()
 
             return GemSchema(gem), 200
-        except Exception as e:
+        except (ValueError, TypeError) as e:
             return ErrorSchema(str(e)), 400
 
 
