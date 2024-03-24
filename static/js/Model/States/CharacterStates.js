@@ -35,7 +35,9 @@ export class IdleState extends BaseCharState{
      * @param input input from the user
      */
     updateState(deltaTime, input){
-        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+        if(input.keys.eating){
+            this.manager.setState("Eating");
+        } else if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
             } else if(input.keys.forward){
@@ -51,8 +53,6 @@ export class IdleState extends BaseCharState{
             //this.manager.setState("Jump");
         } else if(input.mouse.leftClick){
             this.manager.setState("DefaultAttack");
-        } else if(input.keys.eating){
-            this.manager.setState("Eating");
         }
 
     }
@@ -105,7 +105,9 @@ export class RunForwardState extends BaseCharState{
      */
     updateState(deltaTime, input){
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
-            if((input.keys.forward || input.keys.left || input.keys.right) && !input.keys.sprint){
+            if(input.keys.eating){
+                this.manager.setState("Eating");
+            } else if((input.keys.forward || input.keys.left || input.keys.right) && !input.keys.sprint){
                 this.manager.setState("WalkForward");
             } else if(input.keys.backward){
                 this.manager.setState("WalkBackward");
@@ -170,7 +172,9 @@ export class WalkForwardState extends BaseCharState{
      * @param input input from the user
      */
     updateState(deltaTime, input){
-        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+        if(input.keys.eating){
+            this.manager.setState("Eating");
+        } else if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
             } else if(input.keys.backward){
@@ -182,8 +186,6 @@ export class WalkForwardState extends BaseCharState{
             //this.manager.setState("Jump");
         } else if(input.mouse.leftClick){
             this.manager.setState("DefaultAttack");
-        } else if(input.keys.eating){
-            this.manager.setState("Eating");
         } else {
             this.manager.setState("Idle");
         }
@@ -236,7 +238,9 @@ export class WalkBackWardState extends BaseCharState{
      * @param input input from the user
      */
     updateState(deltaTime, input){
-        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+        if(input.keys.eating){
+            this.manager.setState("Eating");
+        } else if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
             } else if(input.keys.forward){
@@ -248,8 +252,6 @@ export class WalkBackWardState extends BaseCharState{
             //this.manager.setState("Jump");
         } else if(input.mouse.leftClick){
             this.manager.setState("DefaultAttack");
-        } else if(input.keys.eating){
-            this.manager.setState("Eating");
         } else {
             this.manager.setState("Idle");
         }
@@ -347,9 +349,7 @@ export class DefaultAttackState extends BaseCharState{
             }
         } else if (input.keys.up){
             //this.manager.setState("Jump");
-        } else if(input.keys.eating){
-            this.manager.setState("Eating");
-        } if(!input.mouse.leftClick){
+        } else if(!input.mouse.leftClick){
             this.manager.setState("Idle");
         }
     }
