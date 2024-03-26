@@ -170,10 +170,17 @@ def setup(app: Flask):
         from src.chatBox import socketio
 
         # import routes INSIDE the app context
-
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
         app.register_blueprint(src.routes.api_auth.blueprint, url_prefix='/api/auth')
+
+        # Register custom JSON Encoder to call to_json() on objects
+        # This is so that Flask can jsonify our SQLAlchemy models
+        app.config['RESTFUL_JSON'] = {'cls': JSONClassEncoder}
+
+        # Create all API endpoints
+        from src.resource import attach_resources
+        attach_resources(app)
 
         # Create the tables in the db, AFTER entities are imported
         # Create the DB migration manager
@@ -188,14 +195,6 @@ def setup(app: Flask):
             # We allow inconsistencies in debug mode, but not in production
             check_db_schema()
 
-        # Register custom JSON Encoder to call to_json() on objects
-        # This is so that Flask can jsonify our SQLAlchemy models
-        app.config['RESTFUL_JSON'] = {'cls': JSONClassEncoder}
-
-        # Create all API endpoints
-        from src.resource import attach_resources
-        attach_resources(app)
-
         # Setup SWAGGER API documentation (only when enabled)
         if app.config.get('APP_SWAGGER_ENABLED', "false") == 'true':
             from src.resource import openapi_dict
@@ -208,8 +207,10 @@ def setup(app: Flask):
                                              title=app.config['APP_NAME'])
             app.register_blueprint(resource, url_prefix=swagger_url)
         socketio.init_app(app)
+
+        # Generate documentation
         from documentation import generate_pdoc
-        generate_pdoc()  # to generate documentation set parameter to true: generate_pdoc(True)
+        generate_pdoc(generate=app.config.get('APP_GENERATE_DOCS', 'false') == 'true')  # to generate documentation set parameter to true: generate_pdoc(True)
     return app, socketio
 
 

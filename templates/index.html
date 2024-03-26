@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{app_name}}</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="static/css/index.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
     <!-- Inline load jQuery so that inline scripts such as socketio.js can use it -->
@@ -74,21 +74,11 @@
         </div>
     </div>
 
-    <!-- Get username -->
-    <script type="text/javascript">
-        const username = `{{ username }}`;
-
-    </script>
-
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
             integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
             crossorigin="anonymous">
 
-    </script>
-
-    <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}">
     </script>
 
     <!-- loading screen -->
