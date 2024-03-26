@@ -21,9 +21,6 @@ export class CharacterController extends Subject{
     _character;
     #inputManager;
 
-    //TODO: temporary values move logic to charFSM
-    #jumping = false;
-    #falling = false;
     /**
      * adds a listener to inputManager mousedown event
      * @param {{Character: Wizard, InputManager: InputManager}} params
@@ -37,56 +34,6 @@ export class CharacterController extends Subject{
         this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
 
         this.tempTemp = new THREE.Vector3();
-    }
-
-    /**
-     * creates a custom event notifying an EntitySpell being cast
-     * @param {ConcreteSpell} type
-     * @param {object} params
-     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
-     */
-    createSpellEntityEvent(type, params){
-        return new CustomEvent("createSpellEntity", {detail: {type: type, params: params}});
-    }
-
-    /**
-     * creates a custom event notifying a BuildSpell being cast
-     * @param {ConcreteSpell} type
-     * @param {object} params
-     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
-     */
-    createSpellCastEvent(type, params){
-        return new CustomEvent("castSpell", {detail: {type: type, params: params}});
-    }
-
-    /**
-     * creates a custom event notifying a HitScanSpell being cast
-     * @param {ConcreteSpell} type
-     * @param {object} params
-     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
-     */
-    createHitScanSpellEvent(type, params){
-        return new CustomEvent("hitScanSpell", {detail: {type: type, params: params}});
-    }
-
-    /**
-     * creates a custom event notifying an InstantSpell being cast
-     * @param {ConcreteSpell} type
-     * @param {object} params
-     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
-     */
-    createInstantSpellEvent(type, params){
-        return new CustomEvent("InstantSpell", {detail: {type: type, params: params}});
-    }
-
-    /**
-     * creates a custom event notifying an EntitySpell being cast
-     * @param {ConcreteSpell} type
-     * @param {object} params
-     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
-     */
-    createUpdateBuildSpellEvent(type, params){
-        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
 
     /**
@@ -125,7 +72,7 @@ export class CharacterController extends Subject{
      * Handle the click event
      * @param event event
      */
-    onClickEvent(event){
+    onClickEvent(event){ //TODO: move to SpellCaster class
         // RightClick
         if (event.which === 3 || event.button === 2) {
             if (this._character.getCurrentSpell() instanceof BuildSpell) {
@@ -181,23 +128,11 @@ export class CharacterController extends Subject{
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
         if (this._character.fsm.currentState.movementPossible) {
-            // if ( this._character.onGround ) {
-            //     if(this.#inputManager.keys.up) {
-            //         this._character.velocity.y = 10;
-            //         this._character.onGround = false;
-            //     } else {
-            //         this._character.velocity.y = deltaTime * gravity;
-            //     }
-            // } else {
-            //     this._character.velocity.y += deltaTime * gravity;
-            // }
 
             if(this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;
             }
-
-            // this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
 
             const qHorizontal = this.quatFromHorizontalRotation;
 
@@ -233,54 +168,6 @@ export class CharacterController extends Subject{
             }
 
             this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
-
-            // let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, position, deltaTime);
-            //
-            // if ( ! this._character.onGround ) {
-            //     deltaVector.normalize();
-            //     this._character.velocity.addScaledVector( deltaVector, - deltaVector.dot( this._character.velocity ) );
-            // } else {
-            //     this._character.velocity.set( 0, 0, 0 );
-            // }
-            //
-            // if ( this._character.position.y < - 50 ) {
-            //     //respawn
-            //     this._character.velocity.set(0,0,0);
-            //     this._character.position = this._character.spawnPoint;
-            // } else {
-            //     this._character.position = position;
-            // }
         }
-
-        //TODO: move spellCasting logic into a seperate class, move this to a mousedown eventListener now multiple spellcast tries are done
-        if (this.#inputManager.mouse.leftClick) {
-            if (this._character.getCurrentSpell() && this._character.currentSpellCooldown === 0 && this._character.mana >= this._character.getCurrentSpell().cost) {
-                //cast current spell
-                let vec = new THREE.Vector3().copy(this._character.position);
-                vec.y += 2;
-                if(this._character.getCurrentSpell().spell instanceof EntitySpell){
-                    this.dispatchEvent(this.createSpellEntityEvent(this._character.getCurrentSpell(), {
-                        position: vec,
-                        direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
-                    }));
-                } else if(false && this._character.getCurrentSpell().spell instanceof HitScanSpell){
-                    this.dispatchEvent(this.createHitScanSpellEvent(this._character.getCurrentSpell(), {}));
-                } else if(this._character.getCurrentSpell().spell instanceof InstantSpell){
-                    this.dispatchEvent(this.createInstantSpellEvent(this._character.getCurrentSpell(), {}));
-                }  else if (this._character.getCurrentSpell() instanceof BuildSpell) {
-                    console.log("tree built")
-                    this.dispatchEvent(this.createSpellCastEvent(this._character.getCurrentSpell(), {
-                        position: vec,
-                        direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this._character.rotation)
-                    }));
-                }
-                this._character.cooldownSpell();
-                console.log(this._character.mana);
-            }
-        } else if (this._character.getCurrentSpell() instanceof BuildSpell) {
-            //TODO: make building placeholder invisible if buildspell not equipped (Object3D.visible = false)
-            this.dispatchEvent(this.createUpdateBuildSpellEvent(this._character.getCurrentSpell(), {}));
-        }
-        this._character.updateCooldowns(deltaTime);
     }
 }

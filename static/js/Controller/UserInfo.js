@@ -28,7 +28,6 @@ export class UserInfo{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${playerURI}`);
 
-            console.log(response);
             this.userID = response.entity.player_id;
             this.islandID = response.entity.island_id;
             this.unclockedBuildings = response.blueprints;

@@ -9,11 +9,6 @@ export let verticalSensitivity = 0.3;
 export let zoomSensitivity = 1;
 
 export let minCameraY = 1;
-//!!!make sure maxZoomIn's number is high enough to reach above the minCameraY threshold, otherwise infinite loop!!!
-export let maxZoomIn = -8;
-
-//currently does not do anything;
-export let minZoomIn = 1.2;
 
 export const movementSpeed = 7;
 
@@ -43,3 +38,6 @@ export const cameraPosition = {
         z: 0
     }
 }
+export let maxZoomIn = 15;
+
+export let minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));

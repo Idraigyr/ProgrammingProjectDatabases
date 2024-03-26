@@ -18,7 +18,8 @@ export class Character extends Entity{
         this.velocity = new THREE.Vector3();
         this.#onGround = true;
         this.fsm = null;
-        this.health = params?.health ?? 0;
+        this.health = params?.health ?? 100;
+        this.maxHealth = params?.health ?? 100;
         this.height = params.height;
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);

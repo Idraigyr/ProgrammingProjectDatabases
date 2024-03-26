@@ -283,34 +283,40 @@ export class SneakState extends BaseCharState{
     }
 }
 
+export class BaseCharAttackState extends BaseCharState{
+    constructor(fsm) {
+        super(fsm);
+    }
+}
+
 /**
  * Jump attack state for the character
  */
-export class JumpAttackState extends BaseCharState{
+export class JumpAttackState extends BaseCharAttackState{
     constructor() {
         super();
-        this.movementPossible = false;
+        this.movementPossible = true;
     }
     updateState(deltaTime, input){
 
     }
 }
 
-export class SneakAttackState extends BaseCharState{
+export class SneakAttackState extends BaseCharAttackState{
     constructor() {
         super();
-        this.movementPossible = false;
+        this.movementPossible = true;
     }
 }
 
 /**
  * Default attack state for the character
  */
-export class DefaultAttackState extends BaseCharState{
+export class DefaultAttackState extends BaseCharAttackState{
     constructor(fsm) {
         super(fsm);
         this.timer = 0;
-        this.movementPossible = false;
+        this.movementPossible = true;
     }
 
     /**

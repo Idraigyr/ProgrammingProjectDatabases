@@ -259,15 +259,14 @@ body {
 
 .scene {
     position: absolute;
-    top: 5%;
-    left: 20%; /* Adjust this as needed */
-    width: 80%; /* Use viewport width units */
+    top: 5vh;
+    left: 10vw; /* Adjust this as needed */
+    width: 80vw; /* Use viewport width units */
     height: auto; /* Let the height adjust based on the aspect ratio */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
 }
 
 /** Wizard CSS & Animations */
