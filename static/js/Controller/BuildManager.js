@@ -10,7 +10,6 @@ export class BuildManager {
     #scene;
     #spellFactory;
     #copyable;
-    #previewObject;
     planes = [];
     #raycaster;
     /**
@@ -42,30 +41,25 @@ export class BuildManager {
      * @private function to be called in the constructor
      */
     _setDefaultPreviewObject(){
-        this.defaultPreviewObject = this.#extractObject(this.#spellFactory.createRitualSpell({spellType: 'buildSpell'}));
+        this.defaultPreviewObject = this.#spellFactory.createRitualSpell({spellType: 'buildSpell'});
         this.setCurrentRitual(this.defaultPreviewObject);
     }
     addBuildPlane(plane){
         this.planes.push(plane);
     }
     makePreviewObjectInvisible(){
-        if (!this.#previewObject) return;
-        this.#previewObject.visible = false;
+        if (!this.ritualToPlace) return;
+        this.ritualToPlace.visible = false;
     }
 
     setPreviewMaterial(material){
         this.previewMaterial = material;
     }
     setCurrentRitual(ritual, copyable=false){
-        this.ritualToPlace = ritual;
+        this.ritualToPlace = this.#extractObject(ritual);
         this.#copyable = copyable;
-        this.scaleAndCorrectPosition(ritual);
-        // Set overmesh
-        this.#previewObject = this.#extractObject(ritual).clone();
-        this.#previewObject.traverse((o) => {
-            if (o.isMesh) o.material = this.previewMaterial;
-        })
-        this.#scene.add(this.#previewObject);
+        this.scaleAndCorrectPosition(this.ritualToPlace);
+        this.#scene.add(this.ritualToPlace);
     }
     scaleAndCorrectPosition(object){
         let extracted = this.#extractObject(object)
@@ -99,18 +93,18 @@ export class BuildManager {
     updateBuildSpell(event){
         let collision = this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0];
         if(collision){
-            this.#previewObject.visible = true;
-            this.#extractObject(this.#previewObject).position.copy( collision.point ).add( collision.face.normal );
-            this.scaleAndCorrectPosition(this.#previewObject);
+            this.ritualToPlace.visible = true;
+            this.#extractObject(this.ritualToPlace).position.copy( collision.point ).add( collision.face.normal );
+            this.scaleAndCorrectPosition(this.ritualToPlace);
         }
     }
     turnPreviewSpell(event){
-        this.#previewObject.rotation.y += Math.PI/2;
+        this.ritualToPlace.rotation.y += Math.PI/2;
     }
     placeBuildSpell(event){
-        if(this.ritualToPlace === this.defaultPreviewObject){
+        if(this.ritualToPlace === this.#extractObject(this.defaultPreviewObject)){
             // Call event to open build menu
-            document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {position: this.#previewObject.position}}));
+            document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {position: this.ritualToPlace.position}}));
             return;
         }
         if(!this.ritualToPlace) return;
@@ -119,8 +113,8 @@ export class BuildManager {
             extracted = extracted.clone(true);
             this.#scene.add(extracted);
         }
-        extracted.position.copy( this.#previewObject.position );
-        extracted.rotation.y = this.#previewObject.rotation.y;
+        extracted.position.copy( this.ritualToPlace.position );
+        extracted.rotation.y = this.ritualToPlace.rotation.y;
         this.scaleAndCorrectPosition(this.ritualToPlace);
     }
 }

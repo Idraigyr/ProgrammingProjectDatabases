@@ -137,7 +137,7 @@ export class SpellFactory{
             charModel: this.assetManager.getAsset("RitualSpell")
         });
         view.loadAnimations(this.assetManager.getAnimations("RitualSpell"));
-        // this.scene.add(view.charModel);
+        this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.models.push(model);
