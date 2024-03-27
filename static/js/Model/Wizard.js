@@ -10,7 +10,8 @@ export class Wizard extends Character{
         this.spells = [null,null,null,null,null];
         this.spellCooldowns = [0,0,0,0,0];
         this.currentSpell = 0;
-        this.mana = 100;
+        this.mana = params?.mana ?? 100;
+        this.maxMana = params?.maxMana ?? 100;
     }
 
     /**
@@ -46,7 +47,7 @@ export class Wizard extends Character{
      * @returns {number|number} - the current spell cooldown
      */
     get currentSpellCooldown(){
-        return this.spellCooldowns[this.currentSpell] ?? -1;
+        return this.getCurrentSpell() ? this.spellCooldowns[this.currentSpell] :  -1;
     }
 
     /**
@@ -55,6 +56,10 @@ export class Wizard extends Character{
      */
     getCurrentSpell(){
         return this.spells[this.currentSpell];
+    }
+
+    canCast(){
+        return (this.getCurrentSpell() ? (this.spellCooldowns[this.currentSpell] === 0 && this.mana >= this.getCurrentSpell().cost) : false);
     }
 
     /**

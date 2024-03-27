@@ -125,6 +125,7 @@ export class InputManager {
      * @param bool true if key is pressed, false if released
      */
 
+    //TODO: remove all keys that need not be checked within an update function
     #onKey(KeyBoardEvent, bool){
         switch (KeyBoardEvent.code){
             case upKey:
@@ -176,7 +177,6 @@ export class InputManager {
                 this.invokeSpellSlotChangeCallbacks();
                 break;
         }
-
         this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 

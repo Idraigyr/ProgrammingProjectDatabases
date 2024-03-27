@@ -154,10 +154,12 @@ class Build extends Effect{
  */
 class ConcreteSpell{
     constructor(params) {
+        this.hasPreview = false;
         this.hitScan = false;
         this.cost = 0;
         this.spell = params.spell;
         this.effects = params.effects;
+        this.name = "null";
     }
 
     /**
@@ -198,6 +200,9 @@ export class BuildSpell extends ConcreteSpell{
                 })
             ]
         });
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.name = "build";
         this.cost = 10;
     }
 }
@@ -224,6 +229,7 @@ export class Fireball extends ConcreteSpell{
                     duration: 0
             })]
         });
+        this.name = "fireball";
         this.cost = 5;
     }
 }
@@ -237,6 +243,8 @@ export class Zap extends ConcreteSpell{
             spell: new InstantSpell(),
             effects: [new InstantDamage()]
         });
+        this.name = "zap";
+        this.hitScan = true;
     }
 }
 
@@ -255,6 +263,9 @@ export class ThunderCloud extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.name = "thundercloud";
+        this.hasPreview = true;
+        this.hitScan = true;
         this.cost = 20;
     }
 }

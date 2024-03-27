@@ -16,16 +16,8 @@ export class WorldManager {
     async importWorld(islandID){
         let islands = [
             {buildings: [{
-                    type: "Altar",
-                    position: { //TODO: this should be gridSquare coordinates
-                        x: 0,
-                        y: 0,
-                        z: 0
-                    },
-                    rotation: 0
-                },{
                     type: "Mine",
-                    position: {
+                    position: { //TODO: this should be gridSquare coordinates
                         x: 5,
                         y: 0,
                         z: 5
@@ -52,8 +44,7 @@ export class WorldManager {
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
-            console.log(response);
-            for(const building in response.placeables){
+            for(const building of response.placeables){
                 islands[0].buildings.push({
                     type: building.blueprint.name,
                     position: {
