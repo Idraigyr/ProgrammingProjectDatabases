@@ -219,6 +219,7 @@ body {
 
 /* loading screen style */
 .loading-animation{
+    height: 100vh;
     z-index: 10;
 }
 
@@ -262,15 +263,14 @@ body {
 
 .scene {
     position: absolute;
-    top: 5%;
-    left: 20%; /* Adjust this as needed */
-    width: 80%; /* Use viewport width units */
+    top: 5vh;
+    left: 10vw; /* Adjust this as needed */
+    width: 80vw; /* Use viewport width units */
     height: auto; /* Let the height adjust based on the aspect ratio */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
 }
 
 /** Wizard CSS & Animations */
@@ -889,7 +889,7 @@ body {
 
     --currentHP: 20;
     --maxHP: 100;
-    --currentMana: 50;
+    --currentMana: 100;
     --maxMana: 100;
     --percentageHP: calc(100% - (var(--currentHP) / var(--maxHP) * 100%));
     --percentageMana: calc(100% - (var(--currentMana) / var(--maxMana) * 100%));;

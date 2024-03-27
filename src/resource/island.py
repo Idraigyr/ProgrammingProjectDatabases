@@ -55,6 +55,9 @@ class IslandSchema(Schema):
         if entity.type == 'builder_minion':
             from src.resource.builder_minion import BuilderMinionSchema
             return BuilderMinionSchema(entity)
+        elif entity.type == 'player':
+            from src.resource.player import PlayerEntitySchema
+            return PlayerEntitySchema(entity)
 
         raise ValueError(f'Cannot find Schema for unknown entity type {entity.type}')
 

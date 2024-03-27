@@ -4,6 +4,7 @@ import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
 import {getFileExtension} from "../helpers.js";
 import * as THREE from "three";
+import {playerSpawn} from "../configs/ControllerConfigs.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -24,14 +25,18 @@ export class Factory{
      * Creates player model and view
      * @returns {Wizard}
      */
-    createPlayer(){
-        let player = new Model.Wizard();
-        let view = new View.Player({charModel: this.assetManager.getAsset("Player")});
+    createPlayer(position){
+        // let sp = new THREE.Vector3(-8,15,12);
+        let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
+        let currentPos = new THREE.Vector3(position.x,position.y,position.z);
+        const height = 3;
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
 
         this.scene.add(view.charModel);
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
-        view.boundingBox.set(new THREE.Vector3(-0.5,0,-0.5), new THREE.Vector3(0.5,3,0.5));
+        view.boundingBox.set(new THREE.Vector3(-0.5,0,-0.5), new THREE.Vector3(0.5,height,0.5));
         this.scene.add(view.boxHelper);
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
@@ -54,12 +59,11 @@ export class Factory{
     createIsland(position, rotation, buildingsList){
         let islandModel = new Model.Island(position, rotation);
         let view = new View.Island();
-        view.initScene()
         //TODO: island asset?
         //this.AssetLoader.loadAsset(view);
-        this.scene.add(view.charModel);
+        this.scene.add(view.initScene());
 
-        view.boundingBox.setFromObject(view.charModel.children[1]);
+        view.boundingBox.setFromObject(view.charModel);
         this.scene.add(view.boxHelper);
 
         this.#addBuildings(islandModel.buildings, buildingsList);

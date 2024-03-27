@@ -15,12 +15,7 @@ export class AssetLoader{
         // Use arrow functions or bind `this` to retain the correct context
         const progressBar = document.getElementById('progress-bar');
         this.loadingManager.onProgress = (url, loaded, total) => {
-            progressBar.value = (loaded / total) * 100;
-        };
-
-        const progressBarContainer = document.querySelector('.loading-animation');
-        this.loadingManager.onLoad = () => {
-            progressBarContainer.style.display = 'none';
+            progressBar.value = (loaded / total) * 60 + 10;
         };
     }
 
@@ -62,6 +57,7 @@ export class AssetLoader{
             });
             if(gltf.animations.length > 0){
                 animations = gltf.animations;
+                console.log(animations);
                 return {charModel, animations};
             }
             return {charModel};

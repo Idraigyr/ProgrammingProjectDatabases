@@ -5,6 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from flask_restful_swagger_3 import Resource, swagger, Api
 from markupsafe import escape
 
+from src.model.player_entity import PlayerEntity
+from src.resource.entity import EntitySchema
 from src.resource.gems import GemSchema
 from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
@@ -15,6 +17,30 @@ from src.resource import add_swagger, clean_dict_input
 This module contains the PlayerResource, which is a resource/api endpoint that allows for the retrieval and modification of player profiles
 The PlayerSchema is used to define the JSON response for the player profile, used in the PlayerResource
 """
+
+class PlayerEntitySchema(EntitySchema):
+    """
+    The schema for the player entity
+    """
+    type = 'object'
+    properties = {
+        'player_id': {
+            'type': 'integer'
+        }
+    }
+
+    required = []
+
+    description = 'The player entity - represents a player in the physical world'
+
+    def __init__(self, player: PlayerEntity = None, **kwargs):
+        if player is not None:
+            super().__init__(player,
+                             player_id=player.player_id,
+                             **kwargs)
+        else:
+            super().__init__(**kwargs)
+
 
 class PlayerSchema(Schema):
     """
@@ -38,19 +64,23 @@ class PlayerSchema(Schema):
         'gems': {
             'type': 'array',
             'items': GemSchema
-        }
+        },
+        'blueprints': IntArraySchema,
+        'entity': PlayerEntitySchema
     }
 
-    required = [] # nothing is required, but not giving anything is just doing nothing
+    required = []  # nothing is required, but not giving anything is just doing nothing
 
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
-            super().__init__(user_profile_id=player.user_profile_id, level=player.level,
+            super().__init__(level=player.level,
                              crystals=player.crystals, mana=player.mana,
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
+                             entity=PlayerEntitySchema(player=player.entity),
+                             blueprints=[blueprint.id for blueprint in player.blueprints],
                              **kwargs)
-        else: # schema -> player
+        else:  # schema -> player
             super().__init__(**kwargs)
 
 

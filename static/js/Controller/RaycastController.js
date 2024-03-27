@@ -10,7 +10,9 @@ export class RaycastController{
      */
     constructor(params) {
         this.raycaster = new THREE.Raycaster();
+        this.raycaster.firstHitOnly = true;
         this.viewManager = params.viewManager;
+        this.collisionDetector = params.collisionDetector;
         document.addEventListener('updateCameraPosition', this.updatePosition.bind(this));
     }
 
@@ -20,6 +22,14 @@ export class RaycastController{
      */
     updatePosition(event){
         this.raycaster.setFromCamera(new THREE.Vector2(0,0),event.detail.camera);
+    }
+
+    getFirstHitWithWorld(origin, direction){
+        const oldRayCopy = new THREE.Ray().copy(this.raycaster.ray);
+        this.raycaster.ray.set(origin,direction);
+        const hit = this.raycaster.intersectObject(this.collisionDetector.collider);
+        this.raycaster.ray.copy(oldRayCopy);
+        return hit;
     }
 
     /**

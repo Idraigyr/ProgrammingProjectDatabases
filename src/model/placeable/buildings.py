@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SqlEnum
 
 from src.model.gems import Gem
-from src.model.enums import TowerBuildingType, MineBuildingType
+from src.model.enums import TowerBuildingType, MineBuildingType, BlueprintType
 from src.model.placeable.building import Building
 
 
@@ -33,7 +33,7 @@ class MineBuilding(Building):
         :param mined_amount: The amount the mine has already mined since the last pickup by the player
         After pickup, this is reset to 0 and the player crystal count is increased
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.MINE.value)
         if not MineBuildingType.has_value(mine_type):
             raise ValueError('Invalid mine_type')
 
@@ -79,7 +79,7 @@ class TowerBuilding(Building):
         :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.TOWER.value)
         if not TowerBuildingType.has_value(tower_type):
             raise ValueError('Invalid tower_type')
 
@@ -122,7 +122,7 @@ class AltarBuilding(Building):
         :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.ALTAR.value)
 
     def update(self, data: dict):
         """
@@ -152,7 +152,7 @@ class FuseTableBuilding(Building):
         :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.FUSE_TABLE.value)
 
     def update(self, data: dict):
         """
@@ -183,7 +183,7 @@ class WarriorHutBuilding(Building):
         :param z: The z position of the building on the grid
         :param level: The level of the building
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.WARRIOR_HUT.value)
 
     def update(self, data: dict):
         """

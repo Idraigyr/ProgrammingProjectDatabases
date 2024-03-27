@@ -12,8 +12,11 @@ class Island(current_app.db.Model):
     An island is unique to it's owner, and is not shared between players.
     """
 
-    owner_id: Mapped[int] = mapped_column(ForeignKey('player.user_profile_id'), primary_key=True)
-    owner: Mapped[Player] = relationship("Player", back_populates="island", single_parent=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey('player.user_profile_id', use_alter=True), primary_key=True)
+
+    @declared_attr
+    def owner(self):
+        return relationship("Player", back_populates="island", single_parent=True, foreign_keys=[self.owner_id])
 
     @declared_attr
     def entities(self):

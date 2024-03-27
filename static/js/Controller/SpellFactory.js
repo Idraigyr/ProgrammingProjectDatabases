@@ -16,7 +16,6 @@ export class SpellFactory{
         this.scene = params.scene;
         this.camera = params.camera;
         this.viewManager = params.viewManager;
-        this.AssetLoader = new Controller.AssetLoader(this.scene);
         this.assetManager = params.assetManager;
         //TODO: change this
         this.models = [];
