@@ -1,6 +1,7 @@
 import {RaycastController} from "./RaycastController.js";
 import * as THREE from "three";
 import {Object3D} from "three";
+import {drawBoundingBox} from "../helpers.js";
 
 export class BuildManager {
     ritualToPlace;
@@ -77,6 +78,7 @@ export class BuildManager {
         object.position.x = Math.floor(object.position.x/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
         object.position.z = Math.floor(object.position.z/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
         const boundingBox = new THREE.Box3().setFromObject(object);
+        drawBoundingBox(boundingBox, this.#scene, 0x00ff00);
         object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
     }
 
