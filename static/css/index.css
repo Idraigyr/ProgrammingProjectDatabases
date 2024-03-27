@@ -885,7 +885,7 @@ body {
 
     --currentHP: 20;
     --maxHP: 100;
-    --currentMana: 50;
+    --currentMana: 100;
     --maxMana: 100;
     --percentageHP: calc(100% - (var(--currentHP) / var(--maxHP) * 100%));
     --percentageMana: calc(100% - (var(--currentMana) / var(--maxMana) * 100%));;

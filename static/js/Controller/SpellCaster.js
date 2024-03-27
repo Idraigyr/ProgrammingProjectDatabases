@@ -12,10 +12,13 @@ export class SpellCaster extends Subject{
         this.viewManager = params.viewManager;
         this.renderingPreview = true;
         //TODO: make sure that every equipped spell that needs a preview Object has its preview created on equip.
+        //TODO: maybe move this to somewhere else?
+        this.manaBar = document.getElementsByClassName("ManaAmount")[0];
     }
 
     set wizard(wizard){
         this.#wizard = wizard;
+        document.body.style.setProperty("--maxMana", this.#wizard.maxMana);
     }
 
     /**
@@ -142,9 +145,15 @@ export class SpellCaster extends Subject{
                 }));
             }
             this.#wizard.cooldownSpell();
+            this.changeManaBar();
         } else {
             //play a sad sound;
         }
+    }
+
+    changeManaBar(){
+        document.body.style.setProperty("--currentMana", this.#wizard.mana);
+        this.manaBar.textContent = `${this.#wizard.mana}/${this.#wizard.maxMana}`;
     }
 
     //use as signal to release charging spells;

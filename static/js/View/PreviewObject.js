@@ -42,8 +42,8 @@ export class PreviewObject extends IView{
     }
 
     calculateGridPosition(position){
-        position.x = Math.floor(position.x/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2;
-        position.z = Math.floor(position.z/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2;
+        position.x = Math.floor(position.x/this.#gridCellSize + 0.5)*this.#gridCellSize;
+        position.z = Math.floor(position.z/this.#gridCellSize + 0.5)*this.#gridCellSize;
     }
     setModel(key){
         this.charModel.geometry = new this.types[key].ctor(...this.types[key].params);
