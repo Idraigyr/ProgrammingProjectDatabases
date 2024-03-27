@@ -32,6 +32,7 @@ export class PreviewObject extends IView{
         this.charModel.visible = true;
         if(event.detail.type.name === "build"){
             this.calculateGridPosition(newEvent.detail.position);
+            newEvent.detail.position.y = 0;
         }
         this.updatePosition(newEvent);
         //TODO: remove magic value

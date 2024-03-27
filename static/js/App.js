@@ -73,15 +73,15 @@ class App {
         }},
         {key: "thundercloud", details: {
             ctor: THREE.CylinderGeometry,
-            params: [3, 3, 5],
+            params: [3, 3, 3],
             primaryColor: 0x0051FF,
             secondaryColor: 0xCCABFF,
-            cutoff: -5
+            cutoff: -1.499
         }}])});
         this.scene.add(this.viewManager.spellPreview.charModel);
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
-        this.inputManager = new Controller.InputManager();
+        this.inputManager = new Controller.InputManager({canvas: canvas});
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
             offset: new THREE.Vector3(cameraPosition.offset.x,cameraPosition.offset.y,cameraPosition.offset.z),
@@ -102,12 +102,7 @@ class App {
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
 
-        document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         document.addEventListener("visibilitychange", this.onClose.bind(this));
-        canvas.addEventListener("mousedown", async (e) => {
-            if(!this.blockedInput) return;
-            await canvas.requestPointerLock();
-        });
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster));
         //TODO: temporary solution; clean this up
         this.inputManager.addKeyDownEventListener(slot1Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
@@ -130,31 +125,6 @@ class App {
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
-    }
-
-    /**
-     * scopes updateRotation function of member playerController
-     * @callback updateRotationListener
-     * @param {{movementX: number, movementY: number}} event
-     *
-     */
-    updateRotationListener = (event) => {
-        this.playerController.updateRotation(event);
-    }
-    /**
-     * switches value of boolean member blockedInput and adds or removes updateRotationListener from mousemovement
-     * @callback blockInput
-     * @param {object} event - unused
-     *
-     */
-    blockInput(event){
-        if(this.blockedInput){
-            this.inputManager.addMouseMoveListener(this.updateRotationListener);
-            this.blockedInput = false;
-        } else {
-            this.inputManager.removeMouseMoveListener(this.updateRotationListener);
-            this.blockedInput = true;
-        }
     }
 
     /**
@@ -197,6 +167,7 @@ class App {
             InputManager: this.inputManager,
             collisionDetector: this.collisionDetector
         });
+        this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         this.spellCaster.wizard = this.worldManager.world.player;
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
@@ -235,9 +206,7 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        if(!this.blockedInput) {
-            this.playerController.update(this.deltaTime);
-        }
+        this.playerController.update(this.deltaTime);
         this.playerController.updatePhysics(this.deltaTime);
         this.spellCaster.update(this.deltaTime);
 
