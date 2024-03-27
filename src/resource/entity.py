@@ -34,7 +34,7 @@ class EntitySchema(Schema):
             'description': 'The type of the entity'
         }
     }
-    required = ['island_id']
+    required = []
 
     title = 'Entity'
     description = 'A model representing an entity in the game. An entity is a movable object that can moved without dependence on the grid of an island'

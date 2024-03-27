@@ -3,7 +3,6 @@ from sqlalchemy import String, BigInteger, Column, Boolean
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from src.model.credentials import Credentials, PasswordCredentials
-from src.model.player import Player
 
 
 class UserProfile(current_app.db.Model):
@@ -14,7 +13,7 @@ class UserProfile(current_app.db.Model):
     """
     __tablename__ = "user_profile"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    player: Mapped[Player] = relationship("Player", back_populates="user_profile")
+    player: Mapped["Player"] = relationship("Player", back_populates="user_profile")
     firstname: Mapped[str] = Column(String(255), nullable=False)
     lastname: Mapped[str] = Column(String(255), nullable=False)
     username: Mapped[str] = Column(String(255), unique=True)
@@ -35,6 +34,7 @@ class UserProfile(current_app.db.Model):
         self.firstname = firstname
         self.lastname = lastname
         self.credentials = credentials
+        from src.model.player import Player
         self.player = Player(self)
         self.admin = admin
 
