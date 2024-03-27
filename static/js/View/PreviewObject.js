@@ -34,7 +34,8 @@ export class PreviewObject extends IView{
             this.calculateGridPosition(newEvent.detail.position);
         }
         this.updatePosition(newEvent);
-        this.charModel.translateY(2);
+        //TODO: remove magic value
+        this.charModel.translateY(1.5);
     }
 
     makeVisible(event){
@@ -80,7 +81,7 @@ export class PreviewObject extends IView{
             uniform float time;
             varying vec3 vPosition;
             void main(){
-                if(vPosition.y < - cutoff){
+                if(vPosition.y < cutoff){
                     discard;
                 }
                 float intensity = 0.4 - vPosition.y;

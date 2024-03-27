@@ -103,7 +103,12 @@ export class SpellCaster extends Subject{
         // check if you need to do something else
     }
 
+    createUpdateBuildSpellEvent(type, params){
+        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
+    }
+
     update(deltaTime) {
+        this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));

@@ -69,14 +69,14 @@ class App {
             params: [10,10,10],
             primaryColor: 0xD46D01,
             secondaryColor: 0xFFB23D,
-            cutoff: 0.6
+            cutoff: -5
         }},
         {key: "thundercloud", details: {
             ctor: THREE.CylinderGeometry,
             params: [3, 3, 5],
             primaryColor: 0x0051FF,
             secondaryColor: 0xCCABFF,
-            cutoff: 0.49
+            cutoff: -5
         }}])});
         this.scene.add(this.viewManager.spellPreview.charModel);
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
