@@ -1,6 +1,6 @@
 import {Player} from "./PlayerView.js";
 import {Island} from "./IslandView.js";
-import {Fireball, ThunderCloud} from "./SpellView.js";
+import {Fireball, ThunderCloud, RitualSpell} from "./SpellView.js";
 import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
@@ -17,5 +17,6 @@ export let View = {
     Tree: Tree,
     Altar: Altar,
     Mine: Mine,
-    Shield: Shield
+    Shield: Shield,
+    RitualSpell: RitualSpell
 }

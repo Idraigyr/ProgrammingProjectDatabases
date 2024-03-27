@@ -1,5 +1,5 @@
 import {IAnimatedView} from "../View/View.js";
-import {Fireball, ThunderCloud} from "../View/SpellView.js";
+import {Fireball, ThunderCloud, RitualSpell} from "../View/SpellView.js";
 import {Shield} from "../View/Shield.js";
 
 export class ViewManager{
@@ -98,6 +98,8 @@ export class ViewManager{
                 } else if(pair.view instanceof ThunderCloud){
                     pair.view.update(deltaTime);
                 } else if(pair.view instanceof Shield){
+                    pair.view.update(deltaTime);
+                } else if(pair.view instanceof RitualSpell){
                     pair.view.update(deltaTime);
                 }
             });

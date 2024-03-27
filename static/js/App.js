@@ -59,7 +59,7 @@ class App {
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
-        this.BuildManager = new BuildManager(this.raycastController, this.scene);
+        this.BuildManager = new BuildManager(this.spellFactory, this.raycastController, this.scene);
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
 
         //this.inputManager.addMouseMoveListener(this.updateRotationListener);
@@ -119,6 +119,8 @@ class App {
         this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         this.cameraManager.target = this.worldManager.world.player;
+        // Crete event to show that the assets are 100% loaded
+        document.dispatchEvent(new Event("assetsLoaded"));
     }
 
     /**

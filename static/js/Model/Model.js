@@ -4,7 +4,7 @@ import {Island} from "./Island.js";
 import {Tree} from "./Buildings/Tree.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Mine} from "./Buildings/Mine.js";
-import {FollowPlayer, Immobile, Projectile} from "./SpellEntities.js";
+import {FollowPlayer, Immobile, Projectile, RitualSpell} from "./SpellEntities.js";
 
 // Model namespace
 export let Model = {
@@ -16,5 +16,6 @@ export let Model = {
     Tree: Tree,
     Projectile: Projectile,
     Immobile: Immobile,
-    FollowPlayer: FollowPlayer
+    FollowPlayer: FollowPlayer,
+    RitualSpell: RitualSpell
 }

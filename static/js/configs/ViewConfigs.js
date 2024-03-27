@@ -11,5 +11,6 @@ export let assetPaths = {
     Player: "./static/assets/3d-models/Wizard.glb",
     Tree: "./static/assets/3d-models/tree.glb",
     cloud: "./static/assets/images/cloud.png",
-    fire: "./static/assets/images/fire.png"
+    fire: "./static/assets/images/fire.png",
+    RitualSpell: "./static/assets/3d-models/BuildSpell.glb"
 }

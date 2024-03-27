@@ -8,12 +8,14 @@ export class BuildManager {
     defaultPreviewObject;
     #gridCellSize;
     #scene;
+    #spellFactory;
     #copyable;
     #previewObject;
     planes = [];
     #raycaster;
     /**
      * Creates objects that controls which ritual to put
+     * @param spellFactory factory for the build spells
      * @param raycastController raycaster for the builder
      * @param scene scene where to build
      * @param gridCellSize length of the grid square side
@@ -21,7 +23,8 @@ export class BuildManager {
      */
     // TODO: connect gridcellsize from here to the gridcellsize of the terrain
     // TODO: if center NOT 0,0,0 + rotation
-    constructor(raycastController, scene, gridCellSize= 10, previewMaterial=undefined) {
+    constructor(spellFactory, raycastController, scene, gridCellSize= 10, previewMaterial=undefined) {
+        this.#spellFactory = spellFactory;
         this.#gridCellSize = gridCellSize;
         this.#raycaster = raycastController;
         this.#scene = scene;
@@ -29,9 +32,9 @@ export class BuildManager {
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
         this.setPreviewMaterial(previewMaterial);
-        this._setDefaultPreviewObject();
         document.addEventListener('placeBuildSpell', this.placeBuildSpell.bind(this));
         document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
+        document.addEventListener('assetsLoaded', this._setDefaultPreviewObject.bind(this));
     }
 
     /**
@@ -39,16 +42,14 @@ export class BuildManager {
      * @private function to be called in the constructor
      */
     _setDefaultPreviewObject(){
-        const gridCellSize = this.#gridCellSize;
-        const geometry2 = new THREE.BoxGeometry( gridCellSize, gridCellSize, gridCellSize );
-        geometry2.rotateX( - Math.PI / 2 );
-        this.defaultPreviewObject = new THREE.Mesh( geometry2, this.previewMaterial );
+        this.defaultPreviewObject = this.#extractObject(this.#spellFactory.createRitualSpell({spellType: 'buildSpell'}));
         this.setCurrentRitual(this.defaultPreviewObject);
     }
     addBuildPlane(plane){
         this.planes.push(plane);
     }
     makePreviewObjectInvisible(){
+        if (!this.#previewObject) return;
         this.#previewObject.visible = false;
     }
 
