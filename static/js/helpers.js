@@ -42,6 +42,39 @@ export function drawBoundingBox(object, scene){
     boundingBox.position.copy(boxCenter);
     scene.add(boundingBox);
 }
+
+export function scaleAndCorrectPosition(object, gridCellSize, viewManager=undefined){
+        let extracted;
+        if (object instanceof THREE.Object3D) {extracted = object;}
+        else {extracted = extractObject(object, viewManager);}
+        correctRitualScale(extracted, gridCellSize);
+        correctRitualPosition(extracted, gridCellSize);
+    }
+
+export function extractObject(object, viewManager){
+        if(!object || object instanceof Object3D) return object;
+        const {_, view} = viewManager.getPair(object);
+        if(view) return view.charModel;
+        return object.charModel;
+}
+export function correctRitualPosition(object, gridCellSize) {
+    object.position.x = Math.floor(object.position.x / gridCellSize + 0.5) * gridCellSize;
+    object.position.z = Math.floor(object.position.x / gridCellSize + 0.5) * gridCellSize;
+    // Centralize the object, because now the left bottom corner is in the center of the cell
+    // const boundingBox = new THREE.Box3().setFromObject(object);
+    // object.position.add(new THREE.Vector3(-(boundingBox.max.x-boundingBox.min.x) / 2.0, 0, -(boundingBox.max.z-boundingBox.min.z) / 2.0));
+}
+
+export function correctRitualScale(object, gridCellSize){
+        let boundingBox = new THREE.Box3().setFromObject(object);
+        const minVec = boundingBox.min;
+        const maxVec = boundingBox.max;
+        const difVec = maxVec.sub(minVec);
+        const biggestSideLength = Math.max(Math.abs(difVec.x), Math.abs(difVec.z));
+        const scaleFactor = gridCellSize/biggestSideLength;
+        object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
+}
+
 /*
 const timeout = function (s) {
     return new Promise(function(_,reject){

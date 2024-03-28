@@ -5,6 +5,7 @@ import {PlayerFSM} from "./CharacterFSM.js";
 import {getFileExtension} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {scaleAndCorrectPosition} from "../helpers.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -82,7 +83,7 @@ export class Factory{
             try {
                 let model = new Model[building.type]({position: building.position, rotation: building.rotation});
                 let view = new View[building.type]({charModel: this.assetManager.getAsset(building.type)});
-
+                scaleAndCorrectPosition(view.charModel, 10, this.viewManager);
                 this.scene.add(view.charModel);
 
                 view.boundingBox.setFromObject(view.charModel);

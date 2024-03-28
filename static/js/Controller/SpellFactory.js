@@ -1,7 +1,7 @@
 import {Controller} from "./Controller.js";
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Fireball, ThunderCloud, Shield} from "../Model/Spell.js";
+import {Fireball, ThunderCloud, Shield, BuildSpell} from "../Model/Spell.js";
 import * as THREE from "three";
 
 /**
@@ -37,7 +37,7 @@ export class SpellFactory{
             case Shield:
                 entityModel = this.#createShield(event.detail);
                 break;
-            case Model.RitualSpell:
+            case BuildSpell:
                 const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
                 document.dispatchEvent(customEvent);
                 break;
