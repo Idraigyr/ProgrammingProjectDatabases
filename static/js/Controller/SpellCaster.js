@@ -19,6 +19,7 @@ export class SpellCaster extends Subject{
     set wizard(wizard){
         this.#wizard = wizard;
         document.body.style.setProperty("--maxMana", this.#wizard.maxMana);
+        this.changeManaBar();
     }
 
     /**
@@ -108,7 +109,7 @@ export class SpellCaster extends Subject{
     }
 
     update(deltaTime) {
-        this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
+        //this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));

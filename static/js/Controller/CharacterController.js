@@ -120,7 +120,7 @@ export class CharacterController extends Subject{
      * @param deltaTime
      */
     update(deltaTime) {
-        if (!this._character.fsm.currentState) {
+        if (!this._character.fsm.currentState || this.#inputManager.blockedInput) {
             return;
         }
 
