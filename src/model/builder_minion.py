@@ -13,9 +13,9 @@ class BuilderMinion(Entity):
     level: Mapped[int] = Column(Integer, nullable=False, default=0)
 
 
-    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0, type: str = 'builder_minion'):
+    def __init__(self, island_id: int = 0, x: int = 0, y: int = 0, z: int = 0, level: int = 0, type: str = 'builder_minion'):
         assert type == 'builder_minion'
-        super().__init__(island_id, x, z)
+        super().__init__(island_id, x, y, z)
         self.level = level
 
     def update(self, data: dict):
