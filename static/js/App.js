@@ -100,7 +100,7 @@ class App {
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
-        this.BuildManager = new BuildManager(this.spellFactory, this.raycastController, this.scene);
+        this.BuildManager = new BuildManager(this.raycastController, this.scene);
 
         document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
         document.addEventListener("visibilitychange", this.onClose.bind(this));
