@@ -21,9 +21,9 @@ export const jumpHeight = 13;
 export const sprintMultiplier = 2;
 
 export const playerSpawn = {
-    x: 8,
-    y: 15,
-    z: 12
+    x: 0,
+    y: 10,
+    z: 0
 }
 
 export const cameraPosition = {

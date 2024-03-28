@@ -14,3 +14,5 @@ export let assetPaths = {
     fire: "./static/assets/images/fire.png",
     RitualSpell: "./static/assets/3d-models/BuildSpell.glb"
 }
+
+export const gridCellSize = 10;

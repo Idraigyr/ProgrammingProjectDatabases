@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import {gridCellSize} from "./configs/ViewConfigs.js";
 
 /**
  * Get the smallest number between x1 and x2
@@ -17,6 +18,16 @@ export const min = function(x1, x2){
  */
 export const max = function(x1, x2){
     return x1 > x2 ? x1 : x2;
+}
+
+export const convertWorldToGridPosition = function (position){
+    position.x = Math.floor(position.x/gridCellSize + 0.5)*gridCellSize;
+    position.z = Math.floor(position.z/gridCellSize + 0.5)*gridCellSize;
+}
+
+export const convertGridToWorldPosition = function (position){
+    position.x = position.x*gridCellSize;
+    position.z = position.z*gridCellSize;
 }
 
 /**
@@ -43,12 +54,13 @@ export function drawBoundingBox(object, scene){
     scene.add(boundingBox);
 }
 
-export function scaleAndCorrectPosition(object, gridCellSize, viewManager=undefined){
+export function scaleAndCorrectPosition(object, viewManager=undefined){
         let extracted;
         if (object instanceof THREE.Object3D) {extracted = object;}
         else {extracted = extractObject(object, viewManager);}
-        correctRitualScale(extracted, gridCellSize);
-        correctRitualPosition(extracted, gridCellSize);
+        correctRitualScale(extracted);
+        convertGridToWorldPosition(extracted.position);
+        //correctRitualPosition(extracted);
     }
 
 export function extractObject(object, viewManager){
@@ -57,7 +69,7 @@ export function extractObject(object, viewManager){
         if(view) return view.charModel;
         return object.charModel;
 }
-export function correctRitualPosition(object, gridCellSize) {
+export function correctRitualPosition(object) {
     object.position.x = Math.floor(object.position.x / gridCellSize + 0.5) * gridCellSize;
     object.position.z = Math.floor(object.position.x / gridCellSize + 0.5) * gridCellSize;
     // Centralize the object, because now the left bottom corner is in the center of the cell
@@ -65,7 +77,7 @@ export function correctRitualPosition(object, gridCellSize) {
     // object.position.add(new THREE.Vector3(-(boundingBox.max.x-boundingBox.min.x) / 2.0, 0, -(boundingBox.max.z-boundingBox.min.z) / 2.0));
 }
 
-export function correctRitualScale(object, gridCellSize){
+export function correctRitualScale(object){
         let boundingBox = new THREE.Box3().setFromObject(object);
         const minVec = boundingBox.min;
         const maxVec = boundingBox.max;

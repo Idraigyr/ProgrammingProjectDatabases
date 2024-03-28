@@ -215,7 +215,7 @@ class App {
         //OrbitControls -- DEBUG STATEMENTS --
         // this.renderer.render( this.scene, orbitCam );
         //OrbitControls -- DEBUG STATEMENTS --
-        this.BuildManager.makePreviewObjectInvisible();
+        // this.BuildManager.makePreviewObjectInvisible();
     }
 }
 

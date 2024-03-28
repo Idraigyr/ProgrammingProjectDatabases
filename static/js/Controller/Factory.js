@@ -2,7 +2,7 @@ import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
 import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
-import {getFileExtension} from "../helpers.js";
+import {convertGridToWorldPosition, correctRitualScale, getFileExtension} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {scaleAndCorrectPosition} from "../helpers.js";
@@ -81,9 +81,13 @@ export class Factory{
     #addBuildings(islandModels, buildingsList){
         buildingsList.forEach((building) => {
             try {
-                let model = new Model[building.type]({position: building.position, rotation: building.rotation});
-                let view = new View[building.type]({charModel: this.assetManager.getAsset(building.type)});
-                scaleAndCorrectPosition(view.charModel, 10, this.viewManager);
+                let pos = new THREE.Vector3(building.position.x, building.position.y, building.position.z);
+                convertGridToWorldPosition(pos);
+                console.log(pos);
+                let model = new Model[building.type]({position: pos, rotation: building.rotation});
+                const asset = this.assetManager.getAsset(building.type);
+                correctRitualScale(asset);
+                let view = new View[building.type]({charModel: asset, position: pos, scene: this.scene});
                 this.scene.add(view.charModel);
 
                 view.boundingBox.setFromObject(view.charModel);

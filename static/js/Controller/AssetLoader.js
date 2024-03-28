@@ -57,7 +57,6 @@ export class AssetLoader{
             });
             if(gltf.animations.length > 0){
                 animations = gltf.animations;
-                console.log(animations);
                 return {charModel, animations};
             }
             return {charModel};

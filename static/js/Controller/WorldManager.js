@@ -18,9 +18,9 @@ export class WorldManager {
             {buildings: [{
                     type: "Mine",
                     position: { //TODO: this should be gridSquare coordinates
-                        x: 5,
+                        x: 0,
                         y: 0,
-                        z: 5
+                        z: 0
                     },
                     rotation: 0
                 }

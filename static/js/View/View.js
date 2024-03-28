@@ -10,12 +10,13 @@ export class IView {
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
-        this.boxHelper.visible = false;
+        this.boxHelper.visible = true;
         this.horizontalRotation = 0;
 
         try {
             this.updatePosition({detail: {position: params.position}});
         } catch (err){
+            console.log(err);
         }
     }
     update(deltaTime) {}
