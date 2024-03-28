@@ -9,16 +9,20 @@
 <body style="background-color: transparent">
 
 <div class="menu">
+  <span class="exit" onclick="exitMenu()">✖</span>
   <h1>Build menu</h1>
 
   <div class="combat">
+    <button class="tab" onclick="showBuildings('Combat')">Combat</button>
+    <button class="tab" onclick="showBuildings('Resources')">Resources</button>
+    <button class="tab" onclick="showBuildings('Decorations')">Decorations</button>
   </div>
 
   <div>
-        <div class="containerBuildings" id="container1" ondrop="drop(event, 'container1')" ondragover="allowDrop(event)">
-            <label><h2>Buildings</h2></label>
-            <!-- Container will be populated dynamically -->
-        </div>
+    <div class="containerBuildings" id="container1">
+      <label><h2>Buildings</h2></label>
+      <!-- Container will be populated dynamically -->
+    </div>
   </div>
 
 </div>
