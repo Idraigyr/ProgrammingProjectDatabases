@@ -33,8 +33,7 @@ export class InputManager extends Subject{
         x: 0,
         y: 0
     }
-    #callbacks = {mousemove: [], spellSlotChange: []};
-    spellSlotChangeCallbacks = [];
+    #callbacks = {mousemove: [], mousedown: [], spellSlotChange: []};
 
 
     /**
