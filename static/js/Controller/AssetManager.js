@@ -1,4 +1,4 @@
-import {assetPaths} from "../configs/ViewConfigs.js";
+import {assetPaths, scale} from "../configs/ViewConfigs.js";
 import {Controller} from "./Controller.js";
 import * as THREE from "three";
 import {clone} from "three-SkeletonUtils";
@@ -31,6 +31,7 @@ export class AssetManager{
 
                 if(charModel){
                     this.#assetList[key].model = charModel;
+                    this.#assetList[key].model.scale.set(scale[key], scale[key], scale[key]);
                 }
                 if(animations){
                     this.#assetList[key].animations = animations;

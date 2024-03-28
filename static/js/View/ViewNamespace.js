@@ -6,6 +6,7 @@ import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
 import {Shield} from "./Shield.js";
 import {PreviewObject} from "./PreviewObject.js";
+import {Tower} from "./Buildings/Tower.js";
 
 /**
  * Namespace for all the view classes
@@ -18,6 +19,7 @@ export let View = {
     Tree: Tree,
     Altar: Altar,
     Mine: Mine,
+    Tower: Tower,
     Shield: Shield,
     PreviewObject: PreviewObject
 }

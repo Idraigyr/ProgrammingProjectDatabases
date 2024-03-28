@@ -2,7 +2,7 @@ import {GLTFLoader} from "three-GLTFLoader";
 import {FBXLoader} from "three-FBXLoader";
 import {TextureLoader} from "three-TextureLoader";
 import * as THREE from "three";
-import {getFileExtension} from "../helpers.js";
+import {getFileExtension, setIndexAttribute} from "../helpers.js";
 import {AnimationMixer} from "three";
 
 /**
@@ -57,7 +57,6 @@ export class AssetLoader{
             });
             if(gltf.animations.length > 0){
                 animations = gltf.animations;
-                console.log(animations);
                 return {charModel, animations};
             }
             return {charModel};
@@ -81,6 +80,9 @@ export class AssetLoader{
 
             charModel = fbx;
             charModel.traverse(c => {
+                if(c.isMesh && c.geometry.index === null){
+                    setIndexAttribute(c.geometry);
+                }
                 c.castShadow = true;
             });
             if(fbx.animations.length > 0){

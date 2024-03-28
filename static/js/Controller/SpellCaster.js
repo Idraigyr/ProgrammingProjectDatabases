@@ -14,6 +14,7 @@ export class SpellCaster extends Subject{
         //TODO: make sure that every equipped spell that needs a preview Object has its preview created on equip.
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
+        this.chargeTimer = 0;
     }
 
     set wizard(wizard){
@@ -83,24 +84,7 @@ export class SpellCaster extends Subject{
     }
     //TODO: clean up; temp solution
     onSpellSwitch(event){
-        let index = 0;
-        switch (event.code) {
-            case slot1Key:
-                break;
-            case slot2Key:
-                index = 1;
-                break;
-            case slot3Key:
-                index = 2;
-                break;
-            case slot4Key:
-                index = 3;
-                break;
-            case slot5Key:
-                index = 4;
-                break;
-        }
-        this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[index]?.hasPreview ?? false));
+        this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
         // check if you need to do something else
     }
 
@@ -109,7 +93,7 @@ export class SpellCaster extends Subject{
     }
 
     update(deltaTime) {
-        //this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
+        // this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
@@ -130,7 +114,7 @@ export class SpellCaster extends Subject{
         if (this.#wizard.canCast()) {
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 
-            if(this.#wizard.getCurrentSpell().spell.hitScan){
+            if(this.#wizard.getCurrentSpell().worldHitScan){
                 castPosition = this.checkRaycaster();
             }
 
@@ -140,15 +124,13 @@ export class SpellCaster extends Subject{
                     //TODO: base direction on camera not on player direction
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));
-            } else if(false && this.#wizard.getCurrentSpell().spell instanceof HitScanSpell){
-                this.dispatchEvent(this.createHitScanSpellEvent(this.#wizard.getCurrentSpell(), {}));
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
-                this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: castPosition,
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
-                }));
+                // this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
+                //     position: castPosition,
+                //     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                // }));
             }
             this.#wizard.cooldownSpell();
             this.changeManaBar();

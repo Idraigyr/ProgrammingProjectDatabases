@@ -65,9 +65,26 @@ export class CollisionDetector{
         // }).reject().finally(() => this.waitingOnWorker = false);
     }
 
-    isBoxCollision(boundingBox){
+    BoxCollisionWithWorld(boundingBox){
         return this.collider.geometry.boundsTree.intersectsBox(boundingBox);
     }
+
+    boxToBoxCollision(box1, box2){
+        return box1.intersectsBox(box2);
+    }
+
+    checkSpellEntityCollisions(){
+        for(const spellEntity of this.viewManager.spellEntities){
+            if(this.BoxCollisionWithWorld(spellEntity.view.boundingBox)){
+                spellEntity.model.onWorldCollision();
+            }
+            if(this.boxToBoxCollision(spellEntity.view.boundingBox, this.viewManager.player.view.boundingBox)){
+                spellEntity.model.onCharacterCollision(this.viewManager.player.model);
+            }
+        }
+    }
+
+
 
     adjustPlayerPosition(playerModel, position, deltaTime){
         playerModel.setSegmentFromPosition(position);

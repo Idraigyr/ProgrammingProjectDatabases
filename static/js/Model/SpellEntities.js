@@ -30,6 +30,16 @@ class SpellEntity extends Entity{
             this.dispatchEvent(this.createDeleteEvent());
         }
     }
+
+    onWorldCollision(){
+        this.dispatchEvent(this.createDeleteEvent());
+    }
+    onCharacterCollision(character){
+        if(this.team !== character.team){
+            this.spellType.applyEffects(character);
+            this.dispatchEvent(this.createDeleteEvent());
+        }
+    }
 }
 
 /**
@@ -53,6 +63,7 @@ export class Projectile extends SpellEntity{
     update(deltaTime){
         super.update(deltaTime);
         const vec = new THREE.Vector3().copy(this.direction);
+        vec.normalize();
         vec.multiplyScalar(this.velocity*deltaTime);
         this._position.add(vec);
         this.dispatchEvent(this._createUpdatePositionEvent());

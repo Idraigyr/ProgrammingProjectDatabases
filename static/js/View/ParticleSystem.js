@@ -180,6 +180,14 @@ export class ParticleSystem{
             });
         }
     }
+
+    getRandomVelocity(){
+        return new THREE.Vector3(
+            (Math.random()*0.2 - 0.1),
+            (Math.random()*0.2 - 0.1),
+            (Math.random()*0.2 - 0.1)
+        );
+    }
     /**
      * updates particles
      * @param {number} deltaTime

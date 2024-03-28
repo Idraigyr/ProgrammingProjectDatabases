@@ -2,9 +2,10 @@ import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
 import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
-import {getFileExtension} from "../helpers.js";
+import {convertGridToWorldPosition, getFileExtension} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {SpellSpawner} from "../Model/SpellSpawner.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -25,10 +26,10 @@ export class Factory{
      * Creates player model and view
      * @returns {Wizard}
      */
-    createPlayer(position){
+    createPlayer(params){
         // let sp = new THREE.Vector3(-8,15,12);
         let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
-        let currentPos = new THREE.Vector3(position.x,position.y,position.z);
+        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         const height = 3;
         let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
@@ -47,6 +48,22 @@ export class Factory{
 
         this.viewManager.addPair(player, view);
         return player;
+    }
+
+    createTower(params){
+        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
+        let tower = new Model.Tower({position: currentPos, spellSpawner: new SpellSpawner({})});
+        let view = new View.Tower({charModel: this.assetManager.getAsset("Tower"), position: currentPos});
+        this.scene.add(view.charModel);
+
+        view.boundingBox.setFromObject(view.charModel);
+        this.scene.add(view.boxHelper);
+
+        tower.addEventListener("updatePosition",view.updatePosition.bind(view));
+        tower.addEventListener("updateRotation",view.updateRotation.bind(view));
+
+        this.viewManager.addPair(tower, view);
+        return tower;
     }
 
     /**
@@ -78,23 +95,29 @@ export class Factory{
      * @param buildingsList list of the buildings to add
      */
     #addBuildings(islandModels, buildingsList){
-        buildingsList.forEach((building) => {
-            try {
-                let model = new Model[building.type]({position: building.position, rotation: building.rotation});
-                let view = new View[building.type]({charModel: this.assetManager.getAsset(building.type)});
+        buildingsList.forEach((building) => islandModels.push(this.addBuilding(building)));
+    }
+    
+    addBuilding(building){
+        let model;
+        let view;
 
-                this.scene.add(view.charModel);
+        try {
+            model = new Model[building.type]({position: building.position, rotation: building.rotation});
+            view = new View[building.type]({charModel: this.assetManager.getAsset(building.type)});
+        } catch (e){
+            console.log(`no ctor for ${building.type} building: ${e.message}`);
+            return;
+        }
+        this.scene.add(view.charModel);
 
-                view.boundingBox.setFromObject(view.charModel);
-                this.scene.add(view.boxHelper);
+        view.boundingBox.setFromObject(view.charModel);
+        this.scene.add(view.boxHelper);
 
-                model.addEventListener("updatePosition",view.updatePosition.bind(view));
-                model.addEventListener("updateRotation",view.updateRotation.bind(view));
-                islandModels.push(model);
-                this.viewManager.addPair(model, view);
-            } catch (e){
-                console.log(`no ctor for ${building.type} building: ${e.message}`);
-            }
-        });
+        model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateRotation",view.updateRotation.bind(view));
+
+        this.viewManager.addPair(model, view);
+        return model;
     }
 }

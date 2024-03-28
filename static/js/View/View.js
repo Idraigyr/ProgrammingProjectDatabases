@@ -10,7 +10,7 @@ export class IView {
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
-        this.boxHelper.visible = false;
+        this.boxHelper.visible = true;
         this.horizontalRotation = 0;
 
         try {
@@ -19,15 +19,19 @@ export class IView {
         }
     }
     update(deltaTime) {}
-    updatePosition(event){
-        if(!this.charModel) return;
-        this.position.copy(event.detail.position);
-        this.charModel.position.copy(this.position);
+
+    setBoundingBox(){
         let center = new THREE.Vector3().copy(this.charModel.position);
         let size = new THREE.Vector3();
         this.boundingBox.getSize(size);
         center.y += size.y/2;
         this.boundingBox.setFromCenterAndSize(center,size);
+    }
+    updatePosition(event){
+        if(!this.charModel) return;
+        this.position.copy(event.detail.position);
+        this.charModel.position.copy(this.position);
+        this.setBoundingBox();
     }
 
     updateRotation(event){

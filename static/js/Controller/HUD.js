@@ -1,21 +1,18 @@
 import { Controller } from "./Controller.js";
 
 export class HUD {
-    #inputManager = Controller.InputManager;
 
-    constructor(InputManager) {
-        this.#inputManager = InputManager;
+    constructor(inputManager) {
         // Add event listener for spell slot index change
-        this.#inputManager.addSpellSlotChangeListener(this.updateHoveredButton.bind(this));
-        this.#inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
+        inputManager.addEventListener("spellSlotChange", this.updateHoveredButton.bind(this));
+        inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
     }
 
     /**
      * Function to visualy update the selected spell slot when called
      *
      */
-    updateHoveredButton() {
-        const spellSlotIndex = this.#inputManager.keys.spellSlot;
+    updateHoveredButton(event) {
 
         // Remove hover class from all buttons
         document.querySelectorAll('.HotBar .item').forEach(button => {
@@ -23,11 +20,11 @@ export class HUD {
         });
 
         // Add hover class to the button corresponding to the spell slot index
-        const hoveredButton = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
+        const hoveredButton = document.querySelector(`.HotBar .Spell${event.detail.spellSlot} .button`);
         hoveredButton.parentElement.classList.add('hovered');
 
     }
-    toggleSettingsMenu()
+    toggleSettingsMenu(event)
     {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');

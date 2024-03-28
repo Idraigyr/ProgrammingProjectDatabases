@@ -79,6 +79,7 @@ class App {
             cutoff: -1.499
         }}])});
         this.scene.add(this.viewManager.spellPreview.charModel);
+        this.scene.add(this.viewManager.spellPreview.boxHelper);
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
         this.inputManager = new Controller.InputManager({canvas: canvas});
@@ -104,12 +105,7 @@ class App {
 
         document.addEventListener("visibilitychange", this.onClose.bind(this));
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster));
-        //TODO: temporary solution; clean this up
-        this.inputManager.addKeyDownEventListener(slot1Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot2Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot3Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot4Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot5Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
 

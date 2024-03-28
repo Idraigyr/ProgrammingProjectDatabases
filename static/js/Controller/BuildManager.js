@@ -1,6 +1,7 @@
 import {RaycastController} from "./RaycastController.js";
 import * as THREE from "three";
 import {Object3D} from "three";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 export class BuildManager {
     ritualToPlace;
@@ -65,8 +66,7 @@ export class BuildManager {
         return object.charModel;
     }
     correctRitualPosition(object){
-        object.position.x = Math.floor(object.position.x/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
-        object.position.z = Math.floor(object.position.z/this.#gridCellSize)*this.#gridCellSize + this.#gridCellSize/2.0;
+        convertWorldToGridPosition(object.position);
         const boundingBox = new THREE.Box3().setFromObject(object);
         object.position.add(new THREE.Vector3(0,-boundingBox.min.y,0));
     }
