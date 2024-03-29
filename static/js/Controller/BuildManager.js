@@ -102,7 +102,7 @@ export class BuildManager {
         // extracted.position.copy( this.#previewObject.position );
         // extracted.rotation.y = this.#previewObject.rotation.y;
         // this.scaleAndCorrectPosition(this.ritualToPlace);
-        if(!this.ritualToPlace) {
+        if(!this.ritualToPlace && this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0]) {
             document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {}}));
         }
     }
