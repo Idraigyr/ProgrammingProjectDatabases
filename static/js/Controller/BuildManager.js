@@ -93,14 +93,17 @@ export class BuildManager {
         this.#previewObject.rotation.y += Math.PI/2;
     }
     placeBuildSpell(event){
-        if(!this.ritualToPlace) return;
-        let extracted = this.#extractObject(this.ritualToPlace);
-        if(this.#copyable) {
-            extracted = extracted.clone(true);
-            this.#scene.add(extracted);
+        // if(!this.ritualToPlace) return;
+        // let extracted = this.#extractObject(this.ritualToPlace);
+        // if(this.#copyable) {
+        //     extracted = extracted.clone(true);
+        //     this.#scene.add(extracted);
+        // }
+        // extracted.position.copy( this.#previewObject.position );
+        // extracted.rotation.y = this.#previewObject.rotation.y;
+        // this.scaleAndCorrectPosition(this.ritualToPlace);
+        if(!this.ritualToPlace) {
+            document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {}}));
         }
-        extracted.position.copy( this.#previewObject.position );
-        extracted.rotation.y = this.#previewObject.rotation.y;
-        this.scaleAndCorrectPosition(this.ritualToPlace);
     }
 }

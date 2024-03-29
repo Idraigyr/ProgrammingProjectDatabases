@@ -107,3 +107,10 @@ function populateContainer(containerId, itemList) {
 populateContainer('container1', gems);
 populateContainer('container2', towerGems);
 populateContainer('container3', boosts);
+
+function exitMenu() {
+    // Your code to handle closing the menu goes here
+    console.log("Tower menu closed");
+    // Send message to parent
+    window.parent.postMessage("closeTowerMenu", "*");
+}

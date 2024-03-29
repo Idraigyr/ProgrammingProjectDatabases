@@ -118,3 +118,10 @@ function populateContainer(containerId, itemList) {
 populateContainer('container1', spells);
 populateContainer('container2', gems);
 populateContainer('container3', stakes);
+
+function exitMenu() {
+    // Your code to handle closing the menu goes here
+    console.log("Altar menu closed");
+    // Send message to parent
+    window.parent.postMessage("closeAltarMenu", "*");
+}

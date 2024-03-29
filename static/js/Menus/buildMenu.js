@@ -68,6 +68,8 @@ populateContainer("container1", combat, "Combat");
 
 function exitMenu() {
     // Your code to handle closing the menu goes here
-    console.log("Menu closed");
+    console.log("Build menu closed");
+    // Send message to parent
+    window.parent.postMessage("closeBuildMenu", "*");
 }
 

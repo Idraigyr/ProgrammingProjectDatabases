@@ -66,14 +66,14 @@ class App {
 
         this.viewManager = new ViewManager({spellPreview: new View.PreviewObject([{key: "build", details: {
             ctor: THREE.BoxGeometry,
-            params: [10,10,10],
+            params: [10,10,10], // TODO: gridCellSize here!
             primaryColor: 0xD46D01,
             secondaryColor: 0xFFB23D,
             cutoff: -5
         }},
         {key: "thundercloud", details: {
             ctor: THREE.CylinderGeometry,
-            params: [3, 3, 3],
+            params: [3, 3, 3], // TODO: 1/3 of gridCellSize?
             primaryColor: 0x0051FF,
             secondaryColor: 0xCCABFF,
             cutoff: -1.499
