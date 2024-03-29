@@ -112,6 +112,7 @@ export class SpellCaster extends Subject{
         //this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
         if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell()?.spell instanceof BuildSpell){
+            // TODO: check collision with plane only
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
         }
         else if (this.#wizard?.getCurrentSpell()?.hasPreview) {
@@ -129,7 +130,9 @@ export class SpellCaster extends Subject{
     }
 
     //use as only signal for spells that can be cast instantly or use as signal to start charging a spell
-    onLeftClickDown(){
+    onLeftClickDown(event){
+        // Ignore if the event is not from the left mouse button
+        if (event.button !== 0) return;
         if (this.#wizard.canCast()) {
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 

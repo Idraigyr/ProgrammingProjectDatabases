@@ -38,7 +38,7 @@ export class SpellFactory{
                 entityModel = this.#createShield(event.detail);
                 break;
             case BuildSpell:
-                const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
+                const customEvent = new CustomEvent('callBuildManager', {detail: event.detail});
                 document.dispatchEvent(customEvent);
                 break;
         }

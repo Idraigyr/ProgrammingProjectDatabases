@@ -9,6 +9,7 @@ export class BuildManager {
     #scene;
     #copyable;
     #previewObject;
+    selectedPosition;
     planes = [];
     #raycaster;
     /**
@@ -28,8 +29,18 @@ export class BuildManager {
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
         this.setPreviewMaterial(previewMaterial);
-        document.addEventListener('placeBuildSpell', this.placeBuildSpell.bind(this));
+        document.addEventListener('callBuildManager', this.placeBuildSpell.bind(this));
         document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
+        window.addEventListener("message", this.messageListener.bind(this));
+    }
+    messageListener(event){
+        if(event.data.type === "placeBuilding"){
+            // Get the building name from the event
+            const buildingName = event.data.buildingName;
+            // Create a custom event to place the building (send the event to world manager)
+            const customEvent = new CustomEvent('placeBuilding', {detail: {buildingName: buildingName, position: this.selectedPosition}});
+            document.dispatchEvent(customEvent);
+        }
     }
     addBuildPlane(plane){
         this.planes.push(plane);
@@ -104,6 +115,9 @@ export class BuildManager {
         // this.scaleAndCorrectPosition(this.ritualToPlace);
         if(!this.ritualToPlace && this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0]) {
             document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {}}));
+            // Save current selected position
+            this.currentSelectedPosition = event.detail.params.position;
         }
     }
+
 }

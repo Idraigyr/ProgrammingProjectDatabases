@@ -11,6 +11,7 @@ export class WorldManager {
         this.world = null;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
+        document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
     }
 
     async importWorld(islandID){
@@ -18,9 +19,9 @@ export class WorldManager {
             {buildings: [{
                     type: "Mine",
                     position: { //TODO: this should be gridSquare coordinates
-                        x: 0,
+                        x: 2,
                         y: 0,
-                        z: 0
+                        z: 1
                     },
                     rotation: 0
                 }
@@ -73,6 +74,12 @@ export class WorldManager {
         }
 
         this.world = new Model.World({islands: islands, player: player, characters: characters, Factory: this.factory, SpellFactory: this.spellFactory});
+    }
+
+    placeBuilding(event){
+        const buildingName = event.detail.buildingName;
+        const position = event.detail.position;
+        console.log(`Placing building ${buildingName} at position ${position}`);
     }
 
     async exportWorld(){
