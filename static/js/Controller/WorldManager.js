@@ -79,7 +79,7 @@ export class WorldManager {
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
         const position = event.detail.position;
-        console.log(`Placing building ${buildingName} at position ${position}`);
+        this.world.addBuilding(buildingName, position);
     }
 
     async exportWorld(){

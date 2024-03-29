@@ -1,9 +1,9 @@
 // variables
 
 // lists buildings
-let combat = ["tower"];
-let resources = ["fusionTable", "mine"];
-let decorations = ["tree", "bush"];
+let combat = ["Tower"];
+let resources = ["FusionTable", "Mine"];
+let decorations = ["Tree", "Bush"];
 
 // Function to show buildings or items based on the selected tab
 function showBuildings(type) {

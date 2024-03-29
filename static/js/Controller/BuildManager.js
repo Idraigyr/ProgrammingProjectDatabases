@@ -116,7 +116,8 @@ export class BuildManager {
         if(!this.ritualToPlace && this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0]) {
             document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {}}));
             // Save current selected position
-            this.currentSelectedPosition = event.detail.params.position;
+            this.selectedPosition = event.detail.params.position;
+            console.log("Current selected position: ", this.selectedPosition);
         }
     }
 

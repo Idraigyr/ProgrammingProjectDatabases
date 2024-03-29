@@ -73,6 +73,24 @@ export class Factory{
         return islandModel;
     }
 
+    createBuilding(buildingName, position){
+        // Convert position
+        // TODO: add rotation
+        let model = new Model[buildingName]({position: position});
+        const asset = this.assetManager.getAsset(buildingName);
+        correctRitualScale(asset);
+        let view = new View[buildingName]({charModel: asset, position: position, scene: this.scene});
+        this.scene.add(view.charModel);
+
+        view.boundingBox.setFromObject(view.charModel);
+        this.scene.add(view.boxHelper);
+
+        model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        this.viewManager.addPair(model, view);
+        return model;
+    }
+
     /**
      * Creates models of the buildings
      * @param islandModels (output) models
