@@ -11,6 +11,8 @@ from src.model.placeable.buildings import AltarBuilding
 from src.model.user_profile import UserProfile
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
+from src.model.user_settings import UserSettings
+
 db: SQLAlchemy = current_app.db
 
 class AuthService:
@@ -150,6 +152,12 @@ class AuthService:
         player_entity.player = player
         player.entity = player_entity
         current_app.db.session.add(player_entity)
+        current_app.db.session.commit()
+
+        # player settings
+        settings = UserSettings(player_id=player.user_profile_id)
+        # other default settings are set by the db
+        current_app.db.session.add(settings)
         current_app.db.session.commit()
 
         # The player can initially only build the altar
