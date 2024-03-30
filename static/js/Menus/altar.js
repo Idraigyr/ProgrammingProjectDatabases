@@ -118,3 +118,12 @@ function populateContainer(containerId, itemList) {
 populateContainer('container1', spells);
 populateContainer('container2', gems);
 populateContainer('container3', stakes);
+
+
+// exit button
+document.addEventListener("DOMContentLoaded", function() {
+    const button = document.getElementById('exit');
+    button.addEventListener('click', function() {
+        // exit menu
+    });
+});

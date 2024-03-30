@@ -39,3 +39,13 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+
+
+// exit button
+document.addEventListener("DOMContentLoaded", function() {
+    const button = document.getElementById('exit');
+    button.addEventListener('click', function() {
+        // exit menu
+    });
+});
+

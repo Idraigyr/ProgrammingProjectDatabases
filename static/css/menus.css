@@ -192,16 +192,24 @@ h3 {
 }
 
 .exit {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  cursor: pointer;
-  font-size: 20px;
-  color: #000;
+  position: relative;
+  right: -510px;
+  margin-left: 45%;
+  margin-top: 0;
+  padding: 0;
+  background-color: transparent; /* Remove background color */
+  border: none;
+  width: 40px; /* Set a fixed width */
+  height: 40px; /* Set a fixed height */
+  background-image: url('/static/images/menu/exit.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
 }
 
 .exit:hover {
-  color: #f00;
+  transform: scale(1.10);
 }
 
 .fireSpell{

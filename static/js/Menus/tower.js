@@ -107,3 +107,13 @@ function populateContainer(containerId, itemList) {
 populateContainer('container1', gems);
 populateContainer('container2', towerGems);
 populateContainer('container3', boosts);
+
+
+
+// exit button
+document.addEventListener("DOMContentLoaded", function() {
+    const button = document.getElementById('exit');
+    button.addEventListener('click', function() {
+        // exit menu
+    });
+});

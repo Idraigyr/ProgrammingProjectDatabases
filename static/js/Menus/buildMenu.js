@@ -66,8 +66,18 @@ function populateContainer(containerId, itemList, type) {
 
 populateContainer("container1", combat, "Combat");
 
-function exitMenu() {
-    // Your code to handle closing the menu goes here
-    console.log("Menu closed");
-}
 
+// exit button
+document.addEventListener("DOMContentLoaded", function() {
+    const button = document.getElementById('exit');
+    button.addEventListener('click', function() {
+        // exit menu
+    });
+});
+
+
+// play button hover sound
+function playHoverSound() {
+    let audio = document.getElementById("hoverSound");
+    audio.play();
+}

@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@ckeditor/jsdoc-plugins": "^39.6.2"
+    "@ckeditor/jsdoc-plugins": "^39.6.3"
   }
 }
