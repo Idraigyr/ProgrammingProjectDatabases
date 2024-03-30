@@ -2,7 +2,7 @@ import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
 import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
-import {convertGridToWorldPosition, correctRitualScale, getFileExtension} from "../helpers.js";
+import {convertGridToWorldPosition, correctRitualScale, getFileExtension, setMinimumY} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {scaleAndCorrectPosition} from "../helpers.js";
@@ -74,12 +74,13 @@ export class Factory{
     }
 
     createBuilding(buildingName, position){
-        // Convert position
-        // TODO: add rotation
-        let model = new Model[buildingName]({position: position});
         const asset = this.assetManager.getAsset(buildingName);
         correctRitualScale(asset);
-        let view = new View[buildingName]({charModel: asset, position: position, scene: this.scene});
+        setMinimumY(asset, 0); // TODO: is it always 0?
+        let pos = new THREE.Vector3(position.x, asset.position.y, position.z);
+        // Convert position
+        let model = new Model[buildingName]({position: pos}); // TODO: add rotation
+        let view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);

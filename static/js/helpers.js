@@ -77,6 +77,11 @@ export function correctRitualPosition(object) {
     // object.position.add(new THREE.Vector3(-(boundingBox.max.x-boundingBox.min.x) / 2.0, 0, -(boundingBox.max.z-boundingBox.min.z) / 2.0));
 }
 
+export function setMinimumY(object, y){
+    const boundingBox = new THREE.Box3().setFromObject(object);
+    object.position.y += y - boundingBox.min.y;
+}
+
 export function correctRitualScale(object){
         let boundingBox = new THREE.Box3().setFromObject(object);
         const minVec = boundingBox.min;

@@ -101,6 +101,7 @@ export class BuildManager {
         }
     }
     turnPreviewSpell(event){
+        if(!this.#previewObject) return;
         this.#previewObject.rotation.y += Math.PI/2;
     }
     placeBuildSpell(event){
