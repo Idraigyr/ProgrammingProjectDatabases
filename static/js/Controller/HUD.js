@@ -17,8 +17,6 @@ export class HUD {
     updateHoveredButton() {
         const spellSlotIndex = this.#inputManager.keys.spellSlot;
 
-        console.log("Spell Slot Index:", spellSlotIndex);
-
         // Remove hover class from all buttons
         document.querySelectorAll('.HotBar .item').forEach(button => {
             button.classList.remove('hovered');
@@ -29,9 +27,24 @@ export class HUD {
         hoveredButton.parentElement.classList.add('hovered');
 
     }
-    toggleSettingsMenu()
-    {
+
+    toggleSettingsMenu() {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');
+    }
+
+    useSpell(spellCooldown) {
+        const spellSlotIndex = this.#inputManager.keys.spellSlot;
+
+        const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
+        usedSpel.parentElement.classList.add('onCooldown');
+
+        const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex}Icon`);
+        usedSpelIcon.classList.add('onCooldown');
+
+        setTimeout(function() {
+        usedSpel.parentElement.classList.remove('onCooldown');
+        usedSpelIcon.classList.remove('onCooldown');
+        }, spellCooldown * 1000);
     }
 }
