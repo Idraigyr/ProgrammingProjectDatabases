@@ -45,7 +45,6 @@ export class InputManager {
         this.canvas.addEventListener("mousedown", async (e) => {
             if(!this.blockedInput) return;
             await this.canvas.requestPointerLock();
-            console.log(this.blockedInput);
         });
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;

@@ -1,7 +1,7 @@
 import {Controller} from "./Controller.js";
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Fireball, ThunderCloud, Shield} from "../Model/Spell.js";
+import {Fireball, ThunderCloud, Shield, BuildSpell} from "../Model/Spell.js";
 import * as THREE from "three";
 
 /**
@@ -37,8 +37,8 @@ export class SpellFactory{
             case Shield:
                 entityModel = this.#createShield(event.detail);
                 break;
-            case Model.RitualSpell:
-                const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
+            case BuildSpell:
+                const customEvent = new CustomEvent('callBuildManager', {detail: event.detail});
                 document.dispatchEvent(customEvent);
                 break;
         }
@@ -140,20 +140,6 @@ export class SpellFactory{
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.models.push(model);
-        this.viewManager.addPair(model,view);
-        return model;
-    }
-
-    /**
-     * Creates building model and view for a tree
-     * @returns {Tree} model of the tree
-     */
-    createTree(){
-        let model = new Model.Tree();
-        let view = new View.Tree({charModel: this.assetManager.getAsset("Tree")});
-        this.scene.add(view.charModel);
-        model.addEventListener("updatePosition", view.updatePosition.bind(view));
-        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
         return model;
     }

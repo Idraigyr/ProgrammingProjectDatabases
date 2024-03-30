@@ -111,7 +111,11 @@ export class SpellCaster extends Subject{
     update(deltaTime) {
         //this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
-        if (this.#wizard?.getCurrentSpell()?.hasPreview) {
+        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell()?.spell instanceof BuildSpell){
+            // TODO: check collision with plane only
+            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
+        }
+        else if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
         }
         this.#wizard.updateCooldowns(deltaTime);
@@ -126,7 +130,9 @@ export class SpellCaster extends Subject{
     }
 
     //use as only signal for spells that can be cast instantly or use as signal to start charging a spell
-    onLeftClickDown(){
+    onLeftClickDown(event){
+        // Ignore if the event is not from the left mouse button
+        if (event.button !== 0) return;
         if (this.#wizard.canCast()) {
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 
@@ -146,7 +152,7 @@ export class SpellCaster extends Subject{
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
                 this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: castPosition,
+                    position: this.checkRaycaster(),
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));
             }

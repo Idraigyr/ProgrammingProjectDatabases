@@ -13,7 +13,7 @@ export class World{
         params.islands.forEach((island) => {
             this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
         });
-        this.player = this.factory.createPlayer({position: params.player.position});
+        this.player = this.factory.createPlayer(params.player.position);
         // Set default values for the inventory slots
         this.player.changeEquippedSpell(0,new BuildSpell({}));
         this.player.changeEquippedSpell(1,new Fireball({}));
@@ -23,6 +23,13 @@ export class World{
         params.characters.forEach((character) => {});
         this.spellEntities = [];
     }
+
+    addBuilding(buildingName, position){
+        const building = this.factory.createBuilding(buildingName, position);
+        // TODO: what if multiple islands?
+        this.islands[0].buildings.push(building);
+    }
+
     exportWorld(json){
 
     }

@@ -23,6 +23,10 @@ Altar:
 https://tarasov3d-studio.itch.io/fantasy-portal-lowpoly-3d-model
 Mine:
 https://sketchfab.com/3d-models/low-poly-mine-51f04c3d37784904b12fc020f0e9bee2
+Fusion table:
+https://sketchfab.com/3d-models/alchemy-table-57450896404c4450968189a7b0a8befe
+Bushes:
+https://sketchfab.com/3d-models/low-poly-bushes-e109272b7ea34cc0a09cbd26e6fdc6d8
 -----------------------------------
 Scripts:
 Grass shader:
