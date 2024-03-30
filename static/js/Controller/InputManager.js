@@ -33,14 +33,27 @@ export class InputManager {
         x: 0,
         y: 0
     }
-    #callbacks = {};
+    #callbacks = {mousemove: []};
     spellSlotChangeCallbacks = [];
 
 
     /**
      * Constructor that adds event listeners for the input
      */
-    constructor() {
+    constructor(params) {
+        this.blockedInput = true;
+        this.canvas = params.canvas;
+        this.canvas.addEventListener("mousedown", async (e) => {
+            if(!this.blockedInput) return;
+            await this.canvas.requestPointerLock();
+            console.log(this.blockedInput);
+        });
+        document.addEventListener("pointerlockchange", (e) => {
+            this.blockedInput = !this.blockedInput;
+            console.log("pointerlockchange");
+        });
+        document.addEventListener("mousemove", this.onMouseMoveEvent.bind(this));
+
         document.addEventListener("keydown", this.#onKeyDown.bind(this));
         document.addEventListener("keyup", this.#onKeyUp.bind(this));
         // Add event listener for mouse down
@@ -85,7 +98,7 @@ export class InputManager {
      */
 
     addMouseMoveListener(callback){
-        document.addEventListener("mousemove",callback);
+        this.#callbacks["mousemove"].push(callback);
     }
 
     /**
@@ -109,7 +122,12 @@ export class InputManager {
      * @param callback function to remove
      */
     removeMouseMoveListener(callback){
-        document.removeEventListener("mousemove",callback);
+        this.#callbacks["mousemove"] = this.#callbacks["mousemove"].filter((cb) => cb !== callback);
+    }
+
+    onMouseMoveEvent(event){
+        if(this.blockedInput) return;
+        this.#callbacks["mousemove"].forEach((callback) => callback(event));
     }
 
     /**
@@ -126,7 +144,9 @@ export class InputManager {
      * @param bool true if key is pressed, false if released
      */
 
+    //TODO: remove all keys that need not be checked within an update function
     #onKey(KeyBoardEvent, bool){
+        if(this.blockedInput) return;
         switch (KeyBoardEvent.code){
             case upKey:
                 this.keys.up = bool;
@@ -180,7 +200,6 @@ export class InputManager {
                 this.keys.eating = bool;
                 break;
         }
-
         this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 

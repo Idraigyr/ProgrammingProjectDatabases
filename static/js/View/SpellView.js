@@ -1,4 +1,4 @@
-import {IView} from "./View.js";
+import {IAnimatedView, IView} from "./View.js";
 import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 import {Color} from "three";
@@ -144,6 +144,27 @@ export class ThunderCloud extends IView{
 }
 
 
-export class RitualView extends IView{
+export class RitualSpell extends IAnimatedView{
+    constructor(params) {
+        super(params);
+        this.camera = params.camera;
+        this.charModel = params.charModel;
+        this.position = params.position;
+    }
 
+    /**
+     * Load build ritual model's animations
+     * @param clips
+     */
+    loadAnimations(clips){
+        const getAnimation =  (animName, alias) => {
+            let clip = THREE.AnimationClip.findByName(clips, animName);
+            this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
+        }
+        getAnimation('Scene',"RitualSpell");
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.animations["RitualSpell"].play();
+    }
 }

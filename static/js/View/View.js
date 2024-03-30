@@ -12,6 +12,11 @@ export class IView {
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
         this.boxHelper.visible = false;
         this.horizontalRotation = 0;
+
+        try {
+            this.updatePosition({detail: {position: params.position}});
+        } catch (err){
+        }
     }
     update(deltaTime) {}
     updatePosition(event){
@@ -27,7 +32,7 @@ export class IView {
 
     updateRotation(event){
         if(!this.charModel) return;
-        this.charModel.rotation.setFromQuaternion(event.detail.rotation);
+        this.charModel.setRotationFromQuaternion(event.detail.rotation);
         this.charModel.rotateY(this.horizontalRotation * Math.PI / 360);
         //this.boundingBox.setFromObject(this.charModel, true);
     }

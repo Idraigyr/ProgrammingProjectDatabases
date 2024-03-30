@@ -13,13 +13,14 @@ export class World{
         params.islands.forEach((island) => {
             this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
         });
-        this.player = this.factory.createPlayer();
+        this.player = this.factory.createPlayer({position: params.player.position});
         // Set default values for the inventory slots
         this.player.changeEquippedSpell(0,new BuildSpell({}));
         this.player.changeEquippedSpell(1,new Fireball({}));
         this.player.changeEquippedSpell(2,new ThunderCloud({}));
         this.player.changeEquippedSpell(3,new Shield({}));
         this.entities = [];
+        params.characters.forEach((character) => {});
         this.spellEntities = [];
     }
     exportWorld(json){

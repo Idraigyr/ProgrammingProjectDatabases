@@ -20,10 +20,13 @@
           "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
           "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
           "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
-          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js"
+          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
+          "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/src/index.js",
+          "three-orbitControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/OrbitControls.js"
         }
       }
     </script>
+    <!--"three-MeshBVHWorker": "https://unpkg.com/three-mesh-bvh@0.7.3/src/workers/GenerateMeshBVHWorker.js"-->
     <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
@@ -82,49 +85,48 @@
     </script>
 
     <!-- loading screen -->
-    <div class = "loading-animation">
-    <div class="progress-bar-container">
+    <div class="loading-animation">
+        <div class="progress-bar-container">
+            <label for="progress-bar">Loading...</label> <!-- preff?-->
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
 
-        <label for="progress-bar">Loading...</label> <!-- preff?-->
-        <progress id="progress-bar" value="0" max="100"></progress>
-    </div>
-
-    <div class="scene">
-      <div class="objects">
-        <div class="square"></div>
-        <div class="circle"></div>
-        <div class="triangle"></div>
-      </div>
-      <div class="wizard">
-        <div class="body"></div>
-        <div class="right-arm">
-          <div class="right-hand"></div>
-        </div>
-        <div class="left-arm">
-          <div class="left-hand"></div>
-        </div>
-        <div class="head">
-          <div class="beard"></div>
-          <div class="face">
-            <div class="adds"></div>
+        <div class="scene">
+          <div class="objects">
+            <div class="square"></div>
+            <div class="circle"></div>
+            <div class="triangle"></div>
           </div>
-          <div class="hat">
-            <div class="hat-of-the-hat"></div>
-            <div class="four-point-star --first"></div>
-            <div class="four-point-star --second"></div>
-            <div class="four-point-star --third"></div>
+          <div class="wizard">
+            <div class="body"></div>
+            <div class="right-arm">
+              <div class="right-hand"></div>
+            </div>
+            <div class="left-arm">
+              <div class="left-hand"></div>
+            </div>
+            <div class="head">
+              <div class="beard"></div>
+              <div class="face">
+                <div class="adds"></div>
+              </div>
+              <div class="hat">
+                <div class="hat-of-the-hat"></div>
+                <div class="four-point-star --first"></div>
+                <div class="four-point-star --second"></div>
+                <div class="four-point-star --third"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="noise"></div>
     </div>
-    <div class="noise"></div>
-        </div>
 
 
         <!-- Setting menu -->
 
 
-        <div class="container hide">
+        <div class="container hide" style="z-index: 1000">
       <h1>Game Settings</h1>
 
       <div class="settings">
@@ -190,7 +192,8 @@
       <button class="applyButton" id="applyButton">Apply</button>
     </div>
 
-
+        <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
 
     <!-- UI/HUD -->
 
@@ -253,12 +256,11 @@
 
 
     <div class="Mana">
-        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
         <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
-                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
+        <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
 
-        <div class = "ManaAmount">
-            50/100
+        <div class ="ManaAmount">
+            0/100
         </div>
     </div>
 
@@ -301,7 +303,7 @@
             if (document.activeElement === chatInput) {
                 return;
             }
-            if (e.key === 'f' || e.key === 'F') {
+            if (e.code === 'KeyF') {
                 config.showFPS = !config.showFPS;
             }
         });

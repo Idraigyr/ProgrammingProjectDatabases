@@ -65,6 +65,16 @@ export class Immobile extends SpellEntity{
     }
 }
 
+export class RitualSpell extends SpellEntity{
+    constructor(params) {
+        super(params);
+    }
+    update(deltaTime){
+        super.update(deltaTime);
+        // TODO: add something here?
+    }
+}
+
 export class FollowPlayer extends SpellEntity{
     constructor(params) {
         super(params);
