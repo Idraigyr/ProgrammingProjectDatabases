@@ -11,6 +11,7 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
+import {EatingController} from "./Controller/EatingController.js";
 import {OrbitControls} from "three-orbitControls";
 import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
@@ -97,6 +98,7 @@ class App {
         this.minionControllers = [];
         this.assetManager = new AssetManager();
         this.hud = new HUD(this.inputManager)
+        this.eatingController = new EatingController();
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
@@ -165,16 +167,19 @@ class App {
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
             InputManager: this.inputManager,
-            collisionDetector: this.collisionDetector
+            collisionDetector: this.collisionDetector,
+            eatingController: this.eatingController
         });
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded
         document.dispatchEvent(new Event("assetsLoaded"));
         this.spellCaster.wizard = this.worldManager.world.player;
+        this.eatingController.wizard = this.worldManager.world.player;
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+        this.playerController.addEventListener("eatingEvent", this.eatingController.eat.bind(this.eatingController));
     }
 
     /**

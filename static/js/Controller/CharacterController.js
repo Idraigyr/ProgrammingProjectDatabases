@@ -14,6 +14,8 @@ import {Factory} from "./Factory.js";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
 import {BaseCharAttackState} from "../Model/States/CharacterStates.js";
 
+
+
 /**
  * Class to manage the character and its actions
  */
@@ -23,7 +25,7 @@ export class CharacterController extends Subject{
 
     /**
      * adds a listener to inputManager mousedown event
-     * @param {{Character: Wizard, InputManager: InputManager}} params
+     * @param {{Character: Wizard, InputManager: InputManager eatingController: eatingController}} params
      */
     constructor(params) {
         super();
@@ -32,18 +34,10 @@ export class CharacterController extends Subject{
         this.collisionDetector = params.collisionDetector;
         this.#inputManager = params.InputManager;
         this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
-
+        this.eatingController = params.eatingController;
         this.tempTemp = new THREE.Vector3();
     }
 
-    /**
-     * creates a custom event notifying eating being initiated
-     * @param
-     * @returns {CustomEvent<{}>}
-     */
-    createEatingEvent(){
-        return new CustomEvent("eating", {});
-    }
 
 
     /**
@@ -139,7 +133,7 @@ export class CharacterController extends Subject{
 
         if (this._character.fsm.currentState.movementPossible) {
 
-            if(this.#inputManager.keys.up && this._character.onGround) {
+            if (this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;
             }
@@ -168,7 +162,7 @@ export class CharacterController extends Subject{
 
             let speedMultiplier = 0;
             //TODO: keep momentum when in the air
-            if(this._character.fsm.currentState instanceof BaseCharAttackState){
+            if (this._character.fsm.currentState instanceof BaseCharAttackState) {
                 speedMultiplier = spellCastMovementSpeed;
             } else {
                 if (this.#inputManager.keys.sprint && forwardScalar === 1) {
@@ -177,10 +171,10 @@ export class CharacterController extends Subject{
                 speedMultiplier = movementSpeed;
             }
 
-            this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
+            this.tempPosition.addScaledVector(movement, speedMultiplier * deltaTime);
         }
         if (this.#inputManager.keys.eating) {
-            this.dispatchEvent(this.createEatingEvent());
+            this.dispatchEvent(this.eatingController.createEatingEvent());
         }
     }
 

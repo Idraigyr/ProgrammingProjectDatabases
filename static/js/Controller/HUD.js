@@ -44,7 +44,7 @@ export class HUD {
         const buildMenu = document.querySelector(`#buildMenu`);
         buildMenu.classList.add('hide');
     }
-}
+
 
     useSpell(spellCooldown) {
         const spellSlotIndex = this.#inputManager.keys.spellSlot;
