@@ -143,18 +143,4 @@ export class SpellFactory{
         this.viewManager.addPair(model,view);
         return model;
     }
-
-    /**
-     * Creates building model and view for a tree
-     * @returns {Tree} model of the tree
-     */
-    createTree(){
-        let model = new Model.Tree();
-        let view = new View.Tree({charModel: this.assetManager.getAsset("Tree")});
-        this.scene.add(view.charModel);
-        model.addEventListener("updatePosition", view.updatePosition.bind(view));
-        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
-        this.viewManager.addPair(model,view);
-        return model;
-    }
 }

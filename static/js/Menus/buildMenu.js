@@ -58,6 +58,7 @@ function populateContainer(containerId, itemList, type) {
         item.appendChild(img);
         // Add onclick message
         item.onclick = function() {
+            // TODO: make dictionary or something to map building names to actual building names
             window.parent.postMessage({type: "placeBuilding", buildingName: itemName[0].toUpperCase() + itemName.slice(1)}, "*");
         };
         container.appendChild(item);
