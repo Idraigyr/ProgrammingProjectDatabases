@@ -10,7 +10,7 @@ export class SpellSpawner extends Subject{
     constructor(params) {
         super(params);
         this.timer = 0;
-        this.interval = params?.interval ?? 3;
+        this.interval = params?.interval ?? 0.5;
         this.position = params?.position ?? new THREE.Vector3(0,0,0);
         this.spell = params?.spell?.type;
         this.spellParams = params?.spell?.params;
@@ -33,7 +33,8 @@ export class SpellSpawner extends Subject{
         return new CustomEvent("spawnSpell", {
             detail: {
                 type: this.spell,
-                params: this.spellParams
+                params: {position: new THREE.Vector3(-7,17.5,-10), direction: new THREE.Vector3(10,-3,0).
+                    add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2)), team: 0}
             }
         });
     }

@@ -14,6 +14,7 @@ export class CollisionDetector{
         //only use = not needing to allocate extra memory for new vectors
         this.tempVector = new THREE.Vector3();
         this.tempVector2 = new THREE.Vector3();
+        this.tempLine = new THREE.Line3();
 
         this.tempBox = new THREE.Box3();
     }
@@ -66,21 +67,24 @@ export class CollisionDetector{
     }
 
     BoxCollisionWithWorld(boundingBox){
-        return this.collider.geometry.boundsTree.intersectsBox(boundingBox);
+        return this.collider.geometry.boundsTree.intersectsBox(boundingBox, new THREE.Matrix4());
     }
 
-    boxToBoxCollision(box1, box2){
+    boxToBoxCollision(box1, box2, ){
         return box1.intersectsBox(box2);
     }
 
     checkSpellEntityCollisions(){
-        for(const spellEntity of this.viewManager.spellEntities){
+        //TODO: what if spell "phases" through collision because of high velocity/deltaTime?
+        for(const spellEntity of this.viewManager.pairs.spellEntity){
             if(this.BoxCollisionWithWorld(spellEntity.view.boundingBox)){
                 spellEntity.model.onWorldCollision();
             }
-            if(this.boxToBoxCollision(spellEntity.view.boundingBox, this.viewManager.player.view.boundingBox)){
-                spellEntity.model.onCharacterCollision(this.viewManager.player.model);
-            }
+            this.viewManager.pairs.player.forEach((player) => {
+                if(this.boxToBoxCollision(spellEntity.view.boundingBox, player.view.boundingBox)){
+                    spellEntity.model.onCharacterCollision(player.model);
+                }
+            });
         }
     }
 
@@ -117,9 +121,8 @@ export class CollisionDetector{
 
                     playerModel.segment.start.addScaledVector( direction, depth );
                     playerModel.segment.end.addScaledVector( direction, depth );
-
+                    return false;
                 }
-
             }
 
         } );

@@ -12,7 +12,7 @@ export class Entity extends Subject{
     constructor(params) {
         super();
         this.radius = params?.radius ?? 0.5;
-        this._position =  params?.position ?? new THREE.Vector3(0,0,0);
+        this._position =  params?.position?.clone() ?? new THREE.Vector3(0,0,0);
         this.team = params?.team ?? 0;
     }
 

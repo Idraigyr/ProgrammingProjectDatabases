@@ -11,6 +11,7 @@ export class WorldManager {
         this.world = null;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
+        this.collisionDetector = params.collisionDetector;
     }
 
     async importWorld(islandID){
@@ -72,7 +73,7 @@ export class WorldManager {
             console.log(e);
         }
 
-        this.world = new Model.World({islands: islands, player: player, characters: characters, Factory: this.factory, SpellFactory: this.spellFactory});
+        this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
     }
 
     async exportWorld(){

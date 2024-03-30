@@ -9,6 +9,7 @@ class SpellEntity extends Entity{
         super(params);
         this.spellType = params.spellType;
         this.duration = params.duration;
+        this.hitSomething = false;
         this.timer = 0;
     }
 
@@ -31,13 +32,11 @@ class SpellEntity extends Entity{
         }
     }
 
-    onWorldCollision(){
-        this.dispatchEvent(this.createDeleteEvent());
-    }
+    onWorldCollision(){}
     onCharacterCollision(character){
         if(this.team !== character.team){
             this.spellType.applyEffects(character);
-            this.dispatchEvent(this.createDeleteEvent());
+            this.hitSomething = true;
         }
     }
 }
@@ -68,11 +67,31 @@ export class Projectile extends SpellEntity{
         this._position.add(vec);
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
+
+    onWorldCollision(){
+        this.hitSomething = true;
+        this.timer += this.duration;
+        this.dispatchEvent(this.createDeleteEvent());
+    }
+    onCharacterCollision(character){
+        super.onCharacterCollision(character);
+
+        if(this.hitSomething) {
+            this.timer += this.duration;
+            this.dispatchEvent(this.createDeleteEvent());
+        }
+    }
 }
 
 export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
+    }
+    onWorldCollision(){
+        super.onWorldCollision();
+    }
+    onCharacterCollision(character){
+        super.onCharacterCollision(character);
     }
 }
 

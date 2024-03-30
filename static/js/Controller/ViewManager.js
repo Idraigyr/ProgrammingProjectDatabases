@@ -1,6 +1,7 @@
 import {Subject} from "../Patterns/Subject.js";
 import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
+import {Fireball} from "../View/SpellView.js";
 
 export class ViewManager extends Subject{
     constructor(params) {
@@ -12,6 +13,7 @@ export class ViewManager extends Subject{
             character: [],
             spellEntity: []
         };
+        this.dyingViews = [];
         this.spellPreview = params.spellPreview;
     }
 
@@ -52,6 +54,9 @@ export class ViewManager extends Subject{
     deleteView(event){
         this.pairs[event.detail.model.type] = this.pairs[event.detail.model.type].filter((pair) => {
             if(pair.model === event.detail.model){
+                if(pair.view.staysAlive){
+                    this.dyingViews.push(pair.view);
+                }
                 pair.view.cleanUp();
                 return false;
             }
@@ -109,5 +114,6 @@ export class ViewManager extends Subject{
                 }
             });
         }
+        this.dyingViews = this.dyingViews.filter((spell) => spell.isNotDead(deltaTime));
     }
 }

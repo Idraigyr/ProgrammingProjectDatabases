@@ -10,18 +10,24 @@ export class Fireball extends IView{
     constructor(params) {
         super(params);
         this.particleSystem = new ParticleSystem(params);
+        this.staysAlive = true;
 
         const geo = new THREE.SphereGeometry(0.1);
         const mat = new THREE.MeshPhongMaterial({color: 0xFF6C00 });
         this.charModel = new THREE.Mesh(geo, mat);
+        this.boundingBox.setFromObject(this.charModel);
+        this.boundingBox.translate(this.position);
     }
 
     cleanUp(){
-        this.charModel.parent.remove(this.charModel);
-        this.particleSystem.cleanUp();
+        super.cleanUp();
     }
     update(deltaTime){
         this.particleSystem.update(deltaTime);
+    }
+
+    isNotDead(deltaTime){
+        return this.particleSystem.isNotDead(deltaTime);
     }
 
     /**
@@ -30,6 +36,8 @@ export class Fireball extends IView{
      */
     updatePosition(event){
         if(!this.charModel) return;
+        this.delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
+        this.boundingBox.translate(this.delta);
         this.charModel.position.copy(event.detail.position);
         this.particleSystem.position.copy(event.detail.position);
     }
@@ -61,6 +69,7 @@ export class ThunderCloud extends IView{
         this.charModel = new THREE.Group();
         this.charModel.add(this.light);
         this.charModel.add(this.planes);
+        this.boundingBox.setFromCenterAndSize(new THREE.Vector3(), new THREE.Vector3(this.width, this.height, this.width));
     }
     #generateCloudMetrics(){
         return [...new Array(this.NrPlanes)].map((_, index) => ({
@@ -136,10 +145,6 @@ export class ThunderCloud extends IView{
     update(deltaTime){
         this.#updateLight(deltaTime);
         this.#updateClouds(deltaTime);
-    }
-
-    cleanUp(){
-        this.charModel.parent.remove(this.charModel);
     }
 }
 

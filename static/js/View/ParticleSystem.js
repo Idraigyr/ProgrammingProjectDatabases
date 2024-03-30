@@ -237,6 +237,16 @@ export class ParticleSystem{
         this.updateGeometry();
     }
 
+    isNotDead(deltaTime){
+        this.updateParticles(deltaTime);
+        this.updateGeometry();
+        if(this.#particles.length === 0){
+            this.cleanUp();
+            return false;
+        }
+        return true;
+    }
+
     /**
      * updates geometry based on particle update
      */

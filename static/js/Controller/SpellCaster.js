@@ -122,7 +122,8 @@ export class SpellCaster extends Subject{
                 this.dispatchEvent(this.createSpellEntityEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
                     //TODO: base direction on camera not on player direction
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                    team: this.#wizard.team
                 }));
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));

@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {maxZoomIn, minZoomIn, minCameraY} from "../configs/ControllerConfigs.js";
+import {maxZoomIn, minZoomIn} from "../configs/ControllerConfigs.js";
 import {max, min} from "../helpers.js";
 
 /**

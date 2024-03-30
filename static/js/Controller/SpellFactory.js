@@ -60,7 +60,8 @@ export class SpellFactory{
             duration: details.type.spell.duration,
             velocity: details.type.spell.velocity,
             fallOf: details.type.fallOf,
-            position: details.params.position
+            position: details.params.position,
+            team: details.params.team
         });
         let uniforms = {
             diffuseTexture: {
@@ -78,6 +79,7 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
+        this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -88,7 +90,8 @@ export class SpellFactory{
         let model = new Model.Immobile({
             spellType: details.type,
             position: details.params.position,
-            duration: details.type.spell.duration
+            duration: details.type.spell.duration,
+            team: details.params.team
         });
         let position = new THREE.Vector3().copy(details.params.position);
         position.y += 15;
@@ -99,6 +102,9 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
+
+        view.boundingBox.set(new THREE.Vector3().copy(position).sub(new THREE.Vector3(4,15,4)), new THREE.Vector3().copy(position).add(new THREE.Vector3(4,0.5,4)));
+        this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -110,7 +116,8 @@ export class SpellFactory{
             target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
             spellType: details.type,
             position: details.params.position,
-            duration: details.type.spell.duration
+            duration: details.type.spell.duration,
+            team: details.params.team
         });
 
         let view = new View.Shield({

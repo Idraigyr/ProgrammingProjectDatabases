@@ -1,7 +1,7 @@
 import WebGL from "three-WebGL";
 import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
-import {cameraPosition} from "./configs/ControllerConfigs.js";
+import {cameraPosition, physicsSteps} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
@@ -11,12 +11,10 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
-import {OrbitControls} from "three-orbitControls";
-import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {SpellCaster} from "./Controller/SpellCaster.js";
 import {View} from "./View/ViewNamespace.js";
-import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "./configs/Keybinds.js";
+import {OrbitControls} from "three-orbitControls";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -109,12 +107,20 @@ class App {
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
 
+        window.addEventListener("resize", this.onResize.bind(this));
+
         //visualise camera line -- DEBUG STATEMENTS --
         // this.inputManager.addKeyDownEventListener("KeyN",() => {
         //     console.log("N");
         //     this.scene.add(this.cameraManager.collisionLine);
         // });
         //visualise camera line -- DEBUG STATEMENTS --
+    }
+
+    onResize(){
+        this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
+        this.cameraManager.camera.updateProjectionMatrix();
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
     }
 
     onClose(){
@@ -152,7 +158,7 @@ class App {
         progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
+        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
         await this.worldManager.importWorld(this.playerInfo.islandID);
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
@@ -202,13 +208,16 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        this.playerController.update(this.deltaTime);
-        this.playerController.updatePhysics(this.deltaTime);
         this.spellCaster.update(this.deltaTime);
 
-        this.cameraManager.update(this.deltaTime);
         this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
-        this.worldManager.world.update(this.deltaTime);
+
+        this.playerController.update(this.deltaTime);
+        for(let i = 0; i < physicsSteps; i++){
+            this.playerController.updatePhysics(this.deltaTime/physicsSteps);
+            this.worldManager.world.update(this.deltaTime/physicsSteps);
+        }
+        this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
 

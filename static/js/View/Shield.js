@@ -30,9 +30,6 @@ export class Shield extends IView{
         this.heightOffset = params?.heightOffset ?? 0.5;
         this.initTriShield();
     }
-    cleanUp(){
-        this.charModel.parent.remove(this.charModel);
-    }
 
     initTriShield(){
         let shield1 = this.#createShieldMesh();

@@ -85,16 +85,16 @@ export class CharacterController extends Subject{
 
     updatePhysics(deltaTime){
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
-        const correctedDeltaTime = min(deltaTime, 0.1);
+        //const correctedDeltaTime = min(deltaTime, 0.1);
         this.tempTemp.copy(this.tempPosition);
 
         if ( this._character.onGround ) {
-                this._character.velocity.y = correctedDeltaTime * gravity;
+                this._character.velocity.y = deltaTime * gravity;
         } else {
-            this._character.velocity.y += correctedDeltaTime * gravity;
+            this._character.velocity.y += deltaTime * gravity;
         }
 
-        this.tempPosition.addScaledVector( this._character.velocity, correctedDeltaTime );
+        this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
 

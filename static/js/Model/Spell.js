@@ -1,4 +1,5 @@
 //abstract classes
+
 /**
  * @class Spell - abstract class for all spells (first component of ConcreteSpell)
  */

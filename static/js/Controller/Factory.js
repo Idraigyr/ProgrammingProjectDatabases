@@ -37,7 +37,7 @@ export class Factory{
         this.scene.add(view.charModel);
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
-        view.boundingBox.set(new THREE.Vector3(-0.5,0,-0.5), new THREE.Vector3(0.5,height,0.5));
+        view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
         this.scene.add(view.boxHelper);
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));

@@ -7,7 +7,6 @@ import {IAnimatedView} from "./View.js";
 export class Player extends IAnimatedView{
     constructor(params) {
         super(params);
-        this.boundingBox.setFromObject(this.charModel);
         this.horizontalRotation = 180;
     }
 
