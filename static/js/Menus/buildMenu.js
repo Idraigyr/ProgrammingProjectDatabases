@@ -1,9 +1,9 @@
 // variables
 
 // lists buildings
-let combat = ["Tower"];
-let resources = ["FusionTable", "Mine"];
-let decorations = ["Tree", "Bush"];
+let combat = ["tower"];
+let resources = ["fusionTable", "mine"];
+let decorations = ["tree", "bush"];
 
 // Function to show buildings or items based on the selected tab
 function showBuildings(type) {
@@ -58,7 +58,7 @@ function populateContainer(containerId, itemList, type) {
         item.appendChild(img);
         // Add onclick message
         item.onclick = function() {
-            window.parent.postMessage({type: "placeBuilding", buildingName: itemName}, "*");
+            window.parent.postMessage({type: "placeBuilding", buildingName: itemName[0].toUpperCase() + itemName.slice(1)}, "*");
         };
         container.appendChild(item);
     });
