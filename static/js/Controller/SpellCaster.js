@@ -152,7 +152,7 @@ export class SpellCaster extends Subject{
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
                 this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: castPosition,
+                    position: this.checkRaycaster(),
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));
             }
