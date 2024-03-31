@@ -1,7 +1,8 @@
-import {IView} from "./View.js";
+import {IAnimatedView, IView} from "./View.js";
 import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 import {Color} from "three";
+import {iceWall} from "../configs/SpellConfigs.js";
 
 /**
  * Fireball view
@@ -149,6 +150,65 @@ export class ThunderCloud extends IView{
 }
 
 
-export class RitualView extends IView{
+export class RitualSpell extends IAnimatedView{
+    constructor(params) {
+        super(params);
+        this.camera = params.camera;
+        this.charModel = params.charModel;
+        this.position = params.position;
+    }
 
+    /**
+     * Load build ritual model's animations
+     * @param clips
+     */
+    loadAnimations(clips){
+        const getAnimation =  (animName, alias) => {
+            let clip = THREE.AnimationClip.findByName(clips, animName);
+            this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
+        }
+        getAnimation('Scene',"RitualSpell");
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.animations["RitualSpell"].play();
+    }
+}
+
+//charModel must be a group of iceBlock models
+//make iceWall a compound of iceBlock models because of AABB
+export const IceWall = function (params) {
+    const iceBlocks = [];
+    for(let i = 0; i < iceWall.blocks; i++){
+        const modelWidth = new THREE.Box3().setFromObject(params.charModel).getSize(new THREE.Vector3()).z;
+        iceBlocks.push(new IceBlock({
+            charModel: params.charModel.clone(),
+            horizontalRotation: params.horizontalRotation,
+            //figure out why + 0.5 is needed
+            position: new THREE.Vector3(i*(iceWall.width/iceWall.blocks) - (iceWall.width - modelWidth + 0.5)/2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),params.horizontalRotation*Math.PI/180),
+            offset: new THREE.Vector3().copy(params.position)
+        }));
+        iceBlocks[i].charModel.traverseVisible((child) => {
+            if (child.isMesh) child.material.opacity = Math.random() * 0.3 + 0.6;
+        });
+    }
+    return iceBlocks;
+}
+
+class IceBlock extends IView{
+    constructor(params) {
+        super(params);
+        this.spawnPoint = new THREE.Vector3().copy(params.position);
+        this.offset = params.offset;
+        this.boundingBox.setFromObject(this.charModel);
+        this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
+    }
+    updatePosition(event){
+        if(!this.charModel) return;
+        const newPos = new THREE.Vector3().copy(this.spawnPoint).add(event.detail.position);
+        const delta = new THREE.Vector3().subVectors(newPos, this.position);
+        this.position.copy(newPos);
+        this.charModel.position.copy(this.position);
+        this.boundingBox.translate(delta);
+    }
 }

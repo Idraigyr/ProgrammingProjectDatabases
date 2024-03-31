@@ -1,7 +1,8 @@
-import {assetPaths, scale} from "../configs/ViewConfigs.js";
+import {assetPaths} from "../configs/ViewConfigs.js";
 import {Controller} from "./Controller.js";
 import * as THREE from "three";
 import {clone} from "three-SkeletonUtils";
+import {correctRitualScale} from "../helpers.js";
 
 /**
  * Class to manage assets
@@ -30,8 +31,20 @@ export class AssetManager{
                 this.#assetList[key] = {};
 
                 if(charModel){
-                    this.#assetList[key].model = charModel;
-                    this.#assetList[key].model.scale.set(scale[key], scale[key], scale[key]);
+                    //TODO: move out of manager and into loader
+                    if(key === "Mine"){
+                        correctRitualScale(charModel);
+                        const box = new THREE.Box3().setFromObject(charModel);
+                        box.setFromObject(charModel,true);
+                        const c = box.getCenter( new THREE.Vector3( ) );
+                        c.y = 0;
+                        charModel.position.add(new THREE.Vector3().sub(c));
+                        let group = new THREE.Group();
+                        group.add(charModel);
+                        this.#assetList[key].model = group;
+                    } else {
+                        this.#assetList[key].model = charModel;
+                    }
                 }
                 if(animations){
                     this.#assetList[key].animations = animations;

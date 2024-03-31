@@ -10,7 +10,7 @@ export class Entity extends Subject{
      * @param {{position: THREE.Vector3, radius: number, team: number} | {}} params - optional
      */
     constructor(params) {
-        super();
+        super(params);
         this.radius = params?.radius ?? 0.5;
         this._position =  params?.position?.clone() ?? new THREE.Vector3(0,0,0);
         this.team = params?.team ?? 0;
@@ -29,6 +29,15 @@ export class Entity extends Subject{
      */
     update(deltaTime){
 
+    }
+
+    set position(vector){
+        this._position.copy(vector);
+        this.dispatchEvent(this._createUpdatePositionEvent());
+    }
+
+    get position(){
+        return this._position;
     }
 
     /**

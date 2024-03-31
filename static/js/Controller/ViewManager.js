@@ -2,6 +2,7 @@ import {Subject} from "../Patterns/Subject.js";
 import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
 import {Fireball} from "../View/SpellView.js";
+import {RitualSpell} from "../View/SpellView.js";
 
 export class ViewManager extends Subject{
     constructor(params) {
@@ -110,6 +111,8 @@ export class ViewManager extends Subject{
                 } else if(pair.view instanceof View.ThunderCloud){
                     pair.view.update(deltaTime);
                 } else if(pair.view instanceof View.Shield){
+                    pair.view.update(deltaTime);
+                } else if(pair.view instanceof RitualSpell){
                     pair.view.update(deltaTime);
                 }
             });

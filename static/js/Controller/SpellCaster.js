@@ -121,6 +121,7 @@ export class SpellCaster extends Subject{
             if(this.#wizard.getCurrentSpell().spell instanceof EntitySpell){
                 this.dispatchEvent(this.createSpellEntityEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
+                    horizontalRotation: this.#wizard.phi*180/Math.PI + 90,
                     //TODO: base direction on camera not on player direction
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
                     team: this.#wizard.team
@@ -128,10 +129,10 @@ export class SpellCaster extends Subject{
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
-                // this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                //     position: castPosition,
-                //     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
-                // }));
+                this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
+                    position: castPosition,
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                }));
             }
             this.#wizard.cooldownSpell();
             this.changeManaBar();

@@ -33,7 +33,7 @@ export class SpellSpawner extends Subject{
         return new CustomEvent("spawnSpell", {
             detail: {
                 type: this.spell,
-                params: {position: new THREE.Vector3(-7,17.5,-10), direction: new THREE.Vector3(10,-3,0).
+                params: {position: new THREE.Vector3(-7,35,-10), direction: new THREE.Vector3(10,-3,0).
                     add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2)), team: 0}
             }
         });

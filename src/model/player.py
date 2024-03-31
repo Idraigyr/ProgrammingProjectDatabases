@@ -34,6 +34,7 @@ class Player(current_app.db.Model):
     level: Mapped[int] = Column(BigInteger, nullable=False, default=0)
     crystals: Mapped[int] = Column(BigInteger, nullable=False, default=0)
     mana: Mapped[int] = Column(Integer, nullable=False, default=0)
+    xp: Mapped[int] = Column(Integer, nullable=False, default=0)
 
     # entity_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player_entity.entity_id'))
     # entity: Mapped["PlayerEntity"] = relationship("PlayerEntity", foreign_keys=[entity_id], back_populates="player")
@@ -51,18 +52,20 @@ class Player(current_app.db.Model):
     # The unlocked blueprints of the player
     blueprints: Mapped[List["Blueprint"]] = relationship("Blueprint", secondary=blueprint_association_table)
 
-    def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0):
+    def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0, xp: int = None):
         """
         Initialize the player class
         :param user_profile: The UserProfile of this player. Should be unique to this player (one-to-one)
         :param level: The level of the player. Should be >= 0
         :param crystals: The amount of crystals of the player. Should be >= 0
         :param mana: The amount of mana of the player. Should be >= 0
+        :param xp: The amount of experience points of the player. Should be >= 0
         """
         self.user_profile = user_profile
         self.level = level
         self.crystals = crystals
         self.mana = mana
+        self.xp = xp
 
     def update(self, data: dict):
         """
@@ -73,6 +76,7 @@ class Player(current_app.db.Model):
         self.level = data.get('level', self.level)
         self.crystals = data.get('crystals', self.crystals)
         self.mana = data.get('mana', self.mana)
+        self.xp = data.get('xp', self.xp)
         if 'spells' in data:
             # ignore pyCharm warning about data types, it's wrong
             new_spellset = []

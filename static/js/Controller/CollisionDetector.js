@@ -82,7 +82,7 @@ export class CollisionDetector{
             }
             this.viewManager.pairs.player.forEach((player) => {
                 if(this.boxToBoxCollision(spellEntity.view.boundingBox, player.view.boundingBox)){
-                    spellEntity.model.onCharacterCollision(player.model);
+                    spellEntity.model.onCharacterCollision(player.model,spellEntity.view.boundingBox, player.view.boundingBox);
                 }
             });
         }

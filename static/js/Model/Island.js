@@ -6,10 +6,10 @@ import {Entity} from "./Entity.js";
 export class Island extends Entity{
     #phi = 0;
     #theta = 0;
-    constructor(position, rotation) {
-        super();
+    constructor(params) {
+        super(params);
         this.buildings = [];
-        this.rotation = rotation;
+        this.rotation = params.rotation;
     }
     get type(){
         return "island";

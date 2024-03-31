@@ -1,12 +1,14 @@
 import {Player} from "./PlayerView.js";
 import {Island} from "./IslandView.js";
-import {Fireball, ThunderCloud} from "./SpellView.js";
+import {Fireball, ThunderCloud, RitualSpell, IceWall} from "./SpellView.js";
 import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
 import {Shield} from "./Shield.js";
 import {PreviewObject} from "./PreviewObject.js";
 import {Tower} from "./Buildings/Tower.js";
+import {Bush} from "./Buildings/Bush.js";
+import {FusionTable} from "./Buildings/FusionTable.js";
 
 /**
  * Namespace for all the view classes
@@ -18,8 +20,12 @@ export let View = {
     ThunderCloud: ThunderCloud,
     Tree: Tree,
     Altar: Altar,
+    Bush: Bush,
+    FusionTable: FusionTable,
     Mine: Mine,
     Tower: Tower,
     Shield: Shield,
-    PreviewObject: PreviewObject
+    IceWall: IceWall,
+    PreviewObject: PreviewObject,
+    RitualSpell: RitualSpell
 }

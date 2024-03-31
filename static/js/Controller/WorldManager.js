@@ -12,6 +12,7 @@ export class WorldManager {
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
+        document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
     }
 
     async importWorld(islandID){
@@ -19,9 +20,9 @@ export class WorldManager {
             {buildings: [{
                     type: "Mine",
                     position: { //TODO: this should be gridSquare coordinates
-                        x: 5,
+                        x: 2,
                         y: 0,
-                        z: 5
+                        z: 1
                     },
                     rotation: 0
                 }
@@ -38,7 +39,10 @@ export class WorldManager {
                 x: playerSpawn.x,
                 y: playerSpawn.y,
                 z: playerSpawn.z
-            }
+            },
+            health: 100,
+            mana: 1000,
+            maxMana: 1000
         };
         let characters = [];
 
@@ -74,6 +78,12 @@ export class WorldManager {
         }
 
         this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
+    }
+
+    placeBuilding(event){
+        const buildingName = event.detail.buildingName;
+        const position = event.detail.position;
+        this.world.addBuilding(buildingName, position);
     }
 
     async exportWorld(){

@@ -126,7 +126,7 @@
         <!-- Setting menu -->
 
 
-        <div class="container hide">
+        <div class="container hide" style="z-index: 1000">
       <h1>Game Settings</h1>
 
       <div class="settings">
@@ -192,7 +192,14 @@
       <button class="applyButton" id="applyButton">Apply</button>
     </div>
 
-
+    <!-- Tower Menu -->
+        <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!-- Build Menu -->
+        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!-- Altar Menu -->
+        <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!-- Fusion Table Menu -->
+        <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
 
     <!-- UI/HUD -->
 
@@ -267,6 +274,7 @@
             <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
         </div>
     </div>
+
     <canvas id="canvas"></canvas>
     <!-- Script for toggling FPS counter -->
     <script>

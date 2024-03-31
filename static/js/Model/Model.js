@@ -4,8 +4,10 @@ import {Island} from "./Island.js";
 import {Tree} from "./Buildings/Tree.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Mine} from "./Buildings/Mine.js";
-import {FollowPlayer, Immobile, Projectile} from "./SpellEntities.js";
 import {Tower} from "./Buildings/Tower.js";
+import {FusionTable} from "./Buildings/FusionTable.js";
+import {Bush} from "./Buildings/Bush.js";
+import {FollowPlayer, Immobile, MobileCollidable, Projectile, RitualSpell} from "./SpellEntities.js";
 
 // Model namespace
 export let Model = {
@@ -16,7 +18,11 @@ export let Model = {
     Mine: Mine,
     Tower: Tower,
     Tree: Tree,
+    FusionTable: FusionTable,
+    Bush: Bush,
     Projectile: Projectile,
     Immobile: Immobile,
-    FollowPlayer: FollowPlayer
+    MobileCollidable: MobileCollidable,
+    FollowPlayer: FollowPlayer,
+    RitualSpell: RitualSpell
 }
