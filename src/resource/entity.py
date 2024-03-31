@@ -25,6 +25,10 @@ class EntitySchema(Schema):
             'type': 'integer',
             'description': 'The x coordinate of the entity'
         },
+        'y': {
+            'type': 'integer',
+            'description': 'The y coordinate of the entity'
+        },
         'z': {
             'type': 'integer',
             'description': 'The z coordinate of the entity'
@@ -41,7 +45,8 @@ class EntitySchema(Schema):
 
     def __init__(self, entity: Entity = None, **kwargs):
         if entity is not None:  # entity -> schema
-            super().__init__(entity_id=entity.entity_id, x=entity.xpos, z=entity.zpos, type=entity.type,
+            super().__init__(entity_id=entity.entity_id, x=entity.xpos,
+                             y=entity.ypos, z=entity.zpos, type=entity.type,
                              island_id=entity.island_id, **kwargs)
         else:  # schema -> entity
             super().__init__(**kwargs)

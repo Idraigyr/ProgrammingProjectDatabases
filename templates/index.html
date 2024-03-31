@@ -24,10 +24,13 @@
           "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
           "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
           "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
-          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js"
+          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
+          "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/src/index.js",
+          "three-orbitControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/OrbitControls.js"
         }
       }
     </script>
+    <!--"three-MeshBVHWorker": "https://unpkg.com/three-mesh-bvh@0.7.3/src/workers/GenerateMeshBVHWorker.js"-->
     <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
@@ -90,49 +93,48 @@
     </script>
 
     <!-- loading screen -->
-    <div class = "loading-animation">
-    <div class="progress-bar-container">
+    <div class="loading-animation">
+        <div class="progress-bar-container">
+            <label for="progress-bar">Loading...</label> <!-- preff?-->
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
 
-        <label for="progress-bar">Loading...</label> <!-- preff?-->
-        <progress id="progress-bar" value="0" max="100"></progress>
-    </div>
-
-    <div class="scene">
-      <div class="objects">
-        <div class="square"></div>
-        <div class="circle"></div>
-        <div class="triangle"></div>
-      </div>
-      <div class="wizard">
-        <div class="body"></div>
-        <div class="right-arm">
-          <div class="right-hand"></div>
-        </div>
-        <div class="left-arm">
-          <div class="left-hand"></div>
-        </div>
-        <div class="head">
-          <div class="beard"></div>
-          <div class="face">
-            <div class="adds"></div>
+        <div class="scene">
+          <div class="objects">
+            <div class="square"></div>
+            <div class="circle"></div>
+            <div class="triangle"></div>
           </div>
-          <div class="hat">
-            <div class="hat-of-the-hat"></div>
-            <div class="four-point-star --first"></div>
-            <div class="four-point-star --second"></div>
-            <div class="four-point-star --third"></div>
+          <div class="wizard">
+            <div class="body"></div>
+            <div class="right-arm">
+              <div class="right-hand"></div>
+            </div>
+            <div class="left-arm">
+              <div class="left-hand"></div>
+            </div>
+            <div class="head">
+              <div class="beard"></div>
+              <div class="face">
+                <div class="adds"></div>
+              </div>
+              <div class="hat">
+                <div class="hat-of-the-hat"></div>
+                <div class="four-point-star --first"></div>
+                <div class="four-point-star --second"></div>
+                <div class="four-point-star --third"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+        <div class="noise"></div>
     </div>
-    <div class="noise"></div>
-        </div>
 
 
         <!-- Setting menu -->
 
 
-        <div class="container hide">
+        <div class="container hide" style="z-index: 1000">
       <h1>Game Settings</h1>
 
       <div class="settings">
@@ -198,7 +200,14 @@
       <button class="applyButton" id="applyButton">Apply</button>
     </div>
 
-
+    <!-- Tower Menu -->
+        <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!-- Build Menu -->
+        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!-- Altar Menu -->
+        <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!-- Fusion Table Menu -->
+        <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
 
     <!-- UI/HUD -->
 
@@ -206,73 +215,75 @@
 
 
     <div class="settings-button" id="settings-btn">
-            <img src="" class="button" id="Button_Blue">
-            <img src="" class="icon" id="Regular_02">
+            <img src="../static/assets/images/Button_Blue.png" class="button">
+            <img src="../static/assets/images/Regular_02.png" class="icon">
     </div>
 
     <div class="HotBar">
         <div class="item Spell1 hovered">
-            <img src="" class="button" id="Spell1">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell2">
-            <img src="" class="button" id="Spell2">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
             </div>
         <div class="item Spell3">
-            <img src="" class="button" id="Spell3">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell4">
-            <img src="" class="button" id="Spell4">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
         <div class="item Spell5">
-            <img src="" class="button" id="Spell5">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
         </div>
     </div>
 
     <div class="HotBarIcons">
         <div class="Spell1Icon">
-            <img src="" class= "buildimage" id="Plant">
+            <img src="../static/assets/images/spell-cast-plant.png" class= "buildimage">
         </div>
         <div class="Spell2Icon">
-            <img src="" class= "firebalimage" id="Fire">
+            <img src="../static/assets/images/spell-cast-fire.png" class= "firebalimage">
             </div>
         <div class="Spell3Icon">
-            <img src="" class= "lighningimage" id="Bolt">
+            <img src="../static/assets/images/spell-cast-bolt.png" class= "lighningimage">
         </div>
         <div class="Spell4Icon">
-            <img src="" class= "shieldimage" id="Shield">
+            <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
         </div>
         <div class="Spell5Icon">
         </div>
     </div>
 
     <div class="Health">
-        <img src="" class="HealthPotion" id="Health">
-        <img src=""  class="Greypotion-left" id="Left">
-        <img src=""  class="HealthPotion" id="Health2">
+        <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
+        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
+        <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
         <div class = "HealthAmount">
-            100/100
+            20/100
         </div>
     </div>
 
 
     <div class="Mana">
-        <img src="" class="ManaPotion" id="Mana">
-        <img src=""  class="Greypotion-right" id="Right">
-            <img src=""  class="ManaPotion" id="Mana2">
+        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
+        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
+                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
+
         <div class = "ManaAmount">
             50/100
         </div>
     </div>
 
     <div class="Crystals">
-        <img src="" class="Banner" id="crystals">
+        <img src="../static/assets/images/Ribbon_Blue_3Slides.png" class="Banner">
         <div class = "CrystalAmount">
             2746
         </div>
         <div class = "CrystalIcon">
-            <img src="" class = "NewCrystalIcon" id="CrystalIcon">
+            <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
         </div>
     </div>
+
     <canvas id="canvas"></canvas>
     <!-- Script for toggling FPS counter -->
     <script>
@@ -303,7 +314,7 @@
             if (document.activeElement === chatInput) {
                 return;
             }
-            if (e.key === 'f' || e.key === 'F') {
+            if (e.code === 'KeyF') {
                 config.showFPS = !config.showFPS;
             }
         });

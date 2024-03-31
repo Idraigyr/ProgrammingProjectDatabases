@@ -1,7 +1,7 @@
 import WebGL from "three-WebGL";
 import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
-import {API_URL} from "./configs/ControllerConfigs.js";
+import {cameraPosition} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
@@ -11,10 +11,22 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
-import {fetchAndStoreModels} from "./indexedDB/assetModels.js"
-import {assetPaths} from "./configs/ViewConfigs.js";
+import {OrbitControls} from "three-orbitControls";
+import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
+import {acceleratedRaycast} from "three-mesh-bvh";
+import {SpellCaster} from "./Controller/SpellCaster.js";
+import {View} from "./View/ViewNamespace.js";
+import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "./configs/Keybinds.js";
 
+THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
+
+//OrbitControls -- DEBUG STATEMENTS --
+// let orbitCam = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+// orbitCam.position.set(50,20,50);
+// orbitCam.lookAt(0,0,0);
+// let orbitControls = null;
+//OrbitControls -- DEBUG STATEMENTS --
 
 /**
  * Main class of the game
@@ -33,28 +45,55 @@ class App {
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
 
-        canvas.addEventListener("mousedown", async (e) => {
-            if(!app.blockedInput) return;
-            await canvas.requestPointerLock();
-        });
+        //OrbitControls -- DEBUG STATEMENTS --
+        // orbitControls = new OrbitControls( orbitCam, this.renderer.domElement );
+        // orbitControls.target.set(0,0,0);
+        //
+        // document.addEventListener("keydown", async (e) => {
+        //     if(!app.blockedInput) return;
+        //     if(e.code === "KeyU"){
+        //         await canvas.requestPointerLock();
+        //     }
+        // });
+        //OrbitControls -- DEBUG STATEMENTS --
 
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
 
-        this.viewManager = new ViewManager();
-        this.raycastController = new RaycastController({viewManager: this.viewManager});
-        this.inputManager = new Controller.InputManager();
+        this.playerInfo = new Controller.UserInfo();
+
+        this.viewManager = new ViewManager({spellPreview: new View.PreviewObject([{key: "build", details: {
+            ctor: THREE.BoxGeometry,
+            params: [10,10,10], // TODO: gridCellSize here!
+            primaryColor: 0xD46D01,
+            secondaryColor: 0xFFB23D,
+            cutoff: -5
+        }},
+        {key: "thundercloud", details: {
+            ctor: THREE.CylinderGeometry,
+            params: [3, 3, 3], // TODO: 1/3 of gridCellSize?
+            primaryColor: 0x0051FF,
+            secondaryColor: 0xCCABFF,
+            cutoff: -1.499
+        }}])});
+        this.scene.add(this.viewManager.spellPreview.charModel);
+        this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
+        this.raycastController = new RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
+        this.inputManager = new Controller.InputManager({canvas: canvas});
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
-            offset: new THREE.Vector3(-5,2,1),
-            lookAt: new THREE.Vector3(500,0,0),
-            target: null
+            offset: new THREE.Vector3(cameraPosition.offset.x,cameraPosition.offset.y,cameraPosition.offset.z),
+            lookAt: new THREE.Vector3(cameraPosition.lookAt.x,cameraPosition.lookAt.y,cameraPosition.lookAt.z),
+            target: null,
+            raycaster: this.raycastController
         });
-        this.cameraManager.camera.position.set(-5,2,1);
-        this.cameraManager.camera.lookAt(500,0,0);
+        this.cameraManager.camera.position.set(0,0,0);
+        this.cameraManager.camera.lookAt(0,0,0);
+
         this.playerController = null;
+        this.spellCaster = new SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
         this.minionControllers = [];
         this.assetManager = new AssetManager();
         this.hud = new HUD(this.inputManager)
@@ -62,34 +101,30 @@ class App {
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
-        document.addEventListener("pointerlockchange", this.blockInput.bind(this), false);
 
-        //this.inputManager.addMouseMoveListener(this.updateRotationListener);
+        document.addEventListener("visibilitychange", this.onClose.bind(this));
+        this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster));
+        //TODO: temporary solution; clean this up
+        this.inputManager.addKeyDownEventListener(slot1Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(slot2Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(slot3Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(slot4Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(slot5Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
+        this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
+
+        //visualise camera line -- DEBUG STATEMENTS --
+        // this.inputManager.addKeyDownEventListener("KeyN",() => {
+        //     console.log("N");
+        //     this.scene.add(this.cameraManager.collisionLine);
+        // });
+        //visualise camera line -- DEBUG STATEMENTS --
     }
 
-    /**
-     * scopes updateRotation function of member playerController
-     * @callback updateRotationListener
-     * @param {{movementX: number, movementY: number}} event
-     *
-     */
-    updateRotationListener = (event) => {
-        this.playerController.updateRotation(event);
-    }
-    /**
-     * switches value of boolean member blockedInput and adds or removes updateRotationListener from mousemovement
-     * @callback blockInput
-     * @param {object} event - unused
-     *
-     */
-    blockInput(event){
-        if(this.blockedInput){
-            this.inputManager.addMouseMoveListener(this.updateRotationListener);
-            this.blockedInput = false;
-        } else {
-            this.inputManager.removeMouseMoveListener(this.updateRotationListener);
-            this.blockedInput = true;
-        }
+    onClose(){
+        // let playerData = {"level": 1}; //TODO: fill with method from
+        // let islandData = {}; //TODO: fill with method from worldManager
+        // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
     }
 
     /**
@@ -113,21 +148,33 @@ class App {
      * @returns {Promise<void>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
+        const progressBar = document.getElementById('progress-bar');
+        //TODO: try to remove awaits
+        progressBar.labels[0].innerText = "retrieving user info...";
+        await this.playerInfo.retrieveInfo();
+        progressBar.value = 10;
+        progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
+        progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
-        await this.worldManager.importWorld(`${API_URL}/...`,"request");
-        this.playerController = new CharacterController({Character: this.worldManager.world.player, InputManager: this.inputManager});
-        this.playerController.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
-        this.playerController.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
-        this.playerController.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+        await this.worldManager.importWorld(this.playerInfo.islandID);
+        progressBar.value = 90;
+        progressBar.labels[0].innerText = "generating collision mesh...";
+        this.collisionDetector.generateCollider();
+        progressBar.value = 100;
+        this.playerController = new CharacterController({
+            Character: this.worldManager.world.player,
+            InputManager: this.inputManager,
+            collisionDetector: this.collisionDetector
+        });
+        this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
-    }
-
-    /**
-     * Executes functions that only possible after assets are loaded
-     */
-    postAssetLoadingFunction(){
-        this.BuildManager.setCurrentRitual(this.spellFactory.createTree(), true);
+        // Crete event to show that the assets are 100% loaded
+        document.dispatchEvent(new Event("assetsLoaded"));
+        this.spellCaster.wizard = this.worldManager.world.player;
+        this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
+        this.spellCaster.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
+        this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
     }
 
     /**
@@ -135,6 +182,7 @@ class App {
      */
     start(){
         if ( WebGL.isWebGLAvailable()) {
+            document.querySelector('.loading-animation').style.display = 'none';
             //init();
             this.update();
         } else {
@@ -153,21 +201,24 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        if(!this.blockedInput) {
-            this.playerController.update(this.deltaTime);
-            this.cameraManager.update(this.deltaTime);
-        }
+        this.playerController.update(this.deltaTime);
+        this.playerController.updatePhysics(this.deltaTime);
+        this.spellCaster.update(this.deltaTime);
+
+        this.cameraManager.update(this.deltaTime);
         this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
         this.worldManager.world.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
-
-        this.BuildManager.makePreviewObjectInvisible();
+        //OrbitControls -- DEBUG STATEMENTS --
+        // this.renderer.render( this.scene, orbitCam );
+        //OrbitControls -- DEBUG STATEMENTS --
+        // this.BuildManager.makePreviewObjectInvisible();
     }
 }
-await fetchAndStoreModels('http://127.0.0.1:5000');
+
 let app = new App({});
 await app.loadAssets();
 app.postAssetLoadingFunction();

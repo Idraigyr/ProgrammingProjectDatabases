@@ -29,6 +29,10 @@ class PlaceableSchema(Schema):
             'type': 'integer',
             'description': 'The z coordinate of the placeable, inside the grid'
         },
+        'rotation': {
+            'type': 'integer',
+            'description': 'The rotation of the placeable. 0=North, 1=East, 2=South, 3=West'
+        },
         'type': {
             'type': 'string',
             'description': 'The type of this placeable'
@@ -52,6 +56,7 @@ class PlaceableSchema(Schema):
                              z=placeable.zpos,
                              type=placeable.type,
                              blueprint=BlueprintSchema(placeable.blueprint),
+                             rotation=placeable.rotation,
                              **kwargs)
         else:
             super().__init__(**kwargs)

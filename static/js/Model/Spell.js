@@ -7,7 +7,6 @@ class Spell{
         this.duration = params.duration;
         this.castTime = params.castTime;
         this.cooldown = params.cooldown;
-        this.timer = 0;
     }
 
     /**
@@ -155,9 +154,12 @@ class Build extends Effect{
  */
 class ConcreteSpell{
     constructor(params) {
+        this.hasPreview = false;
         this.hitScan = false;
+        this.cost = 0;
         this.spell = params.spell;
         this.effects = params.effects;
+        this.name = "null";
     }
 
     /**
@@ -189,7 +191,7 @@ export class BuildSpell extends ConcreteSpell{
         super({
             spell: new HitScanSpell({
                 duration: 0,
-                cooldown: 0,
+                cooldown: 1,
                 castTime: 0,
             }),
             effects: [
@@ -198,6 +200,10 @@ export class BuildSpell extends ConcreteSpell{
                 })
             ]
         });
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.name = "build";
+        this.cost = 10;
     }
 }
 
@@ -223,6 +229,8 @@ export class Fireball extends ConcreteSpell{
                     duration: 0
             })]
         });
+        this.name = "fireball";
+        this.cost = 5;
     }
 }
 
@@ -235,6 +243,8 @@ export class Zap extends ConcreteSpell{
             spell: new InstantSpell(),
             effects: [new InstantDamage()]
         });
+        this.name = "zap";
+        this.hitScan = true;
     }
 }
 
@@ -253,6 +263,10 @@ export class ThunderCloud extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.name = "thundercloud";
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.cost = 20;
     }
 }
 
@@ -269,6 +283,7 @@ export class Shield extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.cost = 15;
     }
 }
 
@@ -295,6 +310,8 @@ class Heal extends ConcreteSpell{
 // ice wall (creates an ice wall)
 // freeze ray (slow down targets)
 // confusion ball (inverts movement)
+// digging spell (move underground, becoming immune and leave a trail of dirt where you travel)
+// sword spell (shoot an array of swords)
 
 
 //use dependency injection pattern?

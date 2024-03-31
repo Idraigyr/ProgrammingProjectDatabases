@@ -1,7 +1,7 @@
 import {Controller} from "./Controller.js";
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Fireball, BuildSpell, ThunderCloud, Shield} from "../Model/Spell.js";
+import {Fireball, ThunderCloud, Shield, BuildSpell} from "../Model/Spell.js";
 import * as THREE from "three";
 
 /**
@@ -16,7 +16,6 @@ export class SpellFactory{
         this.scene = params.scene;
         this.camera = params.camera;
         this.viewManager = params.viewManager;
-        this.AssetLoader = new Controller.AssetLoader(this.scene);
         this.assetManager = params.assetManager;
         //TODO: change this
         this.models = [];
@@ -39,7 +38,7 @@ export class SpellFactory{
                 entityModel = this.#createShield(event.detail);
                 break;
             case BuildSpell:
-                const customEvent = new CustomEvent('placeBuildSpell', { detail: {} });
+                const customEvent = new CustomEvent('callBuildManager', {detail: event.detail});
                 document.dispatchEvent(customEvent);
                 break;
         }
@@ -126,18 +125,21 @@ export class SpellFactory{
         return model;
     }
 
-
-
-    /**
-     * Creates building model and view for a tree
-     * @returns {Tree} model of the tree
-     */
-    createTree(){
-        let model = new Model.Tree();
-        let view = new View.Tree({charModel: this.assetManager.getAsset("Tree")});
+    createRitualSpell(details){
+        let model = new Model.RitualSpell({
+            spellType: details.type,
+            // position: details.params.position
+        });
+        let view = new View.RitualSpell({
+            camera: this.camera,
+            // position: details.params.position,
+            charModel: this.assetManager.getAsset("RitualSpell")
+        });
+        view.loadAnimations(this.assetManager.getAnimations("RitualSpell"));
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        this.models.push(model);
         this.viewManager.addPair(model,view);
         return model;
     }
