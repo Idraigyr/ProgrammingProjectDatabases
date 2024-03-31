@@ -7,7 +7,9 @@ export class Placeable extends Entity{
     constructor(params) {
         super();
         params? this.rotation = params.rotation : this.rotation = 0;
+        this.occupiedCells = [];
     }
+    // TODO: update occupied cells
 
     get type(){
         return "building";

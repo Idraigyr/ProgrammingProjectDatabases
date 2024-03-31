@@ -10,8 +10,13 @@ export class Island extends Entity{
         super();
         this.buildings = [];
         this.rotation = rotation;
+        this.occupiedCells = [];
     }
     get type(){
         return "island";
+    }
+
+    addBuilding(building){
+        this.buildings.push(building);
     }
 }

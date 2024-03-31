@@ -1,11 +1,9 @@
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Controller} from "./Controller.js";
 import {PlayerFSM} from "./CharacterFSM.js";
-import {convertGridToWorldPosition, correctRitualScale, getFileExtension, setMinimumY, convertWorldToGridPosition} from "../helpers.js";
+import {convertGridToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY, getOccupiedCells} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {scaleAndCorrectPosition} from "../helpers.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -73,16 +71,24 @@ export class Factory{
         return islandModel;
     }
 
+    /**
+     * Creates building model and view
+     * @param buildingName name of the building
+     * @param position position of the building
+     * @returns {*} model of the building
+     */
     createBuilding(buildingName, position){
         const asset = this.assetManager.getAsset(buildingName);
         correctRitualScale(asset);
         setMinimumY(asset, 0); // TODO: is it always 0?
-        // Correct position to place the asset in the center of the cell
-        convertWorldToGridPosition(position);
         let pos = new THREE.Vector3(position.x, asset.position.y, position.z);
+        // Correct position to place the asset in the center of the cell
+        convertWorldToGridPosition(pos);
         // Convert position
         let model = new Model[buildingName]({position: pos}); // TODO: add rotation
         let view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
+        // Occupy the cells
+        model.occupiedCells = getOccupiedCells(view.charModel);
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);
@@ -96,12 +102,15 @@ export class Factory{
 
     /**
      * Creates models of the buildings
-     * @param islandModels (output) models
+     * @param resultedModels list with output models added
      * @param buildingsList list of the buildings to add
      */
-    #addBuildings(islandModels, buildingsList){
+    #addBuildings(resultedModels, buildingsList){
         buildingsList.forEach((building) => {
             try {
+                // TODO: understand why the following code gives another result:
+                // let model = this.createBuilding(building.type, building.position);
+                // resultedModels.push(model);
                 const asset = this.assetManager.getAsset(building.type);
                 correctRitualScale(asset);
                 setMinimumY(asset, 0); // TODO: is it always 0?
@@ -110,6 +119,8 @@ export class Factory{
                 console.log(pos);
                 let model = new Model[building.type]({position: pos, rotation: building.rotation});
                 let view = new View[building.type]({charModel: asset, position: pos, scene: this.scene});
+                // Occupy the cells
+                model.occupiedCells = getOccupiedCells(view.charModel);
                 this.scene.add(view.charModel);
 
                 view.boundingBox.setFromObject(view.charModel);
@@ -117,7 +128,7 @@ export class Factory{
 
                 model.addEventListener("updatePosition",view.updatePosition.bind(view));
                 model.addEventListener("updateRotation",view.updateRotation.bind(view));
-                islandModels.push(model);
+                resultedModels.push(model);
                 this.viewManager.addPair(model, view);
             } catch (e){
                 console.log(`no ctor for ${building.type} building: ${e.message}`);

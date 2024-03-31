@@ -27,7 +27,7 @@ export class World{
     addBuilding(buildingName, position){
         const building = this.factory.createBuilding(buildingName, position);
         // TODO: what if multiple islands?
-        this.islands[0].buildings.push(building);
+        this.islands[0].addBuilding(building);
     }
 
     exportWorld(json){
