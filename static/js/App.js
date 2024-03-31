@@ -17,6 +17,7 @@ import {acceleratedRaycast} from "three-mesh-bvh";
 import {SpellCaster} from "./Controller/SpellCaster.js";
 import {View} from "./View/ViewNamespace.js";
 import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "./configs/Keybinds.js";
+import {gridCellSize} from "./configs/ViewConfigs.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -66,18 +67,30 @@ class App {
 
         this.viewManager = new ViewManager({spellPreview: new View.PreviewObject([{key: "build", details: {
             ctor: THREE.BoxGeometry,
-            params: [10,10,10], // TODO: gridCellSize here!
+            params: [gridCellSize,10,gridCellSize], // TODO: gridCellSize here!
             primaryColor: 0xD46D01,
             secondaryColor: 0xFFB23D,
-            cutoff: -5
+            cutoff: -5,
+            rotate: false
         }},
         {key: "thundercloud", details: {
             ctor: THREE.CylinderGeometry,
             params: [3, 3, 3], // TODO: 1/3 of gridCellSize?
             primaryColor: 0x0051FF,
             secondaryColor: 0xCCABFF,
-            cutoff: -1.499
+            cutoff: -1.499,
+            rotate: false
+        }},
+        {key: "icewall", details: {
+            ctor: THREE.BoxGeometry,
+            params: [10,10,3], // TODO: gridCellSize here!
+            primaryColor: 0x00FFFF,
+            secondaryColor: 0x00FF00,
+            cutoff: -5,
+            rotate: true,
+            horizontalRotation: 90,
         }}])});
+
         this.scene.add(this.viewManager.spellPreview.charModel);
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
@@ -175,6 +188,7 @@ class App {
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+        this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
     }
 
     /**

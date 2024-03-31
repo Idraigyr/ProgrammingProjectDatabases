@@ -1,4 +1,6 @@
 //abstract classes
+import * as THREE from "three";
+
 /**
  * @class Spell - abstract class for all spells (first component of ConcreteSpell)
  */
@@ -28,6 +30,7 @@ export class EntitySpell extends Spell{
 
     }
 }
+
 class Follower extends EntitySpell{
     constructor(params) {
         super(params);
@@ -58,6 +61,40 @@ class Cloud extends EntitySpell{
     update(deltaTime){
 
     }
+}
+
+const moveFunctions = {
+    linear: function (value, params) {
+        return new THREE.Vector3(0, 0, value);
+    },
+    minLinearY: function (value, params) {
+        return new THREE.Vector3(0, Math.min(params.maxY, value*params.speed), 0);
+    },
+    sinZ: function (value, params) {
+        return new THREE.Vector3(0, 0, Math.sin(value*params.frequency  + params.horizontalOffset)*params.amplitude - params.verticalOffset);
+    },
+    sinX: function (value, params) {
+        return new THREE.Vector3(Math.sin(value*params.frequency  + params.horizontalOffset)*params.amplitude - params.verticalOffset, 0, 0);
+    }
+}
+
+const moveFunctionParams = {
+    linear: {},
+    minLinearY: {maxY: 5, speed: 6},
+    sinZ: {frequency: 1, amplitude: 1, horizontalOffset: 0, verticalOffset: 0},
+    sinX: {frequency: 1, amplitude: 1, horizontalOffset: 0, verticalOffset: 0}
+}
+
+class Block extends EntitySpell{
+    constructor(params) {
+        super(params);
+        this.moveFunction = moveFunctions.minLinearY;
+        this.moveFunctionParams = moveFunctionParams.minLinearY;
+    }
+    update(deltaTime){
+
+    }
+
 }
 
 /**
@@ -231,6 +268,25 @@ export class Fireball extends ConcreteSpell{
         });
         this.name = "fireball";
         this.cost = 5;
+    }
+}
+
+export class IceWall extends ConcreteSpell{
+    constructor() {
+        super({
+            spell: new Block({
+                duration: 20,
+                cooldown: 5,
+                castTime: 0,
+            }),
+            effects: [new Build({
+                building: "IceWall"
+            })]
+        });
+        this.name = "icewall";
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.cost = 20;
     }
 }
 

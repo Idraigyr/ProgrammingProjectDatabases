@@ -1,8 +1,9 @@
 import {Controller} from "./Controller.js";
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
-import {Fireball, ThunderCloud, Shield, BuildSpell} from "../Model/Spell.js";
+import {Fireball, ThunderCloud, Shield, BuildSpell, IceWall} from "../Model/Spell.js";
 import * as THREE from "three";
+import {iceWall} from "../configs/SpellConfigs.js";
 
 /**
  * Factory class that creates models and views for the spells
@@ -36,6 +37,9 @@ export class SpellFactory{
                 break;
             case Shield:
                 entityModel = this.#createShield(event.detail);
+                break;
+            case IceWall:
+                entityModel = this.#createIceWall(event.detail);
                 break;
             case BuildSpell:
                 const customEvent = new CustomEvent('callBuildManager', {detail: event.detail});
@@ -140,6 +144,34 @@ export class SpellFactory{
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.models.push(model);
+        this.viewManager.addPair(model,view);
+        return model;
+    }
+
+    #createIceWall(details) {
+        let position = new THREE.Vector3().copy(details.params.position);
+        position.y -= 7;
+        let model = new Model.MobileCollidable({
+            spellType: details.type,
+            position: position,
+            moveFunction: details.type.spell.moveFunction,
+            moveFunctionParams: details.type.spell.moveFunctionParams,
+            duration: details.type.spell.duration
+        });
+        const group = new THREE.Group();
+        for(let i = 0; i < iceWall.blocks; i++){
+            group.add(this.assetManager.getAsset("iceBlock"));
+        }
+        let view = new View.IceWall({
+            charModel: group,
+            position: position,
+            width: iceWall.width,
+            horizontalRotation: details.params.horizontalRotation
+        });
+
+        this.scene.add(view.charModel);
+        model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
         return model;
     }

@@ -10,6 +10,9 @@ export class PreviewObject extends IView{
         for(let i = 0; i < params.length; i++){
             this.types[params[i].key] = params[i].details;
         }
+        this.rotate = this.types[Object.keys(this.types)[0]].rotate;
+        this.horizontalRotation = this.types[Object.keys(this.types)[0]]?.horizontalRotation ?? 0;
+        this.currentType = params[0].key;
         this.material = this.createMaterial(
             this.types[Object.keys(this.types)[0]].primaryColor,
             this.types[Object.keys(this.types)[0]].secondaryColor,
@@ -22,13 +25,18 @@ export class PreviewObject extends IView{
         this.types[key] = type;
     }
 
+    updateRotation(event) {
+        if(!this.rotate) return;
+        return super.updateRotation(event);
+    }
+
     render(event){
         const newEvent = {detail: {position: event.detail.params.position}};
         if(!newEvent.detail.position){
             this.charModel.visible = false;
             return;
         }
-        this.setModel(event.detail.type.name);
+        if(event.detail.type.name !== this.currentType) this.setModel(event.detail.type.name);
         this.charModel.visible = true;
         if(event.detail.type.name === "build"){
             this.calculateGridPosition(newEvent.detail.position);
@@ -52,6 +60,9 @@ export class PreviewObject extends IView{
         this.charModel.material.uniforms.primaryColor.value.set(this.types[key].primaryColor);
         this.charModel.material.uniforms.secondaryColor.value.set(this.types[key].secondaryColor);
         this.charModel.material.uniforms.cutoff.value = this.types[key].cutoff;
+        this.rotate = this.types[key].rotate;
+        this.horizontalRotation = this.types[key]?.horizontalRotation ?? 0;
+        this.currentType = key;
     }
 
     update(deltaTime) {

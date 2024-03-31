@@ -168,3 +168,28 @@ export class RitualSpell extends IAnimatedView{
         this.animations["RitualSpell"].play();
     }
 }
+
+//charModel must be a group of iceBlock models
+export class IceWall extends IView{
+    constructor(params) {
+        super(params);
+        this.width = params.width;
+        this.charModel = params.charModel;
+        this.spreadWall();
+        this.charModel.position.copy(params.position);
+    }
+    spreadWall(){
+        const length = this.charModel.children.length;
+        console.log(this.charModel.children[0])
+        for(let i = 0; i < length; i++){
+            this.charModel.children[i].position.set(i*this.width/length - this.width/2,0,0);
+            this.charModel.children[i].traverseVisible((child) => {
+                if (child.isMesh) child.material.opacity = Math.random() * 0.3 + 0.6;
+            });
+        }
+    }
+
+    cleanUp(){
+        this.charModel.parent.remove(this.charModel);
+    }
+}

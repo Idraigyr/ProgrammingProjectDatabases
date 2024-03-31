@@ -136,13 +136,14 @@ export class SpellCaster extends Subject{
         if (this.#wizard.canCast()) {
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 
-            if(this.#wizard.getCurrentSpell().spell.hitScan){
+            if(this.#wizard.getCurrentSpell().hitScan){
                 castPosition = this.checkRaycaster();
             }
 
             if(this.#wizard.getCurrentSpell().spell instanceof EntitySpell){
                 this.dispatchEvent(this.createSpellEntityEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
+                    horizontalRotation: this.#wizard.phi*180/Math.PI + 90,
                     //TODO: base direction on camera not on player direction
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));

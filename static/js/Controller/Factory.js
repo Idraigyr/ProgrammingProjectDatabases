@@ -107,7 +107,6 @@ export class Factory{
                 setMinimumY(asset, 0); // TODO: is it always 0?
                 let pos = new THREE.Vector3(building.position.x, asset.position.y, building.position.z);
                 convertGridToWorldPosition(pos);
-                console.log(pos);
                 let model = new Model[building.type]({position: pos, rotation: building.rotation});
                 let view = new View[building.type]({charModel: asset, position: pos, scene: this.scene});
                 this.scene.add(view.charModel);

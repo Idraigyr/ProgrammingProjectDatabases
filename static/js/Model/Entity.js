@@ -30,6 +30,15 @@ export class Entity extends Subject{
 
     }
 
+    set position(vector){
+        this._position.copy(vector);
+        this.dispatchEvent(this._createUpdatePositionEvent());
+    }
+
+    get position(){
+        return this._position;
+    }
+
     /**
      * creates a delete event, tells viewManager to delete view
      * @returns {CustomEvent<{model: this}>}

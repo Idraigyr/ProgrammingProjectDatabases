@@ -48,7 +48,6 @@ export class InputManager {
         });
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;
-            console.log("pointerlockchange");
         });
         document.addEventListener("mousemove", this.onMouseMoveEvent.bind(this));
 

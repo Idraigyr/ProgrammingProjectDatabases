@@ -11,10 +11,11 @@ export class IView {
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
         this.boxHelper.visible = true;
-        this.horizontalRotation = 0;
+        this.horizontalRotation = params?.horizontalRotation ?? 0;
 
         try {
             this.updatePosition({detail: {position: params.position}});
+            this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
         } catch (err){
             console.log(err);
         }
@@ -34,7 +35,7 @@ export class IView {
     updateRotation(event){
         if(!this.charModel) return;
         this.charModel.setRotationFromQuaternion(event.detail.rotation);
-        this.charModel.rotateY(this.horizontalRotation * Math.PI / 360);
+        this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
         //this.boundingBox.setFromObject(this.charModel, true);
     }
 }

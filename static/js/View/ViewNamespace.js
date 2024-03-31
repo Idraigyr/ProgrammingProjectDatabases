@@ -1,6 +1,6 @@
 import {Player} from "./PlayerView.js";
 import {Island} from "./IslandView.js";
-import {Fireball, ThunderCloud, RitualSpell} from "./SpellView.js";
+import {Fireball, ThunderCloud, RitualSpell, IceWall} from "./SpellView.js";
 import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
@@ -23,6 +23,7 @@ export let View = {
     FusionTable: FusionTable,
     Mine: Mine,
     Shield: Shield,
+    IceWall: IceWall,
     PreviewObject: PreviewObject,
     RitualSpell: RitualSpell
 }
