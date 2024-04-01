@@ -33,9 +33,8 @@ export class World{
         let occupied = this.occupiedCells.some((cell) => cell.x === position.x && cell.z === position.z);
         // If occupied, change the color of the preview object to red
         // If not occupied, change the color of the preview object to green
-        let primaryColor = occupied ? 0xD46D01 : 0x00FF00;
-        let dif = 0x2B453C; // Magic value for the color. TODO: set in configs?
-        let secondaryColor = primaryColor + dif;
+        let primaryColor = occupied ? 0x0000CC : 0xD46D01;
+        let secondaryColor = occupied ? 0x0000FF : 0xFFB23D;
         // Set the color of the preview object
         document.dispatchEvent(new CustomEvent("updatePreviewObjectColor", {detail: {primaryColor: primaryColor, secondaryColor: secondaryColor}}));
     }
