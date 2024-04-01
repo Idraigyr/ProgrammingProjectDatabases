@@ -12,6 +12,16 @@ export class Island extends Entity{
         this.rotation = rotation;
         this.occupiedCells = [];
     }
+
+    updateOccupiedCells(){
+        this.occupiedCells = [];
+        this.buildings.forEach(building => {
+            building.occupiedCells.forEach(cell => {
+                this.occupiedCells.push(cell);
+            });
+        });
+    }
+
     get type(){
         return "island";
     }

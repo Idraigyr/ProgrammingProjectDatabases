@@ -18,7 +18,7 @@ export class Island extends IView{
      * @param cellsInRow number of cells in a row
      * @param islandThickness thickness of the island plane
      */
-    constructor(gridCellSize = 10, cellsInRow = 15, islandThickness = 10) {
+    constructor(gridCellSize = 10, cellsInRow = 15, islandThickness = 0.1) {
         super();
         this.#gridCellSize = gridCellSize;
         this.#cellsInRow = cellsInRow;

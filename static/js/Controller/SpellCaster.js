@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {BuildSpell, EntitySpell, HitScanSpell, InstantSpell} from "../Model/Spell.js";
 import {Subject} from "../Patterns/Subject.js";
 import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "../configs/Keybinds.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 export class SpellCaster extends Subject{
     #wizard;
@@ -109,9 +110,14 @@ export class SpellCaster extends Subject{
     }
 
     update(deltaTime) {
-        //this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
-        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell()?.spell instanceof BuildSpell){
+        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
+            // Transform position to grid position
+            let pos = this.checkRaycaster();
+            if (pos) { convertWorldToGridPosition(pos);
+                // Dispatch event to check if the cell is occupied
+                document.dispatchEvent(new CustomEvent("occupyCellWithPreviewObject", {detail: {position: pos}}));
+            }
             // TODO: check collision with plane only
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
         }
