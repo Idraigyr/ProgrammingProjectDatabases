@@ -127,7 +127,10 @@ class UserSettingsResource(Resource):
             return 'The player does not exist', 404
 
         try:
-            UserSettingsSchema(**request.get_json())
+            data = request.get_json()
+            data = clean_dict_input(data)
+
+            UserSettingsSchema(**data, _check_requirements=False)
 
             data = request.get_json()
             data = clean_dict_input(data)
