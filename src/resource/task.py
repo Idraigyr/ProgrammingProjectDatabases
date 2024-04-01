@@ -53,7 +53,7 @@ class TaskSchema(Schema):
         }
     }
 
-    required = ['island_id']
+    required = ['island_id', 'endtime']
     type = 'object'
     description = 'A Task object that represents an idle task. A task can be anything, but it is usually an idle task such as a mine that is mining minerals or a building that is in construction or in upgrade.'
 
@@ -138,7 +138,7 @@ class TaskResource(Resource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            TaskSchema(**data)
+            TaskSchema(**data, _check_requirements=True)
 
             r = TaskResource.parse_task_data(data, True)
             if r is not None:
@@ -169,7 +169,7 @@ class TaskResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            TaskSchema(**data)
+            TaskSchema(**data, _check_requirements=False)
 
             task = Task.query.get(int(data['id']))
             if task is None:

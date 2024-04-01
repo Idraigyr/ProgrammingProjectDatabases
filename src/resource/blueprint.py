@@ -36,7 +36,7 @@ class BlueprintSchema(Schema):
         }
     }
 
-    required = []
+    required = ['name', 'description', 'cost', 'buildtime']
 
     description = 'The blueprint model. A blueprint builds a building on an island. The player can build all buildings whose blueprints it has unlocked'
 
@@ -55,7 +55,7 @@ class BlueprintResource(Resource):
 
     @swagger.tags('blueprint')
     @summary('Get a blueprint by id')
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The id of the blueprint to retrieve')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The id of the blueprint to retrieve', required=True)
     @swagger.response(200, description='Success, returns the blueprint in JSON format', schema=BlueprintSchema)
     @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no blueprint id', schema=ErrorSchema)
@@ -94,7 +94,7 @@ class BlueprintResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            BlueprintSchema(**data)
+            BlueprintSchema(**data, _check_requirements=False)
             id = int(data['id'])
 
             blueprint = Blueprint.query.get(id)
@@ -125,7 +125,7 @@ class BlueprintResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            BlueprintSchema(**data)
+            BlueprintSchema(**data, _check_requirements=True)
             if 'id' in data:
                 data.pop('id')
 

@@ -43,7 +43,7 @@ class PlaceableSchema(Schema):
         }
     }
 
-    required = ['island_id']
+    required = ['island_id', 'x', 'z', 'rotation']
 
     title = 'Placeable'
     description = 'A model representing a building in the game. A placeable can only be moved with respect to the grid of the island'

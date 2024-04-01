@@ -79,7 +79,7 @@ class SpellResource(Resource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            SpellSchema(**data)  # Validate the input
+            SpellSchema(**data, _check_requirements=True)  # Validate the input
         except ValueError as e:
             return ErrorSchema(str(e)), 400
 
@@ -102,7 +102,7 @@ class SpellResource(Resource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            SpellSchema(**data)  # Validate the input
+            SpellSchema(**data, _check_requirements=False)  # Validate the input
             id = int(data['id'])
         except (ValueError, KeyError) as e:
             return ErrorSchema(str(e)), 400

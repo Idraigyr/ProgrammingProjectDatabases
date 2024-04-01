@@ -47,7 +47,7 @@ class BuilderMinionResource(EntityResource):
 
     @swagger.tags('entity')
     @summary('Retrieve the builder minion with the given id')
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The builder minion id to retrieve')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The builder minion id to retrieve', required=True)
     @swagger.response(response_code=200, description='Successful retrieval', schema=BuilderMinionSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Builder minion not found', schema=ErrorSchema)
@@ -85,7 +85,7 @@ class BuilderMinionResource(EntityResource):
         data = clean_dict_input(data)
 
         try:
-            BuilderMinionSchema(**data)  # Validate the input
+            BuilderMinionSchema(**data, _check_requirements=True)  # Validate the input
         except ValueError as e:
             return ErrorSchema(str(e)), 400
 
@@ -128,7 +128,7 @@ class BuilderMinionResource(EntityResource):
         data = clean_dict_input(data)
 
         try:
-            BuilderMinionSchema(**data)
+            BuilderMinionSchema(**data, _check_requirements=False)
             id = int(data['entity_id'])
 
 

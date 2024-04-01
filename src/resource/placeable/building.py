@@ -23,7 +23,7 @@ class BuildingSchema(PlaceableSchema):
         'task': TaskSchema
     }
 
-    required = []
+    required = PlaceableSchema.required + ['level']
 
     title = 'Building'
     description = 'A model representing a building in the game.'

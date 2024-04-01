@@ -98,7 +98,7 @@ class GemSchema(Schema):
         }
     }
 
-    required = []
+    required = ['type', 'attributes']
 
     description = 'A gem object with its attributes and their multipliers'
 
@@ -124,7 +124,7 @@ class GemResource(Resource):
     @swagger.response(200, description='Success, returns the gem and its attributes in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no gem id', schema=ErrorSchema)
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The gem id to retrieve')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The gem id to retrieve', required=True)
     @summary('Get the gem by id')
     @jwt_required()
     def get(self):
@@ -159,7 +159,7 @@ class GemResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            GemSchema(**data)
+            GemSchema(**data, _check_requirements=False)
             id = int(data['id'])
 
             gem = Gem.query.get(id)
@@ -192,7 +192,7 @@ class GemResource(Resource):
 
         try:
             # Check the input
-            GemSchema(**data)
+            GemSchema(**data, _check_requirements=True)
 
             if 'id' in data:
                 data.pop('id') # let SQLAlchemy initialize the id

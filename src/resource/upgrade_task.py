@@ -24,7 +24,7 @@ class BuildingUpgradeTaskSchema(TaskSchema):
 
     }
 
-    required = TaskSchema.required + ['building_id']
+    required = TaskSchema.required + ['to_level', 'used_crystals']
 
     def __init__(self, task: BuildingUpgradeTask = None, **kwargs):
         if task is not None:
@@ -74,7 +74,7 @@ class BuildingUpgradeTaskResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            BuildingUpgradeTaskSchema(**data)
+            BuildingUpgradeTaskSchema(**data, _check_requirements=True)
             if 'to_level' not in data:
                 raise ValueError('No to_level provided')
             if 'building_id' not in data:
@@ -87,8 +87,10 @@ class BuildingUpgradeTaskResource(Resource):
         r = TaskResource.parse_task_data(data, True)
         if r is not None:
             return r
-        data.pop('id')
-        data.pop('handeled')
+        if 'id' in data:
+            data.pop('id')
+        if 'handeled' in data:
+            data.pop('handeled')
 
         task = BuildingUpgradeTask(**data)
         current_app.db.session.add(task)
@@ -113,7 +115,7 @@ class BuildingUpgradeTaskResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            BuildingUpgradeTaskSchema(**data)
+            BuildingUpgradeTaskSchema(**data, _check_requirements=False)
             id = int(data['id'])
         except (KeyError, ValueError) as e:
             return ErrorSchema(str(e)), 400
