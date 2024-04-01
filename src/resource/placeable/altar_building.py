@@ -77,7 +77,7 @@ class AltarBuildingResource(Resource):
 
         try:
             AltarBuildingSchema(**data)
-            id = int(data.get("placeable_id"))
+            id = int(data["placeable_id"])
         except (ValueError, KeyError) as e:
             return ErrorSchema(str(e)), 400
 

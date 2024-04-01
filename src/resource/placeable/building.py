@@ -1,3 +1,4 @@
+from src.resource.task import TaskSchema
 from src.resource.blueprint import BlueprintSchema
 from src.resource.gems import GemSchema
 from src.model.placeable.building import Building
@@ -18,7 +19,8 @@ class BuildingSchema(PlaceableSchema):
         'gems': {
             'type': 'array',
             'items': GemSchema
-        }
+        },
+        'task': TaskSchema
     }
 
     required = []
@@ -31,6 +33,7 @@ class BuildingSchema(PlaceableSchema):
             super().__init__(building,
                              level=building.level,
                              gems=[GemSchema(gem) for gem in building.gems],
+                             task=TaskSchema(building.task) if building.task is not None else None,
                              **kwargs)
         else:
             super().__init__(**kwargs)

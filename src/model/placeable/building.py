@@ -1,8 +1,10 @@
 from typing import List
 
-from sqlalchemy import ForeignKey, BigInteger, SmallInteger, Column
+from sqlalchemy import ForeignKey, BigInteger, SmallInteger, Column, DateTime
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
+from src.model.task import Task
+from src.model.upgrade_task import BuildingUpgradeTask
 from src.model.gems import Gem
 from src.model.placeable.placeable import Placeable
 
@@ -18,6 +20,9 @@ class Building(Placeable):
 
     gems: Mapped[List[Gem]] = relationship('Gem')
 
+    task_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id'), nullable=True)
+    task: Mapped[Task] = relationship("Task", back_populates="working_building")
+
     def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0, blueprint_id: int = 0, rotation: int = 0) -> None:
         """
         Create a new building object with the given parameters
@@ -30,6 +35,28 @@ class Building(Placeable):
         """
         super().__init__(island_id, xpos, zpos, blueprint_id, rotation)
         self.level = level
+
+    def create_task(self, endtime: DateTime):
+        """
+        Create a new 'regular' task for this building
+        :param endtime: The time when the task should end
+        :return: The new task
+        """
+        task = Task(endtime, self.island_id, self)
+        self.task = task
+        return task
+
+    def create_upgrade_task(self, endtime: DateTime, used_crystals: int):
+        """
+        Create a new upgrade task for this building
+        :param endtime: The time when the task should end
+        :param used_crystals: The amount of crystals used for the upgrade
+        :return: The new task
+        """
+        task = BuildingUpgradeTask(endtime, self, self.level + 1, used_crystals)
+        self.task = task
+        return task
+
 
 
     def update(self, data: dict):
