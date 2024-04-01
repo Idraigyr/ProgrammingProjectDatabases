@@ -78,6 +78,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.blueprint as blueprint_module
     import src.resource.task as task_module
     import src.resource.upgrade_task as upgrade_task_module
+    import src.resource.user_settings as user_settings_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -93,6 +94,7 @@ def attach_resources(app: Flask) -> None:
     blueprint_module.attach_resource(app)
     task_module.attach_resource(app)
     upgrade_task_module.attach_resource(app)
+    user_settings_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:

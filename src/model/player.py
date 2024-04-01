@@ -46,6 +46,9 @@ class Player(current_app.db.Model):
     # The island of the player
     island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True)
 
+    # User settings
+    user_settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="player", single_parent=True)
+
     # The gem inventory of the player
     gems: Mapped[List["Gem"]] = relationship("Gem")
 
