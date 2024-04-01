@@ -33,7 +33,7 @@ export class InputManager extends Subject{
         x: 0,
         y: 0
     }
-    #callbacks = {mousemove: [], mousedown: [], spellSlotChange: []};
+    #callbacks = {mousemove: [], mousedown: {0: [], 2: []}, spellSlotChange: []};
 
 
     /**
@@ -47,7 +47,7 @@ export class InputManager extends Subject{
             if(!this.blockedInput) return;
             await this.canvas.requestPointerLock();
         });
-        document.addEventListener("mousedown", this.onLeftClickEvent.bind(this));
+        document.addEventListener("mousedown", this.onClickEvent.bind(this));
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;
         });
@@ -104,10 +104,11 @@ export class InputManager extends Subject{
 
     /**
      * Adds event listener for mouse down
-     * @param callback function to add
+     * @param {Function} callback function to add
+     * @param {"left" | "right"} button
      */
-    addMouseDownListener(callback){
-        this.#callbacks["mousedown"].push(callback);
+    addMouseDownListener(callback, button){
+        this.#callbacks["mousedown"][button === "left" ? 0 : 2].push(callback);
     }
 
     /**
@@ -131,9 +132,9 @@ export class InputManager extends Subject{
         this.#callbacks["mousemove"].forEach((callback) => callback(event));
     }
 
-    onLeftClickEvent(event){
+    onClickEvent(event){
         if(this.blockedInput) return;
-        this.#callbacks["mousedown"].forEach((callback) => callback(event));
+        this.#callbacks["mousedown"][event.button].forEach((callback) => callback(event));
     }
 
     createSpellSlotChangeEvent(){

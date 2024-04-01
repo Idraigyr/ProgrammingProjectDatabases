@@ -1,15 +1,21 @@
 import {MeshBVH, MeshBVHHelper, StaticGeometryGenerator} from "three-mesh-bvh";
-// import { GenerateMeshBVHWorker } from "three-MeshBVHWorker";
+import {mergeVertices} from "three-BufferGeometryUtils";
 import * as THREE from "three";
-import {min} from "../helpers.js";
-export class CollisionDetector{
+import {workerURI} from "../configs/EndpointConfigs.js";
+import {Subject} from "../Patterns/Subject.js";
+export class CollisionDetector extends Subject{
     constructor(params) {
+        super(params);
+        this.startUp = true;
         this.scene = params.scene;
         this.charModel = [];
         this.collider = null;
         this.visualizer = null;
-        // this.worker = new GenerateMeshBVHWorker();
         this.viewManager = params.viewManager;
+
+        this.worker = null;
+        this.loader = new THREE.BufferGeometryLoader();
+        this.mergedGeometry = new THREE.BufferGeometry();
 
         //only use = not needing to allocate extra memory for new vectors
         this.tempVector = new THREE.Vector3();
@@ -46,24 +52,56 @@ export class CollisionDetector{
         }
     }
 
-    fillModelGroup(){
-        this.charModel = this.viewManager.colliderModels;
+    stringifyCharModel(){
+        const json = [];
+        for(const index in this.charModel){
+            json.push(this.charModel[index].toJSON());
+        }
+        return JSON.stringify(json);
+    }
+
+    parseColliderWorkerJSON(json){
+        json = JSON.parse(json);
+        //this.collider = new THREE.Mesh(mergeVertices(this.loader.parse(json.geometry)));
+        this.collider = new THREE.Mesh(this.loader.parse(json.geometry));
+        this.collider.geometry.boundsTree = MeshBVH.deserialize(json.boundsTree, this.collider.geometry, {setIndex: true});
     }
 
     generateCollider(){
-        this.fillModelGroup();
+        this.viewManager.getColliderModels(this.charModel);
+        console.log(this.charModel);
         let staticGenerator = new StaticGeometryGenerator(this.charModel);
         staticGenerator.attributes = [ 'position' ];
 
-        let mergedGeometry = staticGenerator.generate();
-        mergedGeometry.boundsTree = new MeshBVH( mergedGeometry );
-        this.collider = new THREE.Mesh(mergedGeometry);
+        this.mergedGeometry = staticGenerator.generate();
 
-        // this.waitingOnWorker = true;
-        // this.worker.generate(mergedGeometry).then(bvh => {
-        //     mergedGeometry.boundsTree = bvh;
-        //     this.collider = new THREE.Mesh(mergedGeometry);
-        // }).reject().finally(() => this.waitingOnWorker = false);
+        this.mergedGeometry.boundsTree = new MeshBVH( this.mergedGeometry );
+        return new THREE.Mesh(this.mergedGeometry);
+    }
+
+    generateColliderOnWorker(){
+        if(typeof Worker === 'undefined' || this.startUp || true){
+            //show loading screen
+            document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
+            document.querySelector('.loading-animation').style.display = 'visible';
+            const sleep =  new Promise(r => setTimeout(r, 100));
+            sleep.then(() => {console.log("waking up")});
+            this.collider = this.generateCollider();
+            document.querySelector('.loading-animation').style.display = 'none';
+        } else {
+            console.log("starting worker...");
+
+            this.worker = new Worker(workerURI, {type: 'module'});
+            console.log(this.worker);
+            this.worker.addEventListener('message', this.receiveCollider.bind(this));
+            this.worker.postMessage(this.stringifyCharModel());
+        }
+        this.startUp = false;
+    }
+
+    receiveCollider(msg){
+        this.parseColliderWorkerJSON(msg.data);
+        this.dispatchEvent(this.createColliderReadyEvent());
     }
 
     BoxCollisionWithWorld(boundingBox){
@@ -146,5 +184,10 @@ export class CollisionDetector{
 
     checkSpellCollisions(){
 
+    }
+
+    createColliderReadyEvent() {
+        console.log("Collider ready event.");
+        return new CustomEvent('colliderReady');
     }
 }

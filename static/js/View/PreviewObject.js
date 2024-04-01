@@ -58,6 +58,7 @@ export class PreviewObject extends IView{
         this.charModel.material.uniforms.cutoff.value = this.types[key].cutoff;
         this.rotate = this.types[key].rotate;
         this.horizontalRotation = this.types[key]?.horizontalRotation ?? 0;
+        super.updateRotation({detail: {rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), this.horizontalRotation * Math.PI / 180)}});
         this.currentType = key;
     }
 

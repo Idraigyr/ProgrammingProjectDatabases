@@ -8,15 +8,15 @@ export let horizontalSensitivity = 0.5;
 export let verticalSensitivity = 0.3;
 export let zoomSensitivity = 1;
 
-export const movementSpeed = 7;
+export const movementSpeed = 9;
 
 export const spellCastMovementSpeed = 2;
 
-export const gravity = -40;
+export const gravity = -10;
 
 export const physicsSteps = 4;
 
-export const jumpHeight = 13;
+export const jumpHeight = 15;
 
 export const sprintMultiplier = 2;
 

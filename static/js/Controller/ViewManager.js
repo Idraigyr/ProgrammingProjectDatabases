@@ -89,11 +89,10 @@ export class ViewManager extends Subject{
         return planes;
     }
 
-    get colliderModels(){
-        let models = [];
-        this.pairs.building.forEach((pair) => models.push(pair.view.charModel));
-        this.pairs.island.forEach((pair) => models.push(pair.view.charModel));
-        return models;
+    getColliderModels(array){
+        array.splice(0, array.length);
+        this.pairs.building.forEach((pair) => array.push(pair.view.charModel));
+        this.pairs.island.forEach((pair) => array.push(pair.view.charModel));
     }
 
     /**

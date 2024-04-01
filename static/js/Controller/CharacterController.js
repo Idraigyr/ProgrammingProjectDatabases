@@ -31,7 +31,7 @@ export class CharacterController extends Subject{
         this.tempPosition = this._character.position.clone();
         this.collisionDetector = params.collisionDetector;
         this.#inputManager = params.InputManager;
-        this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
+        this.#inputManager.addMouseDownListener(this.onRightClickEvent.bind(this),"right");
 
         this.tempTemp = new THREE.Vector3();
     }
@@ -72,14 +72,18 @@ export class CharacterController extends Subject{
      * Handle the click event
      * @param event event
      */
-    onClickEvent(event){ //TODO: move to SpellCaster class
-        // RightClick
-        if (event.which === 3 || event.button === 2) {
-            if (this._character.getCurrentSpell() instanceof BuildSpell) {
-                const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
-                document.dispatchEvent(customEvent);
-            }
-        } // TODO: also for left click to place the buildings?
+    onRightClickEvent(event){ //TODO: move to SpellCaster class
+        // // RightClick
+        // if (event.which === 3 || event.button === 2) {
+        //     if (this._character.getCurrentSpell() instanceof BuildSpell) {
+        //         const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
+        //         document.dispatchEvent(customEvent);
+        //     }
+        // } // TODO: also for left click to place the buildings?
+        if (this._character.getCurrentSpell() instanceof BuildSpell) {
+            const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
+            document.dispatchEvent(customEvent);
+        }
     }
 
 
@@ -95,6 +99,7 @@ export class CharacterController extends Subject{
         }
 
         this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
+        this.tempPosition.addScaledVector( this._character.horizontalVelocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
 
@@ -167,7 +172,9 @@ export class CharacterController extends Subject{
                 speedMultiplier = movementSpeed;
             }
 
-            this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
+            // this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
+            this._character.horizontalVelocity.copy( movement );
+            this._character.horizontalVelocity.multiplyScalar(speedMultiplier);
         }
     }
 }

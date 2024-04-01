@@ -84,6 +84,8 @@ export class WorldManager {
         const buildingName = event.detail.buildingName;
         const position = event.detail.position;
         this.world.addBuilding(buildingName, position);
+        this.collisionDetector.generateColliderOnWorker();
+
     }
 
     async exportWorld(){
