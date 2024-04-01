@@ -5,4 +5,8 @@ export class Tower extends Placeable{
         super(params);
         this.spellSpawner = params.spellSpawner;
     }
+
+    get dbType(){
+        return "tower_building";
+    }
 }

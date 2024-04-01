@@ -12,7 +12,7 @@ export const movementSpeed = 9;
 
 export const spellCastMovementSpeed = 2;
 
-export const gravity = -10;
+export const gravity = -40;
 
 export const physicsSteps = 4;
 

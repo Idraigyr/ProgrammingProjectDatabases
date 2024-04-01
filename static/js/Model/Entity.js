@@ -17,6 +17,23 @@ export class Entity extends Subject{
     }
 
     /**
+     * Set the id of the entity
+     * @param {JSON} data - entire JSON object from db
+     */
+    setId(data){
+        throw new Error("Cannot set id of abstract class Entity");
+    }
+
+    /**
+     * Set the id of the entity
+     * @param {UserInfo} userInfo - all the information about the user
+     * @return {PlainObject} data - entire JSON object which db can accept
+     */
+    formatPOSTData(userInfo){
+        throw new Error("Cannot set id of abstract class Entity");
+    }
+
+    /**
      * Create an event that position of entity has changed
      * @returns {CustomEvent<{position: THREE.Vector3}>} - event with new position
      * @protected - should not be called from outside the class and its inheritors
@@ -52,9 +69,10 @@ export class Entity extends Subject{
      * Get type of entity
      */
     get type(){
-        if(this.constructor === Entity){
-            throw new Error("cannot get type of abstract class Entity");
-        }
+        throw new Error("cannot get type of abstract class Entity");
+    }
+
+    get dbType(){
         throw new Error("cannot get type of abstract class Entity");
     }
 }

@@ -180,7 +180,7 @@ class App {
         progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
+        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
         await this.worldManager.importWorld(this.playerInfo.islandID);
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";

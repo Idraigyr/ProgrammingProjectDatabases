@@ -7,4 +7,8 @@ export class FusionTable extends Placeable{
     constructor(params) {
         super(params);
     }
+
+    get dbType(){
+        return "fuse_table";
+    }
 }
