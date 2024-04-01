@@ -1,8 +1,10 @@
 let username = "Unknown user";
+let userId = 0;
 
 $(document).ready(function(){
    $.ajax({url: '/api/user_profile', type: 'GET'}).done(function(data){
        username = data.username;
+       userId = data.id;
        console.log("Logged in as " + username)
    });
 });
@@ -42,7 +44,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     //Sends message to the server
     document.querySelector('#sendMessage').onclick = () =>{
         const message = document.querySelector('#chatInput').value;
-        const messageData = {'message': message, 'username': username};
+        const messageData = {'message': message, 'username': username, 'user_id': userId};
         socket.emit('message', messageData);
     }
 })

@@ -80,6 +80,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.upgrade_task as upgrade_task_module
     import src.resource.user_settings as user_settings_module
     import src.resource.placeable.prop as prop_module
+    import src.resource.chat_message as chat_message_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -97,6 +98,7 @@ def attach_resources(app: Flask) -> None:
     upgrade_task_module.attach_resource(app)
     user_settings_module.attach_resource(app)
     prop_module.attach_resource(app)
+    chat_message_module.attach_resources(app)
 
 
 def clean_dict_input(d: dict) -> dict:
