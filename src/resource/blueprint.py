@@ -29,6 +29,10 @@ class BlueprintSchema(Schema):
         'cost': {
             'type': 'integer',
             'format': 'int64'
+        },
+        'buildtime': {
+            'type': 'integer',
+            'format': 'int64'
         }
     }
 
@@ -38,7 +42,8 @@ class BlueprintSchema(Schema):
 
     def __init__(self, blueprint: Blueprint = None, **kwargs):
         if blueprint:
-            super().__init__(id=blueprint.id, name=blueprint.name, description=blueprint.description, **kwargs)
+            super().__init__(id=blueprint.id, name=blueprint.name, description=blueprint.description,
+                             buildtime=blueprint.buildtime, **kwargs)
         else:
             super().__init__(**kwargs)
 
