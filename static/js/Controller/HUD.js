@@ -5,6 +5,9 @@ export class HUD {
 
     constructor(InputManager) {
         this.#inputManager = InputManager;
+        this.manaBar = document.getElementsByClassName("ManaAmount")[0];
+        this.HealthBar = document.getElementsByClassName("HealthAmount")[0];
+        this.crystals = document.getElementsByClassName("CrystalAmount")[0];
         // Add event listener for spell slot index change
         this.#inputManager.addSpellSlotChangeListener(this.updateHoveredButton.bind(this));
         this.#inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this));
@@ -27,6 +30,30 @@ export class HUD {
         // Add hover class to the button corresponding to the spell slot index
         const hoveredButton = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
         hoveredButton.parentElement.classList.add('hovered');
+
+    }
+
+    updateManaBar(event){
+        document.body.style.setProperty("--currentMana", event.detail.current);
+        document.body.style.setProperty("--maxMana", event.detail.total);
+        this.manaBar.textContent = `${event.detail.current}/${event.detail.total}`;
+    }
+
+    updateHealthBar(event){
+        document.body.style.setProperty("--currentHP",event.detail.current);
+        document.body.style.setProperty("--maxHP",event.detail.total);
+        this.HealthBar.textContent = `${event.detail.current}/${event.detail.total}`;
+    }
+
+    updateCrystals(event){
+        this.crystals.textContent = event.detail.crystals;
+    }
+
+    updateLevel(event){
+
+    }
+
+    updateXP(event){
 
     }
 

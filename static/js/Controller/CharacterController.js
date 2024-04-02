@@ -12,7 +12,7 @@ import * as THREE from "three";
 import {max, min} from "../helpers.js";
 import {Factory} from "./Factory.js";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
-import {BaseCharAttackState} from "../Model/States/CharacterStates.js";
+import {BaseCharAttackState, EatingState} from "../Model/States/CharacterStates.js";
 
 
 
@@ -25,7 +25,7 @@ export class CharacterController extends Subject{
 
     /**
      * adds a listener to inputManager mousedown event
-     * @param {{Character: Wizard, InputManager: InputManager eatingController: eatingController}} params
+     * @param {{Character: Wizard, InputManager: InputManager, collisionDetector: CollisionDetector}} params
      */
     constructor(params) {
         super();
@@ -34,7 +34,6 @@ export class CharacterController extends Subject{
         this.collisionDetector = params.collisionDetector;
         this.#inputManager = params.InputManager;
         this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
-        this.eatingController = params.eatingController;
         this.tempTemp = new THREE.Vector3();
     }
 
@@ -120,6 +119,15 @@ export class CharacterController extends Subject{
     }
 
     /**
+     * creates a custom event notifying eating being started
+     * @returns {CustomEvent<{}>}
+     */
+    createEatingEvent(){
+        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 10}}});
+    }
+
+
+    /**
      * Update the character (e.g. state, position, spells, etc.)
      * @param deltaTime
      */
@@ -128,8 +136,13 @@ export class CharacterController extends Subject{
             return;
         }
 
+        if (this.#inputManager.keys.eating && !(this._character.fsm.currentState instanceof EatingState)) {
+            this.dispatchEvent(this.createEatingEvent());
+        }
+
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
+
 
         if (this._character.fsm.currentState.movementPossible) {
 
@@ -172,9 +185,6 @@ export class CharacterController extends Subject{
             }
 
             this.tempPosition.addScaledVector(movement, speedMultiplier * deltaTime);
-        }
-        if (this.#inputManager.keys.eating) {
-            this.dispatchEvent(this.eatingController.createEatingEvent());
         }
     }
 
