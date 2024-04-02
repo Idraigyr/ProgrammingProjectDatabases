@@ -75,9 +75,10 @@ export class Factory{
      * Creates building model and view
      * @param buildingName name of the building
      * @param position position of the building
+     * @param withTimer if true, the building will be created with timer
      * @returns {*} model of the building
      */
-    createBuilding(buildingName, position){
+    createBuilding(buildingName, position, withTimer=false){
         const asset = this.assetManager.getAsset(buildingName);
         correctRitualScale(asset);
         setMinimumY(asset, 0); // TODO: is it always 0?

@@ -39,7 +39,7 @@ export class BuildManager {
             // Get the building name from the event
             const buildingName = event.data.buildingName;
             // Create a custom event to place the building (send the event to world manager)
-            const customEvent = new CustomEvent('placeBuilding', {detail: {buildingName: buildingName, position: this.selectedPosition}});
+            const customEvent = new CustomEvent('placeBuilding', {detail: {buildingName: buildingName, position: this.selectedPosition, withTimer: true}});
             document.dispatchEvent(customEvent);
         }
     }

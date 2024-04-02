@@ -46,6 +46,25 @@ export class ViewManager extends Subject{
             return found;
         }
     }
+    changeViewAsset(model, viewAsset){
+        // Get the pair
+        let pair = this.getPair(model);
+        // Get the old view
+        let oldView = pair.view;
+        // Copy old parameters (such as position, rotation, scale) to the asset
+        // TODO: is it correct to assume that you have to copy the position, rotation and scale of the old view to the new view?
+        viewAsset.position.copy(oldView.charModel.position);
+        viewAsset.rotation.copy(oldView.charModel.rotation);
+        viewAsset.scale.copy(oldView.charModel.scale);
+        // Get the scene
+        let scene = oldView.charModel.parent;
+        // Remove the old view from the scene
+        scene.remove(oldView.charModel);
+        // Add the new view to the scene
+        scene.add(oldView.charModel);
+        // Change the asset of the view
+        oldView.charModel = viewAsset;
+    }
     /**
     * callback to delete view when model is deleted. Should be called with every deletion of a model object
     * @param {{detail: model}} event

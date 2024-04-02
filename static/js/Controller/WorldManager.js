@@ -24,6 +24,15 @@ export class WorldManager {
                         z: 1
                     },
                     rotation: 0
+                },
+                    {
+                    type: "Altar",
+                    position: { //TODO: this should be gridSquare coordinates
+                        x: 0,
+                        y: 0,
+                        z: 1
+                    },
+                    rotation: 0
                 }
                 ],
                 position: {
@@ -79,7 +88,8 @@ export class WorldManager {
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
         const position = event.detail.position;
-        this.world.addBuilding(buildingName, position);
+
+        this.world.addBuilding(buildingName, position, event.detail.withTimer);
     }
 
     async exportWorld(){

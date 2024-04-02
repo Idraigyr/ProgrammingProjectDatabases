@@ -54,8 +54,8 @@ export class World{
         document.dispatchEvent(new CustomEvent("updatePreviewObjectColor", {detail: {primaryColor: primaryColor, secondaryColor: secondaryColor}}));
     }
 
-    addBuilding(buildingName, position){
-        const building = this.factory.createBuilding(buildingName, position);
+    addBuilding(buildingName, position, withTimer = false){
+        const building = this.factory.createBuilding(buildingName, position, withTimer);
         // TODO: what if multiple islands?
         this.islands[0].addBuilding(building);
     }

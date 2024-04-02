@@ -5,11 +5,11 @@ import {Entity} from "../Entity.js"
  */
 export class Placeable extends Entity{
     constructor(params) {
-        super();
+        super(params);
         params? this.rotation = params.rotation : this.rotation = 0;
         this.occupiedCells = [];
+        this.timeToBuild = 0; // in seconds
     }
-    // TODO: update occupied cells
 
     get type(){
         return "building";
