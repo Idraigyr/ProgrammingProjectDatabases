@@ -21,17 +21,25 @@ class Placeable(current_app.db.Model):
     xpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
     zpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
 
+    rotation: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
 
-    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0):
+    blueprint_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey('blueprint.id'), nullable=False, default=0)
+    blueprint: Mapped["Blueprint"] = relationship('Blueprint')
+
+    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, blueprint_id: int = 0, rotation: int = 0):
         """
         Initializes a placeable object
         :param island_id: The id of the island that this placeable belongs to
         :param xpos: The x position of the building, in the grid. So it is bound by [0,15]
         :param zpos: The z position of the building, in the grid. So it is bound by [0,15]
+        :param blueprint_id: The id of the blueprint that builds this placeable
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
         self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
+        self.blueprint_id = blueprint_id
+        self.rotation = rotation
 
 
     def update(self, data: dict):
@@ -43,6 +51,7 @@ class Placeable(current_app.db.Model):
         """
         self.xpos = data.get('x', self.xpos)
         self.zpos = data.get('z', self.zpos)
+        self.rotation = data.get('rotation', self.rotation)
 
 
     __mapper_args__ = {

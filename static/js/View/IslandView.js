@@ -124,9 +124,10 @@ export class Island extends IView{
 
         group.add(this.createLights());
 
-        group.add(this.createPlane());
+        let plane = this.createPlane();
+        group.add(plane);
         group.add(this.createGrassField());
-        this.charModel = group;
+        this.charModel = plane;
         return group;
     }
 }

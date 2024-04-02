@@ -108,12 +108,9 @@ populateContainer('container1', gems);
 populateContainer('container2', towerGems);
 populateContainer('container3', boosts);
 
-
-
-// exit button
-document.addEventListener("DOMContentLoaded", function() {
-    const button = document.getElementById('exit');
-    button.addEventListener('click', function() {
-        // exit menu
-    });
-});
+function exitMenu() {
+    // Your code to handle closing the menu goes here
+    console.log("Tower menu closed");
+    // Send message to parent
+    window.parent.postMessage("closeTowerMenu", "*");
+}

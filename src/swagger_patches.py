@@ -14,7 +14,7 @@ def check_type(self, type_, key, value):
                 if not isinstance(temp, dict):
                     return # no schema to check
                 cls = temp.get('items')
-                if cls and getattr(cls, '__name__') is not None and cls.__name__ in REGISTRY_SCHEMA:
+                if cls and hasattr(cls, '__name__') and cls.__name__ in REGISTRY_SCHEMA:
                     if hasattr(cls, '_abstract_class') and cls._abstract_class:
                         for v in value:
                             if v.__class__.__name__ not in REGISTRY_SCHEMA:

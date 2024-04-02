@@ -1,5 +1,9 @@
 //Fireball
 export const fireball = {
-    duration: 1
+    duration: 2
 }
-fireball.duration = 2;
+
+export const iceWall = {
+    blocks: 4,
+    width: 10,
+}

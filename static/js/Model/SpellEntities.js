@@ -1,5 +1,6 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
+import {min} from "../helpers.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -32,6 +33,39 @@ class SpellEntity extends Entity{
     }
 }
 
+class CollidableSpellEntity extends SpellEntity{
+    constructor(params) {
+        super(params);
+        this.boundingBox = new THREE.Box3();
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+    }
+}
+//move function should be a function that takes a value and a position vector and returns a new position vector
+//at this.functionValue = 0, the returned vector should always be (0,0,0)
+export class MobileCollidable extends CollidableSpellEntity{
+    constructor(params) {
+        super(params);
+        this.spawnPoint = new THREE.Vector3().copy(params.position);
+        this.moveFunction = params.moveFunction;
+        this.moveFunctionParams = params.moveFunctionParams;
+        this.functionValue = 0;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.functionValue += deltaTime;
+        this.moveEntity();
+    }
+    moveEntity(){
+        this.position = this.position.copy(this.spawnPoint).add(this.moveFunction(this.functionValue, this.moveFunctionParams));
+    }
+}
+
+
+
 /**
  * @class Projectile - class for projectile spells. Determines how the spell collides with enemies
  */
@@ -62,6 +96,16 @@ export class Projectile extends SpellEntity{
 export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
+    }
+}
+
+export class RitualSpell extends SpellEntity{
+    constructor(params) {
+        super(params);
+    }
+    update(deltaTime){
+        super.update(deltaTime);
+        // TODO: add something here?
     }
 }
 

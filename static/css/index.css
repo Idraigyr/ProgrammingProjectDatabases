@@ -12,8 +12,100 @@
         width: 0.05vw; /* Adjust as needed for very small screens */
     }
 }
+/* settings style */
 
 
+
+.container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+    width: 100%;
+  height: 95%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f3d2;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+    z-index: 8;
+  overflow: scroll;
+}
+.borderless{
+    border: none;
+}
+.hide{
+    display: none
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+}
+
+.slider, .checkbox, .radio-group, .dropdown {
+  margin-bottom: 20px;
+}
+
+.slider label, .checkbox label, .radio-group label, .dropdown label {
+  color: #0f172a;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.slider input[type="range"] {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.checkbox input[type="checkbox"], .radio-group input[type="radio"], .dropdown select {
+  margin-right: 10px;
+}
+
+.radio-group .radio {
+  display: inline-block;
+  margin-right: 20px;
+}
+
+.dropdown select {
+  width: 100%;
+  padding: 8px;
+  border-radius: 5px;
+  border: 2px solid #0f172a;
+  background-color: #ccc5ab;
+}
+
+.key-binds {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.key-bind {
+  display: flex;
+  flex-direction: column;
+  margin-right: 10px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.key-bind label {
+    color: #0f172a;
+  margin-bottom: 5px;
+}
+
+.applyButton{
+  background: #ccc5ab;
+  margin-left: 94%;
+}
+
+/* end */
 body {
     position: fixed;
     overflow: hidden;
@@ -127,6 +219,7 @@ body {
 
 /* loading screen style */
 .loading-animation{
+    height: 100vh;
     z-index: 10;
 }
 
@@ -170,15 +263,14 @@ body {
 
 .scene {
     position: absolute;
-    top: 5%;
-    left: 20%; /* Adjust this as needed */
-    width: 80%; /* Use viewport width units */
+    top: 5vh;
+    left: 10vw; /* Adjust this as needed */
+    width: 80vw; /* Use viewport width units */
     height: auto; /* Let the height adjust based on the aspect ratio */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-
 }
 
 /** Wizard CSS & Animations */
@@ -797,7 +889,7 @@ body {
 
     --currentHP: 20;
     --maxHP: 100;
-    --currentMana: 50;
+    --currentMana: 100;
     --maxMana: 100;
     --percentageHP: calc(100% - (var(--currentHP) / var(--maxHP) * 100%));
     --percentageMana: calc(100% - (var(--currentMana) / var(--maxMana) * 100%));;
@@ -820,6 +912,8 @@ body {
     left: 33%;
 
 }
+
+
 
 .HealthPotion {
     position: absolute;
@@ -951,10 +1045,75 @@ body {
     width: 100%;
     height: 100%;
 }
+.HotBarIcons {
+    position: absolute;
+    width: 34%;
+    height: 12%;
+    margin: 0 auto;
+    bottom: 0;
+    left: 33%;
+
+}
+
+.HotBarIcons {
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+}
+
+.buildimage {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    transform: translate(-50%, -50%);
+}
+
+
+.buildimage {
+    width: 10%;
+    height: auto;
+}
+
+.firebalimage {
+    position: absolute;
+    top: 50%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+}
+
+
+.firebalimage {
+    width: 10%;
+    height: auto;
+}
+
+.lighningimage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+
+.lighningimage {
+    width: 10%;
+    height: auto;
+}
+
+.shieldimage {
+    position: absolute;
+    top: 50%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+}
+
+.shieldimage {
+    width: 10%;
+    height: auto;
+}
 
 
 
-/* Settings Button Hover and Press Effects */
 .settings-button:hover .button {
     content: url('../assets/images/Button_Hover.png');
 }

@@ -9,7 +9,13 @@ export let assetPaths = {
     Altar: "./static/assets/3d-models/altar.glb",
     Mine: "./static/assets/3d-models/mine.glb",
     Player: "./static/assets/3d-models/Wizard.glb",
+    Bush: "./static/assets/3d-models/bushes.glb",
+    FusionTable: "./static/assets/3d-models/fusionTable.glb",
     Tree: "./static/assets/3d-models/tree.glb",
     cloud: "./static/assets/images/cloud.png",
-    fire: "./static/assets/images/fire.png"
+    fire: "./static/assets/images/fire.png",
+    RitualSpell: "./static/assets/3d-models/BuildSpell.glb",
+    iceBlock: "./static/assets/3d-models/crystals/Crystal.glb",
 }
+
+export const gridCellSize = 10;

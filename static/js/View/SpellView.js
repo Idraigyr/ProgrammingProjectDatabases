@@ -1,4 +1,4 @@
-import {IView} from "./View.js";
+import {IAnimatedView, IView} from "./View.js";
 import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 import {Color} from "three";
@@ -144,6 +144,52 @@ export class ThunderCloud extends IView{
 }
 
 
-export class RitualView extends IView{
+export class RitualSpell extends IAnimatedView{
+    constructor(params) {
+        super(params);
+        this.camera = params.camera;
+        this.charModel = params.charModel;
+        this.position = params.position;
+    }
 
+    /**
+     * Load build ritual model's animations
+     * @param clips
+     */
+    loadAnimations(clips){
+        const getAnimation =  (animName, alias) => {
+            let clip = THREE.AnimationClip.findByName(clips, animName);
+            this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
+        }
+        getAnimation('Scene',"RitualSpell");
+    }
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.animations["RitualSpell"].play();
+    }
+}
+
+//charModel must be a group of iceBlock models
+export class IceWall extends IView{
+    constructor(params) {
+        super(params);
+        this.width = params.width;
+        this.charModel = params.charModel;
+        this.spreadWall();
+        this.charModel.position.copy(params.position);
+    }
+    spreadWall(){
+        const length = this.charModel.children.length;
+        console.log(this.charModel.children[0])
+        for(let i = 0; i < length; i++){
+            this.charModel.children[i].position.set(i*this.width/length - this.width/2,0,0);
+            this.charModel.children[i].traverseVisible((child) => {
+                if (child.isMesh) child.material.opacity = Math.random() * 0.3 + 0.6;
+            });
+        }
+    }
+
+    cleanUp(){
+        this.charModel.parent.remove(this.charModel);
+    }
 }

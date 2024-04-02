@@ -1,4 +1,5 @@
 import {Building} from "../BuildingView.js";
+import * as THREE from "three";
 
 /**
  * Mine building view

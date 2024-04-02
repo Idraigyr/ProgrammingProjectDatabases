@@ -18,21 +18,24 @@ class Building(Placeable):
 
     gems: Mapped[List[Gem]] = relationship('Gem')
 
-    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0) -> None:
+    def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0, blueprint_id: int = 0, rotation: int = 0) -> None:
         """
         Create a new building object with the given parameters
         :param island_id: The id of the island that this building belongs to
         :param xpos: The x position of the building on the grid
         :param zpos: The z position of the building on the grid
         :param level: The level of the building
+        :param blueprint_id: The id of the blueprint that can build this building
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
-        super().__init__(island_id, xpos, zpos)
+        super().__init__(island_id, xpos, zpos, blueprint_id, rotation)
         self.level = level
 
 
     def update(self, data: dict):
         """
         Update the building object with the given data
+        Note: blueprint_id cannot be changed
         :param data:
         :return:
         """

@@ -1,4 +1,6 @@
 //abstract classes
+import * as THREE from "three";
+
 /**
  * @class Spell - abstract class for all spells (first component of ConcreteSpell)
  */
@@ -7,7 +9,6 @@ class Spell{
         this.duration = params.duration;
         this.castTime = params.castTime;
         this.cooldown = params.cooldown;
-        this.timer = 0;
     }
 
     /**
@@ -29,6 +30,7 @@ export class EntitySpell extends Spell{
 
     }
 }
+
 class Follower extends EntitySpell{
     constructor(params) {
         super(params);
@@ -59,6 +61,40 @@ class Cloud extends EntitySpell{
     update(deltaTime){
 
     }
+}
+
+const moveFunctions = {
+    linear: function (value, params) {
+        return new THREE.Vector3(0, 0, value);
+    },
+    minLinearY: function (value, params) {
+        return new THREE.Vector3(0, Math.min(params.maxY, value*params.speed), 0);
+    },
+    sinZ: function (value, params) {
+        return new THREE.Vector3(0, 0, Math.sin(value*params.frequency  + params.horizontalOffset)*params.amplitude - params.verticalOffset);
+    },
+    sinX: function (value, params) {
+        return new THREE.Vector3(Math.sin(value*params.frequency  + params.horizontalOffset)*params.amplitude - params.verticalOffset, 0, 0);
+    }
+}
+
+const moveFunctionParams = {
+    linear: {},
+    minLinearY: {maxY: 5, speed: 6},
+    sinZ: {frequency: 1, amplitude: 1, horizontalOffset: 0, verticalOffset: 0},
+    sinX: {frequency: 1, amplitude: 1, horizontalOffset: 0, verticalOffset: 0}
+}
+
+class Block extends EntitySpell{
+    constructor(params) {
+        super(params);
+        this.moveFunction = moveFunctions.minLinearY;
+        this.moveFunctionParams = moveFunctionParams.minLinearY;
+    }
+    update(deltaTime){
+
+    }
+
 }
 
 /**
@@ -155,9 +191,12 @@ class Build extends Effect{
  */
 class ConcreteSpell{
     constructor(params) {
+        this.hasPreview = false;
         this.hitScan = false;
+        this.cost = 0;
         this.spell = params.spell;
         this.effects = params.effects;
+        this.name = "null";
     }
 
     /**
@@ -189,7 +228,7 @@ export class BuildSpell extends ConcreteSpell{
         super({
             spell: new HitScanSpell({
                 duration: 0,
-                cooldown: 0,
+                cooldown: 1,
                 castTime: 0,
             }),
             effects: [
@@ -198,6 +237,10 @@ export class BuildSpell extends ConcreteSpell{
                 })
             ]
         });
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.name = "build";
+        this.cost = 10;
     }
 }
 
@@ -223,6 +266,27 @@ export class Fireball extends ConcreteSpell{
                     duration: 0
             })]
         });
+        this.name = "fireball";
+        this.cost = 5;
+    }
+}
+
+export class IceWall extends ConcreteSpell{
+    constructor() {
+        super({
+            spell: new Block({
+                duration: 20,
+                cooldown: 5,
+                castTime: 0,
+            }),
+            effects: [new Build({
+                building: "IceWall"
+            })]
+        });
+        this.name = "icewall";
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.cost = 20;
     }
 }
 
@@ -235,6 +299,8 @@ export class Zap extends ConcreteSpell{
             spell: new InstantSpell(),
             effects: [new InstantDamage()]
         });
+        this.name = "zap";
+        this.hitScan = true;
     }
 }
 
@@ -253,6 +319,10 @@ export class ThunderCloud extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.name = "thundercloud";
+        this.hasPreview = true;
+        this.hitScan = true;
+        this.cost = 20;
     }
 }
 
@@ -269,6 +339,7 @@ export class Shield extends ConcreteSpell{
                 damage: 0
             })]
         });
+        this.cost = 15;
     }
 }
 
@@ -295,6 +366,8 @@ class Heal extends ConcreteSpell{
 // ice wall (creates an ice wall)
 // freeze ray (slow down targets)
 // confusion ball (inverts movement)
+// digging spell (move underground, becoming immune and leave a trail of dirt where you travel)
+// sword spell (shoot an array of swords)
 
 
 //use dependency injection pattern?

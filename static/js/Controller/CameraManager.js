@@ -11,6 +11,7 @@ export class CameraManager {
     #offset;
     #lookAt;
     #zoom;
+    #collisionLine;
 
     /**
      * Create a camera manager
@@ -21,33 +22,56 @@ export class CameraManager {
         this.#target = params.target;
         this.#offset = params.offset;
         this.#lookAt = params.lookAt;
+        this.raycaster = params.raycaster;
         this.#zoom = minZoomIn;
-        //there is no zoomOut functionality so not functional
-        // document.addEventListener("keydown", (e) => {
-        //     if(e.code === "KeyO"){
-        //         this.zoomIn(0.2);
-        //     } else if (e.code === "KeyP"){
-        //         this.zoomIn(-0.2);
-        //     }
-        // });
+        this.#collisionLine = new THREE.Line3(new THREE.Vector3(), new THREE.Vector3());
+
+        //visualise camera line -- DEBUG STATEMENTS --
+        // this.linepoints = [new THREE.Vector3(),new THREE.Vector3()];
+        // this.line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([]), new THREE.LineBasicMaterial({color: 0xFF0000}));
+        //visualise camera line -- DEBUG STATEMENTS --
     }
 
     /**
      * Calculate the zoom
      * @param idealOffset ideal offset
      * @param idealLookAt ideal look at
-     * @param zoomIn zoom in
-     * @returns {Vector3} the zoom
+     * @returns {THREE.Vector3} the zoom
      */
-    calculateZoom(idealOffset, idealLookAt, zoomIn){
-        let vec = new THREE.Vector3().copy(idealOffset);
-        let vec2 = new THREE.Vector3().copy(idealLookAt);
-        vec2.multiplyScalar(-1);
-        vec.add(vec2);
-        vec.normalize();
-        vec.multiplyScalar(max(maxZoomIn, min(minZoomIn, zoomIn)));
-        return vec;
+    calculateZoom(idealOffset, idealLookAt){
+        this.#collisionLine.start.copy(idealLookAt);
+        this.#collisionLine.end.copy(idealOffset);
+
+        const origin = new THREE.Vector3();
+        const direction = new THREE.Vector3().subVectors(idealOffset,idealLookAt).normalize();
+
+        this.#collisionLine.closestPointToPoint(this.#target.position,true,origin);
+
+        //visualise camera line -- DEBUG STATEMENTS --
+        // this.linepoints[0].copy(origin);
+        // this.linepoints[1].copy(origin).add(direction);
+        //visualise camera line -- DEBUG STATEMENTS --
+
+        const hit = this.raycaster.getFirstHitWithWorld(origin, direction);
+
+        let zoom = new THREE.Vector3().copy(idealOffset);
+        //TODO: optional add manual zoom in/out functionality
+
+        if(hit.length > 0){
+            const distance = origin.distanceTo(hit[0].point);
+            if(distance < minZoomIn){
+                zoom.add(direction.negate().multiplyScalar(min(minZoomIn-distance, maxZoomIn)));
+            }
+        }
+        return zoom;
     }
+
+    //visualise camera line -- DEBUG STATEMENTS --
+    // get collisionLine(){
+    //     this.line.geometry.setFromPoints(this.linepoints);
+    //     return this.line;
+    // }
+    //visualise camera line -- DEBUG STATEMENTS --
 
     /**
      * Zoom in the camera
@@ -75,28 +99,15 @@ export class CameraManager {
     update(deltaTime){
         let idealOffset = this.transformVecWithTarget(new THREE.Vector3().copy(this.#offset));
         const idealLookAt = this.transformVecWithTarget(new THREE.Vector3().copy(this.#lookAt));
-        let zoom = this.calculateZoom(idealOffset, idealLookAt, this.#zoom);
-        let zoomIn = this.#zoom;
 
-        let copy = idealOffset;
-
-        //don't uncomment; freezes screen;
-        //copy = copy.add(zoom);
-        if(copy.y < minCameraY){
-            while(copy.y < minCameraY){
-                copy = new THREE.Vector3().copy(idealOffset);
-                zoomIn -= 0.1;
-                zoom = this.calculateZoom(idealOffset, idealLookAt, zoomIn);
-                copy = copy.add(zoom);
-            }
-        }
-
-        this.camera.position.copy(copy);
+        this.camera.position.copy(this.calculateZoom(idealOffset,idealLookAt));
         this.camera.lookAt(idealLookAt);
-        let camera = this.camera;
-        const customEvent = new CustomEvent('updateCameraPosition', { detail: { camera } });
-        document.dispatchEvent(customEvent);
+        document.dispatchEvent(this.createUpdatePositionEvent());
 
+    }
+
+    createUpdatePositionEvent(){
+        return new CustomEvent('updateCameraPosition', {detail: {camera: this.camera}})
     }
 
     /**

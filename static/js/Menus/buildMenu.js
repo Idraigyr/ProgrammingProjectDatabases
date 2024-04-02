@@ -22,7 +22,7 @@ function showBuildings(type) {
     else if(type === "Resources"){
         itemList = resources;
     }
-    else{
+    else if (type === "Decorations"){
         itemList = decorations;
     }
     populateContainer("container1", itemList, type);
@@ -60,24 +60,21 @@ function populateContainer(containerId, itemList, type) {
         }
         img.alt = itemName;
         item.appendChild(img);
+        // Add onclick message
+        item.onclick = function() {
+            // TODO: make dictionary or something to map building names to actual building names
+            window.parent.postMessage({type: "placeBuilding", buildingName: itemName[0].toUpperCase() + itemName.slice(1)}, "*");
+        };
         container.appendChild(item);
     });
 }
 
 populateContainer("container1", combat, "Combat");
 
-
-// exit button
-document.addEventListener("DOMContentLoaded", function() {
-    const button = document.getElementById('exit');
-    button.addEventListener('click', function() {
-        // exit menu
-    });
-});
-
-
-// play button hover sound
-function playHoverSound() {
-    let audio = document.getElementById("hoverSound");
-    audio.play();
+function exitMenu() {
+    // Your code to handle closing the menu goes here
+    console.log("Build menu closed");
+    // Send message to parent
+    window.parent.postMessage("closeBuildMenu", "*");
 }
+

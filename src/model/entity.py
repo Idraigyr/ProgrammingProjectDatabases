@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 from flask import current_app
 from sqlalchemy import BigInteger, Integer, Column, String, ForeignKey
 from sqlalchemy.orm import mapped_column, Mapped, relationship, declared_attr
@@ -22,19 +20,22 @@ class Entity(current_app.db.Model):
     type: Mapped[str] = Column(String(32)) # Keep track of polymorphic identities
 
     xpos: Mapped[int] = Column(Integer, nullable=False, default=0)
+    ypos: Mapped[int] = Column(Integer, nullable=False, default=0)
     zpos: Mapped[int] = Column(Integer, nullable=False, default=0)
 
 
-    def __init__(self, island_id:int = 0, xpos: int = 0, zpos: int = 0):
+    def __init__(self, island_id:int = 0, xpos: int = 0, ypos: int = 0, zpos: int = 0):
         """
         Initialize the entity object
         :param island_id: The id of the island that this entity belongs to
         :param xpos: The x position of the entity. Not related to the grid of the island
+        :param ypos: The y position of the entity. Not related to the grid of the island
         :param zpos: The z position of the entity. Not related to the grid of the island
         """
         self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
+        self.ypos = ypos
 
     def update(self, data: dict):
         """
@@ -45,6 +46,7 @@ class Entity(current_app.db.Model):
         """
         self.xpos = data.get('x', self.xpos)
         self.zpos = data.get('z', self.zpos)
+        self.ypos = data.get('y', self.ypos)
 
 
     __mapper_args__ = {

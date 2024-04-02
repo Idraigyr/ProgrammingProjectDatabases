@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SqlEnum
 
 from src.model.gems import Gem
-from src.model.enums import TowerBuildingType, MineBuildingType
+from src.model.enums import TowerBuildingType, MineBuildingType, BlueprintType
 from src.model.placeable.building import Building
 
 
@@ -22,7 +22,7 @@ class MineBuilding(Building):
 
 
 
-    def __init__(self, island_id:int = 0, x:int = 0, z: int = 0, level: int = 0, mine_type: str = 'crystal', mined_amount: int = 0) -> None:
+    def __init__(self, island_id:int = 0, x:int = 0, z: int = 0, level: int = 0, mine_type: str = 'crystal', mined_amount: int = 0, rotation: int = 0) -> None:
         """
         Create a new mine building object with the given parameters
         :param island_id: The id of the island that this building belongs to
@@ -32,8 +32,9 @@ class MineBuilding(Building):
         :param mine_type: The type of the mine (default is 'crystal')
         :param mined_amount: The amount the mine has already mined since the last pickup by the player
         After pickup, this is reset to 0 and the player crystal count is increased
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.MINE.value, rotation=rotation)
         if not MineBuildingType.has_value(mine_type):
             raise ValueError('Invalid mine_type')
 
@@ -70,7 +71,7 @@ class TowerBuilding(Building):
 
     tower_type: Mapped[TowerBuildingType] = Column(SqlEnum(TowerBuildingType), nullable=False, default='magic')
 
-    def __init__(self, island_id: int = 0, tower_type: TowerBuildingType = TowerBuildingType.MAGIC, x: int = 0, z: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, tower_type: TowerBuildingType = TowerBuildingType.MAGIC, x: int = 0, z: int = 0, level: int = 0, rotation: int = 0):
         """
         Create a new tower building object with the given parameters
         :param island_id: The id of the island that this building belongs to
@@ -78,8 +79,9 @@ class TowerBuilding(Building):
         :param x: The x position of the building on the grid
         :param z: The z position of the building on the grid
         :param level: The level of the building
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.TOWER.value, rotation=rotation)
         if not TowerBuildingType.has_value(tower_type):
             raise ValueError('Invalid tower_type')
 
@@ -114,15 +116,16 @@ class AltarBuilding(Building):
     Only one altar can exist on an island
     """
 
-    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0, rotation: int = 0):
         """
         Create a new altar building object with the given parameters
         :param island_id: The id of the island that this building belongs to
         :param x: The x position of the building on the grid
         :param z: The z position of the building on the grid
         :param level: The level of the building
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.ALTAR.value, rotation=rotation)
 
     def update(self, data: dict):
         """
@@ -144,15 +147,16 @@ class FuseTableBuilding(Building):
     This process requires some idle time
     """
 
-    def __init__(self, island_id:int = 0, x: int = 0, z: int = 0, level: int = 0):
+    def __init__(self, island_id:int = 0, x: int = 0, z: int = 0, level: int = 0, rotation: int = 0):
         """
         Create a new fuse table building object with the given parameters
         :param island_id: The id of the island that this building belongs to
         :param x: THe x position of the building on the grid
         :param z: The z position of the building on the grid
         :param level: The level of the building
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.FUSE_TABLE.value, rotation=rotation)
 
     def update(self, data: dict):
         """
@@ -175,15 +179,16 @@ class WarriorHutBuilding(Building):
     It has no function in single player mode
     """
 
-    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, x: int = 0, z: int = 0, level: int = 0, rotation: int = 0):
         """
         Create a new warrior hut building object with the given parameters
         :param island_id: The id of the island that this building belongs to
         :param x: The x position of the building on the grid
         :param z: The z position of the building on the grid
         :param level: The level of the building
+        :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
-        super().__init__(island_id, xpos=x, zpos=z, level=level)
+        super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.WARRIOR_HUT.value, rotation=rotation)
 
     def update(self, data: dict):
         """

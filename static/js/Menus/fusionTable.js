@@ -5,14 +5,9 @@ let crystals = 5;
 let inputCrystals = 3;
 let receivedGems = ["emeraldGem"];
 
-
-
-
-
-// exit button
-document.addEventListener("DOMContentLoaded", function() {
-    const button = document.getElementById('exit');
-    button.addEventListener('click', function() {
-        // exit menu
-    });
-});
+function exitMenu() {
+    // Your code to handle closing the menu goes here
+    console.log("Fusion table menu closed");
+    // Send message to parent
+    window.parent.postMessage("closeFusionTableMenu", "*");
+}
