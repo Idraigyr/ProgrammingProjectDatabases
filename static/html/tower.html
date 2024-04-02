@@ -4,30 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tower</title>
-  <link rel="stylesheet" href="../static/css/menus.css">
+  <link rel="stylesheet" href="../css/menus.css">
 </head>
 <body style="background-color: transparent">
 
-<div class="menu">
-    <span class="exit" onclick="exitMenu()">✖</span>
+<div class="towerMenu">
+  <button class="exit towerExit" onclick="exitMenu()"></button>
   <h1>Tower</h1>
-    <button class="exit" id="exit"></button>
 
   <div class="combat">
-    <h2>Foto of tower</h2>
+    <h2>Foto of tower + info</h2>
   </div>
 
   <div class="containers">
         <div class="container" id="container1" ondrop="drop(event, 'container1')" ondragover="allowDrop(event)">
-            <label><h2>Gems</h2></label>
+            <label><h1>Gems</h1></label>
             <!-- Container will be populated dynamically -->
         </div>
         <div class="container" id="container2" ondrop="drop(event, 'container2')" ondragover="allowDrop(event)">
-            <label><h2>Tower gems</h2></label>
+            <label><h2>Tower Gems</h2></label>
             <!-- Container will be populated dynamically -->
         </div>
         <div class="container" id="container3" ondrop="drop(event, 'container3')" ondragover="allowDrop(event)">
-            <label><h2>Boosts</h2></label>
+            <label><h3>Boosts</h3></label>
             <!-- Container will be populated dynamically -->
         </div>
   </div>

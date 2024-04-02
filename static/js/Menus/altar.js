@@ -36,7 +36,7 @@ function drop(event, containerId) {
     let startContainer = event.dataTransfer.getData("startContainer");
     let targetContainer = document.getElementById(containerId);
 
-    // Append the dragged item to the target container on right conditions and update lists
+    // Append the dragged item to the target container on right conditions and update data
     if(startContainer === 'container1' && targetContainer.id === 'container2' && hotbar.length !== 5){
         targetContainer.appendChild(draggedItem);
         removeByString(spells, draggedItem.id);
@@ -96,7 +96,7 @@ function removeByString(array, value) {
     }
 }
 
-// create and populate items in the container
+// create and populate items in the containers
 function populateContainer(containerId, itemList) {
     let type = 'Spells';
     if(containerId === 'container2') {

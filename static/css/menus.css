@@ -18,6 +18,19 @@ body {
   border-radius: 10px;
 }
 
+.towerMenu {
+  max-width: 745px;
+  max-height: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background-image: url('/static/assets/images/background-landing.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
 h1 {
   text-align: center;
   margin-top: -50px;
@@ -224,6 +237,14 @@ h3 {
   transform: scale(1.10);
 }
 
+.altarExit{
+    margin-left: 45%;
+}
+
+.towerExit{
+    margin-left: 26%;
+}
+
 /* Spells images formatting */
 .fireSpell{
     height: 50px;
@@ -262,31 +283,6 @@ h3 {
 }
 
 /* Gems images formatting */
-.diamondGem{
-    height: 35px;
-    width: 35px;
-    transform: translate(170%, 0%);
-}
-
-.emeraldGem{
-    height: 50px;
-    width: 40px;
-    transform: translate(150%, 0%);
-}
-
-.rubyGem{
-    height: 55px;
-    width: 55px;
-    transform: translate(137%, 0%);
-}
-
-.sapphireGem{
-    position: absolute;
-    height: 60px;
-    width: 60px;
-    right: -2%;
-}
-
 .amberGem {
     position: absolute;
     height: 30px;
@@ -294,10 +290,39 @@ h3 {
     right: 6%;
 }
 
+.rubyGem{
+    position: absolute;
+    height: 55px;
+    width: 55px;
+    right: 0%;
+}
+
+.sapphireGem{
+    position: absolute;
+    height: 60px;
+    width: 60px;
+    right: -1%;
+}
+
+.diamondGem{
+    position: absolute;
+    height: 35px;
+    width: 35px;
+    right: 5%;
+}
+
+.emeraldGem{
+    position: absolute;
+    height: 50px;
+    width: 40px;
+    right: 4%;
+}
+
 .amethystGem{
+    position: absolute;
     height: 40px;
     width: 40px;
-    transform: translate(140%, 0%);
+    right: 4%;
 }
 
 .arrow{
@@ -310,16 +335,19 @@ h3 {
     background-position: center center;
 }
 
+/* Extra icons formatting*/
 .hp{
+    position: absolute;
     height: 50px;
     width: 50px;
-    transform: translate(150%, 5%);
+    right: 5%;
 }
 
 .damage{
+    position: absolute;
     height: 60px;
     width: 60px;
-    transform: translate(95%, -5%);
+    right: 2%;
 }
 
 .tree{
