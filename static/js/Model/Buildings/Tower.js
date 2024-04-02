@@ -9,4 +9,10 @@ export class Tower extends Placeable{
     get dbType(){
         return "tower_building";
     }
+
+    formatPOSTData(userInfo){
+        const obj = super.formatPOSTData(userInfo);
+        obj.tower_type = "magic";
+        return obj;
+    }
 }

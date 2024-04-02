@@ -27,7 +27,7 @@ export class Entity extends Subject{
     /**
      * Set the id of the entity
      * @param {UserInfo} userInfo - all the information about the user
-     * @return {PlainObject} data - entire JSON object which db can accept
+     * @return {JSON} data - entire stringified JSON object which db can accept
      */
     formatPOSTData(userInfo){
         throw new Error("Cannot set id of abstract class Entity");

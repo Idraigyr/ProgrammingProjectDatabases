@@ -16,7 +16,7 @@ export class Placeable extends Entity{
     }
 
     setId(data){
-        this.id = event.detail.id;
+       this.id = data.placeable_id;
     }
 
     formatPOSTData(userInfo){
@@ -26,11 +26,10 @@ export class Placeable extends Entity{
             island_id: userInfo.islandID,
             x: gridPos.x/gridCellSize,
             z: gridPos.z/gridCellSize,
-            rotation: this.rotation,
-            type: this.dbType,
-            blueprint: {},
+            rotation: this.rotation/90,
+            // type: this.dbType,
             level: this.level,
-            gems: []
+            // gems: []
 
         };
         for(const gem of this.gems){

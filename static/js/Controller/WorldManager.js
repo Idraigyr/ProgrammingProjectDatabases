@@ -130,7 +130,16 @@ export class WorldManager{
     sendPOST(uri, entity, retries, requestIndex){
         console.log("sending POST");
         console.log(entity.formatPOSTData(this.userInfo));
-        $.post(`${API_URL}/${uri}/${entity.dbType}`, entity.formatPOSTData(this.userInfo)).done((data, textStatus, jqXHR) => {
+        $.ajax({
+            url: `${API_URL}/${uri}/${entity.dbType}`,
+            type: "POST",
+            data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
+            dataType: "json",
+            contentType: "application/json",
+            error: (e) => {
+                console.log(e);
+            }
+        }).done((data, textStatus, jqXHR) => {
             console.log("POST success");
             console.log(textStatus, data);
             entity.setId(data);
