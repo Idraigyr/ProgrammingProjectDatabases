@@ -35,7 +35,10 @@ export class World{
         // If occupied, get the building
         let building = this.occupiedCells.find((cell) => cell.x === position.x && cell.z === position.z)?.building;
         // Dispatch event with the information
-        document.dispatchEvent(new CustomEvent("infoAboutSelectedCell", {detail: {occupied: occupied, building: building, caller: event.detail.caller}}));
+        let details = event.detail;
+        details.occupied = occupied;
+        details.building = building;
+        document.dispatchEvent(new CustomEvent("infoAboutSelectedCell", {detail: details}));
     }
 
     updatePreviewObjectColor(event){

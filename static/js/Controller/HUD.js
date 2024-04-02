@@ -12,6 +12,7 @@ export class HUD {
         document.addEventListener("openAltarMenu", this.openAltarMenu.bind(this));
         document.addEventListener("openFusionTableMenu", this.openFusionTableMenu.bind(this));
         document.addEventListener("openTowerMenu", this.openTowerMenu.bind(this));
+        document.addEventListener("openMineMenu", this.openMineMenu.bind(this));
         // Add message listener for menu's
         window.addEventListener("message", this.messageListener.bind(this));
     }
@@ -78,6 +79,16 @@ export class HUD {
         const menu = document.querySelector(`#towerMenu`);
         menu.classList.add('hide');
     }
+    openMineMenu()
+    {
+        const menu = document.querySelector(`#mineMenu`);
+        menu.classList.remove('hide');
+    }
+    closeMineMenu()
+    {
+        const menu = document.querySelector(`#mineMenu`);
+        menu.classList.add('hide');
+    }
     messageListener(event)
     {
         if(event.data === "closeBuildMenu")
@@ -94,6 +105,10 @@ export class HUD {
         else if (event.data === "closeFusionTableMenu")
         {
             this.closeFusionTableMenu();
+        }
+        else if (event.data === "closeMineMenu")
+        {
+            this.closeMineMenu();
         }
     }
 }

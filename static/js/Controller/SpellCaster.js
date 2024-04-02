@@ -161,13 +161,28 @@ export class SpellCaster extends Subject{
                 if (pos) { convertWorldToGridPosition(pos);}
                 this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
                     position: pos,
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                    subSpell: false
                 }));
             }
             this.#wizard.cooldownSpell();
             this.changeManaBar();
         } else {
             //play a sad sound;
+        }
+    }
+
+    activateSubSpell(event){
+        // Check the main spell type
+        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
+            // Get position
+            let pos = this.checkRaycaster();
+            if (pos) { convertWorldToGridPosition(pos);}
+            this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
+                position: pos,
+                direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                subSpell: true
+            }));
         }
     }
 

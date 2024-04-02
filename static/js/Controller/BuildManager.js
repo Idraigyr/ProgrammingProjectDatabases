@@ -111,11 +111,32 @@ export class BuildManager {
         this.selectedPosition = event.detail.params.position;
         console.log("Cell to check: ", this.selectedPosition);
         document.dispatchEvent(new CustomEvent('useSelectedCell', {detail: {position: this.selectedPosition,
-            direction: event.detail.params.direction, caller: this}}));
+            direction: event.detail.params.direction, caller: this, subSpell: event.detail.params.subSpell}}));
     }
     buildActionHandler(event){
         // The event is not from this object
         if(event.detail.caller !== this) return;
+        console.log("Print event: ", event);
+        // If subSpell, dispatch different menu's
+        if(event.detail.subSpell){
+            // Get the name of the class
+            let objectOnCell = event.detail.building?.constructor.name;
+            switch (objectOnCell) {
+                case "Altar":
+                    document.dispatchEvent(new CustomEvent('openAltarMenu', {detail: {}}));
+                    break;
+                case "Mine":
+                    document.dispatchEvent(new CustomEvent('openMineMenu', {detail: {}}));
+                    break;
+                case "Tower":
+                    document.dispatchEvent(new CustomEvent('openTowerMenu', {detail: {}}));
+                    break;
+                case "FusionTable":
+                    document.dispatchEvent(new CustomEvent('openFusionTableMenu', {detail: {}}));
+                    break;
+            }
+            return;
+        }
         // If the cell is not occupied, open the build menu
         if(!event.detail.occupied) {
             document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {}}));

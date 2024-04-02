@@ -23,14 +23,12 @@ export class PreviewObject extends IView{
     }
 
     updateColor(event){
-        console.log("Event color: ", event.detail.primaryColor, "Current color: ", this.charModel.material.uniforms.primaryColor.value.getHex());
         // If no changes, return
         if(event.detail.primaryColor === this.charModel.material.uniforms.primaryColor.value.getHex() &&
             event.detail.secondaryColor === this.charModel.material.uniforms.secondaryColor.value.getHex()){
             return;
         }
         if(this.updating) return;
-        console.log("Updating color");
         this.updating = true;
         // Get scene
         let scene = this.charModel.parent;

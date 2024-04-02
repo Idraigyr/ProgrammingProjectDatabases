@@ -16,7 +16,7 @@ import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {SpellCaster} from "./Controller/SpellCaster.js";
 import {View} from "./View/ViewNamespace.js";
-import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "./configs/Keybinds.js";
+import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, subSpellKey} from "./configs/Keybinds.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -110,6 +110,7 @@ class App {
         this.inputManager.addKeyDownEventListener(slot3Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
         this.inputManager.addKeyDownEventListener(slot4Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
         this.inputManager.addKeyDownEventListener(slot5Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
 
