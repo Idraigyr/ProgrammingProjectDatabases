@@ -1,7 +1,7 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 60px;
-  padding: 0;
+  margin: 30px;
+  padding: 0px;
   background-color: #f1f5f9;
 }
 
@@ -106,7 +106,8 @@ h3 {
 }
 
 .container {
-  width: 250px;
+  margin: 5px;
+  width: 240px;
   border: 2px solid #0f172a;
   padding: 20px;
   background-color: #f9f3d2;
@@ -131,18 +132,28 @@ h3 {
 }
 
 .item {
-  text-align: center;
+  display: flex;
+  align-items: center;
   height: 55px;
   margin-bottom: 10px;
-  color: #ffffff;
+  color: #ff8000;
   padding: 10px;
   border-radius: 10px;
   transition: background-color 0.2s ease;
-  position: relative; /* Set position to relative */
+  position: relative;
   background-image: url('/static/images/menu/itemBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
+  overflow: hidden; /* Prevent text from pushing other elements */
+}
+
+.item > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Set a maximum width for the text */
+  max-width: calc(100% - 20px); /* Adjust the width as needed */
 }
 
 .item:hover {
@@ -213,46 +224,80 @@ h3 {
   transform: scale(1.10);
 }
 
+/* Spells images formatting */
 .fireSpell{
     height: 50px;
     width: 50px;
-    transform: translate(100%, 0%);
+    transform: translate(125%, -5%);
 }
 
 .freezeSpell{
     height: 50px;
     width: 80px;
-    transform: translate(50%, 0%);
+    transform: translate(30%, 0%);
 }
 
 .shieldSpell{
     height: 55px;
-    width: 95px;
-    transform: translate(45%, 0%);
+    width: 90px;
+    transform: translate(28%, 0%);
 }
 
+.thunderSpell{
+    height: 50px;
+    width: 55px;
+    transform: translate(50%, 0%);
+}
+
+.healSpell{
+    height: 40px;
+    width: 40px;
+    transform: translate(155%, 0%);
+}
+
+.buildSpell{
+    height: 40px;
+    width: 40px;
+    transform: translate(135%, 0%);
+}
+
+/* Gems images formatting */
 .diamondGem{
     height: 35px;
     width: 35px;
-    transform: translate(120%, 25%);
+    transform: translate(170%, 0%);
 }
 
 .emeraldGem{
     height: 50px;
-    width: 50px;
-    transform: translate(90%, 0%);
+    width: 40px;
+    transform: translate(150%, 0%);
 }
 
 .rubyGem{
     height: 55px;
     width: 55px;
-    transform: translate(105%, 0%);
+    transform: translate(137%, 0%);
 }
 
 .sapphireGem{
+    position: absolute;
     height: 60px;
     width: 60px;
-    transform: translate(75%, 0%);
+    right: -2%;
+}
+
+.amberGem {
+    position: absolute;
+    height: 30px;
+    width: 30px;
+    right: 6%;
+}
+
+.amethystGem{
+    height: 40px;
+    width: 40px;
+    transform: translate(140%, 0%);
 }
 
 .arrow{
