@@ -17,7 +17,8 @@ export class Island extends Entity{
         this.occupiedCells = [];
         this.buildings.forEach(building => {
             building.occupiedCells.forEach(cell => {
-                this.occupiedCells.push(cell);
+                let newCell = {x: cell.x, z: cell.z, building: building};
+                this.occupiedCells.push(newCell);
             });
         });
     }

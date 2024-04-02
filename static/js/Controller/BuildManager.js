@@ -29,7 +29,8 @@ export class BuildManager {
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
         }
         this.setPreviewMaterial(previewMaterial);
-        document.addEventListener('callBuildManager', this.placeBuildSpell.bind(this));
+        document.addEventListener('callBuildManager', this.buildActionCaller.bind(this));
+        document.addEventListener("infoAboutSelectedCell", this.buildActionHandler.bind(this));
         document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
         window.addEventListener("message", this.messageListener.bind(this));
     }
@@ -104,22 +105,30 @@ export class BuildManager {
         if(!this.#previewObject) return;
         this.#previewObject.rotation.y += Math.PI/2;
     }
-    placeBuildSpell(event){
-        // if(!this.ritualToPlace) return;
-        // let extracted = this.#extractObject(this.ritualToPlace);
-        // if(this.#copyable) {
-        //     extracted = extracted.clone(true);
-        //     this.#scene.add(extracted);
-        // }
-        // extracted.position.copy( this.#previewObject.position );
-        // extracted.rotation.y = this.#previewObject.rotation.y;
-        // this.scaleAndCorrectPosition(this.ritualToPlace);
-        if(!this.ritualToPlace && this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)?.[0]) {
+
+    buildActionCaller(event){
+        if(!this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)) return;
+        this.selectedPosition = event.detail.params.position;
+        console.log("Cell to check: ", this.selectedPosition);
+        document.dispatchEvent(new CustomEvent('useSelectedCell', {detail: {position: this.selectedPosition,
+            direction: event.detail.params.direction, caller: this}}));
+    }
+    buildActionHandler(event){
+        // The event is not from this object
+        if(event.detail.caller !== this) return;
+        // If the cell is not occupied, open the build menu
+        if(!event.detail.occupied) {
             document.dispatchEvent(new CustomEvent('openBuildMenu', {detail: {}}));
-            // Save current selected position
-            this.selectedPosition = event.detail.params.position;
-            console.log("Current selected position: ", this.selectedPosition);
+            return;
         }
+        // If the cell is occupied, check if the building is copyable
+        else{
+            // If there is already model selected, return
+            if(this.ritualToPlace) return;
+            // Change model of the ritual to place in the event
+            this.ritualToPlace = event.detail.building;
+        }
+        return;
     }
 
 }

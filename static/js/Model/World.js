@@ -23,7 +23,19 @@ export class World{
         params.characters.forEach((character) => {});
         this.spellEntities = [];
         this.occupiedCells = [];
-        document.addEventListener("occupyCellWithPreviewObject", this.updatePreviewObjectColor.bind(this));
+        document.addEventListener("selectCell", this.updatePreviewObjectColor.bind(this));
+        document.addEventListener("useSelectedCell", this.sendInfoAboutSelectedCell.bind(this));
+    }
+
+    sendInfoAboutSelectedCell(event){
+        // Get position from event
+        let position = event.detail.position;
+        // Check if the position is occupied
+        let occupied = this.occupiedCells.some((cell) => cell.x === position.x && cell.z === position.z);
+        // If occupied, get the building
+        let building = this.occupiedCells.find((cell) => cell.x === position.x && cell.z === position.z)?.building;
+        // Dispatch event with the information
+        document.dispatchEvent(new CustomEvent("infoAboutSelectedCell", {detail: {occupied: occupied, building: building, caller: event.detail.caller}}));
     }
 
     updatePreviewObjectColor(event){

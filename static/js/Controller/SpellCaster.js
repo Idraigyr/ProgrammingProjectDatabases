@@ -116,7 +116,7 @@ export class SpellCaster extends Subject{
             let pos = this.checkRaycaster();
             if (pos) { convertWorldToGridPosition(pos);
                 // Dispatch event to check if the cell is occupied
-                document.dispatchEvent(new CustomEvent("occupyCellWithPreviewObject", {detail: {position: pos}}));
+                document.dispatchEvent(new CustomEvent("selectCell", {detail: {position: pos}}));
             }
             // TODO: check collision with plane only
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
@@ -157,8 +157,10 @@ export class SpellCaster extends Subject{
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
+                let pos = this.checkRaycaster();
+                if (pos) { convertWorldToGridPosition(pos);}
                 this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: this.checkRaycaster(),
+                    position: pos,
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));
             }
@@ -168,6 +170,8 @@ export class SpellCaster extends Subject{
             //play a sad sound;
         }
     }
+
+
 
     changeManaBar(){
         document.body.style.setProperty("--currentMana", this.#wizard.mana);
