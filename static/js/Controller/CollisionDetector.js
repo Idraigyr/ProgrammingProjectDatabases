@@ -172,7 +172,8 @@ export class CollisionDetector extends Subject{
         const deltaVector = this.tempVector2;
         deltaVector.subVectors( newPosition, position );
 
-        playerModel.onGround = deltaVector.y > Math.abs( deltaTime * playerModel.velocity.y * 0.25);
+        playerModel.onGround = playerModel.onCollidable || deltaVector.y > Math.abs( deltaTime * playerModel.velocity.y * 0.25);
+        playerModel.onCollidable = false;
 
         const offset = Math.max( 0.0, deltaVector.length() - 1e-5 );
         deltaVector.normalize().multiplyScalar( offset );

@@ -128,8 +128,7 @@ export class WorldManager{
      * @returns {Promise<void>}
      */
     sendPOST(uri, entity, retries, requestIndex){
-        console.log("sending POST");
-        console.log(entity.formatPOSTData(this.userInfo));
+        this.insertPendingPostRequest(entity);
         $.ajax({
             url: `${API_URL}/${uri}/${entity.dbType}`,
             type: "POST",

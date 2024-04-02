@@ -1,6 +1,6 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
-import {min} from "../helpers.js";
+import {adjustVelocity, adjustVelocity2} from "../helpers.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -76,26 +76,8 @@ export class MobileCollidable extends CollidableSpellEntity{
     onCharacterCollision(character, characterBBox, spellBBox){
         super.onCharacterCollision(character);
 
-        //calculate which face is hit by the character
-        const spellCenter = spellBBox.getCenter(new THREE.Vector3());
-        const characterCenter = characterBBox.getCenter(new THREE.Vector3());
-        const hitVector = new THREE.Vector3().copy(spellCenter).sub(characterCenter);
-
-        //change the character's vertical velocity so that it is standing on the spell -- WIP
-        const upLength = characterCenter.y - spellCenter.y;
-        if(upLength > 0 && upLength > characterBBox.getSize(new THREE.Vector3()).y/2 -  spellBBox.getSize(new THREE.Vector3()).y/2){
-            character.velocity.y = (new THREE.Vector3().copy(this.moveFunction(this.functionValue, this.moveFunctionParams))).sub(new THREE.Vector3(0,character.radius,0)).y + 10;
-        } else {
-            //change the character's horizontal velocity so that it is pushed away from the spell -- WIP
-            hitVector.normalize();
-            character.horizontalVelocity.add(hitVector.multiplyScalar(10));
-        }
-
-
-
-
-        // const distance = hitVector.length();
-        //character.horizontalVelocity.add(new THREE.Vector3().copy(this.moveFunction(this.functionValue, this.moveFunctionParams))).sub(new THREE.Vector3(0,character.radius,0));
+        character.onCollidable = adjustVelocity2(spellBBox, characterBBox, character.velocity);
+        //TODO: make sure player rises with the collidable
     }
 }
 

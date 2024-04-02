@@ -33,7 +33,7 @@ export class CharacterController extends Subject{
         this.#inputManager = params.InputManager;
         this.#inputManager.addMouseDownListener(this.onRightClickEvent.bind(this),"right");
 
-        this.tempTemp = new THREE.Vector3();
+        this.lastMovementVelocity = new THREE.Vector3();
     }
 
     /**
@@ -90,16 +90,15 @@ export class CharacterController extends Subject{
     updatePhysics(deltaTime){
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
         //const correctedDeltaTime = min(deltaTime, 0.1);
-        this.tempTemp.copy(this.tempPosition);
 
-        if ( this._character.onGround ) {
-                this._character.velocity.y = deltaTime * gravity;
+        if ( this._character.onGround || this._character.onCollidable) {
+            this._character.velocity.y = deltaTime * gravity;
+
         } else {
             this._character.velocity.y += deltaTime * gravity;
         }
 
         this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
-        this.tempPosition.addScaledVector( this._character.horizontalVelocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
 
@@ -107,12 +106,18 @@ export class CharacterController extends Subject{
             deltaVector.normalize();
             this._character.velocity.addScaledVector( deltaVector, - deltaVector.dot( this._character.velocity ) );
         } else {
-            this._character.velocity.set( 0, 0, 0 );
+            if(this.#inputManager.blockedInput){
+                this._character.velocity.set(0,0,0);
+            } else {
+                this._character.velocity.copy(this.lastMovementVelocity);
+            }
+            this._character.velocity.y = 0;
         }
 
         if ( this._character.position.y < - 50 ) {
             //respawn
             this._character.velocity.set(0,0,0);
+            this.lastMovementVelocity.set(0,0,0);
             this._character.position = this._character.spawnPoint;
             this.tempPosition.copy(this._character.spawnPoint);
         } else {
@@ -126,6 +131,7 @@ export class CharacterController extends Subject{
      */
     update(deltaTime) {
         if (!this._character.fsm.currentState || this.#inputManager.blockedInput) {
+            this._character.fsm.setState("Idle");
             return;
         }
 
@@ -172,9 +178,9 @@ export class CharacterController extends Subject{
                 speedMultiplier = movementSpeed;
             }
 
-            // this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
-            this._character.horizontalVelocity.copy( movement );
-            this._character.horizontalVelocity.multiplyScalar(speedMultiplier);
+            this.lastMovementVelocity.copy(movement).multiplyScalar(speedMultiplier);
+            this._character.velocity.copy(this._character.verticalVelocity).add( this.lastMovementVelocity );
+            console.log(this._character.velocity);
         }
     }
 }

@@ -39,6 +39,46 @@ export const convertGridToWorldPosition = function (position){
     position.z = position.z*gridCellSize;
 }
 
+export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //box1 = spell
+    const characterCenter = movableBox.getCenter(new THREE.Vector3());
+    const hitVector = new THREE.Vector3().copy(staticBox.getCenter(new THREE.Vector3())).sub(characterCenter);
+
+    let box2CenterLow = new THREE.Vector3().copy(characterCenter).setY(movableBox.min.y);
+    if(staticBox.containsPoint(box2CenterLow)){ //currently does not do anything movableBox.min.y is somehow always -2
+        boxVelocity.y += staticBox.max.y - box2CenterLow.y;
+    }
+
+    //TODO: instead of projecting the velocity onto the hitVector, split the velocity into its three components and throw away the component(s) that is in the direction of the StaticBox?
+
+    const projected = boxVelocity.clone().projectOnVector(hitVector);
+    boxVelocity.sub(projected);
+}
+
+const delta = 0.1;
+export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity){
+    let standingOnCollidable = false;
+    if(Math.abs(staticBox.min.x - movableBox.max.x) < delta && boxVelocity.x < 0){
+        boxVelocity.x = 0;
+    }
+    if(Math.abs(staticBox.max.x - movableBox.min.x) < delta && boxVelocity.x > 0){
+        boxVelocity.x = 0;
+    }
+    if(Math.abs(staticBox.min.y - movableBox.max.y) < delta && boxVelocity.y < 0){
+        boxVelocity.y = 0;
+    }
+    if(Math.abs(staticBox.max.y - movableBox.min.y) < delta && boxVelocity.y > 0){
+        boxVelocity.y = 0;
+        standingOnCollidable = true;
+    }
+    if (Math.abs(staticBox.min.z - movableBox.max.z) < delta && boxVelocity.z < 0){
+        boxVelocity.z = 0;
+    }
+    if(Math.abs(staticBox.max.z - movableBox.min.z) < delta && boxVelocity.z > 0){
+        boxVelocity.z = 0;
+    }
+    return standingOnCollidable;
+}
+
 /**
  * Get file extension from path
  * @param path - the path to the file

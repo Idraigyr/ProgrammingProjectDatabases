@@ -28,10 +28,6 @@ export class InputManager extends Subject{
     mouse = {
         leftClick: false,
         rightClick: false,
-        deltaX: 0,
-        deltaY: 0,
-        x: 0,
-        y: 0
     }
     #callbacks = {mousemove: [], mousedown: {0: [], 2: []}, spellSlotChange: []};
 
@@ -50,6 +46,7 @@ export class InputManager extends Subject{
         document.addEventListener("mousedown", this.onClickEvent.bind(this));
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;
+            if(this.blockedInput) this.resetKeys();
         });
         document.addEventListener("mousemove", this.onMouseMoveEvent.bind(this));
 
@@ -83,6 +80,15 @@ export class InputManager extends Subject{
                     break;
             }
         });
+    }
+
+    resetKeys(){
+        for(const key in this.keys){
+            if(key === "spellSlot") continue;
+            this.keys[key] = false;
+        }
+        this.mouse.leftClick = false;
+        this.mouse.rightClick = false;
     }
 
     addKeyDownEventListener(key, callback){
