@@ -20,16 +20,17 @@ body {
 
 h1 {
   text-align: center;
-    margin-top: 0;
-  margin-bottom: 10px;
+  margin-top: -50px;
+  margin-bottom: 5px;
   color: #0f172a;
   font-size: 50px;
 }
 
 h2 {
-  text-align: center;
+  text-align: left;
   margin-top: 2px;
   margin-bottom: 0;
+  padding-left: 40%;
   color: #0f172a;
 }
 
@@ -54,8 +55,8 @@ h3 {
 }
 
 .play-button {
-  margin-left: 45%;
-  margin-top: 0;
+  margin-left: -15.5%;
+  margin-top: 30px;
   padding: 0; /* Remove padding */
   background-color: transparent; /* Remove background color */
   color: white;
