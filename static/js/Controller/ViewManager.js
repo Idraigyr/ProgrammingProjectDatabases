@@ -14,6 +14,7 @@ export class ViewManager extends Subject{
             spellEntity: []
         };
         this.spellPreview = params.spellPreview;
+        document.addEventListener("changeViewAsset", this.changeViewAsset.bind(this));
     }
 
     /**
@@ -46,7 +47,10 @@ export class ViewManager extends Subject{
             return found;
         }
     }
-    changeViewAsset(model, viewAsset){
+    changeViewAsset(event){
+        // Model, ViewAsset
+        let model = event.detail.model;
+        let viewAsset = event.detail.viewAsset;
         // Get the pair
         let pair = this.getPair(model);
         // Get the old view
@@ -61,7 +65,7 @@ export class ViewManager extends Subject{
         // Remove the old view from the scene
         scene.remove(oldView.charModel);
         // Add the new view to the scene
-        scene.add(oldView.charModel);
+        scene.add(viewAsset);
         // Change the asset of the view
         oldView.charModel = viewAsset;
     }

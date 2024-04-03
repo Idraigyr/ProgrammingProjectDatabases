@@ -6,14 +6,18 @@ export class Timer{
         this.name = timerName;
         this.onEndEvent = onEndEvent;
         this.repeatable = repeatable;
+        this.finished = false;
     }
 
     update(deltaTime){
+        if(this.finished) return;
         this.timer += deltaTime;
         if(this.timer >= this.duration){
             document.dispatchEvent(this.onEndEvent);
             if(this.repeatable){
                 this.timer = 0;
+            }else{
+                this.finished = true;
             }
         }
     }
@@ -53,5 +57,7 @@ export class TimerManager {
         this.#timers.forEach((timer) => {
             timer.update(deltaTime);
         });
+        // Remove finished timers
+        this.#timers = this.#timers.filter((timer) => !timer.finished);
     }
 }

@@ -14,6 +14,7 @@ export class Factory{
         this.scene = params.scene;
         this.viewManager = params.viewManager;
         this.assetManager = params.assetManager;
+        this.timerManager = params.timerManager;
     }
 
     createMinion(){
@@ -98,6 +99,16 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         this.viewManager.addPair(model, view);
+        if(withTimer){
+            // Copy asset object
+            let copyAsset = asset.clone();
+            // Traverse the original asset to make it green semi-transparent
+            asset.traverse((o) => {
+                if (o.isMesh) o.material = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
+            });
+            this.timerManager.createTimer(model, model.timeToBuild,
+                new CustomEvent("changeViewAsset", {detail: {model: model, viewAsset: copyAsset}}));
+        }
         return model;
     }
 
