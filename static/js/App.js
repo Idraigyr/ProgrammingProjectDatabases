@@ -113,6 +113,10 @@ class App {
         this.assetManager = new AssetManager();
         this.hud = new HUD(this.inputManager)
 
+        this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
+        this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
+        this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
+
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
@@ -200,6 +204,10 @@ class App {
         this.spellCaster.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
+        this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
+        this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
+        this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+        this.worldManager.world.player.advertiseCurrentCondition();
     }
 
     /**

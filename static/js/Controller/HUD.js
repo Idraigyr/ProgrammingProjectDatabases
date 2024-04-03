@@ -3,6 +3,9 @@ import { Controller } from "./Controller.js";
 export class HUD {
 
     constructor(inputManager) {
+        this.manaBar = document.getElementsByClassName("ManaAmount")[0];
+        this.HealthBar = document.getElementsByClassName("HealthAmount")[0];
+        this.crystals = document.getElementsByClassName("CrystalAmount")[0];
         // Add event listener for spell slot index change
         inputManager.addEventListener("spellSlotChange", this.updateHoveredButton.bind(this));
         inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
@@ -30,8 +33,32 @@ export class HUD {
         hoveredButton.parentElement.classList.add('hovered');
 
     }
-    toggleSettingsMenu(event)
-    {
+
+    updateManaBar(event){
+        document.body.style.setProperty("--currentMana", event.detail.current);
+        document.body.style.setProperty("--maxMana", event.detail.total);
+        this.manaBar.textContent = `${event.detail.current}/${event.detail.total}`;
+    }
+
+    updateHealthBar(event){
+        document.body.style.setProperty("--currentHP",event.detail.current);
+        document.body.style.setProperty("--maxHP",event.detail.total);
+        this.HealthBar.textContent = `${event.detail.current}/${event.detail.total}`;
+    }
+
+    updateCrystals(event){
+        this.crystals.textContent = event.detail.crystals;
+    }
+
+    updateLevel(event){
+
+    }
+
+    updateXP(event){
+
+    }
+
+    toggleSettingsMenu() {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');
     }
@@ -92,5 +119,21 @@ export class HUD {
         {
             this.closeFusionTableMenu();
         }
+    }
+
+
+    useSpell(spellCooldown) {
+        const spellSlotIndex = this.#inputManager.keys.spellSlot;
+
+        const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
+        usedSpel.parentElement.classList.add('onCooldown');
+
+        const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex}Icon`);
+        usedSpelIcon.classList.add('onCooldown');
+
+        setTimeout(function() {
+        usedSpel.parentElement.classList.remove('onCooldown');
+        usedSpelIcon.classList.remove('onCooldown');
+        }, spellCooldown * 1000);
     }
 }

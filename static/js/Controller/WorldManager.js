@@ -9,6 +9,7 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
 export class WorldManager{
     constructor(params) {
         this.world = null;
+        this.userInfo = params.userInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
@@ -97,6 +98,36 @@ export class WorldManager{
 
     async exportWorld(){
 
+    }
+
+    /**
+     * changes to resources of the player, when event removes crystals, crystals should always be the first key
+     * @param event
+     */
+    updatePlayerStats(event){
+        console.log(event);
+        for(const key of event.detail.type){
+            console.log(key);
+            if (key === "crystals"){
+                if(!this.userInfo.changeCrystals(event.detail.params[key])){
+                    break;
+                }
+            } else if(key === "health"){
+                this.world.player.changeCurrentHealth(event.detail.params[key]);
+            } else if(key === "mana"){
+                this.world.player.changeCurrentMana(event.detail.params[key]);
+            } else if(key === "maxHealth") {
+                this.world.player.increaseMaxHealth(event.detail.params[key]);
+            } else if(key === "maxMana") {
+                this.world.player.increaseMaxMana(event.detail.params[key]);
+            } else if (key === "xp"){
+                this.userInfo.changeXP(event.detail.params[key]);
+            } else if (key === "level"){
+                this.userInfo.changeLevel();
+            }
+            //TODO: sad sound when not enough crystals
+            //TODO: update db?
+        }
     }
 
     insertPendingPostRequest(placeable){

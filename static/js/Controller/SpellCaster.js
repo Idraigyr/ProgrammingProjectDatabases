@@ -19,8 +19,6 @@ export class SpellCaster extends Subject{
 
     set wizard(wizard){
         this.#wizard = wizard;
-        document.body.style.setProperty("--maxMana", this.#wizard.maxMana);
-        this.changeManaBar();
     }
 
     /**
@@ -135,15 +133,9 @@ export class SpellCaster extends Subject{
                 }));
             }
             this.#wizard.cooldownSpell();
-            this.changeManaBar();
         } else {
             //play a sad sound;
         }
-    }
-
-    changeManaBar(){
-        document.body.style.setProperty("--currentMana", this.#wizard.mana);
-        this.manaBar.textContent = `${this.#wizard.mana}/${this.#wizard.maxMana}`;
     }
 
     //use as signal to release charging spells;

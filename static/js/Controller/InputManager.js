@@ -1,6 +1,6 @@
 import {
     buildKey,
-    DownKey, primaryBackwardKey,
+    DownKey, eatingKey, primaryBackwardKey,
     primaryForwardKey,
     primaryLeftKey,
     primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
@@ -23,7 +23,8 @@ export class InputManager extends Subject{
         down: false,
         spellSlot: 1,
         sprint: false,
-        build: false
+        build: false,
+        eating: false
     }
     mouse = {
         leftClick: false,
@@ -212,6 +213,9 @@ export class InputManager extends Subject{
             case slot5Key:
                 this.keys.spellSlot = 5;
                 this.dispatchEvent(this.createSpellSlotChangeEvent());
+                break;
+            case eatingKey:
+                this.keys.eating = bool;
                 break;
         }
         this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);

@@ -12,7 +12,9 @@ import * as THREE from "three";
 import {max, min} from "../helpers.js";
 import {Factory} from "./Factory.js";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
-import {BaseCharAttackState} from "../Model/States/CharacterStates.js";
+import {BaseCharAttackState, EatingState} from "../Model/States/CharacterStates.js";
+
+
 
 /**
  * Class to manage the character and its actions
@@ -23,7 +25,7 @@ export class CharacterController extends Subject{
 
     /**
      * adds a listener to inputManager mousedown event
-     * @param {{Character: Wizard, InputManager: InputManager}} params
+     * @param {{Character: Wizard, InputManager: InputManager, collisionDetector: CollisionDetector}} params
      */
     constructor(params) {
         super();
@@ -35,6 +37,8 @@ export class CharacterController extends Subject{
 
         this.lastMovementVelocity = new THREE.Vector3();
     }
+
+
 
     /**
      * Update the rotation of the character
@@ -128,6 +132,15 @@ export class CharacterController extends Subject{
     }
 
     /**
+     * creates a custom event notifying eating being started
+     * @returns {CustomEvent<{}>}
+     */
+    createEatingEvent(){
+        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 10}}});
+    }
+
+
+    /**
      * Update the character (e.g. state, position, spells, etc.)
      * @param deltaTime
      */
@@ -137,12 +150,17 @@ export class CharacterController extends Subject{
             return;
         }
 
+        if (this.#inputManager.keys.eating && !(this._character.fsm.currentState instanceof EatingState)) {
+            this.dispatchEvent(this.createEatingEvent());
+        }
+
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
+
         if (this._character.fsm.currentState.movementPossible) {
 
-            if(this.#inputManager.keys.up && this._character.onGround) {
+            if (this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;
             }
@@ -171,7 +189,7 @@ export class CharacterController extends Subject{
 
             let speedMultiplier = 0;
             //TODO: keep momentum when in the air
-            if(this._character.fsm.currentState instanceof BaseCharAttackState){
+            if (this._character.fsm.currentState instanceof BaseCharAttackState) {
                 speedMultiplier = spellCastMovementSpeed;
             } else {
                 if (this.#inputManager.keys.sprint && forwardScalar === 1) {
@@ -184,4 +202,5 @@ export class CharacterController extends Subject{
             this._character.velocity.copy(this._character.verticalVelocity).add( this.lastMovementVelocity );
         }
     }
+
 }

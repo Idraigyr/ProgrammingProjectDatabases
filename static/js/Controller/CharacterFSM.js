@@ -1,9 +1,10 @@
 import {
-    DefaultAttackState,
+    DefaultAttackState, EatingState,
     IdleState,
     RunForwardState, TakeDamageState,
     WalkBackWardState,
-    WalkForwardState
+    WalkForwardState,
+
 } from "../Model/States/CharacterStates.js";
 
 import {FiniteStateMachine} from "../Patterns/FiniteStateMachine.js";
@@ -29,5 +30,6 @@ export class PlayerFSM extends FiniteStateMachine{
         this.addState("DefaultAttack",DefaultAttackState);
         this.addState("Run",RunForwardState);
         this.addState("TakeDamage",TakeDamageState);
+        this.addState("Eating",EatingState)
     }
 }
