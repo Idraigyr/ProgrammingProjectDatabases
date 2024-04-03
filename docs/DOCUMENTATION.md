@@ -7,9 +7,10 @@ Some documentation types require generation by the user (PyDoc & JSDoc), please 
 In general, the documentation is divided into the following parts:
 - General documentation (auth flows, API conventions, etc.): see [docs/](/)
 - REST API: see [API.md](docs/API.md) and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally with `APP_SWAGGER_ENABLED=true`)
-- Entity-Releationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)
+- Entity-Relationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)
 - Backend code documentation: see PyDoc documentation at `/pydocs`
 - Frontend code documentation: see JSDoc documentation at `/jsDocs`
+- High-level user manual, with links to technical details: see [USER_MANUAL.md](docs/USER_MANUAL.md)
 
 ### Backend code documentation
 The backend code documentation is generated using PyDoc. 
