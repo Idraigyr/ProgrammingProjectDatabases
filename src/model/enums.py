@@ -44,6 +44,9 @@ class BlueprintType(Enum):
     FUSE_TABLE = 4
     WARRIOR_HUT = 5
 
+    # Props
+    BUSH = 6
+    TREE = 7
     @classmethod
     def has_value(cls, value):
         return value in cls._value2member_map_

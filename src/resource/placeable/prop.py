@@ -57,7 +57,7 @@ class PropResource(Resource):
         return PropSchema(prop), 200
 
     @swagger.tags('placeable')
-    @summary('Update a prop by id')
+    @summary('Update a prop by id. Note that you cannot change the blueprint afterwards')
     @swagger.expected(schema=PropSchema, required=True)
     @swagger.response(200, 'Success', schema=PropSchema)
     @swagger.response(404, 'Prop not found', schema=ErrorSchema)
@@ -71,15 +71,6 @@ class PropResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            if 'blueprint_id' in data:
-                blueprint_id = data.pop('blueprint_id')
-                # Check if the blueprint exists
-                blueprint = BlueprintModel.query.get(blueprint_id)
-                if blueprint is None:
-                    raise ValueError(f'Blueprint with id {blueprint_id} not found')
-                else:
-                    data['blueprint'] = blueprint
-
             PropSchema(**data, _check_requirements=False)  # Validate the input
 
             prop = Prop.query.get(int(data['placeable_id']))
@@ -118,7 +109,15 @@ class PropResource(Resource):
                 if BlueprintModel.query.get(blueprint_id) is None:
                     raise ValueError(f'Blueprint with id {blueprint_id} not found')
             else:
-                raise ValueError('blueprint_id is required')
+                # We will try to resolve the blueprint from the prop_type
+                if 'prop_type' in data:
+                    prop_type = data['prop_type']
+                    blueprint = BlueprintModel.query.filter_by(name=prop_type).first()
+                    if blueprint is None:
+                        raise ValueError(
+                            f'Blueprint with name {prop_type} not found. Specify a blueprint_id instead.')
+                    else:
+                        blueprint_id = blueprint.id
 
             PropSchema(**data, _check_requirements=True)  # Validate the input
             if 'placeable_id' in data:
