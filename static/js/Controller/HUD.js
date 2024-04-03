@@ -122,9 +122,7 @@ export class HUD {
     }
 
 
-    useSpell(spellCooldown) {
-        const spellSlotIndex = this.#inputManager.keys.spellSlot;
-
+    useSpell(spellCooldown, spellSlotIndex) {
         const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
         usedSpel.parentElement.classList.add('onCooldown');
 
