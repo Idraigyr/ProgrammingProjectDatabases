@@ -43,6 +43,7 @@ class BlueprintSchema(Schema):
     def __init__(self, blueprint: Blueprint = None, **kwargs):
         if blueprint:
             super().__init__(id=blueprint.id, name=blueprint.name, description=blueprint.description,
+                             cost=blueprint.cost,
                              buildtime=blueprint.buildtime, **kwargs)
         else:
             super().__init__(**kwargs)

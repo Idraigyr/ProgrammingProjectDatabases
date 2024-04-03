@@ -64,7 +64,7 @@ def upgrade():
     # Populate the db with initial blueprints
     from src.model.blueprint import Blueprint
     from src.model.enums import BlueprintType
-    print("INFO: Inserting default blueprints")
+    print("INFO Inserting default blueprints")
     session.add(Blueprint(id=BlueprintType.ALTAR.value, name="Altar", description="The main hub of the island", cost=0))
     session.add(Blueprint(id=BlueprintType.MINE.value, name="Mine", description="The mine of them all", cost=200))
     session.add(Blueprint(id=BlueprintType.TOWER.value, name="Tower", description="A simple defense tower", cost=300))

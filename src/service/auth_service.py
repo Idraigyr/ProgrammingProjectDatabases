@@ -7,7 +7,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
-from src.model.placeable.buildings import AltarBuilding
+from src.model.placeable.buildings import AltarBuilding, MineBuilding
 from src.model.user_profile import UserProfile
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
@@ -139,8 +139,13 @@ class AuthService:
         current_app.db.session.commit()
 
         # Create a new altar building
-        altar_building = AltarBuilding(island_id=island.owner_id, x=7, z=7, level=0)
+        altar_building = AltarBuilding(island_id=island.owner_id, x=0, z=0, level=1)
         current_app.db.session.add(altar_building)
+        current_app.db.session.commit()
+
+        # Create first mine building
+        mine_building = MineBuilding(island_id=island.owner_id, x=1, z=0, level=1)
+        current_app.db.session.add(mine_building)
         current_app.db.session.commit()
 
         # Create update the id of the altar in island so we have a ref from island to altar
