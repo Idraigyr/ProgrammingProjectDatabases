@@ -37,6 +37,7 @@ export const returnWorldToGridIndex = function(position){
 export const convertWorldToGridPosition = function (position){
     position.x = Math.floor(position.x/gridCellSize + 0.5)*gridCellSize;
     position.z = Math.floor(position.z/gridCellSize + 0.5)*gridCellSize;
+    return position;
 }
 
 export const convertGridIndexToWorldPosition = function (position){

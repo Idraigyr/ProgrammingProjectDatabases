@@ -24,7 +24,7 @@ export class BuildManager {
     // TODO: if center NOT 0,0,0 + rotation
     constructor(raycastController, scene, gridCellSize= 10, previewMaterial=undefined) {
         this.#gridCellSize = gridCellSize;
-        this.#raycaster = raycastController;
+        this.#raycaster = raycastController; //TODO: remove this: this is responsibility of spellcaster
         this.#scene = scene;
         if(!previewMaterial){
             previewMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
@@ -33,7 +33,7 @@ export class BuildManager {
         document.addEventListener('callBuildManager', this.buildActionCaller.bind(this));
         document.addEventListener("infoAboutSelectedCell", this.buildActionHandler.bind(this));
         document.addEventListener('turnPreviewSpell', this.turnPreviewSpell.bind(this));
-        window.addEventListener("message", this.messageListener.bind(this));
+        // window.addEventListener("message", this.messageListener.bind(this));
     }
     messageListener(event){
         if(event.data.type === "placeBuilding"){
@@ -109,14 +109,12 @@ export class BuildManager {
     buildActionCaller(event){
         if(!this.#raycaster.getIntersects(this.#raycaster.viewManager.planes)) return;
         this.selectedPosition = event.detail.params.position;
-        console.log("Cell to check: ", this.selectedPosition);
         document.dispatchEvent(new CustomEvent('useSelectedCell', {detail: {position: this.selectedPosition,
             direction: event.detail.params.direction, caller: this, subSpell: event.detail.params.subSpell}}));
     }
     buildActionHandler(event){
         // The event is not from this object
         if(event.detail.caller !== this) return;
-        console.log("Print event: ", event);
         // If subSpell, dispatch different menu's
         if(event.detail.subSpell){
             // Get the name of the class

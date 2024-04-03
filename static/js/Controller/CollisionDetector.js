@@ -20,7 +20,6 @@ export class CollisionDetector extends Subject{
         //only use = not needing to allocate extra memory for new vectors
         this.tempVector = new THREE.Vector3();
         this.tempVector2 = new THREE.Vector3();
-        this.tempLine = new THREE.Line3();
 
         this.tempBox = new THREE.Box3();
     }
@@ -83,8 +82,6 @@ export class CollisionDetector extends Subject{
             //show loading screen
             document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
             document.querySelector('.loading-animation').style.display = 'visible';
-            const sleep =  new Promise(r => setTimeout(r, 100));
-            sleep.then(() => {console.log("waking up")});
             this.collider = this.generateCollider();
             document.querySelector('.loading-animation').style.display = 'none';
         } else {

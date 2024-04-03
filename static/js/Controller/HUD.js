@@ -63,6 +63,28 @@ export class HUD {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');
     }
+
+    openMenu(buildType) {
+        switch(buildType) {
+            case "empty":
+                this.openBuildMenu();
+                break;
+            case "altar_building":
+                this.openAltarMenu();
+                break;
+            case "fuse_table":
+                this.openFusionTableMenu();
+                break;
+            case "tower_building":
+                this.openTowerMenu();
+                break;
+            case "mine_building":
+                this.openMineMenu();
+                break;
+        }
+
+    }
+
     openBuildMenu()
     {
         const buildMenu = document.querySelector(`#buildMenu`);

@@ -14,7 +14,7 @@ export class Placeable extends Entity{
         this.rotation = params?.rotation ??  0;
         this.gems = [];
         this.occupiedCells = [];
-        this.timeToBuild = 0; // in seconds
+        this.timeToBuild = 10; // in seconds
     }
 
     setId(data){

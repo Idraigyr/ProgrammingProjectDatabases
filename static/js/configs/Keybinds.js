@@ -24,6 +24,8 @@ export let buildKey = "KeyB";
 
 export let subSpellKey = "KeyE";
 
+export let interactKey = "KeyE";
+
 export let slot1Key = "Digit1"
 export let slot2Key = "Digit2"
 export let slot3Key = "Digit3"

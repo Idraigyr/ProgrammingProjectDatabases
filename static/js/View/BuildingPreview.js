@@ -1,11 +1,12 @@
 import {IView} from "./View.js";
 import * as THREE from "three";
+import {ParticleSystem} from "./ParticleSystem.js";
 
 export class BuildingPreview extends IView{
     constructor(params) {
         super(params);
         this.timer = params.timer;
-        this.particleSystem = params.particleSystem;
+        // this.particleSystem = new ParticleSystem(params);
 
         //TODO: everything for view itself;
         this.charModel.traverse((o) => {
@@ -18,10 +19,12 @@ export class BuildingPreview extends IView{
 
     isNotDead(deltaTime){
         if(this.timer.finished){
-            if(!this.particleSystem.isNotDead(deltaTime)){
-                this.cleanUp();
-                return false;
-            }
+            // if(!this.particleSystem.isNotDead(deltaTime)){
+            //     this.cleanUp();
+            //     return false;
+            // }
+            this.cleanUp();
+            return false;
         }
         return true;
     }

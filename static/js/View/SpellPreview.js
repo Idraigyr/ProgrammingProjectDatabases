@@ -41,6 +41,7 @@ export class SpellPreview extends IView{
 
         this.updatePosition(event);
         if(event.detail.rotation){
+            event.detail.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), event.detail.rotation);
             super.updateRotation(event);
         }
         //TODO: remove magic value

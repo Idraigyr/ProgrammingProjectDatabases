@@ -1,8 +1,5 @@
-import {Factory} from "../Controller/Factory.js";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "./Spell.js";
-import {BuildManager} from "../Controller/BuildManager.js";
-import * as THREE from "three";
-import {physicsSteps} from "../configs/ControllerConfigs.js";
+import {returnWorldToGridIndex} from "../helpers.js";
 
 /**
  * World class that contains all the islands and the player
@@ -31,6 +28,25 @@ export class World{
         document.addEventListener("useSelectedCell", this.sendInfoAboutSelectedCell.bind(this));
     }
 
+    getIslandByPosition(position){
+        for(const island of this.islands){
+            if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
+                return island;
+            }
+        }
+        return null;
+    }
+
+    checkPosForBuilding(worldPosition){
+        const island = this.getIslandByPosition(worldPosition);
+        if(island){
+            return island.checkCell(worldPosition);
+        } else {
+            return "void";
+        }
+    }
+
+    //remove
     sendInfoAboutSelectedCell(event){
         // Get position from event
         let position = event.detail.position;
@@ -45,6 +61,7 @@ export class World{
         document.dispatchEvent(new CustomEvent("infoAboutSelectedCell", {detail: details}));
     }
 
+    //remove
     updatePreviewObjectColor(event){
         // Get position from event
         let position = event.detail.position;
@@ -58,11 +75,25 @@ export class World{
         document.dispatchEvent(new CustomEvent("updatePreviewObjectColor", {detail: {primaryColor: primaryColor, secondaryColor: secondaryColor}}));
     }
 
+    /**
+     *
+     * @param buildingName
+     * @param {THREE.Vector3} position - needs to be in world/grid coordinates
+     * @param {Boolean} withTimer
+     * @return {Building || null} - the building that was added to the world
+     */
     addBuilding(buildingName, position, withTimer = false){
-        const building = this.factory.createBuilding(buildingName, position, withTimer);
-        // TODO: replicate getIslandByPosition from ViewManager here but for islandModel
-        this.islands[0].addBuilding(building);
-        return building;
+        const island = this.getIslandByPosition(position);
+        if(island?.checkCell(position) === "empty"){
+            const {x,z} = returnWorldToGridIndex(position);
+            const building = this.factory.createBuilding(buildingName, {x: x, y: 0, z: z}, withTimer);
+            island.addBuilding(building);
+            return building;
+        } else {
+            console.log("no island/ there's already a building at the position");
+        }
+        console.log("failed to add new building to island, there is no island at the position");
+        //TODO: throw error?
     }
 
     exportWorld(json){

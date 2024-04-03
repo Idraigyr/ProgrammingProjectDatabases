@@ -1,0 +1,29 @@
+export const buildTypes = (function (){
+    const number = {
+        void: 0,
+        empty: 1,
+        bridge: 2,
+        altar_building: 3,
+        mine_building: 4,
+        tower: 5,
+        prop: 6
+    };
+    const name = {
+        0: "void",
+        1: "empty",
+        2: "bridge",
+        3: "altar_building",
+        4: "mine_building",
+        5: "tower_building",
+        6: "prop",
+        7: "fuse_table"
+    }
+    return {
+        getNumber: function (name) {
+            return number[name];
+        },
+        getName: function (number) {
+            return name[number];
+        }
+    };
+})();

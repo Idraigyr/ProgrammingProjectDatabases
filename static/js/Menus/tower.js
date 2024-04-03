@@ -196,7 +196,6 @@ populateContainers();
 
 function exitMenu() {
     // Your code to handle closing the menu goes here
-    console.log("Tower menu closed");
     // Send message to parent
     window.parent.postMessage("closeTowerMenu", "*");
 }

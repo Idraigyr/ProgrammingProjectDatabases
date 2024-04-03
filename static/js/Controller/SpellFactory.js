@@ -136,6 +136,7 @@ export class SpellFactory{
         return model;
     }
 
+    //TODO: can we remove this?
     createRitualSpell(details){
         let model = new Model.RitualSpell({
             spellType: details.type,

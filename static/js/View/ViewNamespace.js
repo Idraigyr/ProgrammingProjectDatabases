@@ -14,7 +14,7 @@ import {BuildingPreview} from "./BuildingPreview.js";
 /**
  * Namespace for all the view classes
  */
-export let View = {
+export const View = Object.freeze({
     Player: Player,
     Island: Island,
     Fireball: Fireball,
@@ -30,4 +30,4 @@ export let View = {
     SpellPreview: SpellPreview,
     BuildingPreview: BuildingPreview,
     RitualSpell: RitualSpell
-}
+});

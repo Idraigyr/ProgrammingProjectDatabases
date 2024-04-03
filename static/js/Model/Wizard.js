@@ -77,7 +77,6 @@ export class Wizard extends Character{
      * @param {Number} amount - amount of health to refill
      */
     changeCurrentHealth(amount){
-        console.log("health changed");
         this.health = amount > 0 ? Math.min(this.maxHealth, this.health + amount) : Math.max(0, this.health + amount);
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }

@@ -1,30 +1,7 @@
 import {Entity} from "./Entity.js";
 import {returnWorldToGridIndex} from "../helpers.js";
-
-const type = (function (){
-    const number = {
-        empty: 0,
-        altar_building: 1,
-        mine_building: 2,
-        tower: 3,
-        prop: 4
-    };
-    const name = {
-        0: "empty",
-        1: "altar_building",
-        2: "mine_building",
-        3: "tower_building",
-        4: "prop"
-    }
-    return {
-        getNumber: function (name) {
-            return number[name];
-        },
-        getName: function (number) {
-            return name[number];
-        }
-    };
-})();
+import * as THREE from "three";
+import {buildTypes} from "../configs/Enums.js";
 
 /**
  * Model of an island
@@ -36,28 +13,30 @@ export class Island extends Entity{
         super(params);
         this.buildings = [];
         this.rotation = params.rotation;
+
         this.width = params.width;
         this.length = params.length;
         this.height = params?.height ?? 0;
+        this.min = new THREE.Vector3();
+        this.max = new THREE.Vector3();
         // this.grid = new Array(params.width).fill(0).map(() => new Array(params.length).fill(0).map(() => new Array(params.height).fill(0)));
-        this.grid = new Array(params.width).fill(0).map(() => new Array(params.length).fill(0));
+        this.grid = new Array(params.width).fill(buildTypes.getNumber("empty")).map(() => new Array(params.length).fill(buildTypes.getNumber("empty")));
         this.occupiedCells = [];
     }
 
     occupyCell(worldPosition, dbType){
         let {x, z} = returnWorldToGridIndex(worldPosition);
-        console.log(`occupied cell: ${x}, ${z} with ${dbType}`);
-        this.grid[x + 7][z + 7] = type.getNumber(dbType);
+        this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
     }
 
     freeCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition);
-        this.grid[x + 7][z + 7] = type.getNumber("empty");
+        this.grid[x + 7][z + 7] = buildTypes.getNumber("empty");
     }
 
     checkCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition);
-        return type.getName(this.grid[x + 7][z + 7]);
+        return buildTypes.getName(this.grid[x + 7][z + 7]);
     }
 
     updateOccupiedCells(){
@@ -68,6 +47,16 @@ export class Island extends Entity{
                 this.occupiedCells.push(newCell);
             });
         });
+    }
+
+    set position(vector){
+        const delta = vector.clone().sub(this.position);
+        this.min.add(delta);
+        this.max.add(delta);
+        for(const building of this.buildings){
+            building.position = building.position.add(delta);
+        }
+        super.position = vector;
     }
 
     get type(){

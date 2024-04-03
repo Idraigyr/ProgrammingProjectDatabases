@@ -3,22 +3,14 @@ import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
 import {cameraPosition, physicsSteps} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
-import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
-import {ViewManager} from "./Controller/ViewManager.js";
-import {AssetManager} from "./Controller/AssetManager.js";
-import {TimerManager} from "./Controller/TimerManager.js";
-import {RaycastController} from "./Controller/RaycastController.js";
-import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
 import {acceleratedRaycast} from "three-mesh-bvh";
-import {SpellCaster} from "./Controller/SpellCaster.js";
 import {View} from "./View/ViewNamespace.js";
-import {OrbitControls} from "three-orbitControls";
-import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, subSpellKey} from "./configs/Keybinds.js";
+import {interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
-import {GenerateMeshBVHWorker} from "./workers/GenerateMeshBVHWorker.js";
+import {OrbitControls} from "three-orbitControls";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -67,7 +59,7 @@ class App {
 
         this.playerInfo = new Controller.UserInfo();
 
-        this.viewManager = new ViewManager({spellPreview: new View.SpellPreview([{key: "build", details: {
+        this.viewManager = new Controller.ViewManager({spellPreview: new View.SpellPreview([{key: "build", details: {
             ctor: THREE.BoxGeometry,
             params: [gridCellSize,10,gridCellSize],
             primaryColor: 0xD46D01,
@@ -103,8 +95,9 @@ class App {
 
         this.scene.add(this.viewManager.spellPreview.charModel);
         this.scene.add(this.viewManager.spellPreview.boxHelper);
+
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
-        this.raycastController = new RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
+        this.raycastController = new Controller.RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
         this.inputManager = new Controller.InputManager({canvas: canvas});
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -115,29 +108,39 @@ class App {
         });
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
-        this.timerManager = new TimerManager();
 
+        this.timerManager = new Controller.TimerManager();
         this.playerController = null;
-        this.spellCaster = new SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
+        this.spellCaster = new Controller.SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
         this.minionControllers = [];
-        this.assetManager = new AssetManager();
+        this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
+
+
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager});
+        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
+        this.BuildManager = new Controller.BuildManager(this.raycastController, this.scene);
 
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
         this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
 
-        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager});
-        this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
-        this.BuildManager = new BuildManager(this.raycastController, this.scene);
-
-        document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
-        this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(interactKey, this.spellCaster.interact.bind(this.spellCaster));
+        // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+
+        this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
+        this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+        this.spellCaster.addEventListener("interact", (event) => {
+           this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
+           //temp solution:
+            this.worldManager.currentPos = event.detail.position;
+        });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
 
+        document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
 
         //visualise camera line -- DEBUG STATEMENTS --
@@ -195,7 +198,7 @@ class App {
         progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
+        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
         await this.worldManager.importWorld(this.playerInfo.islandID);
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
@@ -209,15 +212,16 @@ class App {
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded
-        document.dispatchEvent(new Event("assetsLoaded"));
+        // document.dispatchEvent(new Event("assetsLoaded"));
         this.spellCaster.wizard = this.worldManager.world.player;
-        this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
-        this.spellCaster.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
-        this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+        window.addEventListener("message", (event) => {
+            this.worldManager.placeBuilding({detail: {buildingName: event.data.buildingName, position: this.worldManager.currentPos, withTimer: true}});
+        });
         this.worldManager.world.player.advertiseCurrentCondition();
     }
 

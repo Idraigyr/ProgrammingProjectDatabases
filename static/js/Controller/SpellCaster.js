@@ -81,7 +81,6 @@ export class SpellCaster extends Subject{
         return this.#wizard.position.clone().add(new THREE.Vector3(0,2,0));
     }
 
-    //TODO: clean up; temp solution
     onSpellSwitch(event){
         this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
         // check if you need to do something else
@@ -91,14 +90,25 @@ export class SpellCaster extends Subject{
         return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
 
+    createCastBuildSpellEvent(type, params){
+        return new CustomEvent("castBuildSpell", {detail: {type: type, params: params}});
+    }
+
     update(deltaTime) {
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             //send to worldManager or viewManager
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {
                 position: this.checkRaycaster(),
-                rotation: this.#wizard.getCurrentSpell().previewRotates ? this.#wizard.rotation : null}));
+                rotation: this.#wizard.getCurrentSpell().previewRotates ? this.#wizard.phi : null}));
         }
         this.#wizard.updateCooldowns(deltaTime);
+    }
+
+    interact(event){
+        const hit = this.checkRaycaster();
+        if(hit){
+            this.dispatchEvent(new CustomEvent("interact", {detail: {position: hit}}));
+        }
     }
 
     checkRaycaster(){
@@ -129,29 +139,14 @@ export class SpellCaster extends Subject{
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
-                this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: castPosition, //TODO: convertWorldToGridPosition in receiver
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
-                    subSpell: false
+                this.dispatchEvent(this.createCastBuildSpellEvent(this.#wizard.getCurrentSpell(), {
+                    position: castPosition,
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));
             }
             this.#wizard.cooldownSpell();
         } else {
             //play a sad sound;
-        }
-    }
-
-    activateSubSpell(event){
-        // Check the main spell type
-        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
-            // Get position
-            let pos = this.checkRaycaster();
-            if (pos) { convertWorldToGridPosition(pos);}
-            this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                position: pos,
-                direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
-                subSpell: true
-            }));
         }
     }
 

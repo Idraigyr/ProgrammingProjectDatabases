@@ -5,7 +5,6 @@ import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitu
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {SpellSpawner} from "../Model/SpellSpawner.js";
-import {scaleAndCorrectPosition} from "../helpers.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -86,6 +85,8 @@ export class Factory{
         this.scene.add(view.initScene());
 
         view.boundingBox.setFromObject(view.charModel);
+        islandModel.min = view.boundingBox.min.clone();
+        islandModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
 
         this.#addBuildings(islandModel, buildingsList);
@@ -97,10 +98,11 @@ export class Factory{
     /**
      * Creates building model and view
      * @param buildingName name of the building
-     * @param position position of the building
+     * @param position position of the building, needs to be in grid index format
      * @param withTimer if true, the building will be created with timer
      * @returns {*} model of the building
      */
+    //TODO: change arguments => params (= more more extendable)
     createBuilding(buildingName, position, withTimer=false){
         const asset = this.assetManager.getAsset(buildingName);
         correctRitualScale(asset);
@@ -128,17 +130,21 @@ export class Factory{
         // just make the buildingView invisible for the duration of the timer
 
         if(withTimer){
-            view.charModel.visible = false;
             // Copy asset object
             const assetClone = asset.clone();
+            view.charModel.visible = false;
 
             const timer = this.timerManager.createTimer(
                 model.timeToBuild,
-                () => {
+                [() => {
                     view.charModel.visible = true;
-                }
+                }]
             );
-            const buildingPreview = new View.BuildingPreview({charModel: assetClone, position: pos, timer: timer});
+            const buildingPreview = new View.BuildingPreview({
+                charModel: assetClone,
+                position: pos,
+                timer: timer
+            });
             this.viewManager.dyingViews.push(buildingPreview);
             this.scene.add(buildingPreview.charModel);
             // Traverse the original asset to make it green semi-transparent

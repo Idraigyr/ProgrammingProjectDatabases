@@ -1,6 +1,7 @@
 import {Model} from "../Model/Model.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 
 /**
@@ -13,7 +14,7 @@ export class WorldManager{
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
-        this.userInfo = params.userInfo;
+        this.currentPos = null;
 
         this.postRequests = [];
 
@@ -46,7 +47,6 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
-                console.log(building.blueprint.name);
                 islands[0].buildings.push({
                     type: building.blueprint.name,
                     position: {
@@ -77,13 +77,25 @@ export class WorldManager{
         this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
     }
 
+    /**
+     * Places a building in the world
+     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
+     */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        const position = event.detail.position;
-        const placeable = this.world.addBuilding(buildingName, position, event.detail.withTimer);
-        const requestIndex = this.postRequests.length;
-        this.sendPOST(placeableURI, placeable, 3, requestIndex);
-        this.collisionDetector.generateColliderOnWorker();
+        const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
+        if(placeable){
+            const requestIndex = this.postRequests.length;
+            this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+            this.collisionDetector.generateColliderOnWorker();
+        } else {
+            console.log("failed to add new building at that position");
+        }
+    }
+
+    checkPosForBuilding(worldPosition){
+        console.log(worldPosition);
+        return this.world.checkPosForBuilding(worldPosition);
     }
 
 
@@ -96,9 +108,7 @@ export class WorldManager{
      * @param event
      */
     updatePlayerStats(event){
-        console.log(event);
         for(const key of event.detail.type){
-            console.log(key);
             if (key === "crystals"){
                 if(!this.userInfo.changeCrystals(event.detail.params[key])){
                     break;

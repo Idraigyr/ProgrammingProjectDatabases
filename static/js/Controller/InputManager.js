@@ -218,6 +218,7 @@ export class InputManager extends Subject{
                 this.keys.eating = bool;
                 break;
         }
+
         this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
