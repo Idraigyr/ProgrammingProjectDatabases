@@ -4,7 +4,9 @@ from datetime import datetime, timezone, timedelta
 
 import requests
 from flask import Blueprint, current_app, Response, request, redirect
-from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt, get_jwt_identity
+from flask_jwt_extended import set_access_cookies, unset_jwt_cookies, jwt_required, get_jwt, get_jwt_identity, \
+    verify_jwt_in_request
+from jwt import PyJWTError
 from markupsafe import escape
 from oauthlib.oauth2 import WebApplicationClient, OAuth2Error
 
@@ -124,8 +126,8 @@ def logout():
     return response
 
 
+# Do NOT add @jwt_required here as it would completely fuck up the error handling chain, resulting in 500 errors where it's just a 401
 @current_app.after_request
-@jwt_required(optional=True)
 def refresh_expiring_jwts(response):
     """
     Checks after each request if the JWT token is about to expire and refreshes it if necessary
@@ -134,6 +136,8 @@ def refresh_expiring_jwts(response):
     :return: The modified response
     """
     try:
+        verify_jwt_in_request(optional=True)
+
         exp_timestamp = get_jwt()["exp"]
         now = datetime.now(timezone.utc)
         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
@@ -142,7 +146,7 @@ def refresh_expiring_jwts(response):
             access_token = AUTH_SERVICE.create_jwt(AUTH_SERVICE.get_user(user_id=get_jwt_identity()))
             set_access_cookies(response, access_token)
         return response
-    except (RuntimeError, KeyError):
+    except (RuntimeError, KeyError, PyJWTError):
         # Case where there is not a valid JWT. Just return the original response
         return response
 
