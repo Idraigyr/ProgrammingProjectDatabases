@@ -22,7 +22,7 @@ class TowerBuildingSchema(BuildingSchema):
         }
     }
 
-    required = []
+    required = ['tower_type'] + BuildingSchema.required
 
     title = 'TowerBuilding'
     description = ('A tower that shoots at enemy warior minions in multiplayer mode. '
@@ -42,7 +42,7 @@ class TowerBuildingResource(BuildingResource):
 
     @swagger.tags('building')
     @summary("Retrieve a tower building by its placeable id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The tower building id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The tower building id to retrieve', required=True)
     @swagger.response(response_code=200, description="The tower building in JSON format", schema=TowerBuildingSchema)
     @swagger.response(response_code=404, description='Tower building not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
@@ -81,7 +81,7 @@ class TowerBuildingResource(BuildingResource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            TowerBuildingSchema(**data)
+            TowerBuildingSchema(**data, _check_requirements=False)
             id = int(data['placeable_id'])
 
 
@@ -116,7 +116,7 @@ class TowerBuildingResource(BuildingResource):
         data = clean_dict_input(data)
 
         try:
-            TowerBuildingSchema(**data)  # Validate the input
+            TowerBuildingSchema(**data, _check_requirements=True)  # Validate the input
 
             # Create the tower model & add it to the database
             if 'placeable_id' in data:

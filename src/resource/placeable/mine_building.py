@@ -28,7 +28,7 @@ class MineBuildingSchema(BuildingSchema):
         'collected_gem': GemSchema
     }
 
-    required = []
+    required = ['mine_type'] + BuildingSchema.required
 
     title = 'MineBuilding'
     description = ('A mine that mines a certain type of resource and keeps it until it is emptied by the player. '
@@ -53,7 +53,7 @@ class MineBuildingResource(Resource):
 
     @swagger.tags('building')
     @summary("Retrieve a mine building by its placeable id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The mine building id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The mine building id to retrieve', required=True)
     @swagger.response(response_code=200, description="The altar building in JSON format", schema=MineBuildingSchema)
     @swagger.response(response_code=404, description='Builder minion not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
@@ -92,7 +92,7 @@ class MineBuildingResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            MineBuildingSchema(**data)
+            MineBuildingSchema(**data, _check_requirements=False)
             id = int(data['placeable_id'])
 
             # Get the existing mine building
@@ -125,7 +125,7 @@ class MineBuildingResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            MineBuildingSchema(**data)  # Validate the input
+            MineBuildingSchema(**data, _check_requirements=True)  # Validate the input
 
 
             # Create the MineBuilding model & add it to the database

@@ -36,7 +36,7 @@ class WarriorHutBuildingResource(BuildingResource):
 
     @swagger.tags('building')
     @summary("Retrieve the warrior hut building object with the given id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The warrior hut id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The warrior hut id to retrieve', required=True)
     @swagger.response(response_code=200, description="The warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
     @swagger.response(response_code=404, description='Warrior hut with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
@@ -76,7 +76,7 @@ class WarriorHutBuildingResource(BuildingResource):
         data = clean_dict_input(data)
 
         try:
-            WarriorHutBuildingSchema(**data)
+            WarriorHutBuildingSchema(**data, _check_requirements=False)
             id = int(data['placeable_id'])
 
             # Get the existing warrior hut building
@@ -109,7 +109,7 @@ class WarriorHutBuildingResource(BuildingResource):
         data = clean_dict_input(data)
 
         try:
-            WarriorHutBuildingSchema(**data)
+            WarriorHutBuildingSchema(**data, _check_requirements=True)
 
             # Create the tower model & add it to the database
             if 'placeable_id' in data:

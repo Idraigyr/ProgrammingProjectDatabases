@@ -35,7 +35,7 @@ class FuseTableBuildingResource(BuildingResource):
 
     @swagger.tags('building')
     @summary("Retrieve the fuse table building object with the given id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The builder minion id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The builder minion id to retrieve', required=True)
     @swagger.response(response_code=200, description="The fuse table building in JSON format",
                       schema=FuseTableBuildingSchema)
     @swagger.response(response_code=404, description='Fuse table with given id not found', schema=ErrorSchema)
@@ -74,7 +74,7 @@ class FuseTableBuildingResource(BuildingResource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            FuseTableBuildingSchema(**data)
+            FuseTableBuildingSchema(**data, _check_requirements=False)
             id = int(data['placeable_id'])
 
 
@@ -107,11 +107,13 @@ class FuseTableBuildingResource(BuildingResource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            FuseTableBuildingSchema(**data)
+            FuseTableBuildingSchema(**data, _check_requirements=True)
 
             # Create the tower model & add it to the database
             if 'placeable_id' in data:
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
+            if 'blueprint' in data:
+                data.pop('blueprint')
 
             # Create the new fuse table building
             fuse_table_building = FuseTableBuilding(**data)

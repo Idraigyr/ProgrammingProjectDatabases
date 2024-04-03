@@ -19,17 +19,23 @@ class BuilderMinionSchema(EntitySchema):
         'level': {
             'type': 'integer',
             'description': 'The level of the builder minion'
+        },
+        'builds_on': {
+            'type': 'integer',
+            'description': 'The building id that the builder minion is working on. The building should be upgrading when the builder minion is working on/assigned to it.'
         }
     }
 
-    required = []
+    required = EntitySchema.required + ['level']
 
     title = 'BuilderMinion'
     description = 'A model representing a builder minion in the game. A builder minion is a type of entity that can move on an island and can build buildings.'
 
     def __init__(self, builder_minion: BuilderMinion = None, **kwargs):
         if builder_minion is not None:
-            super().__init__(builder_minion, level=builder_minion.level)
+            super().__init__(builder_minion, level=builder_minion.level,
+                             builds_on=builder_minion.builds_on.working_building.placeable_id if builder_minion.builds_on is not None else None,
+                             **kwargs)
         else:
             super().__init__(**kwargs)
 
@@ -41,7 +47,7 @@ class BuilderMinionResource(EntityResource):
 
     @swagger.tags('entity')
     @summary('Retrieve the builder minion with the given id')
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The builder minion id to retrieve')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The builder minion id to retrieve', required=True)
     @swagger.response(response_code=200, description='Successful retrieval', schema=BuilderMinionSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Builder minion not found', schema=ErrorSchema)
@@ -67,7 +73,7 @@ class BuilderMinionResource(EntityResource):
     @summary('Create a new builder minion')
     @swagger.expected(schema=BuilderMinionSchema, required=True)
     @swagger.response(response_code=200, description='Builder minion created', schema=BuilderMinionSchema)
-    @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=400, description='builds_on building id not found (when provided), or invalid input', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -79,13 +85,26 @@ class BuilderMinionResource(EntityResource):
         data = clean_dict_input(data)
 
         try:
-            BuilderMinionSchema(**data)  # Validate the input
+            BuilderMinionSchema(**data, _check_requirements=True)  # Validate the input
         except ValueError as e:
             return ErrorSchema(str(e)), 400
 
         # Create the BuilderMinion model & add it to the database
         if 'entity_id' in data:
             data.pop('entity_id') # let SQLAlchemy initialize the id
+
+        # parse the integer building input to the actual task
+        if 'builds_on' in data:
+            from src.model.placeable.building import Building
+            building = Building.query.get(data['builds_on'])
+            if building is None:
+                return ErrorSchema(f"Building with id {data['builds_on']} not found"), 400
+
+            from src.model.upgrade_task import BuildingUpgradeTask
+            if not isinstance(building.task, BuildingUpgradeTask):
+                return ErrorSchema(f"Building with id {data['builds_on']} is not being upgraded"), 400
+
+            data['builds_on'] = building.task # set the task
 
         builder_minion = BuilderMinion(**data)
 
@@ -109,13 +128,26 @@ class BuilderMinionResource(EntityResource):
         data = clean_dict_input(data)
 
         try:
-            BuilderMinionSchema(**data)
+            BuilderMinionSchema(**data, _check_requirements=False)
             id = int(data['entity_id'])
 
 
             minion = BuilderMinion.query.get(id)
             if minion is None:
                 return ErrorSchema(f"Builder minion with id {id} not found"), 404
+
+            # parse the integer building input to the actual task
+            if 'builds_on' in data:
+                from src.model.placeable.building import Building
+                building = Building.query.get(data['builds_on'])
+                if building is None:
+                    return ErrorSchema(f"Building with id {data['builds_on']} not found"), 400
+
+                from src.model.upgrade_task import BuildingUpgradeTask
+                if not isinstance(building.task, BuildingUpgradeTask):
+                    return ErrorSchema(f"Building with id {data['builds_on']} is not being upgraded"), 400
+
+                data['builds_on'] = building.task  # set the task
 
             minion.update(data)
 

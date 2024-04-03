@@ -11,20 +11,23 @@ class Blueprint(current_app.db.Model):
     name: Mapped[str] = Column(String(32), nullable=False, unique=True)
     description: Mapped[str] = Column(String(256), nullable=False, default='')
     cost: Mapped[int] = Column(Integer, nullable=False, default=0)
+    buildtime: Mapped[int] = Column(Integer, nullable=False, default=0) # in seconds
 
 
-    def __init__(self, id: int = None, name: str = None, description: str = None, cost: int = 0):
+    def __init__(self, id: int = None, name: str = None, description: str = None, cost: int = 0, buildtime: int = 0):
         """
         Initialize the blueprint object
         :param id: The id of the blueprint
         :param name: The name of the blueprint (eg the building it creates)
         :param description: The description of the blueprint (eg what does the building it creates do)
         :param cost: The cost to build the building of this blueprint
+        :param buildtime: The time it takes to build the building of this blueprint
         """
         self.id = id
         self.name = name
         self.description = description
         self.cost = cost
+        self.buildtime = buildtime
 
 
     def update(self, data: dict):
@@ -36,6 +39,7 @@ class Blueprint(current_app.db.Model):
         self.name = data.get('name', self.name)
         self.description = data.get('description', self.description)
         self.cost = data.get('cost', self.cost)
+        self.buildtime = data.get('buildtime', self.buildtime)
 
     def get_type(self) -> BlueprintType:
         """

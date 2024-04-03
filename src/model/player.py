@@ -4,6 +4,7 @@ from flask import current_app
 from sqlalchemy import BigInteger, ForeignKey, Column, Integer
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
+from src.model.chat_message import ChatMessage
 from src.model.blueprint import Blueprint
 from src.model.spell import Spell
 from src.model.spell import association_table as player_spell_association_table
@@ -46,11 +47,17 @@ class Player(current_app.db.Model):
     # The island of the player
     island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True)
 
+    # User settings
+    user_settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="player", single_parent=True)
+
     # The gem inventory of the player
     gems: Mapped[List["Gem"]] = relationship("Gem")
 
     # The unlocked blueprints of the player
     blueprints: Mapped[List["Blueprint"]] = relationship("Blueprint", secondary=blueprint_association_table)
+
+    # The player chat messages
+    chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user")
 
     def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0, xp: int = None):
         """

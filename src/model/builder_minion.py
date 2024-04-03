@@ -1,6 +1,7 @@
 from sqlalchemy import ForeignKey, BigInteger, Column, Integer
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.model.upgrade_task import BuildingUpgradeTask
 from src.model.entity import Entity
 
 
@@ -12,10 +13,12 @@ class BuilderMinion(Entity):
 
     level: Mapped[int] = Column(Integer, nullable=False, default=0)
 
+    builds_on_id: Mapped[int] = mapped_column(ForeignKey("building_upgrade_task.id"), nullable=True)
+    builds_on: Mapped[BuildingUpgradeTask] = relationship("BuildingUpgradeTask", back_populates="building_minions")
 
-    def __init__(self, island_id: int = 0, x: int = 0, y: int = 0, z: int = 0, level: int = 0, type: str = 'builder_minion'):
-        assert type == 'builder_minion'
+    def __init__(self, island_id: int = 0, x: int = 0, y: int = 0, z: int = 0, level: int = 0, builds_on: BuildingUpgradeTask = None):
         super().__init__(island_id, x, y, z)
+        self.builds_on = builds_on
         self.level = level
 
     def update(self, data: dict):
@@ -25,6 +28,7 @@ class BuilderMinion(Entity):
         """
         super().update(data)
         self.level = data.get('level', self.level)
+        self.builds_on = data.get('builds_on', self.builds_on)
 
 
     __mapper_args__ = {

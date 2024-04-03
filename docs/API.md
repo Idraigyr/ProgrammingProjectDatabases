@@ -48,3 +48,10 @@ Finally, add this function to the `resource.__init__#attach_resources()` by impo
 
 The reason this is done this way is because the current flask-restful-swagger-3 package does not support multiple Flask route
 blueprints. So they all have to be bundled to one. The package is the only that adds Swagger 3 support, but is unfortunately unmaintained and broken in many ways.
+
+
+#### A special note on creating new buildings and entities that belong to an island
+When creating a new entity or building that belongs to an island (and all implementing classes), the accompanying `Schema` should also be 
+registered in the `resource/island.py` file. Entity schema's should be added to the `_resolve_placeable_schema_for_type()` method and buildings
+in the `_resolve_building_schema_for_type()` method. This is necessary for the `island` class to parse the entities and buildings to JSON values to pass
+on to the frontend.
