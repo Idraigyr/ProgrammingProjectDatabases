@@ -60,7 +60,7 @@ export class World{
 
     addBuilding(buildingName, position, withTimer = false){
         const building = this.factory.createBuilding(buildingName, position, withTimer);
-        // TODO: what if multiple islands?
+        // TODO: replicate getIslandByPosition from ViewManager here but for islandModel
         this.islands[0].addBuilding(building);
         return building;
     }

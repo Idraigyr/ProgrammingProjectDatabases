@@ -2,7 +2,7 @@ import {IView} from "./View.js";
 import * as THREE from "three";
 import {convertWorldToGridPosition} from "../helpers.js";
 
-export class PreviewObject extends IView{
+export class SpellPreview extends IView{
     #gridCellSize;
     #cutoff;
     constructor(params) {
@@ -23,30 +23,6 @@ export class PreviewObject extends IView{
         this.boxHelper.visible = false;
         this.#gridCellSize = 10;
         this.#cutoff = this.types[Object.keys(this.types)[0]].cutoff;
-        document.addEventListener("updatePreviewObjectColor", this.updateColor.bind(this));
-        this.updating = false;
-    }
-
-    updateColor(event){
-        // If no changes, return
-        if(event.detail.primaryColor === this.charModel.material.uniforms.primaryColor.value.getHex() &&
-            event.detail.secondaryColor === this.charModel.material.uniforms.secondaryColor.value.getHex()){
-            return;
-        }
-        if(this.updating) return;
-        this.updating = true;
-        // Get scene
-        let scene = this.charModel.parent;
-        // Remove the previous model
-        scene.remove(this.charModel);
-        // Change key values
-        this.types[Object.keys(this.types)[0]].primaryColor = event.detail.primaryColor;
-        this.types[Object.keys(this.types)[0]].secondaryColor = event.detail.secondaryColor;
-        // Create new material
-        this.material = this.createMaterial(event.detail.primaryColor, event.detail.secondaryColor, this.#cutoff);
-        // Set charModel material to new material
-        this.charModel = new THREE.Mesh(new this.types[Object.keys(this.types)[0]].ctor(...this.types[Object.keys(this.types)[0]].params), this.material);
-        scene.add(this.charModel);
         this.updating = false;
     }
 
@@ -60,18 +36,13 @@ export class PreviewObject extends IView{
     }
 
     render(event){
-        const newEvent = {detail: {position: event.detail.params.position}};
-        if(!newEvent.detail.position){
-            this.charModel.visible = false;
-            return;
-        }
-        if(event.detail.type.name !== this.currentType) this.setModel(event.detail.type.name);
+        if(event.detail.name !== this.currentType) this.setModel(event.detail.name);
         this.charModel.visible = true;
-        if(event.detail.type.name === "build"){
-            convertWorldToGridPosition(newEvent.detail.position);
-            newEvent.detail.position.y = 0;
+
+        this.updatePosition(event);
+        if(event.detail.rotation){
+            super.updateRotation(event);
         }
-        this.updatePosition(newEvent);
         //TODO: remove magic value
         this.charModel.translateY(1.5);
     }
@@ -87,7 +58,7 @@ export class PreviewObject extends IView{
         this.charModel.material.uniforms.cutoff.value = this.types[key].cutoff;
         this.rotate = this.types[key].rotate;
         this.horizontalRotation = this.types[key]?.horizontalRotation ?? 0;
-        super.updateRotation({detail: {rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), this.horizontalRotation * Math.PI / 180)}});
+        // super.updateRotation({detail: {rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), this.horizontalRotation * Math.PI / 180)}});
         this.currentType = key;
     }
 

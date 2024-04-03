@@ -10,7 +10,6 @@ export class SpellCaster extends Subject{
         super(params);
         this.#wizard = null;
         this.raycaster = params.raycaster;
-        this.viewManager = params.viewManager;
         this.renderingPreview = true;
         //TODO: make sure that every equipped spell that needs a preview Object has its preview created on equip.
         //TODO: maybe move this to somewhere else?
@@ -81,6 +80,7 @@ export class SpellCaster extends Subject{
         //TODO: change
         return this.#wizard.position.clone().add(new THREE.Vector3(0,2,0));
     }
+
     //TODO: clean up; temp solution
     onSpellSwitch(event){
         this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
@@ -92,21 +92,11 @@ export class SpellCaster extends Subject{
     }
 
     update(deltaTime) {
-        // this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
-        //TODO: updatePreviewObject locally?
-
-        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
-            // Transform position to grid position
-            let pos = this.checkRaycaster();
-            if (pos) { convertWorldToGridPosition(pos);
-                // Dispatch event to check if the cell is occupied
-                document.dispatchEvent(new CustomEvent("selectCell", {detail: {position: pos}}));
-            }
-            // TODO: check collision with plane only
-            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
-        }
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
-            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
+            //send to worldManager or viewManager
+            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {
+                position: this.checkRaycaster(),
+                rotation: this.#wizard.getCurrentSpell().previewRotates ? this.#wizard.rotation : null}));
         }
         this.#wizard.updateCooldowns(deltaTime);
     }

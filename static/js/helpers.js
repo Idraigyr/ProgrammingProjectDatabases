@@ -30,12 +30,16 @@ export const setIndexAttribute = function(geometry){
     geometry.setIndex(index);
 }
 
+export const returnWorldToGridIndex = function(position){
+    return {x: Math.floor(position.x/gridCellSize + 0.5), z: Math.floor(position.z/gridCellSize + 0.5)};
+}
+
 export const convertWorldToGridPosition = function (position){
     position.x = Math.floor(position.x/gridCellSize + 0.5)*gridCellSize;
     position.z = Math.floor(position.z/gridCellSize + 0.5)*gridCellSize;
 }
 
-export const convertGridToWorldPosition = function (position){
+export const convertGridIndexToWorldPosition = function (position){
     position.x = position.x*gridCellSize;
     position.z = position.z*gridCellSize;
 }
@@ -138,7 +142,7 @@ export function scaleAndCorrectPosition(object, viewManager=undefined){
         if (object instanceof THREE.Object3D) {extracted = object;}
         else {extracted = extractObject(object, viewManager);}
         correctRitualScale(extracted);
-        convertGridToWorldPosition(extracted.position);
+        convertGridIndexToWorldPosition(extracted.position);
         //correctRitualPosition(extracted);
     }
 
@@ -175,7 +179,7 @@ export function getOccupiedCells(building){
         }
     }
     // Print occupied cells
-    console.log("occupied cells:", cells);
+    // console.log("occupied cells:", cells);
     return cells;
 }
 

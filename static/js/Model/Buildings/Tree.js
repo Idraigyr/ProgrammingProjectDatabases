@@ -8,4 +8,14 @@ export class Tree extends Placeable{
         super(params);
         this.timeToBuild = 3;
     }
+
+    get dbType() {
+        return "prop";
+    }
+
+    formatPOSTData(userInfo){
+        const obj = super.formatPOSTData(userInfo);
+        obj.prop_type = "tree";
+        return obj;
+    }
 }

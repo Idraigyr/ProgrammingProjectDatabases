@@ -1,8 +1,8 @@
 import {Subject} from "../Patterns/Subject.js";
 import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
-import {Fireball} from "../View/SpellView.js";
 import {RitualSpell} from "../View/SpellView.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 export class ViewManager extends Subject{
     constructor(params) {
@@ -17,6 +17,38 @@ export class ViewManager extends Subject{
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
         document.addEventListener("changeViewAsset", this.changeViewAsset.bind(this));
+    }
+
+    renderSpellPreview(event){
+        if(!event.detail.params.position){
+            this.spellPreview.charModel.visible = false;
+            return;
+        }
+        const newEvent = {detail: {name: "", position: event.detail.params.position}};
+        if(event.detail.type.name === "build"){
+            if(this.getIslandByPosition(newEvent.detail.position)?.checkCell(newEvent.detail.position) !== "empty"){
+                newEvent.detail.name = "augmentBuild";
+            } else {
+                newEvent.detail.name = "build";
+            }
+            convertWorldToGridPosition(newEvent.detail.position);
+            newEvent.detail.position.y = 0;
+        } else {
+            newEvent.detail.name = event.detail.type.name;
+            newEvent.detail.rotation = event.detail.params?.rotation;
+        }
+        this.spellPreview.render(newEvent);
+    }
+
+    getIslandByPosition(position){
+        for(const island of this.pairs.island){
+            const min = island.view.boundingBox.min;
+            const max = island.view.boundingBox.max;
+            if(position.x > min.x && position.x < max.x && position.z > min.z && position.z < max.z){
+                return island.model;
+            }
+        }
+        return null;
     }
 
     /**
@@ -140,6 +172,6 @@ export class ViewManager extends Subject{
                 }
             });
         }
-        this.dyingViews = this.dyingViews.filter((spell) => spell.isNotDead(deltaTime));
+        this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime));
     }
 }

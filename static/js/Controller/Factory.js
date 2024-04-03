@@ -1,7 +1,7 @@
 import {Model} from "../Model/Model.js";
 import {View} from "../View/ViewNamespace.js";
 import {PlayerFSM} from "./CharacterFSM.js";
-import {convertGridToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY, getOccupiedCells} from "../helpers.js";
+import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY, getOccupiedCells} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {SpellSpawner} from "../Model/SpellSpawner.js";
@@ -78,9 +78,9 @@ export class Factory{
      * @returns model of the island
      */
     createIsland(position, rotation, buildingsList){
-        let islandModel = new Model.Island({position: new THREE.Vector3(position.x, position.y, position.z), rotation: rotation});
+        let islandModel = new Model.Island({position: new THREE.Vector3(position.x, position.y, position.z), rotation: rotation, width: 15, length: 15});
 
-        let view = new View.Island({position: new THREE.Vector3(position.x, position.y, position.z), cellsInRow: 15, islandThickness: 10});
+        let view = new View.Island({position: new THREE.Vector3(position.x, position.y, position.z), cellsInRow: 15, islandThickness: 0.1});
         //TODO: island asset?
         //this.AssetLoader.loadAsset(view);
         this.scene.add(view.initScene());
@@ -88,7 +88,7 @@ export class Factory{
         view.boundingBox.setFromObject(view.charModel);
         this.scene.add(view.boxHelper);
 
-        this.#addBuildings(islandModel.buildings, buildingsList);
+        this.#addBuildings(islandModel, buildingsList);
 
         this.viewManager.addPair(islandModel, view);
         return islandModel;
@@ -107,12 +107,11 @@ export class Factory{
         setMinimumY(asset, 0); // TODO: is it always 0?
         let pos = new THREE.Vector3(position.x, asset.position.y, position.z);
         // Correct position to place the asset in the center of the cell
-        convertWorldToGridPosition(pos);
+        convertGridIndexToWorldPosition(pos);
         // Convert position
-        let model = new Model[buildingName]({position: pos}); // TODO: add rotation
-        let view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
-        // Occupy the cells
-        model.occupiedCells = getOccupiedCells(view.charModel);
+        const model = new Model[buildingName]({position: pos}); // TODO: add rotation
+        const view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
+
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);
@@ -121,48 +120,41 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         this.viewManager.addPair(model, view);
+
+        //TODO: withTimer:
+        // get total time from config/db
+        // create a timer that has a callback that triggers when the timer ends
+        // put the buildingPreview in dyingViews of viewManager
+        // just make the buildingView invisible for the duration of the timer
+
         if(withTimer){
+            view.charModel.visible = false;
             // Copy asset object
-            let copyAsset = asset.clone();
+            const assetClone = asset.clone();
+
+            const timer = this.timerManager.createTimer(
+                model.timeToBuild,
+                () => {
+                    view.charModel.visible = true;
+                }
+            );
+            const buildingPreview = new View.BuildingPreview({charModel: assetClone, position: pos, timer: timer});
+            this.viewManager.dyingViews.push(buildingPreview);
+            this.scene.add(buildingPreview.charModel);
             // Traverse the original asset to make it green semi-transparent
-            asset.traverse((o) => {
-                if (o.isMesh) o.material = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
-            });
-            this.timerManager.createTimer(model, model.timeToBuild,
-                new CustomEvent("changeViewAsset", {detail: {model: model, viewAsset: copyAsset}}));
         }
         return model;
     }
 
     /**
      * Creates models of the buildings
-     * @param resultedModels list with output models added
+     * @param islandModel island (Model) to add the buildings to
      * @param buildingsList list of the buildings to add
      */
-    #addBuildings(resultedModels, buildingsList){
+    #addBuildings(islandModel, buildingsList){
         buildingsList.forEach((building) => {
             try {
-                // TODO: understand why the following code gives another result:
-                // let model = this.createBuilding(building.type, building.position);
-                // resultedModels.push(model);
-                const asset = this.assetManager.getAsset(building.type);
-                correctRitualScale(asset);
-                setMinimumY(asset, 0); // TODO: is it always 0?
-                let pos = new THREE.Vector3(building.position.x, asset.position.y, building.position.z);
-                convertGridToWorldPosition(pos);
-                let model = new Model[building.type]({position: pos, rotation: building.rotation});
-                let view = new View[building.type]({charModel: asset, position: pos, scene: this.scene});
-                // Occupy the cells
-                model.occupiedCells = getOccupiedCells(view.charModel);
-                this.scene.add(view.charModel);
-
-                view.boundingBox.setFromObject(view.charModel);
-                this.scene.add(view.boxHelper);
-
-                model.addEventListener("updatePosition",view.updatePosition.bind(view));
-                model.addEventListener("updateRotation",view.updateRotation.bind(view));
-                resultedModels.push(model);
-                this.viewManager.addPair(model, view);
+                islandModel.addBuilding(this.createBuilding(building.type, building.position, false));
             } catch (e){
                 console.log(`no ctor for ${building.type} building: ${e.message}`);
             }

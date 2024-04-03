@@ -12,4 +12,10 @@ export class Mine extends Placeable{
     get dbType(){
         return "mine_building";
     }
+
+    formatPOSTData(userInfo){
+        const obj = super.formatPOSTData(userInfo);
+        obj.mine_type = "crystal";
+        return obj;
+    }
 }

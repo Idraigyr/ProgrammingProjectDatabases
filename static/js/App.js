@@ -67,17 +67,25 @@ class App {
 
         this.playerInfo = new Controller.UserInfo();
 
-        this.viewManager = new ViewManager({spellPreview: new View.PreviewObject([{key: "build", details: {
+        this.viewManager = new ViewManager({spellPreview: new View.SpellPreview([{key: "build", details: {
             ctor: THREE.BoxGeometry,
-            params: [gridCellSize,10,gridCellSize], // TODO: gridCellSize here!
+            params: [gridCellSize,10,gridCellSize],
             primaryColor: 0xD46D01,
             secondaryColor: 0xFFB23D,
             cutoff: -5,
             rotate: false
         }},
+        {key: "augmentBuild", details: {
+            ctor: THREE.BoxGeometry,
+            params: [gridCellSize,10,gridCellSize],
+            primaryColor: 0x0000CC,
+            secondaryColor: 0x0000FF,
+            cutoff: -5,
+            rotate: false
+        }},
         {key: "thundercloud", details: {
             ctor: THREE.CylinderGeometry,
-            params: [3, 3, 3], // TODO: 1/3 of gridCellSize?
+            params: [3, 3, 3], //TODO: spellSize here
             primaryColor: 0x0051FF,
             secondaryColor: 0xCCABFF,
             cutoff: -1.499,
@@ -85,7 +93,7 @@ class App {
         }},
         {key: "icewall", details: {
             ctor: THREE.BoxGeometry,
-            params: [10,3,3], // TODO: gridCellSize here?
+            params: [10,3,3], //TODO: spellSize here
             primaryColor: 0x0033FF,
             secondaryColor: 0xB5FFFF,
             cutoff: -1.499,
@@ -128,7 +136,7 @@ class App {
         this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
-        this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
+        this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
 
         window.addEventListener("resize", this.onResize.bind(this));
 
@@ -206,7 +214,7 @@ class App {
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("castSpell", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
-        this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
+        // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));

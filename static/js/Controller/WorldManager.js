@@ -22,25 +22,7 @@ export class WorldManager{
 
     async importWorld(islandID){
         let islands = [
-            {buildings: [{
-                    type: "Mine",
-                    position: { //TODO: this should be gridSquare coordinates
-                        x: 2,
-                        y: 0,
-                        z: 1
-                    },
-                    rotation: 0
-                },
-                    {
-                    type: "Altar",
-                    position: { //TODO: this should be gridSquare coordinates
-                        x: 0,
-                        y: 0,
-                        z: 1
-                    },
-                    rotation: 0
-                }
-                ],
+            {buildings: [],
                 position: {
                     x: 0,
                     y: 0,
@@ -64,6 +46,7 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
+                console.log(building.blueprint.name);
                 islands[0].buildings.push({
                     type: building.blueprint.name,
                     position: {
@@ -168,29 +151,33 @@ export class WorldManager{
      */
     sendPOST(uri, entity, retries, requestIndex){
         this.insertPendingPostRequest(entity);
-        $.ajax({
-            url: `${API_URL}/${uri}/${entity.dbType}`,
-            type: "POST",
-            data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
-            dataType: "json",
-            contentType: "application/json",
-            error: (e) => {
-                console.log(e);
-            }
-        }).done((data, textStatus, jqXHR) => {
-            console.log("POST success");
-            console.log(textStatus, data);
-            entity.setId(data);
-            this.removePendingPostRequest(requestIndex);
-        }).fail((jqXHR, textStatus, errorThrown) => {
-            console.log("POST fail");
-            if (retries > 0){
-                this.sendPOST(uri, entity, retries - 1, requestIndex);
-            } else {
-                throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
-                //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
-            }
-        });
+        try {
+            $.ajax({
+                url: `${API_URL}/${uri}/${entity.dbType}`,
+                type: "POST",
+                data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.log(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+                entity.setId(data);
+                this.removePendingPostRequest(requestIndex);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                if (retries > 0){
+                    this.sendPOST(uri, entity, retries - 1, requestIndex);
+                } else {
+                    throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
+                    //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
+                }
+            });
+        } catch (err){
+            console.log(err);
+        }
     }
 
     async updateGems(){
