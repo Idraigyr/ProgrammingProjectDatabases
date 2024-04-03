@@ -1,6 +1,6 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
-import {adjustVelocity, adjustVelocity2} from "../helpers.js";
+import {adjustVelocity, adjustVelocity2, adjustVelocity3} from "../helpers.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -33,8 +33,8 @@ class SpellEntity extends Entity{
         }
     }
 
-    onWorldCollision(){}
-    onCharacterCollision(character, characterBBox, spellBBox){
+    onWorldCollision(deltaTime){}
+    onCharacterCollision(deltaTime, character){
         if(this.team !== character.team){
             this.spellType.applyEffects(character);
             this.hitSomething = true;
@@ -72,11 +72,11 @@ export class MobileCollidable extends CollidableSpellEntity{
         this.position = this.position.copy(this.spawnPoint).add(this.moveFunction(this.functionValue, this.moveFunctionParams));
     }
 
-    onWorldCollision(){}
-    onCharacterCollision(character, characterBBox, spellBBox){
-        super.onCharacterCollision(character);
+    onWorldCollision(deltaTime){}
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
 
-        character.onCollidable = adjustVelocity2(spellBBox, characterBBox, character.velocity);
+        character.onCollidable = adjustVelocity2(spellBBox, characterBBox, character.velocity, deltaTime);
         //TODO: make sure player rises with the collidable
     }
 }
@@ -110,13 +110,13 @@ export class Projectile extends SpellEntity{
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
 
-    onWorldCollision(){
+    onWorldCollision(deltaTime){
         this.hitSomething = true;
         this.timer += this.duration;
         this.dispatchEvent(this.createDeleteEvent());
     }
-    onCharacterCollision(character, characterBBox, spellBBox){
-        super.onCharacterCollision(character);
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
             this.timer += this.duration;
@@ -129,11 +129,11 @@ export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
     }
-    onWorldCollision(){
-        super.onWorldCollision();
+    onWorldCollision(deltaTime){
+        super.onWorldCollision(deltaTime);
     }
-    onCharacterCollision(character, characterBBox, spellBBox){
-        super.onCharacterCollision(character);
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
     }
 }
 

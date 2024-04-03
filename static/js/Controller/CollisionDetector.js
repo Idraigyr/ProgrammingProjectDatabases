@@ -69,7 +69,6 @@ export class CollisionDetector extends Subject{
 
     generateCollider(){
         this.viewManager.getColliderModels(this.charModel);
-        console.log(this.charModel);
         let staticGenerator = new StaticGeometryGenerator(this.charModel);
         staticGenerator.attributes = [ 'position' ];
 
@@ -112,15 +111,15 @@ export class CollisionDetector extends Subject{
         return box1.intersectsBox(box2);
     }
 
-    checkSpellEntityCollisions(){
+    checkSpellEntityCollisions(deltaTime){
         //TODO: what if spell "phases" through collision because of high velocity/deltaTime?
         for(const spellEntity of this.viewManager.pairs.spellEntity){
             if(this.BoxCollisionWithWorld(spellEntity.view.boundingBox)){
-                spellEntity.model.onWorldCollision();
+                spellEntity.model.onWorldCollision(deltaTime);
             }
             this.viewManager.pairs.player.forEach((player) => {
                 if(this.boxToBoxCollision(spellEntity.view.boundingBox, player.view.boundingBox)){
-                    spellEntity.model.onCharacterCollision(player.model,spellEntity.view.boundingBox, player.view.boundingBox);
+                    spellEntity.model.onCharacterCollision(deltaTime, player.model,spellEntity.view.boundingBox, player.view.boundingBox);
                 }
             });
         }
@@ -173,6 +172,7 @@ export class CollisionDetector extends Subject{
         deltaVector.subVectors( newPosition, position );
 
         playerModel.onGround = playerModel.onCollidable || deltaVector.y > Math.abs( deltaTime * playerModel.velocity.y * 0.25);
+        //console.log(playerModel.onGround)
         playerModel.onCollidable = false;
 
         const offset = Math.max( 0.0, deltaVector.length() - 1e-5 );

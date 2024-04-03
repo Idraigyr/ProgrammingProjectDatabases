@@ -54,7 +54,7 @@ export class World{
     update(deltaTime){
         //update whole model
         //this.islands[0].buildings[this.islands[0].buildings.length-1].spellSpawner.update(deltaTime);
-        this.collisionDetector.checkSpellEntityCollisions();
+        this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
     }

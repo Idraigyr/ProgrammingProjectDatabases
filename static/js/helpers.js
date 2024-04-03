@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import {gridCellSize} from "./configs/ViewConfigs.js";
+import {gravity} from "./configs/ControllerConfigs.js";
 
 /**
  * Get the smallest number between x1 and x2
@@ -55,7 +56,7 @@ export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //b
 }
 
 const delta = 0.1;
-export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity){
+export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity, deltaTime){
     let standingOnCollidable = false;
     if(Math.abs(staticBox.min.x - movableBox.max.x) < delta && boxVelocity.x < 0){
         boxVelocity.x = 0;
@@ -64,9 +65,14 @@ export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity){
         boxVelocity.x = 0;
     }
     if(Math.abs(staticBox.min.y - movableBox.max.y) < delta && boxVelocity.y < 0){
+        console.log("bottom y")
+        console.log(boxVelocity.y)
+        console.log(gravity*deltaTime)
         boxVelocity.y = 0;
+        standingOnCollidable = true;
     }
     if(Math.abs(staticBox.max.y - movableBox.min.y) < delta && boxVelocity.y > 0){
+        console.log("top y")
         boxVelocity.y = 0;
         standingOnCollidable = true;
     }
@@ -75,6 +81,30 @@ export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity){
     }
     if(Math.abs(staticBox.max.z - movableBox.min.z) < delta && boxVelocity.z > 0){
         boxVelocity.z = 0;
+    }
+    return standingOnCollidable;
+}
+
+export const adjustVelocity3 = function (staticBox, movableBox, boxVelocity){
+    let standingOnCollidable = false;
+    if(staticBox.min.x - movableBox.max.x < 0 && boxVelocity.x < 0){
+        boxVelocity.x = 0;
+    }
+    if(movableBox.min.x - staticBox.max.x < 0 && boxVelocity.x > 0){
+        boxVelocity.x = 0;
+    }
+    if(staticBox.min.z - movableBox.max.z < 0 && boxVelocity.z < 0){
+        boxVelocity.z = 0;
+    }
+    if(movableBox.min.z - staticBox.max.z < 0 && boxVelocity.z > 0){
+        boxVelocity.z = 0;
+    }
+    if(staticBox.min.y - movableBox.max.y < 0 && boxVelocity.y < 0){
+        boxVelocity.y = 0;
+    }
+    if(movableBox.min.y - staticBox.max.y < 0 && boxVelocity.y > 0){
+        boxVelocity.y = 0;
+        standingOnCollidable = true;
     }
     return standingOnCollidable;
 }

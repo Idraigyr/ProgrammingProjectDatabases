@@ -91,8 +91,10 @@ export class CharacterController extends Subject{
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
         //const correctedDeltaTime = min(deltaTime, 0.1);
 
-        if ( this._character.onGround || this._character.onCollidable) {
+        if ( this._character.onGround) {
             this._character.velocity.y = deltaTime * gravity;
+
+        } else if  (this._character.onCollidable) {
 
         } else {
             this._character.velocity.y += deltaTime * gravity;
@@ -102,7 +104,7 @@ export class CharacterController extends Subject{
 
         let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
 
-        if ( ! this._character.onGround ) {
+        if ( !this._character.onGround ) {
             deltaVector.normalize();
             this._character.velocity.addScaledVector( deltaVector, - deltaVector.dot( this._character.velocity ) );
         } else {
@@ -180,7 +182,6 @@ export class CharacterController extends Subject{
 
             this.lastMovementVelocity.copy(movement).multiplyScalar(speedMultiplier);
             this._character.velocity.copy(this._character.verticalVelocity).add( this.lastMovementVelocity );
-            console.log(this._character.velocity);
         }
     }
 }

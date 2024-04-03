@@ -59,8 +59,12 @@ export class CameraManager {
 
         if(hit.length > 0){
             const distance = origin.distanceTo(hit[0].point);
+            let grassZoom = 1;
+            if(Math.abs(hit[0].point.y) < 0.01){
+                grassZoom = 0.5;
+            }
             if(distance < minZoomIn){
-                zoom.add(direction.negate().multiplyScalar(min(minZoomIn-distance, maxZoomIn)));
+                zoom.add(direction.negate().multiplyScalar(min(minZoomIn-distance*grassZoom, maxZoomIn)));
             }
         }
         return zoom;
