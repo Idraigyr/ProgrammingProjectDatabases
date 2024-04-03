@@ -10,6 +10,10 @@ function showBuildings(type) {
     const container = document.getElementById('container1');
     container.innerHTML = ''; // Clear existing items in the container
 
+    // Define lists of buildings and items
+    let buildings = ["Building 1", "Building 2", "Building 3"];
+    let items = ["Item 1", "Item 2", "Item 3"];
+
     // Populate the container based on the selected tab
     let itemList;
     if(type === "Combat"){
