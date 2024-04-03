@@ -21,7 +21,7 @@ Besides mining, the player will also be able to explore the islands of other pla
 # Landing page
 ___
 
-![Landing page image](/docs/img/landing_page.png)
+![Landing page image](/docs/img/landing-page.png)
 
 The landing page is the first page the player will see when they visit the website.
 The page is optimized for mobile and desktop users.
