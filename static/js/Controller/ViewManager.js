@@ -71,6 +71,7 @@ export class ViewManager extends Subject{
         // Change the asset of the view
         oldView.charModel = viewAsset;
     }
+
     /**
     * callback to delete view when model is deleted. Should be called with every deletion of a model object
     * @param {{detail: model}} event

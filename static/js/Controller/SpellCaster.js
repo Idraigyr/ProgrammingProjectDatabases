@@ -94,16 +94,17 @@ export class SpellCaster extends Subject{
     update(deltaTime) {
         // this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
-        // if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
-        //     // Transform position to grid position
-        //     let pos = this.checkRaycaster();
-        //     if (pos) { convertWorldToGridPosition(pos);
-        //         // Dispatch event to check if the cell is occupied
-        //         document.dispatchEvent(new CustomEvent("selectCell", {detail: {position: pos}}));
-        //     }
-        //     // TODO: check collision with plane only
-        //     this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
-        // }
+
+        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
+            // Transform position to grid position
+            let pos = this.checkRaycaster();
+            if (pos) { convertWorldToGridPosition(pos);
+                // Dispatch event to check if the cell is occupied
+                document.dispatchEvent(new CustomEvent("selectCell", {detail: {position: pos}}));
+            }
+            // TODO: check collision with plane only
+            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
+        }
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
         }
