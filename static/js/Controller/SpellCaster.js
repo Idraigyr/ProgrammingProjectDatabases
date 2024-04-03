@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {BuildSpell, EntitySpell, HitScanSpell, InstantSpell} from "../Model/Spell.js";
 import {Subject} from "../Patterns/Subject.js";
 import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "../configs/Keybinds.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 export class SpellCaster extends Subject{
     #wizard;
@@ -93,6 +94,16 @@ export class SpellCaster extends Subject{
     update(deltaTime) {
         // this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
         //TODO: updatePreviewObject locally?
+        // if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
+        //     // Transform position to grid position
+        //     let pos = this.checkRaycaster();
+        //     if (pos) { convertWorldToGridPosition(pos);
+        //         // Dispatch event to check if the cell is occupied
+        //         document.dispatchEvent(new CustomEvent("selectCell", {detail: {position: pos}}));
+        //     }
+        //     // TODO: check collision with plane only
+        //     this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
+        // }
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
         }
@@ -128,13 +139,28 @@ export class SpellCaster extends Subject{
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
                 this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: castPosition,
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                    position: castPosition, //TODO: convertWorldToGridPosition in receiver
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                    subSpell: false
                 }));
             }
             this.#wizard.cooldownSpell();
         } else {
             //play a sad sound;
+        }
+    }
+
+    activateSubSpell(event){
+        // Check the main spell type
+        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell() instanceof BuildSpell){
+            // Get position
+            let pos = this.checkRaycaster();
+            if (pos) { convertWorldToGridPosition(pos);}
+            this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
+                position: pos,
+                direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                subSpell: true
+            }));
         }
     }
 

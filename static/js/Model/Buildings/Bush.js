@@ -6,5 +6,6 @@ import {Placeable} from "./Placeable.js";
 export class Bush extends Placeable{
     constructor(params) {
         super(params);
+        this.timeToBuild = 5;
     }
 }

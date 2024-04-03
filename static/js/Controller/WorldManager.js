@@ -30,6 +30,15 @@ export class WorldManager{
                         z: 1
                     },
                     rotation: 0
+                },
+                    {
+                    type: "Altar",
+                    position: { //TODO: this should be gridSquare coordinates
+                        x: 0,
+                        y: 0,
+                        z: 1
+                    },
+                    rotation: 0
                 }
                 ],
                 position: {
@@ -88,11 +97,10 @@ export class WorldManager{
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
         const position = event.detail.position;
-        const placeable = this.world.addBuilding(buildingName, position);
+        const placeable = this.world.addBuilding(buildingName, position, event.detail.withTimer);
         const requestIndex = this.postRequests.length;
         this.sendPOST(placeableURI, placeable, 3, requestIndex);
         this.collisionDetector.generateColliderOnWorker();
-
     }
 
 

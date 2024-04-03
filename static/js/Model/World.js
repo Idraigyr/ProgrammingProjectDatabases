@@ -26,16 +26,42 @@ export class World{
         this.entities = [];
         params.characters.forEach((character) => {});
         this.spellEntities = [];
-
-        this.islands[0].buildings.push(this.factory.createTower({position: {x: -10, y: 0, z: -10}}));
-        this.islands[0].buildings[this.islands[0].buildings.length-1].spellSpawner.setSpell(new Fireball({velocity: 20}), {position: new THREE.Vector3(-10,10,-10), direction: new THREE.Vector3(10,-2,0), team: 1});
-        this.islands[0].buildings[this.islands[0].buildings.length-1].spellSpawner.addEventListener("spawnSpell", this.spellFactory.createSpell.bind(this.spellFactory));
+        this.occupiedCells = [];
+        document.addEventListener("selectCell", this.updatePreviewObjectColor.bind(this));
+        document.addEventListener("useSelectedCell", this.sendInfoAboutSelectedCell.bind(this));
     }
 
-    addBuilding(buildingName, position){
-        const building = this.factory.createBuilding(buildingName, position);
+    sendInfoAboutSelectedCell(event){
+        // Get position from event
+        let position = event.detail.position;
+        // Check if the position is occupied
+        let occupied = this.occupiedCells.some((cell) => cell.x === position.x && cell.z === position.z);
+        // If occupied, get the building
+        let building = this.occupiedCells.find((cell) => cell.x === position.x && cell.z === position.z)?.building;
+        // Dispatch event with the information
+        let details = event.detail;
+        details.occupied = occupied;
+        details.building = building;
+        document.dispatchEvent(new CustomEvent("infoAboutSelectedCell", {detail: details}));
+    }
+
+    updatePreviewObjectColor(event){
+        // Get position from event
+        let position = event.detail.position;
+        // Check if the position is occupied
+        let occupied = this.occupiedCells.some((cell) => cell.x === position.x && cell.z === position.z);
+        // If occupied, change the color of the preview object to red
+        // If not occupied, change the color of the preview object to green
+        let primaryColor = occupied ? 0x0000CC : 0xD46D01;
+        let secondaryColor = occupied ? 0x0000FF : 0xFFB23D;
+        // Set the color of the preview object
+        document.dispatchEvent(new CustomEvent("updatePreviewObjectColor", {detail: {primaryColor: primaryColor, secondaryColor: secondaryColor}}));
+    }
+
+    addBuilding(buildingName, position, withTimer = false){
+        const building = this.factory.createBuilding(buildingName, position, withTimer);
         // TODO: what if multiple islands?
-        this.islands[0].buildings.push(building);
+        this.islands[0].addBuilding(building);
         return building;
     }
 
@@ -57,5 +83,10 @@ export class World{
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
+        // TODO: optimize cell occupation process
+        this.islands.forEach((island) => island.updateOccupiedCells());
+        // Get occupied cells from all islands
+        this.occupiedCells = [];
+        this.islands.forEach((island) => this.occupiedCells.push(...island.occupiedCells));
     }
 }

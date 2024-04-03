@@ -8,6 +8,7 @@ import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
 import {ViewManager} from "./Controller/ViewManager.js";
 import {AssetManager} from "./Controller/AssetManager.js";
+import {TimerManager} from "./Controller/TimerManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
@@ -15,7 +16,7 @@ import {acceleratedRaycast} from "three-mesh-bvh";
 import {SpellCaster} from "./Controller/SpellCaster.js";
 import {View} from "./View/ViewNamespace.js";
 import {OrbitControls} from "three-orbitControls";
-import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "./configs/Keybinds.js";
+import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {GenerateMeshBVHWorker} from "./workers/GenerateMeshBVHWorker.js";
 
@@ -106,6 +107,7 @@ class App {
         });
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
+        this.timerManager = new TimerManager();
 
         this.playerController = null;
         this.spellCaster = new SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
@@ -117,12 +119,13 @@ class App {
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
         this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
 
-        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager});
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
 
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
+        this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
@@ -246,6 +249,7 @@ class App {
                 this.playerController.updatePhysics(this.deltaTime/physicsSteps);
             }
         }
+        this.timerManager.update(this.deltaTime);
         this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);

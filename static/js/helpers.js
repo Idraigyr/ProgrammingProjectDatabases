@@ -156,6 +156,29 @@ export function correctRitualPosition(object) {
     // object.position.add(new THREE.Vector3(-(boundingBox.max.x-boundingBox.min.x) / 2.0, 0, -(boundingBox.max.z-boundingBox.min.z) / 2.0));
 }
 
+/**
+ * Returns the cells occupied by the building
+ * @param building THREE.Object3D
+ * @returns {*[]} array of the occupied cells
+ */
+export function getOccupiedCells(building){
+    let cells = [];
+    // Create bounding box
+    const boundingBox = new THREE.Box3().setFromObject(building);
+    let min = boundingBox.min;
+    let max = boundingBox.max;
+    convertWorldToGridPosition(min);
+    convertWorldToGridPosition(max);
+    for(let x = min.x; x <= max.x; x++){
+        for(let z = min.z; z <= max.z; z++){
+            cells.push({x: x, z: z});
+        }
+    }
+    // Print occupied cells
+    console.log("occupied cells:", cells);
+    return cells;
+}
+
 export function setMinimumY(object, y){
     const boundingBox = new THREE.Box3().setFromObject(object);
     object.position.y += y - boundingBox.min.y;

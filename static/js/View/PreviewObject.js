@@ -3,6 +3,8 @@ import * as THREE from "three";
 import {convertWorldToGridPosition} from "../helpers.js";
 
 export class PreviewObject extends IView{
+    #gridCellSize;
+    #cutoff;
     constructor(params) {
         super(params);
         this.types = {};
@@ -19,6 +21,33 @@ export class PreviewObject extends IView{
             this.types[Object.keys(this.types)[0]].cutoff);
         this.charModel = new THREE.Mesh(new this.types[Object.keys(this.types)[0]].ctor(...this.types[Object.keys(this.types)[0]].params), this.material);
         this.boxHelper.visible = false;
+        this.#gridCellSize = 10;
+        this.#cutoff = this.types[Object.keys(this.types)[0]].cutoff;
+        document.addEventListener("updatePreviewObjectColor", this.updateColor.bind(this));
+        this.updating = false;
+    }
+
+    updateColor(event){
+        // If no changes, return
+        if(event.detail.primaryColor === this.charModel.material.uniforms.primaryColor.value.getHex() &&
+            event.detail.secondaryColor === this.charModel.material.uniforms.secondaryColor.value.getHex()){
+            return;
+        }
+        if(this.updating) return;
+        this.updating = true;
+        // Get scene
+        let scene = this.charModel.parent;
+        // Remove the previous model
+        scene.remove(this.charModel);
+        // Change key values
+        this.types[Object.keys(this.types)[0]].primaryColor = event.detail.primaryColor;
+        this.types[Object.keys(this.types)[0]].secondaryColor = event.detail.secondaryColor;
+        // Create new material
+        this.material = this.createMaterial(event.detail.primaryColor, event.detail.secondaryColor, this.#cutoff);
+        // Set charModel material to new material
+        this.charModel = new THREE.Mesh(new this.types[Object.keys(this.types)[0]].ctor(...this.types[Object.keys(this.types)[0]].params), this.material);
+        scene.add(this.charModel);
+        this.updating = false;
     }
 
     addType(key, type){

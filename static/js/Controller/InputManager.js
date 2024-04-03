@@ -1,5 +1,5 @@
 import {
-    buildKey,
+    buildKey, subSpellKey,
     DownKey, eatingKey, primaryBackwardKey,
     primaryForwardKey,
     primaryLeftKey,
