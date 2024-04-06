@@ -62,7 +62,7 @@ export class MenuManager extends Subject{
     }
 
     exitMenu(){
-        //if the menu is the AltarMenu, return all gems from stakes menu to gemsmenu
+        //if the menu is the AltarMenu, return all gems from stakes menu to gems menu
         this.hideMenu(this.currentMenu);
     }
     
@@ -339,7 +339,7 @@ export class MenuManager extends Subject{
         this.menus[params.name].render();
     }
 
-    hideMenu(name){
+    hideMenu(name= this.currentMenu){
         this.container.style.display = "none";
         if(name === "AltarMenu"){
             this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
