@@ -11,6 +11,7 @@ In general, the documentation is divided into the following parts:
 - Backend code documentation: see PyDoc documentation at `/pydocs`
 - Frontend code documentation: see JSDoc documentation at `/jsDocs`
 - High-level user manual, with links to technical details: see [USER_MANUAL.md](docs/USER_MANUAL.md)
+- Test cases: see [TEST_INDEX.md](/test-cases/TEST_INDEX.md)
 
 ### Backend code documentation
 The backend code documentation is generated using PyDoc. 
