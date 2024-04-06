@@ -32,7 +32,6 @@ class Player(current_app.db.Model):
     user_profile_id: Mapped[BigInteger] = mapped_column(ForeignKey('user_profile.id'), primary_key=True)
     user_profile: Mapped[UserProfile] = relationship("UserProfile", back_populates="player", single_parent=True, foreign_keys=[user_profile_id])
 
-    level: Mapped[int] = Column(BigInteger, nullable=False, default=0)
     crystals: Mapped[int] = Column(BigInteger, nullable=False, default=0)
     mana: Mapped[int] = Column(Integer, nullable=False, default=0)
     xp: Mapped[int] = Column(Integer, nullable=False, default=0)
@@ -59,17 +58,15 @@ class Player(current_app.db.Model):
     # The player chat messages
     chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user")
 
-    def __init__(self, user_profile=None, level: int = 0, crystals: int = 0, mana: int = 0, xp: int = None):
+    def __init__(self, user_profile=None, crystals: int = 0, mana: int = 0, xp: int = None):
         """
         Initialize the player class
         :param user_profile: The UserProfile of this player. Should be unique to this player (one-to-one)
-        :param level: The level of the player. Should be >= 0
         :param crystals: The amount of crystals of the player. Should be >= 0
         :param mana: The amount of mana of the player. Should be >= 0
         :param xp: The amount of experience points of the player. Should be >= 0
         """
         self.user_profile = user_profile
-        self.level = level
         self.crystals = crystals
         self.mana = mana
         self.xp = xp
@@ -80,7 +77,6 @@ class Player(current_app.db.Model):
         :param data: The new data
         :return:
         """
-        self.level = data.get('level', self.level)
         self.crystals = data.get('crystals', self.crystals)
         self.mana = data.get('mana', self.mana)
         self.xp = data.get('xp', self.xp)

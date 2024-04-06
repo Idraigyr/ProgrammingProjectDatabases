@@ -37,9 +37,9 @@ export class UserInfo extends Subject{
 
             this.crystals = response.crystals;
 
-            this.level = response.level;
-            //TODO: wait for backend to implement this
-            // this.experience = response.experience
+            this.level = response?.entity?.level;
+            this.experience = response.xp
+            // this.mana = response?.mana // TODO @Flynn ?
             this.mana += this.calculateManaBonus();
             this.health += this.calculateHealthBonus();
 

@@ -23,7 +23,7 @@ class PlayerEntity(Entity):
     player_id: Mapped[int] = mapped_column("Player", ForeignKey("player.user_profile_id"))
     player: Mapped[Player] = relationship(back_populates="entity")
 
-    def __init__(self, player_id: int = None, island_id: int = None, xpos: int = None, ypos: int = None, zpos: int = None):
+    def __init__(self, player_id: int = None, island_id: int = None, xpos: int = None, ypos: int = None, zpos: int = None, level: int = None):
         """
         Initialize a PlayerEntity object
         :param player_id: The id of the player that this entity represents
@@ -31,8 +31,9 @@ class PlayerEntity(Entity):
         :param xpos: The x position of the entity
         :param ypos: The y position of the entity
         :param zpos: The z position of the entity
+        :param level: The level of the entity
         """
-        super().__init__(island_id, xpos, ypos, zpos)
+        super().__init__(island_id, xpos, ypos, zpos, level)
         self.player_id = player_id
 
     def update(self, data: dict):
