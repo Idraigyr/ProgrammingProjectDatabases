@@ -1,5 +1,5 @@
 from flask import current_app
-from sqlalchemy import BigInteger, Integer, Column, String, ForeignKey
+from sqlalchemy import BigInteger, Integer, Column, String, ForeignKey, CheckConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship, declared_attr
 
 
@@ -23,7 +23,7 @@ class Entity(current_app.db.Model):
     ypos: Mapped[int] = Column(Integer, nullable=False, default=0)
     zpos: Mapped[int] = Column(Integer, nullable=False, default=0)
 
-    level: Mapped[int] = Column(Integer, nullable=False, default=0)
+    level: Mapped[int] = Column(Integer, CheckConstraint('level >= 0'), nullable=False, default=0)
 
 
     def __init__(self, island_id:int = 0, xpos: int = 0, ypos: int = 0, zpos: int = 0, level: int = 0):
@@ -35,6 +35,9 @@ class Entity(current_app.db.Model):
         :param zpos: The z position of the entity. Not related to the grid of the island
         :param level: The level of the entity
         """
+        if level < 0:
+            raise ValueError("Level must be greater than or equal to 0")
+
         self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
@@ -48,6 +51,9 @@ class Entity(current_app.db.Model):
         :param data: The new data
         :return:
         """
+        if data.get('level', self.level) < 0:
+            raise ValueError("Level must be greater than or equal to 0")
+
         self.xpos = data.get('x', self.xpos)
         self.zpos = data.get('z', self.zpos)
         self.ypos = data.get('y', self.ypos)

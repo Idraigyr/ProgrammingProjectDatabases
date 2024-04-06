@@ -33,6 +33,10 @@ class Gem(current_app.db.Model):
 
     # Using association proxy to access multiplier value
     # Ignore the type warning, it's wrong
+    # The multiplier CHECK >= 0 is ignored here as this is a very complex thing that now somehow works, but is considered
+    # legacy code and should not be touched unless you're God and you know what you're doing
+    # Also, the migration aa541bef480 adds a table-level constraint for the multiplier >= 0 already, so if SQLAlchemy doesn't
+    # catch it, the database will
     attributes = association_proxy('attributes_association', 'attribute',
                                    creator=lambda map: GemAttributeAssociation(
                                        gem_id=map['gem_id'],

@@ -97,11 +97,11 @@ class UserSettingsResource(Resource):
         id = request.args.get('player_id', type=int)
 
         if id is None:
-            return 'Player id absent', 400
+            return ErrorSchema('Player id absent'), 400
 
         user_settings = UserSettings.query.get(id)
         if user_settings is None:
-            return 'The player does not exist', 404
+            return ErrorSchema('The player does not exist'), 404
 
         return UserSettingsSchema(user_settings), 200
 
@@ -120,11 +120,11 @@ class UserSettingsResource(Resource):
         id = request.args.get('player_id', type=int)
 
         if id is None:
-            return 'Player id absent', 400
+            return ErrorSchema('Player id absent'), 400
 
         user_settings = UserSettings.query.get(id)
         if user_settings is None:
-            return 'The player does not exist', 404
+            return ErrorSchema('The player does not exist'), 404
 
         try:
             data = request.get_json()

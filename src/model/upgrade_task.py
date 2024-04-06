@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import Column, SmallInteger, Integer, DateTime, BigInteger, ForeignKey
+from sqlalchemy import Column, SmallInteger, Integer, DateTime, BigInteger, ForeignKey, CheckConstraint
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from src.model.task import Task
@@ -13,8 +13,8 @@ class BuildingUpgradeTask(Task):
     """
     id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id'), primary_key=True)
 
-    to_level: Mapped[int] = Column(SmallInteger, nullable=False)
-    used_crystals: Mapped[int] = Column(Integer, nullable=False)
+    to_level: Mapped[int] = Column(SmallInteger, CheckConstraint('to_level >= 0'), nullable=False)
+    used_crystals: Mapped[int] = Column(Integer, CheckConstraint('used_crystals >= 0'), nullable=False)
 
     building_minions: Mapped[List["BuilderMinion"]] = relationship(back_populates="builds_on", uselist=True)
 
@@ -28,6 +28,11 @@ class BuildingUpgradeTask(Task):
         :param used_crystals: The amount of crystals used for the upgrade, will be rewarded back to the player if the task is cancelled
         """
         super().__init__(endtime, island_id or working_building.island_id, working_building=working_building)
+        if to_level < 0:
+            raise ValueError("Level must be greater than or equal to 0")
+        if used_crystals < 0:
+            raise ValueError("Used crystals must be greater than or equal to 0")
+
         self.to_level = to_level
         self.used_crystals = used_crystals
 

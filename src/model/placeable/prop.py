@@ -17,8 +17,8 @@ class Prop(Placeable):
         Constructor for the Prop class
         :param prop_type: The unique identifier of the prop
         :param island_id: The id of the island that this prop belongs to
-        :param xpos: The x position of the prop, in the grid. So it is bound by [0,15]
-        :param zpos: The z position of the prop, in the grid. So it is bound by [0,15]
+        :param xpos: The x position of the prop, in the grid. So it is bound by [-7,7]
+        :param zpos: The z position of the prop, in the grid. So it is bound by [-7,7]
         :param blueprint_id: The id of the blueprint that builds this prop
         :param rotation: The rotation of the prop (0=North, 1=East, 2=South, 3=West)
         """
