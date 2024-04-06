@@ -116,6 +116,7 @@ export class TimerManager {
 
     update(deltaTime) {
         this.#timers.forEach((timer) => {
+            if(!timer) return;
             timer.update(deltaTime);
         });
         // is now done by the timer itself!!!

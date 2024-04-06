@@ -133,6 +133,7 @@ export class Factory{
         if(withTimer){
             // Copy asset object
             const assetClone = asset.clone();
+            //TODO: find solution invisible THREE.Object3D do not become a part of staticGeometrywith generateCollider function
             view.charModel.visible = false;
 
             const timer = this.timerManager.createTimer(

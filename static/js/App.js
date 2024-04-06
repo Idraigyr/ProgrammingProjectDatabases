@@ -251,7 +251,6 @@ class App {
 
         this.menuManager.addEventListener("build", (event) => {
             this.menuManager.hideMenu();
-            console.log(event);
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});

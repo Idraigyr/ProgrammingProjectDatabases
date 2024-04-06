@@ -339,7 +339,8 @@ export class MenuManager extends Subject{
         this.menus[params.name].render();
     }
 
-    hideMenu(name= this.currentMenu){
+    hideMenu(name = this.currentMenu){
+        if(!name) return;
         this.container.style.display = "none";
         if(name === "AltarMenu"){
             this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {

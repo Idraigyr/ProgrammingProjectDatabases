@@ -348,7 +348,7 @@ export class DefaultAttackState extends BaseCharAttackState{
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
-            } else if(input.keys.forward){
+            } else if(input.keys.forward || input.keys.left || input.keys.right){
                 this.manager.setState("WalkForward");
             } else if(input.keys.backward){
                 this.manager.setState("WalkBackward");
