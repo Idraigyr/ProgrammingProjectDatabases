@@ -5,8 +5,9 @@ export const buildTypes = (function (){
         bridge: 2,
         altar_building: 3,
         mine_building: 4,
-        tower: 5,
-        prop: 6
+        tower_building: 5,
+        prop: 6,
+        fuse_table: 7
     };
     const name = {
         0: "void",
@@ -18,12 +19,25 @@ export const buildTypes = (function (){
         6: "prop",
         7: "fuse_table"
     }
+
+    const menuName = {
+        1: "BuildMenu",
+        3: "AltarMenu",
+        7: "FusionTableMenu",
+        5: "TowerMenu",
+        4: "MineMenu"
+    }
+
     return {
         getNumber: function (name) {
             return number[name];
         },
         getName: function (number) {
             return name[number];
+        },
+
+        getMenuName: function (number) {
+            return menuName[number];
         }
     };
 })();

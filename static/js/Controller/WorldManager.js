@@ -19,6 +19,8 @@ export class WorldManager{
         this.postRequests = [];
 
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
+
+        this.persistent = false;
     }
 
     async importWorld(islandID){
@@ -84,9 +86,12 @@ export class WorldManager{
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
         const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
+        console.log(placeable);
         if(placeable){
             const requestIndex = this.postRequests.length;
-            this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+            if(this.persistent){
+                this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+            }
             this.collisionDetector.generateColliderOnWorker();
         } else {
             console.log("failed to add new building at that position");

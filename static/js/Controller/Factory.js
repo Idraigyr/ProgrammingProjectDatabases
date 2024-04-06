@@ -112,6 +112,7 @@ export class Factory{
         convertGridIndexToWorldPosition(pos);
         // Convert position
         const model = new Model[buildingName]({position: pos}); // TODO: add rotation
+        console.log(model);
         const view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
 
         this.scene.add(view.charModel);

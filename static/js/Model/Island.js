@@ -7,46 +7,46 @@ import {buildTypes} from "../configs/Enums.js";
  * Model of an island
  */
 export class Island extends Entity{
-    #phi = 0;
-    #theta = 0;
+    /**
+     *
+     * @param {{width: Number, length: Number, rotation: Number, height: Number}} params - width and length are always uneven, if not they are increased by 1. height is always larger than 0 otherwise = 0.1
+     */
     constructor(params) {
         super(params);
         this.buildings = [];
         this.rotation = params.rotation;
 
-        this.width = params.width;
-        this.length = params.length;
+        this.width = params?.width ?? 15;
+        this.width = this.width % 2 === 0 ? this.width + 1 : this.width;
+
+        this.length = params?.length ?? 15;
+        this.length = this.length % 2 === 0 ? this.length + 1 : this.length;
+
         this.height = params?.height ?? 0;
+        this.height = this.height > 0 ? this.height : 0.1;
+
         this.min = new THREE.Vector3();
         this.max = new THREE.Vector3();
-        // this.grid = new Array(params.width).fill(0).map(() => new Array(params.length).fill(0).map(() => new Array(params.height).fill(0)));
-        this.grid = new Array(params.width).fill(buildTypes.getNumber("empty")).map(() => new Array(params.length).fill(buildTypes.getNumber("empty")));
-        this.occupiedCells = [];
+        // this.grid = new Array(params.width).fill(buildTypes.getNumber("empty")).map(() => new Array(params.length).fill(buildTypes.getNumber("empty")));
+        this.grid = new Array(params.width*params.length).fill(buildTypes.getNumber("empty"))
     }
 
     occupyCell(worldPosition, dbType){
         let {x, z} = returnWorldToGridIndex(worldPosition);
-        this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
+        // this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
+        this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)] = buildTypes.getNumber(dbType);
     }
 
     freeCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition);
-        this.grid[x + 7][z + 7] = buildTypes.getNumber("empty");
+        // this.grid[x + 7][z + 7] = buildTypes.getNumber("empty");
+        this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)] = buildTypes.getNumber("empty");
     }
 
     checkCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition);
-        return buildTypes.getName(this.grid[x + 7][z + 7]);
-    }
-
-    updateOccupiedCells(){
-        this.occupiedCells = [];
-        this.buildings.forEach(building => {
-            building.occupiedCells.forEach(cell => {
-                let newCell = {x: cell.x, z: cell.z, building: building};
-                this.occupiedCells.push(newCell);
-            });
-        });
+        // return buildTypes.getName(this.grid[x + 7][z + 7]);
+        return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
     }
 
     set position(vector){

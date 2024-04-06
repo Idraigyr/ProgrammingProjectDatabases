@@ -30,7 +30,7 @@ function drag(event) {
 }
 
 function drop(event, containerId) {
-    event.preventDefault();
+    // event.preventDefault();
     let data = event.dataTransfer.getData("text");
     let draggedItem = document.getElementById(data);
     let startContainer = event.dataTransfer.getData("startContainer");

@@ -11,6 +11,8 @@ import {RaycastController} from "./RaycastController.js";
 import {TimerManager} from "./TimerManager.js";
 import {AssetManager} from "./AssetManager.js";
 import {BuildManager} from "./BuildManager.js";
+import {MenuManager} from "./MenuManager.js";
+import {ItemManager} from "./ItemManager.js";
 
 /**
  * Controller object that contains all the controllers (aka controller namespace)
@@ -26,6 +28,8 @@ export const Controller = Object.freeze({
     TimerManager: TimerManager,
     ViewManager: ViewManager,
     WorldManager: WorldManager,
+    MenuManager: MenuManager,
+    ItemManager: ItemManager,
     CharacterController: CharacterController,
     RaycastController: RaycastController,
     CollisionDetector: CollisionDetector,
