@@ -3,6 +3,7 @@
     "@ckeditor/jsdoc-plugins": "^39.6.2",
     "dexie": "^3.2.6",
     "jquery": "^3.7.1",
+    "sweetalert2": "^11.10.7",
     "three": "^0.162.0",
     "three-mesh-bvh": "^0.7.3"
   }

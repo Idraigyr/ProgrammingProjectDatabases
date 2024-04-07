@@ -1,11 +1,30 @@
+import {app} from "../App.js"
+import {BuildSpell, Fireball, Shield, ThunderCloud} from "../Model/Spell.js";
 let username = "Unknown user";
+let admin = false;
 
 $(document).ready(function(){
    $.ajax({url: '/api/user_profile', type: 'GET'}).done(function(data){
        username = data.username;
+       admin = data.admin;
        console.log("Logged in as " + username)
    });
 });
+
+let regex = {
+    "mana": /\\mana\((0*[1-9]\d*)\)/,
+    "level": /\\level\((0*[1-9]\d*)\)/,
+    "xp": /\\xp\((0*[1-9]\d*)\)/,
+    "position": /\\position\((0*[1-9]\d*),(0*[1-9]\d*),(0*[1-9]\d*)\)/,
+    "crystal": /\\crystal\((0*[1-9]\d*)\)/,
+    "shieldCooldown": /\\shieldCooldown\((0*[1-9]\d*)\)/,
+    "fireCooldown": /\\fireCooldown\((0*[1-9]\d*)\)/,
+    "thunderCloudCooldown": /\\thunderCloudCooldown\((0*[1-9]\d*)\)/,
+    "buildCooldown": /\\buildCooldown\((0*[1-9]\d*)\)/,
+    "health": /\\health\((0*[1-9]\d*)\)/,
+    "setSpell" : /\\setSpell/,
+    "forceSpells": /\\forceSpells/
+}
 
 document.addEventListener('DOMContentLoaded', ()=>{
     let socket = io();
@@ -36,13 +55,85 @@ document.addEventListener('DOMContentLoaded', ()=>{
         messageContainer.appendChild(span_time);
         document.querySelector('#chatMessages').appendChild(messageContainer);
         document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-
     });
 
     //Sends message to the server
     document.querySelector('#sendMessage').onclick = () =>{
         const message = document.querySelector('#chatInput').value;
         const messageData = {'message': message, 'username': username};
-        socket.emit('message', messageData);
+        //add cheats
+        if (admin){
+            if (message.match(regex["mana"])){
+                app.playerInfo.mana = Number(message.match(regex["mana"])[1]);
+            }
+            else if (message.match(regex["level"])){
+                app.playerInfo.level = Number(message.match(regex["level"])[1]);
+            }
+            else if (message.match(regex["xp"])){
+                app.playerInfo.experience = Number(message.match(regex["xp"])[1]);
+            }
+            else if (message.match(regex["crystal"])){
+                app.playerInfo.crystal = Number(message.match(regex["crystal"])[1]);
+            }
+            else if (message.match(regex["health"])){
+                app.playerInfo.health = Number(message.match(regex["health"])[1]);
+            }
+            else if (message.match(regex["position"])){
+                app.playerInfo.playerPosition.x = Number(message.match(regex["position"])[1]);
+                app.playerInfo.playerPosition.y = Number(message.match(regex["position"])[2]);
+                app.playerInfo.playerPosition.z = Number(message.match(regex["position"])[3]);
+            }
+            else if (message.match(regex["shieldCooldown"])){
+                for (let i = 0; i < app.playerInfo.spells.length; i++){
+                    if(app.playerInfo.spells[i].name === "shield"){
+                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["shieldCooldown"])[1]);
+                        break;
+                    }
+                }
+            }
+            else if (message.match(regex["fireCooldown"])){
+                for (let i = 0; i < app.playerInfo.spells.length; i++){
+                    if(app.playerInfo.spells[i].name === "fire"){
+                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["fireCooldown"])[1]);
+                        break;
+                    }
+                }
+            }
+            else if (message.match(regex["setSpell"])){
+                if ( app.playerInfo.spells.length > 0){
+                    app.playerInfo.spells.clear();
+                }
+                app.playerInfo.spells.push(new Fireball());
+                app.playerInfo.spells.push(new Shield());
+                app.playerInfo.spells.push(new ThunderCloud());
+                app.playerInfo.spells.push(new BuildSpell());
+            }
+            else if (message.match(regex["buildCooldown"])){
+                for (let i = 0; i < app.playerInfo.spells.length; i++){
+                    if(app.playerInfo.spells[i].name === "build"){
+                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["buildCooldown"])[1]);
+                        app;
+                        break;
+                    }
+                }
+            }
+            else if (message.match(regex["forceSpells"])) {
+                for (let i = 0; i < app.playerInfo.spells.length; i++) {
+                    app.playerInfo.spells[i].cost = 0;
+                }
+            }
+            else if (message.match(regex["thunderCloudCooldown"])){
+                for (let i = 0; i < app.playerInfo.spells.length; i++){
+                    if(app.playerInfo.spells[i].name === "thundercloud"){
+                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["thunderCloudCooldown"])[1]);
+                        break;
+                    }
+                }
+            } else{
+                socket.emit('message', messageData);
+            }
+        } else{
+            socket.emit('message', messageData);
+        }
     }
 })

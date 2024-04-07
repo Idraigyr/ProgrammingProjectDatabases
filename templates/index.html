@@ -11,9 +11,8 @@
     <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
     <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/external/chatBox.js') }}"></script>
-    <script defer src="static/js/external/chatBox.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 
     <script type="importmap">
@@ -38,9 +37,6 @@
             crossorigin="anonymous">
 
     </script>
-
-    <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}"></script>
 </head>
 <body id="body">
     <div id="container">
@@ -48,7 +44,9 @@
     <!-- Load App -->
     <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
 
-    <script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetImages.js') }}"></script>
+{#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
+
+    <!--<script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetImages.js') }}"></script>-->
 
 
 

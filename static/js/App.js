@@ -11,6 +11,8 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
+import "./external/socketio.js"
+import "./external/chatBox.js"
 import {OrbitControls} from "three-orbitControls";
 import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
@@ -219,7 +221,6 @@ class App {
     }
 }
 
-let app = new App({});
+export let app = new App({});
 await app.loadAssets();
-app.postAssetLoadingFunction();
 app.start();
