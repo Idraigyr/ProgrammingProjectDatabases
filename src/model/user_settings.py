@@ -1,5 +1,5 @@
 from flask import current_app
-from sqlalchemy import Column, BigInteger, ForeignKey, SmallInteger, Boolean, String
+from sqlalchemy import Column, BigInteger, ForeignKey, SmallInteger, Boolean, String, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.model.player import Player
@@ -11,7 +11,7 @@ class UserSettings(current_app.db.Model):
     player: Mapped[Player] = relationship(back_populates="user_settings")
 
     # The player's settings
-    audio_volume: Mapped[int] = Column(SmallInteger, nullable=False, default=100)
+    audio_volume: Mapped[int] = Column(SmallInteger, CheckConstraint("audio_volume >= 0 AND audio_volume <= 100"), nullable=False, default=100)
     sound_fx: Mapped[bool] = Column(Boolean, nullable=False, default=True)
     background_music: Mapped[bool] = Column(Boolean, nullable=False, default=True)
 
@@ -43,6 +43,9 @@ class UserSettings(current_app.db.Model):
             :param pause: The keybind for pausing the game
             :param attack: The keybind for attacking
             """
+            if audio_volume < 0 or audio_volume > 100:
+                raise ValueError("audio_volume must be in the range [0,100]")
+
             self.player_id = player_id
             self.audio_volume = audio_volume
             self.sound_fx = sound_fx
@@ -61,6 +64,9 @@ class UserSettings(current_app.db.Model):
         Update the UserSettings with the given data
         :param data: The data to update the UserSettings with
         """
+        if data.get('audio_volume', self.audio_volume) < 0 or data.get('audio_volume', self.audio_volume) > 100:
+            raise ValueError("audio_volume must be in the range [0,100]")
+
         self.audio_volume = data.get('audio_volume', self.audio_volume)
         self.sound_fx = data.get('sound_fx', self.sound_fx)
         self.background_music = data.get('background_music', self.background_music)

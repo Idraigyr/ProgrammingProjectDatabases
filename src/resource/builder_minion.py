@@ -16,24 +16,20 @@ class BuilderMinionSchema(EntitySchema):
     """
 
     properties = {
-        'level': {
-            'type': 'integer',
-            'description': 'The level of the builder minion'
-        },
         'builds_on': {
             'type': 'integer',
             'description': 'The building id that the builder minion is working on. The building should be upgrading when the builder minion is working on/assigned to it.'
         }
     }
 
-    required = EntitySchema.required + ['level']
+    required = EntitySchema.required
 
     title = 'BuilderMinion'
     description = 'A model representing a builder minion in the game. A builder minion is a type of entity that can move on an island and can build buildings.'
 
     def __init__(self, builder_minion: BuilderMinion = None, **kwargs):
         if builder_minion is not None:
-            super().__init__(builder_minion, level=builder_minion.level,
+            super().__init__(builder_minion,
                              builds_on=builder_minion.builds_on.working_building.placeable_id if builder_minion.builds_on is not None else None,
                              **kwargs)
         else:

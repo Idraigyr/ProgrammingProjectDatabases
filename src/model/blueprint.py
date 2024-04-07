@@ -23,6 +23,11 @@ class Blueprint(current_app.db.Model):
         :param cost: The cost to build the building of this blueprint
         :param buildtime: The time it takes to build the building of this blueprint
         """
+        if cost < 0:
+            raise ValueError("Cost must be greater than or equal to 0")
+        if buildtime < 0:
+            raise ValueError("Buildtime must be greater than or equal to 0")
+
         self.id = id
         self.name = name
         self.description = description
@@ -36,6 +41,11 @@ class Blueprint(current_app.db.Model):
         :param data:
         :return:
         """
+        if data.get('cost', self.cost) < 0:
+            raise ValueError("Cost must be greater than or equal to 0")
+        if data.get('buildtime', self.buildtime) < 0:
+            raise ValueError("Buildtime must be greater than or equal to 0")
+
         self.name = data.get('name', self.name)
         self.description = data.get('description', self.description)
         self.cost = data.get('cost', self.cost)

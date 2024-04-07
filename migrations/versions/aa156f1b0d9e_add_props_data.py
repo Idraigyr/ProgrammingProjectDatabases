@@ -1,8 +1,8 @@
 """add props data
 
-Revision ID: 22389b2496cb
-Revises: dc57db68b859
-Create Date: 2024-03-11 20:39:07.493918
+Revision ID: aa156f1b0d9e
+Revises: e829e9c7177f
+Create Date: 2024-04-03 20:39:07.493918
 
 """
 from alembic import op

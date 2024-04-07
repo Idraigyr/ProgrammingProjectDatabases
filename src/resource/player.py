@@ -52,10 +52,6 @@ class PlayerSchema(Schema):
             'type': 'integer',
             'description': 'The unique identifier of the user profile'
         },
-        'level': {
-            'type': 'integer',
-            'description': 'The level of the player'
-        },
         'crystals': {
             'type': 'integer',
             'description': 'The amount crystals the player has'
@@ -82,8 +78,7 @@ class PlayerSchema(Schema):
 
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
-            super().__init__(level=player.level,
-                             crystals=player.crystals, mana=player.mana, xp=player.xp,
+            super().__init__(crystals=player.crystals, mana=player.mana, xp=player.xp,
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),

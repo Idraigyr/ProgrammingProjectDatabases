@@ -1,6 +1,6 @@
 from flask.templating import render_template
 from flask import Blueprint, current_app, redirect
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt_identity, jwt_required, unset_jwt_cookies
 
 from src.service.auth_service import AUTH_SERVICE
 
@@ -59,4 +59,10 @@ def register():
 
 @blueprint.route("/logout")
 def logout():
-    return redirect("/api/auth/logout", 302)
+    """
+    User-friendly logout page
+    :return:
+    """
+    response = redirect("/landing", 302)
+    unset_jwt_cookies(response)
+    return response
