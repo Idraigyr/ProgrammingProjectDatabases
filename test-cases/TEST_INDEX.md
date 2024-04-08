@@ -20,3 +20,5 @@ Each manual test has the following attributes:
 # Test checklist
 
 - [ ] [REG-001](/test-cases/tests/REG-001.md): Registration Form Submission 
+- [ ] [CHAT-002](/test-cases/tests/CHAT-002.md): Chat Menu Test
+- [ ] [CTRL-003](/test-cases/tests/CTRL-003.md): Game Controls Test
