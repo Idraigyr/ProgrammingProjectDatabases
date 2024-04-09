@@ -20,6 +20,15 @@ export const max = function(x1, x2){
     return x1 > x2 ? x1 : x2;
 }
 
+export const setIndexAttribute = function(geometry){
+    const numVertices = geometry.attributes.position.count;
+    const index = [];
+    for (let i = 0; i < numVertices; i++){
+        index.push(i);
+    }
+    geometry.setIndex(index);
+}
+
 export const convertWorldToGridPosition = function (position){
     position.x = Math.floor(position.x/gridCellSize + 0.5)*gridCellSize;
     position.z = Math.floor(position.z/gridCellSize + 0.5)*gridCellSize;

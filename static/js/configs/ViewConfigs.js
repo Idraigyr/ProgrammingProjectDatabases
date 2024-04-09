@@ -5,7 +5,7 @@
 /**
  * Shows default paths to the 3d models
  */
-export let assetPaths = {
+export const assetPaths = {
     Altar: "./static/assets/3d-models/altar.glb",
     Mine: "./static/assets/3d-models/mine.glb",
     Player: "./static/assets/3d-models/Wizard.glb",
@@ -16,6 +16,8 @@ export let assetPaths = {
     fire: "./static/assets/images/fire.png",
     RitualSpell: "./static/assets/3d-models/BuildSpell.glb",
     iceBlock: "./static/assets/3d-models/crystals/Crystal.glb",
+    towerTexture: "./static/assets/textures/towerTexture.png",
+    Tower: "./static/assets/3d-models/towers/_Wizard_tower_LVL_1.fbx",
 }
 
 export const gridCellSize = 10;

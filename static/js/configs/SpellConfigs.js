@@ -4,6 +4,6 @@ export const fireball = {
 }
 
 export const iceWall = {
-    blocks: 4,
+    blocks: 5,
     width: 10,
 }

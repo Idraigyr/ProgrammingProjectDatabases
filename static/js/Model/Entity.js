@@ -7,12 +7,30 @@ import * as THREE from "three";
 export class Entity extends Subject{
     /**
      * initialises Entity
-     * @param {{position: THREE.Vector3, radius: number} | {}} params - optional
+     * @param {{position: THREE.Vector3, radius: number, team: number} | {}} params - optional
      */
     constructor(params) {
-        super();
+        super(params);
         this.radius = params?.radius ?? 0.5;
-        this._position =  params?.position ?? new THREE.Vector3(0,0,0);
+        this._position =  params?.position?.clone() ?? new THREE.Vector3(0,0,0);
+        this.team = params?.team ?? 0;
+    }
+
+    /**
+     * Set the id of the entity
+     * @param {JSON} data - entire JSON object from db
+     */
+    setId(data){
+        throw new Error("Cannot set id of abstract class Entity");
+    }
+
+    /**
+     * Set the id of the entity
+     * @param {UserInfo} userInfo - all the information about the user
+     * @return {JSON} data - entire stringified JSON object which db can accept
+     */
+    formatPOSTData(userInfo){
+        throw new Error("Cannot set id of abstract class Entity");
     }
 
     /**
@@ -51,9 +69,10 @@ export class Entity extends Subject{
      * Get type of entity
      */
     get type(){
-        if(this.constructor === Entity){
-            throw new Error("cannot get type of abstract class Entity");
-        }
+        throw new Error("cannot get type of abstract class Entity");
+    }
+
+    get dbType(){
         throw new Error("cannot get type of abstract class Entity");
     }
 }

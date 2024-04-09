@@ -1,8 +1,8 @@
 import {IView} from "./View.js";
 import * as THREE from "three";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 export class PreviewObject extends IView{
-    #gridCellSize;
     constructor(params) {
         super(params);
         this.types = {};
@@ -18,7 +18,7 @@ export class PreviewObject extends IView{
             this.types[Object.keys(this.types)[0]].secondaryColor,
             this.types[Object.keys(this.types)[0]].cutoff);
         this.charModel = new THREE.Mesh(new this.types[Object.keys(this.types)[0]].ctor(...this.types[Object.keys(this.types)[0]].params), this.material);
-        this.#gridCellSize = 10;
+        this.boxHelper.visible = false;
     }
 
     addType(key, type){
@@ -39,7 +39,7 @@ export class PreviewObject extends IView{
         if(event.detail.type.name !== this.currentType) this.setModel(event.detail.type.name);
         this.charModel.visible = true;
         if(event.detail.type.name === "build"){
-            this.calculateGridPosition(newEvent.detail.position);
+            convertWorldToGridPosition(newEvent.detail.position);
             newEvent.detail.position.y = 0;
         }
         this.updatePosition(newEvent);
@@ -51,10 +51,6 @@ export class PreviewObject extends IView{
         this.charModel.visible = event.detail.visible;
     }
 
-    calculateGridPosition(position){
-        position.x = Math.floor(position.x/this.#gridCellSize + 0.5)*this.#gridCellSize;
-        position.z = Math.floor(position.z/this.#gridCellSize + 0.5)*this.#gridCellSize;
-    }
     setModel(key){
         this.charModel.geometry = new this.types[key].ctor(...this.types[key].params);
         this.charModel.material.uniforms.primaryColor.value.set(this.types[key].primaryColor);
@@ -62,6 +58,7 @@ export class PreviewObject extends IView{
         this.charModel.material.uniforms.cutoff.value = this.types[key].cutoff;
         this.rotate = this.types[key].rotate;
         this.horizontalRotation = this.types[key]?.horizontalRotation ?? 0;
+        super.updateRotation({detail: {rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), this.horizontalRotation * Math.PI / 180)}});
         this.currentType = key;
     }
 

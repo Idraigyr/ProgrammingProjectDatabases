@@ -5,6 +5,7 @@ import {PlayerFSM} from "./CharacterFSM.js";
 import {convertGridToWorldPosition, correctRitualScale, getFileExtension, setMinimumY, convertWorldToGridPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {SpellSpawner} from "../Model/SpellSpawner.js";
 import {scaleAndCorrectPosition} from "../helpers.js";
 
 /**
@@ -26,18 +27,18 @@ export class Factory{
      * Creates player model and view
      * @returns {Wizard}
      */
-    createPlayer(position){
+    createPlayer(params){
         // let sp = new THREE.Vector3(-8,15,12);
         let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
-        let currentPos = new THREE.Vector3(position.x,position.y,position.z);
+        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height});
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
 
         this.scene.add(view.charModel);
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
-        view.boundingBox.set(new THREE.Vector3(-0.5,0,-0.5), new THREE.Vector3(0.5,height,0.5));
+        view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
         this.scene.add(view.boxHelper);
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
@@ -50,6 +51,25 @@ export class Factory{
         return player;
     }
 
+    createTower(params){
+        const asset = this.assetManager.getAsset("Tower");
+        correctRitualScale(asset);
+        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
+        convertWorldToGridPosition(currentPos);
+        let tower = new Model.Tower({position: currentPos, spellSpawner: new SpellSpawner({})});
+        let view = new View.Tower({charModel: asset, position: currentPos});
+        this.scene.add(view.charModel);
+
+        view.boundingBox.setFromObject(view.charModel);
+        this.scene.add(view.boxHelper);
+
+        tower.addEventListener("updatePosition",view.updatePosition.bind(view));
+        tower.addEventListener("updateRotation",view.updateRotation.bind(view));
+
+        this.viewManager.addPair(tower, view);
+        return tower;
+    }
+
     /**
      * Creates island model and view
      * @param position position of the island
@@ -58,8 +78,9 @@ export class Factory{
      * @returns model of the island
      */
     createIsland(position, rotation, buildingsList){
-        let islandModel = new Model.Island(position, rotation);
-        let view = new View.Island();
+        let islandModel = new Model.Island({position: new THREE.Vector3(position.x, position.y, position.z), rotation: rotation});
+
+        let view = new View.Island({position: new THREE.Vector3(position.x, position.y, position.z), cellsInRow: 15, islandThickness: 10});
         //TODO: island asset?
         //this.AssetLoader.loadAsset(view);
         this.scene.add(view.initScene());

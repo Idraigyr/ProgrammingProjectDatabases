@@ -8,22 +8,22 @@ export let horizontalSensitivity = 0.5;
 export let verticalSensitivity = 0.3;
 export let zoomSensitivity = 1;
 
-export let minCameraY = 1;
-
-export const movementSpeed = 7;
+export const movementSpeed = 9;
 
 export const spellCastMovementSpeed = 2;
 
 export const gravity = -40;
 
-export const jumpHeight = 13;
+export const physicsSteps = 4;
+
+export const jumpHeight = 15;
 
 export const sprintMultiplier = 2;
 
 export const playerSpawn = {
-    x: 0,
-    y: 10,
-    z: 0
+    x: -8.5,
+    y: 50,
+    z: -10
 }
 
 export const cameraPosition = {
@@ -38,6 +38,6 @@ export const cameraPosition = {
         z: 0
     }
 }
-export let maxZoomIn = 15;
+export const maxZoomIn = 15;
 
-export let minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));
+export const minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));

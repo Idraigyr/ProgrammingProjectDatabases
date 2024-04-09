@@ -1,7 +1,7 @@
 import WebGL from "three-WebGL";
 import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
-import {cameraPosition} from "./configs/ControllerConfigs.js";
+import {cameraPosition, physicsSteps} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {WorldManager} from "./Controller/WorldManager.js";
 import {Factory} from "./Controller/Factory.js";
@@ -11,13 +11,13 @@ import {AssetManager} from "./Controller/AssetManager.js";
 import {RaycastController} from "./Controller/RaycastController.js";
 import {BuildManager} from "./Controller/BuildManager.js";
 import {HUD} from "./Controller/HUD.js"
-import {OrbitControls} from "three-orbitControls";
-import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {SpellCaster} from "./Controller/SpellCaster.js";
 import {View} from "./View/ViewNamespace.js";
+import {OrbitControls} from "three-orbitControls";
 import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
+import {GenerateMeshBVHWorker} from "./workers/GenerateMeshBVHWorker.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -40,6 +40,7 @@ class App {
      * @param {object} params
      */
     constructor(params) {
+        this.simulatePhysics = false;
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
@@ -83,15 +84,16 @@ class App {
         }},
         {key: "icewall", details: {
             ctor: THREE.BoxGeometry,
-            params: [10,10,3], // TODO: gridCellSize here!
-            primaryColor: 0x00FFFF,
-            secondaryColor: 0x00FF00,
-            cutoff: -5,
+            params: [10,3,3], // TODO: gridCellSize here?
+            primaryColor: 0x0033FF,
+            secondaryColor: 0xB5FFFF,
+            cutoff: -1.499,
             rotate: true,
             horizontalRotation: 90,
         }}])});
 
         this.scene.add(this.viewManager.spellPreview.charModel);
+        this.scene.add(this.viewManager.spellPreview.boxHelper);
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
         this.inputManager = new Controller.InputManager({canvas: canvas});
@@ -115,16 +117,13 @@ class App {
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new BuildManager(this.raycastController, this.scene);
 
-        document.addEventListener("visibilitychange", this.onClose.bind(this));
-        this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster));
-        //TODO: temporary solution; clean this up
-        this.inputManager.addKeyDownEventListener(slot1Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot2Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot3Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot4Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
-        this.inputManager.addKeyDownEventListener(slot5Key, this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+        document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
+        this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
+        this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.spellPreview.render.bind(this.viewManager.spellPreview));
+
+        window.addEventListener("resize", this.onResize.bind(this));
 
         //visualise camera line -- DEBUG STATEMENTS --
         // this.inputManager.addKeyDownEventListener("KeyN",() => {
@@ -134,7 +133,19 @@ class App {
         //visualise camera line -- DEBUG STATEMENTS --
     }
 
-    onClose(){
+    onResize(){
+        this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
+        this.cameraManager.camera.updateProjectionMatrix();
+        this.renderer.setSize( window.innerWidth, window.innerHeight );
+    }
+
+    onVisibilityChange(){
+        if(document.visibilityState === "visible"){
+            this.simulatePhysics = true;
+            this.clock.getDelta();
+        } else {
+            this.simulatePhysics = false;
+        }
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
@@ -162,18 +173,18 @@ class App {
      */
     async loadAssets(){
         const progressBar = document.getElementById('progress-bar');
-        //TODO: try to remove awaits
+        //TODO: try to remove awaits?
         progressBar.labels[0].innerText = "retrieving user info...";
         await this.playerInfo.retrieveInfo();
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory});
+        this.worldManager = new WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
         await this.worldManager.importWorld(this.playerInfo.islandID);
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
-        this.collisionDetector.generateCollider();
+        this.collisionDetector.generateColliderOnWorker();
         progressBar.value = 100;
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
@@ -198,6 +209,7 @@ class App {
         if ( WebGL.isWebGLAvailable()) {
             document.querySelector('.loading-animation').style.display = 'none';
             //init();
+            this.simulatePhysics = true;
             this.update();
         } else {
             const warning = WebGL.getWebGLErrorMessage();
@@ -215,13 +227,18 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        this.playerController.update(this.deltaTime);
-        this.playerController.updatePhysics(this.deltaTime);
         this.spellCaster.update(this.deltaTime);
 
-        this.cameraManager.update(this.deltaTime);
         this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
-        this.worldManager.world.update(this.deltaTime);
+
+        this.playerController.update(this.deltaTime);
+        if(this.simulatePhysics){
+            for(let i = 0; i < physicsSteps; i++){
+                this.worldManager.world.update(this.deltaTime/physicsSteps);
+                this.playerController.updatePhysics(this.deltaTime/physicsSteps);
+            }
+        }
+        this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
 

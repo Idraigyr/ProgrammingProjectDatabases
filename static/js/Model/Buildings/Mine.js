@@ -7,4 +7,8 @@ export class Mine extends Placeable{
     constructor(params) {
         super(params);
     }
+
+    get dbType(){
+        return "mine_building";
+    }
 }

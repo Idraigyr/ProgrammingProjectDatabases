@@ -11,7 +11,7 @@ export class UserInfo{
 
         this.crystals = 0;
 
-        this.mana = 100;
+        this.mana = 1000;
         this.health = 100;
 
         this.level = 0;

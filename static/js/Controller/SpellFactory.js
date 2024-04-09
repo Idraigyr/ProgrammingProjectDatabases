@@ -64,7 +64,8 @@ export class SpellFactory{
             duration: details.type.spell.duration,
             velocity: details.type.spell.velocity,
             fallOf: details.type.fallOf,
-            position: details.params.position
+            position: details.params.position,
+            team: details.params.team
         });
         let uniforms = {
             diffuseTexture: {
@@ -82,6 +83,7 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
+        this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -92,7 +94,8 @@ export class SpellFactory{
         let model = new Model.Immobile({
             spellType: details.type,
             position: details.params.position,
-            duration: details.type.spell.duration
+            duration: details.type.spell.duration,
+            team: details.params.team
         });
         let position = new THREE.Vector3().copy(details.params.position);
         position.y += 15;
@@ -103,6 +106,9 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
+
+        view.boundingBox.set(new THREE.Vector3().copy(position).sub(new THREE.Vector3(4,15,4)), new THREE.Vector3().copy(position).add(new THREE.Vector3(4,0.5,4)));
+        this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -114,7 +120,8 @@ export class SpellFactory{
             target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
             spellType: details.type,
             position: details.params.position,
-            duration: details.type.spell.duration
+            duration: details.type.spell.duration,
+            team: details.params.team
         });
 
         let view = new View.Shield({
@@ -158,21 +165,20 @@ export class SpellFactory{
             moveFunctionParams: details.type.spell.moveFunctionParams,
             duration: details.type.spell.duration
         });
-        const group = new THREE.Group();
-        for(let i = 0; i < iceWall.blocks; i++){
-            group.add(this.assetManager.getAsset("iceBlock"));
-        }
-        let view = new View.IceWall({
-            charModel: group,
+        let views = View.IceWall({
+            charModel: this.assetManager.getAsset("iceBlock"),
             position: position,
-            width: iceWall.width,
             horizontalRotation: details.params.horizontalRotation
         });
 
-        this.scene.add(view.charModel);
-        model.addEventListener("updatePosition", view.updatePosition.bind(view));
-        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
-        this.viewManager.addPair(model,view);
+        views.forEach((view) => {
+            this.scene.add(view.charModel);
+            this.scene.add(view.boxHelper);
+            model.addEventListener("updatePosition", view.updatePosition.bind(view));
+            model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+            this.viewManager.addPair(model,view);
+        });
+
         return model;
     }
 }

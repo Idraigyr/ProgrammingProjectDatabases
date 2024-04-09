@@ -192,7 +192,10 @@ class Build extends Effect{
 class ConcreteSpell{
     constructor(params) {
         this.hasPreview = false;
-        this.hitScan = false;
+        this.worldHitScan = false;
+        this.EntityHitScan = false;
+        this.goesThroughWalls = false;
+        this.charger = false;
         this.cost = 0;
         this.spell = params.spell;
         this.effects = params.effects;
@@ -217,6 +220,10 @@ class ConcreteSpell{
             targets.forEach((target) => this.effects.forEach((effect) => effect.apply(target)));
         }
     }
+
+    applyEffects(target){
+        this.effects.forEach((effect) => effect.apply(target));
+    }
 }
 
 /**
@@ -238,7 +245,7 @@ export class BuildSpell extends ConcreteSpell{
             ]
         });
         this.hasPreview = true;
-        this.hitScan = true;
+        this.worldHitScan = true;
         this.name = "build";
         this.cost = 10;
     }
@@ -254,7 +261,7 @@ export class Fireball extends ConcreteSpell{
                 duration: 10,
                 cooldown: 1.34, //TODO: need animations that last equally long
                 castTime: 0,
-                velocity: 20,
+                velocity: params?.velocity ?? 20,
                 fallOf: 0
             }),
             effects: [
@@ -276,7 +283,7 @@ export class IceWall extends ConcreteSpell{
         super({
             spell: new Block({
                 duration: 20,
-                cooldown: 5,
+                cooldown: 0,
                 castTime: 0,
             }),
             effects: [new Build({
@@ -285,7 +292,7 @@ export class IceWall extends ConcreteSpell{
         });
         this.name = "icewall";
         this.hasPreview = true;
-        this.hitScan = true;
+        this.worldHitScan = true;
         this.cost = 20;
     }
 }
@@ -300,7 +307,7 @@ export class Zap extends ConcreteSpell{
             effects: [new InstantDamage()]
         });
         this.name = "zap";
-        this.hitScan = true;
+        this.worldHitScan = true;
     }
 }
 
@@ -321,7 +328,7 @@ export class ThunderCloud extends ConcreteSpell{
         });
         this.name = "thundercloud";
         this.hasPreview = true;
-        this.hitScan = true;
+        this.worldHitScan = true;
         this.cost = 20;
     }
 }

@@ -6,6 +6,7 @@ import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
 import {Shield} from "./Shield.js";
 import {PreviewObject} from "./PreviewObject.js";
+import {Tower} from "./Buildings/Tower.js";
 import {Bush} from "./Buildings/Bush.js";
 import {FusionTable} from "./Buildings/FusionTable.js";
 
@@ -22,6 +23,7 @@ export let View = {
     Bush: Bush,
     FusionTable: FusionTable,
     Mine: Mine,
+    Tower: Tower,
     Shield: Shield,
     IceWall: IceWall,
     PreviewObject: PreviewObject,

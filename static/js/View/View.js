@@ -7,12 +7,15 @@ export class IView {
     constructor(params) {
         this.position = params?.position ?? new THREE.Vector3(0,0,0);
         this.charModel = params?.charModel;
+        if(this.charModel) this.charModel.position.copy(this.position);
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
         this.boxHelper.visible = true;
         this.horizontalRotation = params?.horizontalRotation ?? 0;
-
+        this.staysAlive = false;
+    }
+    firstUpdate() {
         try {
             this.updatePosition({detail: {position: params.position}});
             this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
@@ -20,16 +23,23 @@ export class IView {
             console.log(err);
         }
     }
+
+    cleanUp() {
+        try {
+            this.boxHelper.parent.remove(this.boxHelper);
+        } catch (err){
+            console.log("BoxHelper not added to scene.");
+        }
+        this.charModel.parent.remove(this.charModel);
+    }
     update(deltaTime) {}
+
     updatePosition(event){
         if(!this.charModel) return;
+        const delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
         this.position.copy(event.detail.position);
         this.charModel.position.copy(this.position);
-        let center = new THREE.Vector3().copy(this.charModel.position);
-        let size = new THREE.Vector3();
-        this.boundingBox.getSize(size);
-        center.y += size.y/2;
-        this.boundingBox.setFromCenterAndSize(center,size);
+        this.boundingBox.translate(delta);
     }
 
     updateRotation(event){
