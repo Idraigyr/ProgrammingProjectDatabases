@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from flask import current_app, Blueprint, request, Flask
@@ -71,7 +72,17 @@ class PlayerSchema(Schema):
             'items': GemSchema
         },
         'blueprints': IntArraySchema,
-        'entity': PlayerEntitySchema
+        'entity': PlayerEntitySchema,
+        'last_login': {
+            'type': 'string',
+            'format': 'date-time',
+            'description': 'The last login time of the player'
+        },
+        'last_logout': {
+            'type': 'string',
+            'format': 'date-time',
+            'description': 'The last logout time of the player'
+        }
     }
 
     required = []  # nothing is required, but not giving anything is just doing nothing
@@ -79,6 +90,8 @@ class PlayerSchema(Schema):
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
             super().__init__(crystals=player.crystals, mana=player.mana, xp=player.xp,
+                             last_login=str(player.last_login).replace(' ', 'T'),
+                             last_logout=str(player.last_logout).replace(' ', 'T'),
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
@@ -149,6 +162,14 @@ class PlayerResource(Resource):
             # Check if the target player exists
             if player is None:  # This should never happen, as the player is guaranteed to exist by the JWT
                 return ErrorSchema(f"Player {user_id} not found"), 404
+
+            # Convert the datetime strings to datetime objects
+            if 'last_login' in data:
+                data['last_login'] = data['last_login'].replace('T', ' ')
+                data['last_login'] = datetime.datetime.strptime(data['last_login'], '%Y-%m-%d %H:%M:%S')
+            if 'last_logout' in data:
+                data['last_logout'] = data['last_logout'].replace('T', ' ')
+                data['last_logout'] = datetime.datetime.strptime(data['last_logout'], '%Y-%m-%d %H:%M:%S')
 
             # Update the player profile, might throw semantic errors as ValueError
             player.update(data)
