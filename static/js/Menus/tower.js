@@ -18,12 +18,7 @@ Amethyst  |500 |20
 Max 3 gems in tower
 */
 
-// build spell always
-// scrolling
-// transparant
-
-
-// creates name for gem
+// creates text for a gem
 function toGemString(inputString) {
     // Make the first letter uppercase
     let processedString = inputString.charAt(0).toUpperCase() + inputString.slice(1);

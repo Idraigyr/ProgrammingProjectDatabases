@@ -35,6 +35,11 @@ body {
   border-radius: 10px;
 }
 
+.fusionMenu {
+    margin-top: 3%;
+    max-width: 1200px;
+}
+
 h1 {
   text-align: center;
   margin-top: -50px;
@@ -49,9 +54,21 @@ h1 {
     color: #000000;
 }
 
+.fusionH1 {
+    position: relative;
+    top: 30px;
+}
+
+.fusionH2 {
+    position: relative;
+    z-index: 0;
+    right: -50px;
+}
+
+
 h2 {
   text-align: left;
-  margin-top: 2px;
+  margin-top: 0px;
   margin-bottom: 0;
   padding-left: 40%;
   color: #0f172a;
@@ -105,8 +122,8 @@ h3 {
 }
 
 .fusionButton {
-  margin-left: -3%;
-  margin-top: 20px;
+  margin-left: -6%;
+  margin-top: 30px;
   margin-bottom: 10px;
   background-color: transparent; /* Remove background color */
   color: white;
@@ -120,6 +137,7 @@ h3 {
   background-position: center; /* Center the background image */
   background-repeat: no-repeat; /* Prevent the background image from repeating */
   transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    z-index: 1;
 }
 
 .fusionButton:hover {
@@ -164,6 +182,32 @@ h3 {
     }
 }
 
+.arrow {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    right: 7%;
+    padding: 10px;
+    border-radius: 10px;
+    background-image: url('/static/images/menu/arrow.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.move-right {
+    animation: moveRight 1s linear infinite; /* Adjust animation duration and timing function as needed */
+}
+
+@keyframes moveRight {
+    0% {
+        transform: translateX(0); /* Start position */
+    }
+    100% {
+        transform: translateX(100%); /* End position */
+    }
+}
+
 .container {
   margin: 5px;
   width: 240px;
@@ -177,6 +221,12 @@ h3 {
   background-position: center center;
   height: 400px; /* Adjust the height as needed */
   overflow-y: auto;
+}
+
+.fusionContainer {
+    width: 180px;
+    padding: 10px;
+    margin: 0px;
 }
 
 .container::-webkit-scrollbar {
@@ -315,6 +365,11 @@ h3 {
     top: -58px;
 }
 
+.fusionExit {
+    top: -15px;
+    right: -620px;
+}
+
 /* loading bars */
 .loading-bar-container {
   position: relative;
@@ -333,6 +388,11 @@ h3 {
   background-color: #ff8000;
   border-radius: 10px;
   transition: width 0.2s ease;
+}
+
+.fusionBar {
+    top: -120px;
+    right: -510px;
 }
 
 /* Spells images formatting */
@@ -420,16 +480,6 @@ h3 {
     height: 40px;
     width: 40px;
     right: 4%;
-}
-
-.arrow{
-    width: 250px;
-    padding: 20px;
-    border-radius: 10px;
-    background-image: url('/static/images/menu/arrow.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
 }
 
 /* Extra icons formatting*/

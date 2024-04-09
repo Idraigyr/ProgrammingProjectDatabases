@@ -9,6 +9,9 @@ let mineGems = {"amberGem": 0, "rubyGem": 0, "sapphireGem": 0, 'diamondGem': 0, 
 /*
 Fills mine (every hour)
 5-25 crystals
+
+50% chance of gem:
+
 40% Amber
 30% Ruby
 20% Sapphire
@@ -18,7 +21,7 @@ Fills mine (every hour)
  */
 function addGem(){
     mineCrystals += getRandomInt(5, 25);
-    let gem = getRandomInt(1, 100);
+    let gem = getRandomInt(1, 200);
     if(gem <= 40){
         mineGems["amberGem"]++;
     }
