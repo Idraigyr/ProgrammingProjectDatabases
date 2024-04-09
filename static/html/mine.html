@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mine</title>
+  <link rel="stylesheet" href="../css/menus.css">
+</head>
+<body style="background-color: transparent">
+
+<div class="menu mineMenu">
+  <h1 class = "mineH1">Mine</h1>
+    <button class="exit mineExit" onclick="exitMenu()"></button>
+    <button onclick="addGem()"></button>
+  <div class="combat">
+    <h2 class = "mineH2">Collect</h2>
+    <button class="fusionButton collectButton" onclick="collect()"></button>
+  </div>
+
+  <div class="containers">
+        <div class="container" id="container1" ondrop="drop(event, 'container1')" ondragover="allowDrop(event)">
+            <label><h2>Gems</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="pickaxe"></div>
+      <div class="loading-bar-container">
+    <div class="loading-bar"></div>
+  </div>
+        <div class="container" id="container2" ondrop="drop(event, 'container2')" ondragover="allowDrop(event)">
+            <label><h2>Tower Gems</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+  </div>
+
+</div>
+
+</body>
+<script src="/static/js/Menus/mine.js"></script>
+</html>

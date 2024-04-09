@@ -18,6 +18,10 @@ body {
   border-radius: 10px;
 }
 
+.mineMenu {
+    background-image: url('/static/images/menu/mineBackground.png');
+}
+
 .towerMenu {
   max-width: 745px;
   max-height: 1000px;
@@ -39,12 +43,22 @@ h1 {
   font-size: 50px;
 }
 
+.mineH1 {
+    margin-top: 0;
+    padding-left: 10px;
+    color: #000000;
+}
+
 h2 {
   text-align: left;
   margin-top: 2px;
   margin-bottom: 0;
   padding-left: 40%;
   color: #0f172a;
+}
+
+.mineH2 {
+    margin-left: 6%;
 }
 
 h3 {
@@ -91,7 +105,7 @@ h3 {
 }
 
 .fusionButton {
-  margin-left: 45%;
+  margin-left: -3%;
   margin-top: 20px;
   margin-bottom: 10px;
   background-color: transparent; /* Remove background color */
@@ -110,12 +124,44 @@ h3 {
 
 .fusionButton:hover {
   transform: scale(1.10); /* Scale up the button on hover */
+}
 
+.collectButton {
+    margin-left: -9%;
+    margin-top: 4%;
 }
 
 .containers {
   display: flex;
   justify-content: space-between;
+}
+
+.pickaxe {
+    position: relative;
+    top: -50px;
+    right: 25px;
+    width: 200px;
+    height: 200px;
+    padding: 20px;
+    border-radius: 10px;
+    background-image: url('/static/images/menu/pickaxe.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    animation: rotateAnimation 1s linear infinite; /* Adjust the animation duration and timing function as needed */
+    transform-origin: bottom center;
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate(50deg);
+    }
+    20% {
+        transform: rotate(120deg);
+    }
+    100% {
+        transform: rotate(50deg);
+    }
 }
 
 .container {
@@ -129,7 +175,26 @@ h3 {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
+  height: 400px; /* Adjust the height as needed */
+  overflow-y: auto;
 }
+
+.container::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+.container::-webkit-scrollbar-track {
+    background: #f9f3d2; /* Color of the track */
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: #565444; /* Color of the scrollbar handle */
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: #3d3c30; /* Color of the scrollbar handle on hover */
+}
+
 
 .containerBuildings {
   border: 2px solid #0f172a;
@@ -216,6 +281,7 @@ h3 {
   background-color: #72715d;
 }
 
+/* exit buttons */
 .exit {
   position: relative;
   right: -510px;
@@ -243,6 +309,30 @@ h3 {
 
 .towerExit{
     margin-left: 26%;
+}
+
+.mineExit{
+    top: -58px;
+}
+
+/* loading bars */
+.loading-bar-container {
+  position: relative;
+  top: 360px;
+  right: 120px;
+  width: 15%;
+  height: 30px;
+  background-color: #969478;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
+.loading-bar {
+  width: 0%;
+  height: 100%;
+  background-color: #ff8000;
+  border-radius: 10px;
+  transition: width 0.2s ease;
 }
 
 /* Spells images formatting */
@@ -283,6 +373,13 @@ h3 {
 }
 
 /* Gems images formatting */
+.crystal {
+    position: absolute;
+    height: 45px;
+    width: 45px;
+    right: 3%;
+}
+
 .amberGem {
     position: absolute;
     height: 30px;
