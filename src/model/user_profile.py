@@ -55,12 +55,8 @@ class UserProfile(current_app.db.Model):
         :param data: The new data
         :return:
         """
-        if 'firstname' in data:
-            self.firstname = data['firstname']
-        if 'lastname' in data:
-            self.lastname = data['lastname']
-        if 'admin' in data:
-            self.admin = data['admin'].lower() == 'true'
-        return self
+        self.firstname = data.get('firstname', self.firstname)
+        self.lastname = data.get('lastname', self.lastname)
+        self.admin = data.get('admin', self.admin)
 
 
