@@ -171,5 +171,14 @@ class AuthService:
 
         return player
 
+    def update_last_login(self, user: 'UserProfile') -> None:
+        """
+        Update the last login of the user
+        :param user: The user to update
+        :return: None
+        """
+        user.update({'last_login': current_app.db.func.now()})
+        current_app.db.session.commit()
+
 
 AUTH_SERVICE = AuthService()
