@@ -80,7 +80,7 @@ class BlueprintResource(Resource):
 
 
     @swagger.tags('blueprint')
-    @summary('Update a blueprint')
+    @summary('Update a blueprint. All fields (except id) are updateable.')
     @swagger.expected(schema=BlueprintSchema, required=True)
     @swagger.response(200, description='Success, returns the updated blueprint in JSON format', schema=BlueprintSchema)
     @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)

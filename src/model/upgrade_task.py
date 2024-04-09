@@ -45,9 +45,6 @@ class BuildingUpgradeTask(Task):
         :return:
         """
         super().update(data)
-        self.working_building = data.get('working_building', self.working_building)
-
-
 
 
     __mapper_args__ = {

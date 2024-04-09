@@ -102,6 +102,11 @@ class BuilderMinionResource(EntityResource):
 
             data['builds_on'] = building.task # set the task
 
+        if 'type' in data:
+            # Remove the type field as it's not needed, it's always 'builder_minion' since we're in the builder_minion endpoint
+            data.pop('type')
+
+
         builder_minion = BuilderMinion(**data)
 
         current_app.db.session.add(builder_minion)
@@ -109,7 +114,7 @@ class BuilderMinionResource(EntityResource):
         return BuilderMinionSchema(builder_minion), 200
 
     @swagger.tags('entity')
-    @summary('Update an existing builder minion')
+    @summary('Update an existing builder minion. Updateable fields are x,y,z, level & builds_on')
     @swagger.expected(schema=BuilderMinionSchema, required=True)
     @swagger.response(200, description='Builder minion successfully updated. The up-to-date object is returned', schema=BuilderMinionSchema)
     @swagger.response(404, description="Builder minion not found", schema=ErrorSchema)

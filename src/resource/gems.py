@@ -144,7 +144,8 @@ class GemResource(Resource):
 
 
     @swagger.tags('gems')
-    @summary('Update a gem')
+    @summary('Update a gem by id. All fields (except ids) are updatable. Including attributes and their multipliers.'
+             ' Note that only one of the building_id, mine_id or player_id can have a non-null value')
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the updated gem in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)

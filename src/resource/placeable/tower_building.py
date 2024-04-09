@@ -66,7 +66,7 @@ class TowerBuildingResource(BuildingResource):
 
 
     @swagger.tags('building')
-    @summary("Update the tower building object with the given id")
+    @summary("Update the tower building object with the given id. Updateable fields are x,z,rotation, level & tower_type")
     @swagger.expected(schema=TowerBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The tower building has been updated. The up-to-date object is returned", schema=TowerBuildingSchema)
     @swagger.response(response_code=404, description='Tower building not found', schema=ErrorSchema)
@@ -116,6 +116,19 @@ class TowerBuildingResource(BuildingResource):
         data = clean_dict_input(data)
 
         try:
+            if 'gems' in data:
+                # Remove the gems from the building, they are managed by the gem endpoint
+                data.pop('gems')
+            if 'type' in data:
+                # Remove the type field as it's not needed, it's always 'tower_building' since we're in the tower_building endpoint
+                data.pop('type')
+            if 'task' in data:
+                # Remove the task field as it's managed by the task endpoint
+                data.pop('task')
+            if 'blueprint' in data:
+                # Remove the blueprint field as it's always 'tower_building' since we're in the tower_building endpoint
+                data.pop('blueprint')
+
             TowerBuildingSchema(**data, _check_requirements=True)  # Validate the input
 
             # Create the tower model & add it to the database

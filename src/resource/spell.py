@@ -90,7 +90,7 @@ class SpellResource(Resource):
         return SpellSchema(spell), 200
 
     @swagger.tags('spell')
-    @summary('Update the spell profile by id')
+    @summary('Update the spell profile by id. Only the name of a spell is modifiable')
     @swagger.response(200, description='Success', schema=SpellSchema)
     @jwt_required()  # for security
     def put(self):

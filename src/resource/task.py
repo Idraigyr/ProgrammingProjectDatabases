@@ -148,7 +148,7 @@ class TaskResource(Resource):
 
 
     @swagger.tags('task')
-    @summary('Update a task object by id')
+    @summary('Update a task object by id. Only endtime & working_building are modifiable. Use DELETE to cancel a task')
     @swagger.response(response_code=200, description='Task object', schema=TaskSchema)
     @swagger.response(response_code=400, description='Unknown building id (when provided) or invalid task data', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Task not found', schema=ErrorSchema)

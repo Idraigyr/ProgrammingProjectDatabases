@@ -57,7 +57,7 @@ class PropResource(Resource):
         return PropSchema(prop), 200
 
     @swagger.tags('placeable')
-    @summary('Update a prop by id. Note that you cannot change the blueprint afterwards')
+    @summary('Update a prop by id. Note that you cannot change the blueprint afterwards. Updateable fields are x,z,rotation & prop_type ')
     @swagger.expected(schema=PropSchema, required=True)
     @swagger.response(200, 'Success', schema=PropSchema)
     @swagger.response(404, 'Prop not found', schema=ErrorSchema)
@@ -122,6 +122,9 @@ class PropResource(Resource):
             PropSchema(**data, _check_requirements=True)  # Validate the input
             if 'placeable_id' in data:
                 data.pop('placeable_id')
+            if 'type' in data:
+                # Remove the type field as it's not needed, it's always 'prop' since we're in the prop endpoint
+                data.pop('type')
 
             prop = Prop(**data, blueprint_id=blueprint_id)
             current_app.db.session.add(prop)
