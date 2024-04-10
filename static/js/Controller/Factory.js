@@ -166,6 +166,8 @@ export class Factory{
             this.scene.add(buildingPreview.charModel);
             // Create visible watch to see time left
             const watch = new View.Watch({position: pos, time: model.timeToBuild, scene: this.scene});
+            // Add callback to update view with the up-to-date time
+            timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
         }
         return model;
     }
