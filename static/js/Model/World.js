@@ -1,6 +1,8 @@
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "./Spell.js";
-import {returnWorldToGridIndex} from "../helpers.js";
+import {convertGridIndexToWorldPosition, convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
+import {Bridge} from "./Bridge.js";
+import * as THREE from "three";
 
 /**
  * World class that contains all the islands and the player
@@ -14,6 +16,7 @@ export class World{
         params.islands.forEach((island) => {
             this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
         });
+        this.islands.push(new Bridge({position: convertGridIndexToWorldPosition(new THREE.Vector3(-7,0,-9)), rotation: 0, width: 3, length: 3, height: 0}));
         this.player = this.factory.createPlayer(params.player);
         // Set default values for the inventory slots
         this.player.changeEquippedSpell(0,new BuildSpell({}));
@@ -28,6 +31,7 @@ export class World{
 
     getIslandByPosition(position){
         for(const island of this.islands){
+            //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2
             if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
                 return island;
             }

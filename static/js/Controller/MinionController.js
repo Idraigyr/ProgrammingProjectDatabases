@@ -1,44 +1,88 @@
 import * as THREE from "three";
 import {gridCellSize} from "../configs/ViewConfigs.js";
-import {buildTypes} from "../configs/Enums";
-import {returnWorldToGridIndex} from "../helpers.js";
+import {buildTypes} from "../configs/Enums.js";
+import {printFoundationGrid, returnWorldToGridIndex} from "../helpers.js";
+import {Foundation} from "../Model/Foundation.js";
+
+//TODO: put this directly in grid of foundation?
+class PathNode{
+    constructor(params) {
+        this.index = params.index;
+        this.gCost = 0;
+        this.hCost = 0;
+        this.worldMap = params.worldMap;
+    }
+
+    get neighbours(){
+        const neighbours = [];
+        const cells = this.worldMap.getTraversableNeighbours(this.index);
+        for(const cell of cells){
+            neighbours.push(new PathNode({index: cell, worldMap: this.worldMap}));
+        }
+        return neighbours;
+    }
+
+    get fCost(){
+        return this.gCost + this.hCost;
+    }
+
+}
 
 export class MinionController{
+    #worldMap;
     constructor(params) {
         this.minions = [];
         this.collisonDetector = params.collisionDetector;
-        this.worldMap = this.calculateWorldMap(params.islands);
+        this.#worldMap = new Foundation({});
+        this.parent = null;
+
+        //TODO: use heap for open
+        this.open = [];
+        this.closed = [];
     }
 
     calculatePath(start, end){
+        this.open = [];
+        this.closed = [];
+
+        this.open.push(start);
+
+        while(this.open.length > 0){
+            let current = this.open.reduce((acc, current) => current.fCost < acc.fCost ? current : (current.fCost === acc.fCost ? (current.hCost < acc.hCost ? current : acc) : acc));
+            this.open = this.open.filter((node) => node !== current);
+            this.closed.push(current);
+
+            if(current === end){
+                return;
+            }
+
+            for(const neighbour of current.neighbours){
+                if(this.closed.includes(neighbour)){
+                    continue;
+                }
+
+                if(current.getDistance(neighbour) < neighbour.f_cost || !this.open.includes(neighbour)){
+                    neighbour.f_cost = current.getDistance(neighbour);
+                    neighbour.parent = current;
+
+                    if(!this.open.includes(neighbour)){
+                        this.open.push(neighbour);
+                    }
+                }
+            }
+
+        }
 
     }
-    calculateWorldMap(islands){
-        //TODO: based on the grid and position of the islands, create a 2D array that represents the world
-        let min = new THREE.Vector3(Infinity,Infinity,Infinity);
-        let max = new THREE.Vector3(-Infinity,-Infinity,-Infinity);
-        for(const island of islands){
-            if(island.position.x < min.x) min.x = island.position.x;
-            if(island.position.z < min.z) min.z = island.position.z;
-            if(island.position.x > max.x) max.x = island.position.x;
-            if(island.position.z > max.z) max.z = island.position.z;
-        }
-        let width = Math.ceil((max.x - min.x)/gridCellSize);
-        let length = Math.ceil((max.z - min.z)/gridCellSize);
-        let worldMap = new Array(width*length).fill(buildTypes.getNumber("empty"));
-        for(const island of islands){
-            // let {x,z} = returnWorldToGridIndex(island.position);
-            // worldMap[x*width + z] = buildTypes.getNumber("island");
-        }
-        console.log("worldMap:");
-        for(let i = 0; i < width; i++){
-            let row = "";
-            for(let j = 0; j < length; j++){
-                row += worldMap[i*width + j] + " ";
-            }
-            console.log(row);
-        }
-        return worldMap;
+
+    set worldMap(islands){
+        this.#worldMap.setFromFoundations(islands);
+        console.log(this.#worldMap.position);
+        printFoundationGrid(this.#worldMap.grid, this.#worldMap.width, this.#worldMap.length)
+    }
+
+    get worldMap(){
+        return this.#worldMap.slice();
     }
 
 }
