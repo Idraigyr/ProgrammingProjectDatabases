@@ -43,6 +43,10 @@ export class Island extends Foundation{
         super.position = vector;
     }
 
+    get position(){
+        return super.position;
+    }
+
     get type(){
         return "island";
     }

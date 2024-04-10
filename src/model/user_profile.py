@@ -35,7 +35,7 @@ class UserProfile(current_app.db.Model):
         self.lastname = lastname
         self.credentials = credentials
         from src.model.player import Player
-        self.player = Player(self)
+        self.player = Player(user_profile=self, xp=0, mana=0, crystals=0, last_login=None, last_logout=None)
         self.admin = admin
 
     def uses_oauth2(self):
@@ -55,12 +55,8 @@ class UserProfile(current_app.db.Model):
         :param data: The new data
         :return:
         """
-        if 'firstname' in data:
-            self.firstname = data['firstname']
-        if 'lastname' in data:
-            self.lastname = data['lastname']
-        if 'admin' in data:
-            self.admin = data['admin'].lower() == 'true'
-        return self
+        self.firstname = data.get('firstname', self.firstname)
+        self.lastname = data.get('lastname', self.lastname)
+        self.admin = data.get('admin', self.admin)
 
 

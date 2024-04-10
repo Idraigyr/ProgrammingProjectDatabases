@@ -36,8 +36,12 @@ class UserProfileSchema(Schema):
 
     required = ['id', 'username', 'firstname', 'lastname', 'admin']
 
-    def __init__(self, user):
-        super().__init__(id=user.id, username=user.username, firstname=user.firstname, lastname=user.lastname, admin=user.admin)
+    def __init__(self, user = None, **kwargs):
+        if user is not None:
+            super().__init__(id=user.id, username=user.username, firstname=user.firstname,
+                         lastname=user.lastname, admin=user.admin, **kwargs)
+        else:
+            super().__init__(**kwargs)
 
 
 
@@ -85,14 +89,12 @@ class UserProfileResource(Resource):
 
 
     @swagger.tags('user_profile')
-    @summary('Update the user profile by id')
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
-    @swagger.parameter(_in='query', name='firstname', schema={'type': 'string'}, description='The new firstname')
-    @swagger.parameter(_in='query', name='lastname', schema={'type': 'string'}, description='The new lastname')
-    @swagger.parameter(_in='query', name='admin', schema={'type': 'bool'}, description='The new admin status (only allowed if current user is admin)')
+    @summary('Update the user profile by id. Note that id is here NOT required, but can be used to update other user profiles (if the invoker is an admin). Updateable fields are firstname, lastname & admin')
+    @swagger.expected(UserProfileSchema, required=True)
     @swagger.response(200, description='Succesfully updated the user profile', schema=UserProfileSchema)
     @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token', schema=ErrorSchema)
     @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
+    @swagger.response(400, description='Invalid input', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -101,39 +103,51 @@ class UserProfileResource(Resource):
         Allowed parameters to update: firstname, lastname
         :return:
         """
-        current_user = get_jwt_identity()
-        target_user_id = int(escape(request.args.get('id', current_user)))
-        invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
+        data = request.get_json()
+        data = clean_dict_input(data)
+        try:
+            UserProfileSchema(**data, _check_requirements=False)  # Validate the input
 
-        if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
-            logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-            return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
+            current_user = get_jwt_identity()
+            target_user_id = int(data['id'] if 'id' in data else current_user)
+            invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
+            if not invoker_user:
+                logging.getLogger(__name__).warning(f'User {current_user} does not exist, but this id comes from his JWT token. Is the token invalid or did his account just got deleted?')
+                return ErrorSchema(f"Current user does not exist. Is your JWT token invalid? Or did your account just got deleted?"), 404
 
-        # Get the user profile
-        if target_user_id != current_user:
-            # users differ, so we're going to get the profile of the requested user
-            target_user = AUTH_SERVICE.get_user(user_id=target_user_id)
-        else:
-            # The invoker is modifying his own profile
-            target_user = invoker_user
+            if current_user != target_user_id and not invoker_user.admin:
+                logging.getLogger(__name__).warning(
+                    f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
+                return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
+
+            # Get the user profile
+            if target_user_id != current_user:
+                # users differ, so we're going to get the profile of the requested user
+                target_user = AUTH_SERVICE.get_user(user_id=target_user_id)
+            else:
+                # The invoker is modifying his own profile
+                target_user = invoker_user
+
+            if target_user is None:
+                return ErrorSchema(f"User {target_user_id} not found"), 404
+
+            if 'admin' in data:
+                # Check if the current user is an admin, otherwise he's not allowed to change the admin bit
+                # (a creative user would be able to give himself admin, so we need to check this)
+                if not invoker_user.admin:
+                    return ErrorSchema(f"Access denied to set admin status for profile {target_user_id}"), 401
+
+            target_user.update(data)
+            current_app.db.session.commit()  # Save changes to db
+
+            return UserProfileSchema(target_user), 200
 
 
-        if target_user is None:
-            return ErrorSchema(f"User {target_user_id} not found"), 404
+        except (ValueError, KeyError) as e:
+            return ErrorSchema(str(e)), 400
 
-        # Update the user
-        copy = request.args.copy() # Create a copy of the request args as these are immutable
 
-        if 'admin' in copy:
-            # Check if the current user is an admin, otherwise he's not allowed to change the admin bit
-            # (a creative user would be able to give himself admin, so we need to check this)
-            if not invoker_user.admin:
-                return ErrorSchema(f"Access denied to set admin status for profile {target_user_id}"), 401
 
-        target_user.update(clean_dict_input(copy))
-        current_app.db.session.commit() # Save changes to db
-
-        return UserProfileSchema(target_user), 200
 
 
 

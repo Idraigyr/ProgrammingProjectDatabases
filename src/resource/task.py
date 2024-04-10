@@ -3,11 +3,10 @@ import datetime
 from flask import request, current_app, Flask, Blueprint
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
-from sqlalchemy import and_
 
 from src.model.task import Task
 from src.resource import clean_dict_input, add_swagger
-from src.schema import ErrorSchema
+from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import Schema, summary
 
 
@@ -37,12 +36,6 @@ class TaskSchema(Schema):
             'format': 'date-time',
             'description': 'The time when the task should end'
         },
-        'handeled': {
-            'type': 'boolean',
-            'description': 'Whether the task is handeled or not. If the task is handeled and the endtime is NOT reached, '
-                           'the task is/was cancelled. If the endtime is reached, but the task is not handeled, the task is '
-                           'done and should still be marked as handeled after the required task finish events have been executed.'
-        },
         'type': {
             'type': 'string',
             'description': 'The type of the task'
@@ -61,7 +54,6 @@ class TaskSchema(Schema):
         if task is not None:
             super().__init__(id=task.id, starttime=str(task.starttime).replace(' ', 'T'),
                              endtime=str(task.endtime).replace(' ', 'T'),
-                             handeled=task.handeled,
                              type=task.type, island_id=task.island_id,
                              building_id=task.working_building.placeable_id if task.working_building is not None else None,
                              **kwargs)
@@ -95,6 +87,8 @@ class TaskResource(Resource):
             building = current_app.db.session.query(Building).get(building_id)
             if building is None:
                 return ErrorSchema(message='Building id not found'), 400
+            if building.island_id != data['island_id']:
+                return ErrorSchema(message='Building does not belong to this island_id'), 400
             if new_task and building.task is not None and building.task.is_running():
                 return ErrorSchema(message='Building is already being worked on'), 409
 
@@ -154,7 +148,7 @@ class TaskResource(Resource):
 
 
     @swagger.tags('task')
-    @summary('Update a task object by id')
+    @summary('Update a task object by id. Only endtime & working_building are modifiable. Use DELETE to cancel a task')
     @swagger.response(response_code=200, description='Task object', schema=TaskSchema)
     @swagger.response(response_code=400, description='Unknown building id (when provided) or invalid task data', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Task not found', schema=ErrorSchema)
@@ -187,6 +181,33 @@ class TaskResource(Resource):
             return ErrorSchema(message=str(e)), 400
 
 
+    @swagger.tags('task')
+    @summary('Delete a task object by id (or cancel it)')
+    @swagger.parameter(_in='query', name='id', description="The id of the task to delete", schema={'type': 'integer', 'format': 'int64'}, required=True)
+    @swagger.response(response_code=200, description='Task object', schema=SuccessSchema)
+    @swagger.response(response_code=404, description='Task not found', schema=ErrorSchema)
+    @swagger.response(response_code=400, description='No task id provided', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        Delete a task object by id
+        :return:
+        """
+        id = request.args.get('id', type=int)
+        if id is None:
+            return ErrorSchema(message='No task id provided'), 400
+
+        task = Task.query.get(id)
+        if task is None:
+            return ErrorSchema(message='Task not found'), 404
+
+        current_app.db.session.delete(task)
+        current_app.db.session.commit()
+
+        return SuccessSchema(f"Task with id {id} sucessfully deleted"), 200
+
+
+
 class TaskListResource(Resource):
     """
     Resource for the list of tasks
@@ -195,7 +216,6 @@ class TaskListResource(Resource):
     @swagger.tags('task')
     @summary('Retrieve a list of tasks')
     @swagger.parameter(_in='query', name='island_id', description="The island id to retrieve the tasks from", schema={'type': 'integer', 'format': 'int64'}, required=True)
-    @swagger.parameter(_in='query', name='handeled', description="When set, filter on handled/unhandeled state", schema={'type': 'bool'}, required=False)
     @swagger.parameter(_in='query', name='is_over', description="When set, filter on is_over state", schema={'type': 'bool'}, required=False)
     @swagger.response(response_code=200, description='List of all tasks of an island in a JSON array. Empty if island id is invalid or no tasks are associated with this island', schema=TaskSchema)
     @swagger.response(response_code=400, description='No island id provided', schema=ErrorSchema)
@@ -210,8 +230,6 @@ class TaskListResource(Resource):
             return ErrorSchema(message='No island id provided'), 400
 
         query = Task.query.filter_by(island_id=island_id)
-        if 'handeled' in request.args:
-            query = query.filter_by(handeled=request.args.get('handeled').lower() == "true")
 
         if 'is_over' in request.args:
             is_over: bool = request.args.get('is_over').lower() == "true"

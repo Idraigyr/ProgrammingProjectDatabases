@@ -97,16 +97,16 @@ class UserSettingsResource(Resource):
         id = request.args.get('player_id', type=int)
 
         if id is None:
-            return 'Player id absent', 400
+            return ErrorSchema('Player id absent'), 400
 
         user_settings = UserSettings.query.get(id)
         if user_settings is None:
-            return 'The player does not exist', 404
+            return ErrorSchema('The player does not exist'), 404
 
         return UserSettingsSchema(user_settings), 200
 
     @swagger.tags('settings')
-    @summary('Update the settings of a player')
+    @summary('Update the settings of a player. All fields (except player_id) are updatable.')
     @swagger.response(200, description='Settings updated', schema=UserSettingsSchema)
     @swagger.response(404, description='The player does not exist', schema=ErrorSchema)
     @swagger.response(400, description='Player id absent', schema=ErrorSchema)
@@ -120,11 +120,11 @@ class UserSettingsResource(Resource):
         id = request.args.get('player_id', type=int)
 
         if id is None:
-            return 'Player id absent', 400
+            return ErrorSchema('Player id absent'), 400
 
         user_settings = UserSettings.query.get(id)
         if user_settings is None:
-            return 'The player does not exist', 404
+            return ErrorSchema('The player does not exist'), 404
 
         try:
             data = request.get_json()

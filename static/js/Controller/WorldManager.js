@@ -86,7 +86,6 @@ export class WorldManager{
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
         const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
-        console.log(placeable);
         if(placeable){
             const requestIndex = this.postRequests.length;
             if(this.persistent){
@@ -99,7 +98,6 @@ export class WorldManager{
     }
 
     checkPosForBuilding(worldPosition){
-        console.log(worldPosition);
         return this.world.checkPosForBuilding(worldPosition);
     }
 

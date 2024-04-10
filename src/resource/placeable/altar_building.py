@@ -60,7 +60,7 @@ class AltarBuildingResource(Resource):
 
 
     @swagger.tags('building')
-    @summary("Update the altar building object with the given id")
+    @summary("Update the altar building object with the given id. Updateable fields are x,z,rotation & level")
     @swagger.expected(schema=AltarBuildingSchema, required=True)
     @swagger.response(response_code=200, description="Success schema", schema=SuccessSchema)
     @swagger.response(response_code=404, description='Altar table with given id not found', schema=ErrorSchema)

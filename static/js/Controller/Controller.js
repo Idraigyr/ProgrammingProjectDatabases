@@ -13,6 +13,7 @@ import {AssetManager} from "./AssetManager.js";
 import {BuildManager} from "./BuildManager.js";
 import {MenuManager} from "./MenuManager.js";
 import {ItemManager} from "./ItemManager.js";
+import {MinionController} from "./MinionController.js";
 
 /**
  * Controller object that contains all the controllers (aka controller namespace)
@@ -31,6 +32,7 @@ export const Controller = Object.freeze({
     MenuManager: MenuManager,
     ItemManager: ItemManager,
     CharacterController: CharacterController,
+    MinionController: MinionController,
     RaycastController: RaycastController,
     CollisionDetector: CollisionDetector,
     UserInfo: UserInfo,

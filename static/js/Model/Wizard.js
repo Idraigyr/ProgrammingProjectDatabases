@@ -1,5 +1,4 @@
 import {Character} from "./Character.js";
-import {max} from "../helpers.js";
 
 /**
  * @class Wizard - class for the player character
@@ -30,7 +29,7 @@ export class Wizard extends Character{
      */
     updateCooldowns(deltaTime){
         this.spellCooldowns.forEach((cooldown, index, array) => {
-            array[index] = max(0,cooldown -= deltaTime);
+            array[index] = Math.max(0,cooldown -= deltaTime);
         });
     }
 

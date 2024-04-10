@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import {Entity} from "./Entity.js";
 import {buildTypes} from "../configs/Enums.js";
+import {gridCellSize} from "../configs/ViewConfigs.js";
+import {assert, returnWorldToGridIndex} from "../helpers.js";
 
 /**
  * model of foundation which is a grid based plane with a center-square, meaning both width and length are uneven
@@ -13,45 +15,171 @@ export class Foundation extends Entity{
 
     /**
      * creates a foundation which is a grid based plane with a center-square, meaning both width and length are uneven
-     * @param {{width: Number, length: Number, rotation: Number, height: Number}} params - width and length are always uneven, if not they are increased by 1. height is always larger than 0 otherwise = 0.1
+     * @param {{width: Number, length: Number, rotation: Number, height: Number} | Foundation[]} params - width and length are always uneven, if not they are increased by 1. height is always larger than 0 otherwise = 0.1
      */
     constructor(params) {
         super(params);
         this.#rotation = 0;
-        this.rotation = params.rotation;
 
-        this.width = params?.width ?? 15;
-        this.width = this.width % 2 === 0 ? this.width + 1 : this.width;
+        if(params instanceof Array){
+            this.setFromFoundations(params);
+        } else {
+            this.rotation = params.rotation;
 
-        this.length = params?.length ?? 15;
-        this.length = this.length % 2 === 0 ? this.length + 1 : this.length;
+            this.width = params?.width ?? 15;
+            this.width = this.width % 2 === 0 ? this.width + 1 : this.width;
 
-        this.height = params?.height ?? 0;
-        this.height = this.height > 0 ? this.height : 0.1;
+            this.length = params?.length ?? 15;
+            this.length = this.length % 2 === 0 ? this.length + 1 : this.length;
 
-        this.min = new THREE.Vector3();
-        this.max = new THREE.Vector3();
+            this.height = 0; //TODO: is height needed?
+            // this.height = params?.height ?? 0;
+            // this.height = this.height > 0 ? this.height : 0.1;
+            let extreme = this.calculateExtreme(this.position, this.width, this.length);
+            this.min = new THREE.Vector3(extreme.x, 0, extreme.z);
 
-        this.grid = new Array(params.width*params.length).fill(buildTypes.getNumber("empty"));
+            extreme = this.calculateExtreme(this.position, this.width, this.length, false);
+            this.max = new THREE.Vector3(extreme.x, 0, extreme.z);
+
+            this.grid = new Array(this.width*this.length).fill(buildTypes.getNumber("empty"));
+        }
     }
 
-    transformGridToSize(width,length){
-        if(width < this.width || length < this.length) return null;
-        const newGrid = new Array(width*length).fill(buildTypes.getNumber("void"));
-        for(let i = 0; i < this.width; i++){
-            for(let j = 0; j < this.length; j++){
-                newGrid[(i + (width - 1)/2)*width + (j + (length -1)/2)] = this.grid[(i + (this.width - 1)/2)*this.width + (j + (this.length -1)/2)];
+    /**
+     * calculate min or max of the foundation
+     * @param {{x: Number, z: Number}} position - center, position % gridCellSize === 0
+     * @param {Number} width - width % 2 === 1
+     * @param {Number} length - length % 2 === 1
+     * @param {Boolean} min - if true calculates min, if false calculates max
+     * @return {{x: number, z: number}} - center position of a min or max gridCell
+     */
+    calculateExtreme(position, width, length, min=true){
+        assert(width % 2 !== 0 && length % 2 !== 0, "width and length need to be uneven");
+        return {x: Math.floor(position.x + (min ? -1 : 1)*(width -1)*gridCellSize/2), z:  Math.floor(position.z + (min ? -1 : 1)*(length -1)*gridCellSize/2)};
+    }
+
+
+    #getCenterPosition(width, length){
+        assert(width % 2 !== 0 && length % 2 !== 0, "width and length need to be uneven");
+        return new THREE.Vector3(Math.floor((width - 1)*gridCellSize/2),0 , Math.floor((length - 1)*gridCellSize/2));
+    }
+
+    /**
+     * calculates the width, length, min and max of the foundation based on the min and max of the foundations
+     * @param {Foundation[]} foundations
+     * @return {{min: THREE.Vector3, max: THREE.Vector3, width: number, length: number}}
+     */
+    #calculateWidthAndLength(foundations){
+        assert(foundations.length > 0, "Can't construct a foundation from an empty array of foundations");
+        let min = new THREE.Vector3(Infinity,Infinity,Infinity);
+        let max = new THREE.Vector3(-Infinity,-Infinity,-Infinity);
+        for(const foundation of foundations){
+            if(foundation.min.x < min.x) min.x = foundation.min.x;
+            if(foundation.min.z < min.z) min.z = foundation.min.z;
+            if(foundation.max.x > max.x) max.x = foundation.max.x;
+            if(foundation.max.z > max.z) max.z = foundation.max.z;
+        }
+        //since center is 0,0 the calculated width and length needs to be + 1
+        let width = Math.ceil((max.x - min.x)/gridCellSize + 1);
+        let length = Math.ceil((max.z - min.z)/gridCellSize + 1);
+        if(width % 2 === 0) {
+            width++;
+            max.x += gridCellSize;
+        }
+        if(length % 2 === 0) {
+            length++;
+            max.z += gridCellSize;
+        }
+        return {width: width, length: length, min: min, max: max};
+    }
+
+    //TODO: might be convenient/necessary that 0,0 is the center of the new foundation
+    setFromFoundations(foundations){
+        const {width, length, min, max} = this.#calculateWidthAndLength(foundations);
+        this.width = width;
+        this.length = length;
+        //TODO: augment getCenterPosition so that position is based on position of the foundations
+        this.position = this.#getCenterPosition(width, length);
+        this.min = min;
+        this.max = max;
+        this.grid = this.#calculateGridFromFoundations(foundations);
+    }
+
+    /**
+     * returns a minimal Foundation that combines all foundations based on their grid and position
+     * @param {Foundation[]} foundations - array of foundations
+     * @return {Number[]|null} - returns null if islands overlap
+     */
+    #calculateGridFromFoundations(foundations){
+        //calculate min and max of the worldmap
+        const {width, length, min, max} = this.#calculateWidthAndLength(foundations);
+
+        //initialize empty worldmap
+        let worldMap = new Array(width*length).fill(buildTypes.getNumber("void"));
+
+        //fill in the worldmap with the islands
+        for(const foundation of foundations){
+            const xMin = (foundation.min.x - min.x)/gridCellSize + 0.5;
+            const xMax = (foundation.min.z - min.z)/gridCellSize + 0.5;
+            for(let z = 0; z < foundation.length; z++){
+                for(let x = 0; x < foundation.width; x++){
+                    let xIndex = Math.floor(xMin + x);
+                    let zIndex = Math.floor(xMax + z);
+                    let worldIndex = zIndex*width + xIndex;
+                    let foundationIndex = z*foundation.width + x;
+
+                    if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
+                        console.log("islands overlap/invalid access");
+                        return null;
+                    }
+                    worldMap[worldIndex] = foundation.grid[foundationIndex];
+                }
             }
         }
-        return (width + (this.width - 1)/2)*this.width + (length + (this.length -1)/2);
+        return worldMap;
     }
 
+    getTraversableNeighbours(index){
+        let neighbors = [];
+        if(index % this.width > 0 && this.grid[index - 1] === buildTypes.getNumber("empty")) neighbors.push(index - 1); //has left neighbour
+        if(index % this.width < this.width - 1 && this.grid[index + 1] === buildTypes.getNumber("empty")) neighbors.push(index + 1); //has right neighbour
+        if(index >= this.width && this.grid[index - this.width] === buildTypes.getNumber("empty")) neighbors.push(index - this.width); // has top neighbour
+        if(index < this.width*(this.length - 1) && this.grid[index + this.width] === buildTypes.getNumber("empty")) neighbors.push(index + this.width); // has bottom neighbour
+        //TODO: add diagonal neighbors?
+        return neighbors;
+    }
+
+    getDistance(index1, index2){
+        let x1 = index1 % this.width;
+        let z1 = Math.floor(index1/this.width);
+        let x2 = index2 % this.width;
+        let z2 = Math.floor(index2/this.width);
+        // return Math.abs(x1 - x2) + Math.abs(z1 - z2);
+        return Math.abs(x1 - x2) > Math.abs(z1 - z2) ? 14*Math.abs(x1 - x2) + 10*Math.abs(z1 - z2) : 14*Math.abs(z1 - z2) + 10*Math.abs(x1 - x2);
+    }
+
+    checkCell(worldPosition){
+        let {x, z} = returnWorldToGridIndex(worldPosition);
+        // return buildTypes.getName(this.grid[x + 7][z + 7]);
+        return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
+    }
+
+
     set position(vector){
-        const delta = vector.clone().sub(this.position);
-        this.min.add(delta);
-        this.max.add(delta);
+        const delta = vector.clone().sub(this._position);
+        this.min.x += delta.x;
+        this.min.z += delta.z;
+
+        this.max.x += delta.x;
+        this.max.z += delta.z;
+
         super.position = vector;
     }
+
+    get position(){
+        return super.position;
+    }
+
 
     set rotation(value){
         if([0,180,-0,-180].includes(value%360)) return;

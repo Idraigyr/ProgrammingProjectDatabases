@@ -4,7 +4,7 @@ from time import localtime, strftime
 
 from src.model.chat_message import ChatMessage
 
-socketio = SocketIO()
+socketio = SocketIO(cors_allowed_origins='*')
 
 
 @socketio.on('message')

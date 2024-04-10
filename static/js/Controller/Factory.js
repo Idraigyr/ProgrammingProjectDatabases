@@ -69,6 +69,21 @@ export class Factory{
         return tower;
     }
 
+    createBridge(params){
+        let bridgeModel = new Model.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: 3, length: 3});
+        let view = new View.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), cellsInRow: 3, islandThickness: 0.1});
+
+        this.scene.add(view.initScene());
+        view.boundingBox.setFromObject(view.charModel);
+        //check Foundation class for new min and max specification
+        // bridgeModel.min = view.boundingBox.min.clone();
+        // bridgeModel.max = view.boundingBox.max.clone();
+        this.scene.add(view.boxHelper);
+
+        this.viewManager.addPair(bridgeModel, view);
+        return bridgeModel;
+    }
+
     /**
      * Creates island model and view
      * @param position position of the island
@@ -85,8 +100,9 @@ export class Factory{
         this.scene.add(view.initScene());
 
         view.boundingBox.setFromObject(view.charModel);
-        islandModel.min = view.boundingBox.min.clone();
-        islandModel.max = view.boundingBox.max.clone();
+        //check Foundation class for new min and max specification
+        // islandModel.min = view.boundingBox.min.clone();
+        // islandModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
 
         this.#addBuildings(islandModel, buildingsList);
@@ -112,7 +128,6 @@ export class Factory{
         convertGridIndexToWorldPosition(pos);
         // Convert position
         const model = new Model[buildingName]({position: pos}); // TODO: add rotation
-        console.log(model);
         const view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
 
         this.scene.add(view.charModel);

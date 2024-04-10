@@ -108,6 +108,7 @@ def login():
 
     # Generate JWT token
     jwt = AUTH_SERVICE.create_jwt(user)
+    AUTH_SERVICE.update_last_login(user)
 
     # Return response
     response = Response(json.dumps({'status': 'success', 'jwt': jwt, 'ttl': current_app.config['JWT_ACCESS_TOKEN_EXPIRES']}), status=200, mimetype='application/json')
@@ -254,6 +255,7 @@ def oauth2_callback():
     ### Verification done, we can now generate the JWT token
     # Generate JWT token
     jwt = AUTH_SERVICE.create_jwt(user)
+    AUTH_SERVICE.update_last_login(user)
 
     # Redirect user to the main page
     response = redirect(f"{current_app.config['APP_HOST_SCHEME']}://{current_app.config['APP_HOST']}/", code=302)

@@ -114,7 +114,7 @@ class App {
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
-        this.minionControllers = [];
+        this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
         this.menuManager = new Controller.MenuManager({container: document.querySelector("#menuContainer"), blockInputCallback: {
@@ -256,6 +256,7 @@ class App {
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
         this.worldManager.world.player.advertiseCurrentCondition();
+        this.minionController.worldMap = this.worldManager.world.islands;
     }
 
     /**
@@ -284,8 +285,6 @@ class App {
         this.deltaTime = this.clock.getDelta();
 
         this.spellCaster.update(this.deltaTime);
-
-        this.minionControllers.forEach((controller) => controller.update(this.deltaTime));
 
         this.playerController.update(this.deltaTime);
         if(this.simulatePhysics){

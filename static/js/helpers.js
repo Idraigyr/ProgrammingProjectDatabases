@@ -2,25 +2,12 @@ import * as THREE from "three";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {gravity} from "./configs/ControllerConfigs.js";
 
-/**
- * Get the smallest number between x1 and x2
- * @param x1 first number
- * @param x2 second number
- * @returns {*} the smallest number
- */
-export const min = function(x1, x2){
-    return x1 < x2 ? x1 : x2;
-}
-/**
- * Get the largest number between x1 and x2
- * @param x1 first number
- * @param x2 second number
- * @returns {*} the largest number
- */
-export const max = function(x1, x2){
-    return x1 > x2 ? x1 : x2;
-}
+export const assert = function(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
 
+}
 export const setIndexAttribute = function(geometry){
     const numVertices = geometry.attributes.position.count;
     const index = [];
@@ -28,6 +15,33 @@ export const setIndexAttribute = function(geometry){
         index.push(i);
     }
     geometry.setIndex(index);
+}
+
+export const returnMultipliedString = function(string, length){
+    let str = "";
+    for(let i = 0; i < length; i++){
+        str += string;
+    }
+    return str;
+}
+
+export const printFoundationGrid = function(grid, width, length, oneline=false){
+    console.log(returnMultipliedString("*", width));
+    let arr = "";
+    if(oneline){
+        for(let i = 0; i < grid.length; i++){
+            arr += grid[i] + " ";
+        }
+    } else {
+        for(let i = 0; i < length; i++){
+            for(let j = 0; j < width; j++){
+                arr += grid[i*width + j] + " ";
+            }
+            arr += "\n";
+        }
+    }
+    console.log(arr);
+    console.log(returnMultipliedString("*", width));
 }
 
 export const returnWorldToGridIndex = function(position){
@@ -43,6 +57,7 @@ export const convertWorldToGridPosition = function (position){
 export const convertGridIndexToWorldPosition = function (position){
     position.x = position.x*gridCellSize;
     position.z = position.z*gridCellSize;
+    return position
 }
 
 export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //box1 = spell

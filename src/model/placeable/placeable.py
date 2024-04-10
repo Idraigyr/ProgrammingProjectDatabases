@@ -1,5 +1,5 @@
 from flask import current_app
-from sqlalchemy import BigInteger, String, Column, Integer, SmallInteger, ForeignKey
+from sqlalchemy import BigInteger, String, Column, Integer, SmallInteger, ForeignKey, CheckConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship, declared_attr
 
 
@@ -18,10 +18,10 @@ class Placeable(current_app.db.Model):
 
     type: Mapped[str] = Column(String(32))
 
-    xpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
-    zpos: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
+    xpos: Mapped[int] = Column(SmallInteger(), CheckConstraint('xpos >= -7 AND xpos <= 7'), nullable=False, default=0)
+    zpos: Mapped[int] = Column(SmallInteger(), CheckConstraint('zpos >= -7 AND zpos <= 7'), nullable=False, default=0)
 
-    rotation: Mapped[int] = Column(SmallInteger(), nullable=False, default=0)
+    rotation: Mapped[int] = Column(SmallInteger(), CheckConstraint('rotation >= 0 AND rotation <= 3'), nullable=False, default=0)
 
     blueprint_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey('blueprint.id'), nullable=False, default=0)
     blueprint: Mapped["Blueprint"] = relationship('Blueprint')
@@ -30,11 +30,16 @@ class Placeable(current_app.db.Model):
         """
         Initializes a placeable object
         :param island_id: The id of the island that this placeable belongs to
-        :param xpos: The x position of the building, in the grid. So it is bound by [0,15]
-        :param zpos: The z position of the building, in the grid. So it is bound by [0,15]
+        :param xpos: The x position of the building, in the grid. So it is bound by [-7,7]
+        :param zpos: The z position of the building, in the grid. So it is bound by [-7,7]
         :param blueprint_id: The id of the blueprint that builds this placeable
         :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
+        if xpos < -7 or xpos > 7 or zpos < -7 or zpos > 7:
+            raise ValueError("xpos and/or zpos is out of bounds [-7,7]")
+        if rotation < 0 or rotation > 3:
+            raise ValueError("rotation is out of bounds [0,3]")
+
         self.island_id = island_id
         self.xpos = xpos
         self.zpos = zpos
@@ -49,6 +54,13 @@ class Placeable(current_app.db.Model):
         :param data: The new data
         :return:
         """
+        if data.get('x', self.xpos) < -7 or data.get('x', self.xpos) > 7:
+            raise ValueError("xpos is out of bounds [-7,7]")
+        if data.get('z', self.zpos) < -7 or data.get('z', self.zpos) > 7:
+            raise ValueError("zpos is out of bounds [-7,7]")
+        if data.get('rotation', self.rotation) < 0 or data.get('rotation', self.rotation) > 3:
+            raise ValueError("rotation is out of bounds [0,3]")
+
         self.xpos = data.get('x', self.xpos)
         self.zpos = data.get('z', self.zpos)
         self.rotation = data.get('rotation', self.rotation)

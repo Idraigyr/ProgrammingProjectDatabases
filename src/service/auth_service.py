@@ -153,7 +153,7 @@ class AuthService:
         current_app.db.session.commit()
 
         # Create the player entity
-        player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=7, zpos=7)
+        player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=0, zpos=0, ypos=0, level=1)
         player_entity.player = player
         player.entity = player_entity
         current_app.db.session.add(player_entity)
@@ -170,6 +170,15 @@ class AuthService:
         current_app.db.session.commit()
 
         return player
+
+    def update_last_login(self, user: 'UserProfile') -> None:
+        """
+        Update the last login of the user
+        :param user: The user to update
+        :return: None
+        """
+        user.update({'last_login': current_app.db.func.now()})
+        current_app.db.session.commit()
 
 
 AUTH_SERVICE = AuthService()
