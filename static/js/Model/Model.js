@@ -7,6 +7,7 @@ import {Mine} from "./Buildings/Mine.js";
 import {Tower} from "./Buildings/Tower.js";
 import {FusionTable} from "./Buildings/FusionTable.js";
 import {Bush} from "./Buildings/Bush.js";
+import {Watch} from "./Watch.js";
 import {FollowPlayer, Immobile, MobileCollidable, Projectile, RitualSpell} from "./SpellEntities.js";
 
 // Model namespace
@@ -24,5 +25,6 @@ export const Model = Object.freeze({
     Immobile: Immobile,
     MobileCollidable: MobileCollidable,
     FollowPlayer: FollowPlayer,
-    RitualSpell: RitualSpell
+    RitualSpell: RitualSpell,
+    Watch: Watch
 });

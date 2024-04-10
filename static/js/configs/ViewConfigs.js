@@ -20,6 +20,10 @@ export const assetPaths = Object.freeze({
     Tower: "./static/assets/3d-models/towers/_Wizard_tower_LVL_1.fbx",
 });
 
+export const fontPaths = Object.freeze({
+    Surabanglus: "./static/fonts/Surabanglus_Regular.json",
+});
+
 export const menuPaths = Object.freeze({
 
 });

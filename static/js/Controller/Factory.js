@@ -149,7 +149,8 @@ export class Factory{
             });
             this.viewManager.dyingViews.push(buildingPreview);
             this.scene.add(buildingPreview.charModel);
-            // Traverse the original asset to make it green semi-transparent
+            // Create visible watch to see time left
+            const watch = new View.Watch({position: pos, time: model.timeToBuild, scene: this.scene});
         }
         return model;
     }

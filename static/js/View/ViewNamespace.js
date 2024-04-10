@@ -10,6 +10,7 @@ import {Tower} from "./Buildings/Tower.js";
 import {Bush} from "./Buildings/Bush.js";
 import {FusionTable} from "./Buildings/FusionTable.js";
 import {BuildingPreview} from "./BuildingPreview.js";
+import {Watch} from "./Watch.js";
 
 /**
  * Namespace for all the view classes
@@ -29,5 +30,6 @@ export const View = Object.freeze({
     IceWall: IceWall,
     SpellPreview: SpellPreview,
     BuildingPreview: BuildingPreview,
-    RitualSpell: RitualSpell
+    RitualSpell: RitualSpell,
+    Watch: Watch
 });
