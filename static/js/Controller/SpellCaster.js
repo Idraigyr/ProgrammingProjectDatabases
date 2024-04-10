@@ -75,6 +75,15 @@ export class SpellCaster extends Subject{
         return new CustomEvent("visibleSpellPreview", {detail: {visible: bool}});
     }
 
+    //TODO: use for rotating buildings?
+    createUpdateBuildSpellEvent(type, params){
+        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
+    }
+
+    createCastBuildSpellEvent(type, params){
+        return new CustomEvent("castBuildSpell", {detail: {type: type, params: params}});
+    }
+
     //return correct cast position based on spelltype (is almost always position of wizard wand);
     getSpellCastPosition(spell){
         //TODO: change
@@ -84,14 +93,6 @@ export class SpellCaster extends Subject{
     onSpellSwitch(event){
         this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
         // check if you need to do something else
-    }
-
-    createUpdateBuildSpellEvent(type, params){
-        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
-    }
-
-    createCastBuildSpellEvent(type, params){
-        return new CustomEvent("castBuildSpell", {detail: {type: type, params: params}});
     }
 
     update(deltaTime) {

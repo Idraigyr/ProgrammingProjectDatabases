@@ -9,8 +9,6 @@ import {
     jumpHeight
 } from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
-import {max, min} from "../helpers.js";
-import {Factory} from "./Factory.js";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
 import {BaseCharAttackState, EatingState} from "../Model/States/CharacterStates.js";
 
