@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from flask import current_app
@@ -77,7 +78,7 @@ class Player(current_app.db.Model):
         if mana < 0 or mana > 1000: # we allow until a 1000 because you can expand your mana pool
             raise ValueError("Mana must be greater than or equal to 0 and less than or equal to 1000")
         if last_logout is None:
-            last_logout = 0  # epoch
+            last_logout = datetime.datetime(1970,1,1)  # epoch
         if last_login is None:
             last_login = func.now()
 

@@ -35,7 +35,7 @@ class UserProfile(current_app.db.Model):
         self.lastname = lastname
         self.credentials = credentials
         from src.model.player import Player
-        self.player = Player(self)
+        self.player = Player(user_profile=self, xp=0, mana=0, crystals=0, last_login=None, last_logout=None)
         self.admin = admin
 
     def uses_oauth2(self):
