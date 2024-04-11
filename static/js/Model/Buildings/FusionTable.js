@@ -6,7 +6,7 @@ import {Placeable} from "./Placeable.js";
 export class FusionTable extends Placeable{
     constructor(params) {
         super(params);
-        this.timeToBuild = 40;
+        this.timeToBuild = 4000;
     }
 
     get dbType(){

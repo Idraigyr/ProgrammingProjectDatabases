@@ -57,11 +57,11 @@ export class Timer{
         this.runtimeCallbacks.forEach((callback, i) => callback(this.runtimeCallbacksParams?.[i]));
     }
     // Add runtime callbacks
-    addRuntimeCallback(callback, callbackParams=null){
+    addRuntimeCallback(callback, callbackParams){
         this.runtimeCallbacks.push(callback);
         this.runtimeCallbacksParams.push(callbackParams);
     }
-    addCallback(callback, callbackParams=null){
+    addCallback(callback, callbackParams){
         this.callbacks.push(callback);
         this.callbacksParams.push(callbackParams);
     }

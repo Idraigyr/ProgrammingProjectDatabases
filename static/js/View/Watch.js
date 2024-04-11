@@ -19,7 +19,13 @@ export class Watch extends IView{
     }
     setTimeView(time){
         // Quick fix to update only per second
-        if( Math.floor(this.currentTime % 60) === Math.floor(time % 60)) return;
+        if( Math.floor(this.currentTime % 60) === Math.floor(time % 60)) {
+            if(this.charModel){
+                setPositionOfCentre(this.charModel, this.position);
+                this.charModel.position.set(this.charModel.position.x, gridCellSize/2, this.charModel.position.z);
+            }
+            return;
+        }
         // Transform seconds to hours, minutes and seconds string
         let hours = Math.floor(time / 3600);
         let minutes = Math.floor((time % 3600) / 60);
