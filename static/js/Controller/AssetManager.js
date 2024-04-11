@@ -27,7 +27,7 @@ export class AssetManager{
         await Promise.all(promises).then((values) => {
             let index = 0;
             for(const key in assetPaths) {
-                const {charModel = null, animations = null, texture = null} = values[index];
+                const {charModel = null, animations = null, texture = null, font = null} = values[index];
                 this.#assetList[key] = {};
 
                 if(charModel){
@@ -52,6 +52,9 @@ export class AssetManager{
                 if(texture){
                     this.#assetList[key].texture = texture;
                 }
+                if(font){
+                    this.#assetList[key].font = font;
+                }
                 index++;
             }
         });
@@ -67,6 +70,8 @@ export class AssetManager{
                 return clone(this.#assetList[name].model);
             } else if (this.#assetList[name].texture) {
                 return this.#assetList[name].texture.clone();
+            } else if (this.#assetList[name].font) {
+                return this.#assetList[name].font;
             }
             throw new Error(`no asset exists for ${name}.`);
         }

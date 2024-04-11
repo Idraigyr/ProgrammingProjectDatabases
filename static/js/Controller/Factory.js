@@ -165,9 +165,18 @@ export class Factory{
             this.viewManager.dyingViews.push(buildingPreview);
             this.scene.add(buildingPreview.charModel);
             // Create visible watch to see time left
-            const watch = new View.Watch({position: pos, time: model.timeToBuild, scene: this.scene});
+            const watch = new View.Watch({position: pos, time: model.timeToBuild, scene: this.scene, font: this.assetManager.getAsset("SurabanglusFont")});
             // Add callback to update view with the up-to-date time
             timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
+            // Rotate the watch view each step
+            timer.addRuntimeCallback(() => {
+                watch.charModel.rotation.y += 0.05;
+            });
+            // Remove watch view when the timer ends
+            timer.addCallback(() => {
+                this.scene.remove(watch.charModel);
+            }
+            )
         }
         return model;
     }

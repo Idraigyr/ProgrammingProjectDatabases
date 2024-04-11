@@ -18,10 +18,7 @@ export const assetPaths = Object.freeze({
     iceBlock: "./static/assets/3d-models/crystals/Crystal.glb",
     towerTexture: "./static/assets/textures/towerTexture.png",
     Tower: "./static/assets/3d-models/towers/_Wizard_tower_LVL_1.fbx",
-});
-
-export const fontPaths = Object.freeze({
-    Surabanglus: "./static/fonts/Surabanglus_Regular.json",
+    SurabanglusFont: "./static/fonts/Surabanglus_Regular.json",
 });
 
 export const menuPaths = Object.freeze({

@@ -61,6 +61,10 @@ export class Timer{
         this.runtimeCallbacks.push(callback);
         this.runtimeCallbacksParams.push(callbackParams);
     }
+    addCallback(callback, callbackParams){
+        this.callbacks.push(callback);
+        this.callbacksParams.push(callbackParams);
+    }
 }
 export class TimerManager {
     #timers;
