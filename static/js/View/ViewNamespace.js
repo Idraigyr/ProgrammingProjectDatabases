@@ -9,6 +9,7 @@ import {SpellPreview} from "./SpellPreview.js";
 import {Tower} from "./Buildings/Tower.js";
 import {Bush} from "./Buildings/Bush.js";
 import {FusionTable} from "./Buildings/FusionTable.js";
+import {WarriorHut} from "./Buildings/WarriorHut.js";
 import {BuildingPreview} from "./BuildingPreview.js";
 import {Watch} from "./Watch.js";
 
@@ -24,6 +25,7 @@ export const View = Object.freeze({
     Altar: Altar,
     Bush: Bush,
     FusionTable: FusionTable,
+    WarriorHut: WarriorHut,
     Mine: Mine,
     Tower: Tower,
     Shield: Shield,
