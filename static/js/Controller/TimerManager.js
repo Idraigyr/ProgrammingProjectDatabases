@@ -14,7 +14,7 @@ export class Timer{
         this.duration = duration;
         this.timer = 0;
         this.callbacks = callbacks;
-        this.callbacksParams = callbackParams;
+        this.callbacksParams = callbackParams??[];
         this.repeatable = repeatable;
         this.finished = false;
         this.runtimeCallbacks = [];
@@ -57,11 +57,11 @@ export class Timer{
         this.runtimeCallbacks.forEach((callback, i) => callback(this.runtimeCallbacksParams?.[i]));
     }
     // Add runtime callbacks
-    addRuntimeCallback(callback, callbackParams){
+    addRuntimeCallback(callback, callbackParams=null){
         this.runtimeCallbacks.push(callback);
         this.runtimeCallbacksParams.push(callbackParams);
     }
-    addCallback(callback, callbackParams){
+    addCallback(callback, callbackParams=null){
         this.callbacks.push(callback);
         this.callbacksParams.push(callbackParams);
     }
