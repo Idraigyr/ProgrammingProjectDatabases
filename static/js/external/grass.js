@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import {gridCellSize} from "../configs/ViewConfigs.js";
+
 const vertexShader = "varying vec2 vUv;\n" +
     "    varying vec2 cloudUV;\n" +
     "    \n" +
@@ -79,26 +81,26 @@ function convertRange (val, oldMin, oldMax, newMin, newMax) {
   return (((val - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
 }
 
-export function generateGrassField ( scene ) {
+export function generateGrassField(scene, centerX=0, centerY=0, centerZ=0, sideLength=gridCellSize*15) {
   const positions = [];
   const uvs = [];
   const indices = [];
   const colors = [];
 
+  const HALF_SIDE = sideLength / 2;
+
   for (let i = 0; i < BLADE_COUNT; i++) {
     const VERTEX_COUNT = 5;
-    const surfaceMin = PLANE_SIZE / 2 * -1;
-    const surfaceMax = PLANE_SIZE / 2;
-    const radius = PLANE_SIZE / 2;
 
-    const r = radius * Math.sqrt(Math.random());
-    const theta = Math.random() * 2 * Math.PI;
-    const x = r * Math.cos(theta);
-    const y = r * Math.sin(theta);
+    const x = centerX + Math.random() * sideLength - HALF_SIDE;
+    const z = centerZ + Math.random() * sideLength - HALF_SIDE;
 
-    const pos = new THREE.Vector3(x, 0, y);
+    const pos = new THREE.Vector3(x, centerY, z); // Fixed y-coordinate
 
-    const uv = [convertRange(pos.x, surfaceMin, surfaceMax, 0, 1), convertRange(pos.z, surfaceMin, surfaceMax, 0, 1)];
+    const uv = [
+      convertRange(pos.x, centerX - HALF_SIDE, centerX + HALF_SIDE, 0, 1),
+      convertRange(pos.z, centerZ - HALF_SIDE, centerZ + HALF_SIDE, 0, 1)
+    ];
 
     const blade = generateBlade(pos, i * VERTEX_COUNT, uv);
     blade.verts.forEach(vert => {
@@ -115,11 +117,12 @@ export function generateGrassField ( scene ) {
   geom.setAttribute('color', new THREE.BufferAttribute(new Float32Array(colors), 3));
   geom.setIndex(indices);
   geom.computeVertexNormals();
-  geom.computeVertexNormals();
 
   const mesh = new THREE.Mesh(geom, grassMaterial);
   scene.add(mesh);
 }
+
+
 
 function generateBlade (center, vArrOffset, uv) {
   const MID_WIDTH = BLADE_WIDTH * 0.5;
