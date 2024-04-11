@@ -22,8 +22,15 @@ export let sprintKey = "ShiftLeft";
 export let orbitCameraKey = "AltLeft";
 export let buildKey = "KeyB";
 
+export let subSpellKey = "KeyE";
+
+export let interactKey = "KeyE";
+
 export let slot1Key = "Digit1"
 export let slot2Key = "Digit2"
 export let slot3Key = "Digit3"
 export let slot4Key = "Digit4"
 export let slot5Key = "Digit5"
+
+
+export let eatingKey = "KeyQ"

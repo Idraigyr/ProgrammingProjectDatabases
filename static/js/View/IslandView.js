@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import {IView} from "./View.js";
 import {generateGrassField} from "../external/grass.js";
+import {gridCellSize} from "../configs/ViewConfigs.js";
 
 
 /**
@@ -14,15 +15,15 @@ export class Island extends IView{
 
     /**
      * Constructor for Island view
-     * @param gridCellSize size of grid cell
-     * @param cellsInRow number of cells in a row
-     * @param islandThickness thickness of the island plane
+     * @param {cellsInRow: number, islandThickness: number} params of grid cell
+     * cellsInRow number of cells in a row
+     * islandThickness thickness of the island plane
      */
-    constructor(gridCellSize = 10, cellsInRow = 15, islandThickness = 10) {
-        super();
+    constructor(params) {
+        super(params);
         this.#gridCellSize = gridCellSize;
-        this.#cellsInRow = cellsInRow;
-        this.#islandThickness = islandThickness;
+        this.#cellsInRow = params?.cellsInRow ?? 10;
+        this.#islandThickness = params?.islandThickness ?? 0.1;
     }
     createIsland(){
 
@@ -48,7 +49,7 @@ export class Island extends IView{
 
     /**
      * Create plane for the island
-     * @returns {Group} group of plane object
+     * @returns {THREE.Group} group of plane object
      */
     createPlane(){
         const group = new THREE.Group();
@@ -72,7 +73,7 @@ export class Island extends IView{
 
     /**
      * Create grass field
-     * @returns {Group} group of grass field
+     * @returns {THREE.Group} group of grass field
      */
     createGrassField(){
         const group = new THREE.Group();
@@ -82,7 +83,7 @@ export class Island extends IView{
 
     /**
      * Create axes for the scene
-     * @returns {Group} group of axes
+     * @returns {THREE.Group} group of axes
      */
     createAxes(){
         const group = new THREE.Group();
@@ -117,7 +118,7 @@ export class Island extends IView{
 
     /**
      * Initialize the scene
-     * @returns {Group} group of scene objects
+     * @returns {THREE.Group} group of scene objects
      */
     initScene(){
         const group = new THREE.Group();

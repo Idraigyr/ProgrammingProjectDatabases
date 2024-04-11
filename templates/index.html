@@ -23,13 +23,13 @@
           "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
           "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
           "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
+          "three-BufferGeometryUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/BufferGeometryUtils.js",
           "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
           "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/src/index.js",
           "three-orbitControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/OrbitControls.js"
         }
       }
     </script>
-    <!--"three-MeshBVHWorker": "https://unpkg.com/three-mesh-bvh@0.7.3/src/workers/GenerateMeshBVHWorker.js"-->
     <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
@@ -198,20 +198,25 @@
       <button class="applyButton" id="applyButton">Apply</button>
     </div>
 
+    <!-- Menu Container -->
+    <div id="menuContainer"></div>
+
+
     <!-- Tower Menu -->
-        <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Build Menu -->
-        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Altar Menu -->
-        <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Fusion Table Menu -->
-        <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+    <!-- Mine Menu -->
+    <!--    <object type="text/html" id="mineMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/mine.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+
+
+
 
     <!-- UI/HUD -->
-
-
-
-
     <div class="settings-button" id="settings-btn">
             <img src="../static/assets/images/Button_Blue.png" class="button">
             <img src="../static/assets/images/Regular_02.png" class="icon">
@@ -220,18 +225,23 @@
     <div class="HotBar">
         <div class="item Spell1 hovered">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell2">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
             </div>
         <div class="item Spell3">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell4">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell5">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
     </div>
 
@@ -253,7 +263,6 @@
     </div>
 
     <div class="Health">
-        <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
         <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
         <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
         <div class = "HealthAmount">

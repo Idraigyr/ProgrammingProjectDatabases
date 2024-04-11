@@ -1,5 +1,6 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
+import {adjustVelocity, adjustVelocity2, adjustVelocity3} from "../helpers.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -9,6 +10,7 @@ class SpellEntity extends Entity{
         super(params);
         this.spellType = params.spellType;
         this.duration = params.duration;
+        this.hitSomething = false;
         this.timer = 0;
     }
 
@@ -30,7 +32,56 @@ class SpellEntity extends Entity{
             this.dispatchEvent(this.createDeleteEvent());
         }
     }
+
+    onWorldCollision(deltaTime){}
+    onCharacterCollision(deltaTime, character){
+        if(this.team !== character.team){
+            this.spellType.applyEffects(character);
+            this.hitSomething = true;
+        }
+    }
 }
+
+class CollidableSpellEntity extends SpellEntity{
+    constructor(params) {
+        super(params);
+        this.boundingBox = new THREE.Box3();
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+    }
+}
+//move function should be a function that takes a value and a position vector and returns a new position vector
+//at this.functionValue = 0, the returned vector should always be (0,0,0)
+export class MobileCollidable extends CollidableSpellEntity{
+    constructor(params) {
+        super(params);
+        this.spawnPoint = new THREE.Vector3().copy(params.position);
+        this.moveFunction = params.moveFunction;
+        this.moveFunctionParams = params.moveFunctionParams;
+        this.functionValue = 0;
+    }
+
+    update(deltaTime) {
+        super.update(deltaTime);
+        this.functionValue += deltaTime;
+        this.moveEntity();
+    }
+    moveEntity(){
+        this.position = this.position.copy(this.spawnPoint).add(this.moveFunction(this.functionValue, this.moveFunctionParams));
+    }
+
+    onWorldCollision(deltaTime){}
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
+
+        character.onCollidable = adjustVelocity2(spellBBox, characterBBox, character.velocity, deltaTime);
+        //TODO: make sure player rises with the collidable
+    }
+}
+
+
 
 /**
  * @class Projectile - class for projectile spells. Determines how the spell collides with enemies
@@ -53,15 +104,36 @@ export class Projectile extends SpellEntity{
     update(deltaTime){
         super.update(deltaTime);
         const vec = new THREE.Vector3().copy(this.direction);
+        vec.normalize();
         vec.multiplyScalar(this.velocity*deltaTime);
         this._position.add(vec);
         this.dispatchEvent(this._createUpdatePositionEvent());
+    }
+
+    onWorldCollision(deltaTime){
+        this.hitSomething = true;
+        this.timer += this.duration;
+        this.dispatchEvent(this.createDeleteEvent());
+    }
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
+
+        if(this.hitSomething) {
+            this.timer += this.duration;
+            this.dispatchEvent(this.createDeleteEvent());
+        }
     }
 }
 
 export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
+    }
+    onWorldCollision(deltaTime){
+        super.onWorldCollision(deltaTime);
+    }
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
     }
 }
 

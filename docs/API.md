@@ -34,12 +34,17 @@ Endpoints of objects that allow listing of all objects are usually suffixed with
 All API responses are JSON objects. Except the `DELETE` method, all HTTP 200 responses will return the object itself rather than a status and/or message field.
 All non-200 responses will have a `status` key with the value `error` and a `message` key with a human-readable error message.
 Please note that the `auth` endpoints don't follow these conventions, as they are not part of the RESTful API. 
+
 For more details, please consult the Swagger documentation.
 
 - `GET` - Unless specified otherwise, requires always an `id` parameter in the **query string**. If the id is not found, it will return a 404. It will always return the object schema on HTTP 200. No status key is then returned.
 - `POST` - Requires a JSON body with the object schema. **No id** (Primary Key of the entity) has to be present in the request body (it is ignored anyway). **ALL** other fields are **mandatory** (unless specified otherwise). It will automatically be assigned and returned in the response body. It will return the object schema on HTTP 200. It will return a 400 if the object is not valid.
 - `PUT` - Requires a JSON body with the object schema. An **id (PK) has to be present** in the **request body**. All other fields are *optional*. Please note that not all fields are updatable. Please refer to the Swagger & PyDoc documentation for more info. A JSON object (schema) is returned on HTTP 200. It will return a 400 if the object is not valid. It will return a 404 if the object is not found.
 - `DELETE` - Requires an `id` parameter in the **query string**. It will return a HTTP 200 with `status` key `success` if the object is deleted. It will return a 404 if the object is not found.
+
+Unless clearly specified otherwise, the `type` field is always IGNORED in the request body. The `type` field is used for polymorphic identities. For POST request, this type is determined by the used endpoint and is therefore also never required.
+When applicable, the `type` field is present in the response body and can be safely used to determine which fields are present in the response body, depending on the properties the polymorphic object has.
+Eg. a mine has a `mined_amount` field that is only present in the `Mine` object. The `type` field can be used to determine if the object is a `Mine` or not. For a complete overview of polymorphic object and their fields, please refer to the ER-diagram.
 
 #### A special note on registering new endpoints
 Each RESTful endpoint (=Resource) should be registered with an `attach_resource()` function defined in the 
@@ -48,3 +53,27 @@ Finally, add this function to the `resource.__init__#attach_resources()` by impo
 
 The reason this is done this way is because the current flask-restful-swagger-3 package does not support multiple Flask route
 blueprints. So they all have to be bundled to one. The package is the only that adds Swagger 3 support, but is unfortunately unmaintained and broken in many ways.
+
+
+#### A special note on creating new buildings and entities that belong to an island
+When creating a new entity or building that belongs to an island (and all implementing classes), the accompanying `Schema` should also be 
+registered in the `resource/island.py` file. Entity schema's should be added to the `_resolve_placeable_schema_for_type()` method and buildings
+in the `_resolve_building_schema_for_type()` method. This is necessary for the `island` class to parse the entities and buildings to JSON values to pass
+on to the frontend.
+
+## Data constraints
+The following variables have certain constraints on their values. It is safe to assume these names are unique across the application (therefore these constraints are applicable accorss all variables with said name).
+- `level`: `value` >= 0 (entities & buildings)
+- `xpos`: `value` >= -7 and `value` <= 7 (grid size)
+- `zpos`: `value` >= -7 and `value` <= 7 (grid size)
+- `rotation`: `value` >= 0 and `value` <= 3 (north, east, south, west)
+- `cost`: `value` >= 0 (blueprints)
+- `buildtime`: `value` >= 0 (blueprints)
+- `used_crystals`: `value` >= 0 (tasks)
+- `to_level`: `value` >= 0 (tasks)
+- `multiplier`: `value` >= 0 (gem attributes)
+- `mined_amount`: `value` >= 0 (mines)
+- `crystals`: `value` >= 0 (player)
+- `xp`: `value` >= 0 (player)
+- `mana`: `value` >= 0 and `value` <= 1000 (player)
+- `audio_volume`: `value` >= 0 and `value` <= 100 (user settings)

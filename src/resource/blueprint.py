@@ -29,16 +29,22 @@ class BlueprintSchema(Schema):
         'cost': {
             'type': 'integer',
             'format': 'int64'
+        },
+        'buildtime': {
+            'type': 'integer',
+            'format': 'int64'
         }
     }
 
-    required = []
+    required = ['name', 'description', 'cost', 'buildtime']
 
     description = 'The blueprint model. A blueprint builds a building on an island. The player can build all buildings whose blueprints it has unlocked'
 
     def __init__(self, blueprint: Blueprint = None, **kwargs):
         if blueprint:
-            super().__init__(id=blueprint.id, name=blueprint.name, description=blueprint.description, **kwargs)
+            super().__init__(id=blueprint.id, name=blueprint.name, description=blueprint.description,
+                             cost=blueprint.cost,
+                             buildtime=blueprint.buildtime, **kwargs)
         else:
             super().__init__(**kwargs)
 
@@ -50,7 +56,7 @@ class BlueprintResource(Resource):
 
     @swagger.tags('blueprint')
     @summary('Get a blueprint by id')
-    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The id of the blueprint to retrieve')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The id of the blueprint to retrieve', required=True)
     @swagger.response(200, description='Success, returns the blueprint in JSON format', schema=BlueprintSchema)
     @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no blueprint id', schema=ErrorSchema)
@@ -74,7 +80,7 @@ class BlueprintResource(Resource):
 
 
     @swagger.tags('blueprint')
-    @summary('Update a blueprint')
+    @summary('Update a blueprint. All fields (except id) are updateable.')
     @swagger.expected(schema=BlueprintSchema, required=True)
     @swagger.response(200, description='Success, returns the updated blueprint in JSON format', schema=BlueprintSchema)
     @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)
@@ -89,7 +95,7 @@ class BlueprintResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            BlueprintSchema(**data)
+            BlueprintSchema(**data, _check_requirements=False)
             id = int(data['id'])
 
             blueprint = Blueprint.query.get(id)
@@ -120,7 +126,7 @@ class BlueprintResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            BlueprintSchema(**data)
+            BlueprintSchema(**data, _check_requirements=True)
             if 'id' in data:
                 data.pop('id')
 

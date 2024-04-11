@@ -37,7 +37,7 @@ class AltarBuildingResource(Resource):
 
     @swagger.tags('building')
     @summary("Retrieve the altar building object with the given id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The builder minion id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The builder minion id to retrieve', required=True)
     @swagger.response(response_code=200, description="The altar building in JSON format", schema=AltarBuildingSchema)
     @swagger.response(response_code=404, description='Altar table with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
@@ -60,7 +60,7 @@ class AltarBuildingResource(Resource):
 
 
     @swagger.tags('building')
-    @summary("Update the altar building object with the given id")
+    @summary("Update the altar building object with the given id. Updateable fields are x,z,rotation & level")
     @swagger.expected(schema=AltarBuildingSchema, required=True)
     @swagger.response(response_code=200, description="Success schema", schema=SuccessSchema)
     @swagger.response(response_code=404, description='Altar table with given id not found', schema=ErrorSchema)
@@ -76,8 +76,8 @@ class AltarBuildingResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            AltarBuildingSchema(**data)
-            id = int(data.get("placeable_id"))
+            AltarBuildingSchema(**data, _check_requirements=False)
+            id = int(data["placeable_id"])
         except (ValueError, KeyError) as e:
             return ErrorSchema(str(e)), 400
 

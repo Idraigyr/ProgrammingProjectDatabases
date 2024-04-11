@@ -5,8 +5,8 @@ Revises: 875e85441cdc
 Create Date: 2024-03-19 22:17:40.974032
 
 """
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -62,16 +62,13 @@ def upgrade():
 
     # Now a bit of data migration
     # Populate the db with initial blueprints
-    from src.model.blueprint import Blueprint
-    from src.model.enums import BlueprintType
-    print("INFO: Inserting default blueprints")
-    session.add(Blueprint(id=BlueprintType.ALTAR.value, name="Altar", description="The main hub of the island", cost=0))
-    session.add(Blueprint(id=BlueprintType.MINE.value, name="Mine", description="The mine of them all", cost=200))
-    session.add(Blueprint(id=BlueprintType.TOWER.value, name="Tower", description="A simple defense tower", cost=300))
-    session.add(Blueprint(id=BlueprintType.FUSE_TABLE.value, name="Fuse Table", description="Fuse crystals to create a gem", cost=500))
-    session.add(Blueprint(id=BlueprintType.WARRIOR_HUT.value, name="Warrior Hut", description="Spawns minons to attack enemies", cost=1000))
-    session.commit()
-
+    print("INFO Inserting default blueprints")
+    # We need to do this with raw SQL as SQLAlchemy already knows there's a new column, but the DB doesn't have that column yet (as it's in a later migration)
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (0, 'Altar', 'The main hub of the island', 0)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (1, 'Mine', 'The mine of them all', 200)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (2, 'Tower', 'A simple defense tower', 300)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (3, 'Fuse Table', 'Fuse crystals to create a gem', 500)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (4, 'Warrior Hut', 'Spawns minons to attack enemies', 1000)")
 
 
 def downgrade():

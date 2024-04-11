@@ -8,7 +8,7 @@ export class Player extends IAnimatedView{
     constructor(params) {
         super(params);
         this.boundingBox.setFromObject(this.charModel);
-        this.horizontalRotation = 180;
+        this.horizontalRotation = 90;
     }
 
     /**
@@ -26,6 +26,7 @@ export class Player extends IAnimatedView{
         getAnimation('CharacterArmature|Walk',"WalkForward");
         getAnimation('CharacterArmature|Roll',"WalkBackward");
         getAnimation('CharacterArmature|Spell1',"DefaultAttack");
+        getAnimation('CharacterArmature|PickUp', 'Eating')
     }
 
 }

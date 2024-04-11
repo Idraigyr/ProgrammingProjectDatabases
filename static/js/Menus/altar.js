@@ -1,10 +1,10 @@
 // variables
 
 // lists for spells, gems and stakes
-let spells = ["fireSpell", "freezeSpell", "shieldSpell"];
-let gems = ["diamondGem", "rubyGem", "emeraldGem", 'sapphireGem'];
-let stakes = [];
-
+let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell", "buildSpell"];
+let hotbar = []
+let gems = {"amberGem": 4, "rubyGem": 3, "sapphireGem": 8, 'diamondGem': 1, "emeraldGem": 2, "amethystGem": 3};
+let stakes = {"amberGem": 0, "rubyGem": 0, "sapphireGem": 0, 'diamondGem': 0, "emeraldGem": 0, "amethystGem": 0};
 
 
 // play button
@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+
 // functions for dragging items
 function allowDrop(event) {
     event.preventDefault();
@@ -29,37 +30,62 @@ function drag(event) {
 }
 
 function drop(event, containerId) {
-    event.preventDefault();
+    // event.preventDefault();
     let data = event.dataTransfer.getData("text");
     let draggedItem = document.getElementById(data);
     let startContainer = event.dataTransfer.getData("startContainer");
     let targetContainer = document.getElementById(containerId);
 
-    // Append the dragged item to the target container on right conditions and update lists
-    if(draggedItem.id.includes('Spell')){
-        if(targetContainer.id === 'container1' || targetContainer.id === 'container3'){
-            targetContainer.appendChild(draggedItem);
-            if(startContainer === 'container1' && targetContainer.id === 'container3'){
-                removeByString(spells, draggedItem.id);
-                stakes.push(draggedItem.id);
-            }
-            else if(startContainer === 'container3' && targetContainer.id === 'container1'){
-                removeByString(stakes, draggedItem.id);
-                spells.push(draggedItem.id);
-            }
+    // Append the dragged item to the target container on right conditions and update data
+    if(startContainer === 'container1' && targetContainer.id === 'container2' && hotbar.length !== 5){
+        targetContainer.appendChild(draggedItem);
+        removeByString(spells, draggedItem.id);
+        hotbar.push(draggedItem.id);
+
+    }
+    else if(startContainer === 'container2' && targetContainer.id === 'container1'){
+        targetContainer.appendChild(draggedItem);
+        removeByString(hotbar, draggedItem.id);
+        spells.push(draggedItem.id);
+    }
+    else if(startContainer === 'container3' && targetContainer.id === 'container4'){
+        if(gems[draggedItem.id] !== 0){
+            gems[draggedItem.id]--;
+            stakes[draggedItem.id]++;
         }
+        populateContainer('container3', gems);
+        populateContainer('container4', stakes);
     }
-    else if(targetContainer.id === 'container2' || targetContainer.id === 'container3'){
-            targetContainer.appendChild(draggedItem);
-            if(startContainer === 'container2' && targetContainer.id === 'container3'){
-                removeByString(gems, draggedItem.id);
-                stakes.push(draggedItem.id);
-            }
-            else if(startContainer === 'container3' && targetContainer.id === 'container2'){
-                removeByString(stakes, draggedItem.id);
-                gems.push(draggedItem.id);
-            }
+    else if(startContainer === 'container4' && targetContainer.id === 'container3'){
+        if(stakes[draggedItem.id] !== 0){
+            stakes[draggedItem.id]--;
+            gems[draggedItem.id]++;
+        }
+        populateContainer('container3', gems);
+        populateContainer('container4', stakes);
     }
+}
+
+// creates name for spell
+function toSpellString(inputString) {
+    // Make the first letter uppercase
+    let processedString = inputString.charAt(0).toUpperCase() + inputString.slice(1);
+
+    // Remove the last 5 letters
+    processedString = processedString.slice(0, -5);
+
+    return processedString;
+}
+
+// creates name for gem
+function toGemString(inputString) {
+    // Make the first letter uppercase
+    let processedString = inputString.charAt(0).toUpperCase() + inputString.slice(1);
+
+    // Remove the last 5 letters
+    processedString = processedString.slice(0, -3);
+
+    return processedString;
 }
 
 // Function to remove an element by its string value
@@ -70,13 +96,16 @@ function removeByString(array, value) {
     }
 }
 
-// create and populate items in the container
+// create and populate items in the containers
 function populateContainer(containerId, itemList) {
     let type = 'Spells';
     if(containerId === 'container2') {
-        type = 'Gems';
+        type = 'Hotbar';
     }
     else if(containerId === 'container3'){
+        type = 'Gems';
+    }
+    else if(containerId === 'container4'){
         type = 'Stakes';
     }
     const container = document.getElementById(containerId);
@@ -86,42 +115,65 @@ function populateContainer(containerId, itemList) {
 
     container.innerHTML = '<label><h3>' + type + '</h3></label>';
 
-    // Create and append items based on the itemList
-    itemList.forEach((itemName, index) => {
-        // add item
-        const item = document.createElement('div');
-        item.textContent = itemName;
-        item.draggable = true;
-        item.id = itemName;
-        item.classList.add('item');
-        item.addEventListener('dragstart', drag);
+    // Create and append items based on the input list
+    // for spells
+    if(type === 'Spells' || type === 'Hotbar'){
+        itemList.forEach((itemName, index) => {
+            // add item
+            const item = document.createElement('div');
+            item.textContent = toSpellString(itemName) + " spell";
+            item.draggable = true;
+            item.id = itemName;
+            item.classList.add('item');
+            item.addEventListener('dragstart', drag);
 
-        // add img to item
-        const img = document.createElement('img');
-        img.classList.add(itemName);
-        // link to images
-        if(type === 'Spells') {
+            // add img to item
+            const img = document.createElement('img');
+            img.classList.add(itemName);
+            // link to images
             img.src = "/static/images/spells/" + itemName + ".png";
+            img.alt = itemName;
+            img.draggable = false; // Make sure the image is not draggable
+            img.addEventListener('dragstart', drag); // Handle dragstart event for the item
+            item.appendChild(img);
+            container.appendChild(item);
+        });
+    }
+    else{
+        for(let itemName in itemList) {
+            let amount = itemList[itemName];
+            if(amount !== 0) {
+                // add item
+                const item = document.createElement('div');
+                item.textContent = toGemString(itemName) + ": " + amount;
+                item.draggable = true;
+                item.id = itemName;
+                item.classList.add('item');
+                item.addEventListener('dragstart', drag);
+
+                // add img to item
+                const img = document.createElement('img');
+                img.classList.add(itemName);
+                // link to images
+                img.src = "/static/images/gems/" + itemName + ".png";
+                img.alt = itemName;
+                img.draggable = false; // Make sure the image is not draggable
+                img.addEventListener('dragstart', drag); // Handle dragstart event for the item
+                item.appendChild(img);
+                container.appendChild(item);
+            }
         }
-        else if(type === "Gems"){
-            img.src = "/static/images/gems/" + itemName + ".png";
-        }
-        img.alt = itemName;
-        img.draggable = false; // Make sure the image is draggable
-        img.addEventListener('dragstart', drag); // Handle dragstart event for the image
-        item.appendChild(img);
-        container.appendChild(item);
-    });
+    }
 }
 
 // Call the function to populate the container
 populateContainer('container1', spells);
-populateContainer('container2', gems);
-populateContainer('container3', stakes);
+populateContainer('container2', hotbar);
+populateContainer('container3', gems);
+populateContainer('container4', stakes);
 
 function exitMenu() {
     // Your code to handle closing the menu goes here
-    console.log("Altar menu closed");
     // Send message to parent
     window.parent.postMessage("closeAltarMenu", "*");
 }

@@ -35,7 +35,9 @@ export class IdleState extends BaseCharState{
      * @param input input from the user
      */
     updateState(deltaTime, input){
-        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+        if(input.keys.eating){
+            this.manager.setState("Eating");
+        } else if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
             } else if(input.keys.forward){
@@ -52,6 +54,7 @@ export class IdleState extends BaseCharState{
         } else if(input.mouse.leftClick){
             this.manager.setState("DefaultAttack");
         }
+
     }
 
     /**
@@ -102,7 +105,9 @@ export class RunForwardState extends BaseCharState{
      */
     updateState(deltaTime, input){
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
-            if((input.keys.forward || input.keys.left || input.keys.right) && !input.keys.sprint){
+            if(input.keys.eating){
+                this.manager.setState("Eating");
+            } else if((input.keys.forward || input.keys.left || input.keys.right) && !input.keys.sprint){
                 this.manager.setState("WalkForward");
             } else if(input.keys.backward){
                 this.manager.setState("WalkBackward");
@@ -113,6 +118,8 @@ export class RunForwardState extends BaseCharState{
             //this.manager.setState("Jump");
         } else if(input.mouse.leftClick){
             this.manager.setState("DefaultAttack");
+        } else if(input.keys.eating){
+            this.manager.setState("Eating");
         } else {
             this.manager.setState("Idle");
         }
@@ -165,7 +172,9 @@ export class WalkForwardState extends BaseCharState{
      * @param input input from the user
      */
     updateState(deltaTime, input){
-        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+        if(input.keys.eating){
+            this.manager.setState("Eating");
+        } else if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
             } else if(input.keys.backward){
@@ -229,7 +238,9 @@ export class WalkBackWardState extends BaseCharState{
      * @param input input from the user
      */
     updateState(deltaTime, input){
-        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+        if(input.keys.eating){
+            this.manager.setState("Eating");
+        } else if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
             } else if(input.keys.forward){
@@ -337,14 +348,14 @@ export class DefaultAttackState extends BaseCharAttackState{
         if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
             if(input.keys.forward && input.keys.sprint){
                 this.manager.setState("Run");
-            } else if(input.keys.forward){
+            } else if(input.keys.forward || input.keys.left || input.keys.right){
                 this.manager.setState("WalkForward");
             } else if(input.keys.backward){
                 this.manager.setState("WalkBackward");
             }
         } else if (input.keys.up){
             //this.manager.setState("Jump");
-        } if(!input.mouse.leftClick){
+        } else if(!input.mouse.leftClick){
             this.manager.setState("Idle");
         }
     }
@@ -435,4 +446,86 @@ export class HealingState extends BaseCharState{
     constructor() {
         super();
     }
+}
+
+/**
+ * Eating state for the character
+ */
+export class EatingState extends BaseCharState{
+    constructor(fsm) {
+        super(fsm);
+        this.timer = 0;
+        this.movementPossible = false;
+    }
+
+    /**
+     * Get the name of the state
+     * @returns {string} name of the state
+     */
+    get name(){
+        return "Eating"
+    }
+
+    /**
+     * Update the state
+     * @param deltaTime time passed since last update
+     * @param input input from the user
+     */
+    updateState(deltaTime, input) {
+        if(!this.checkTimer(deltaTime)) return;
+        if(input.keys.forward || input.keys.backward || input.keys.left || input.keys.right){
+            if(input.keys.forward && input.keys.sprint){
+                this.manager.setState("Run");
+            } else if(input.keys.forward){
+                this.manager.setState("WalkForward");
+            } else if(input.keys.backward){
+                this.manager.setState("WalkBackward");
+            }
+        } else if (input.keys.up){
+            //this.manager.setState("Jump");
+        }
+        else if(input.mouse.leftClick){
+            this.manager.setState("DefaultAttack");
+        } if(!input.mouse.leftClick){
+            this.manager.setState("Idle");
+        }
+    }
+
+    /**
+     * Check if the timer has reached the end of the animation
+     * @param deltaTime time passed since last update
+     * @returns {boolean} true if the timer has reached the end of the animation
+     */
+    checkTimer(deltaTime) {
+        this.timer += deltaTime;
+        if (this.timer > this.manager.animations["Eating"].getClip().duration) {
+            this.timer = 0;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
+    enter(prevState){
+        const curAction = this.manager.animations["Eating"];
+        if(prevState){
+            const prevAction = this.manager.animations[prevState.name];
+
+            curAction.time = 0.0;
+            curAction.enabled = true;
+            curAction.setEffectiveTimeScale(-1.0);
+            curAction.setEffectiveWeight(1.0);
+
+            //possible necessary logic
+
+            curAction.crossFadeFrom(prevAction,0.5,true);
+            curAction.play();
+        } else {
+            curAction.play();
+        }
+    }
+
 }

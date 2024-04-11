@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {BuildSpell, EntitySpell, HitScanSpell, InstantSpell} from "../Model/Spell.js";
 import {Subject} from "../Patterns/Subject.js";
 import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "../configs/Keybinds.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 export class SpellCaster extends Subject{
     #wizard;
@@ -9,17 +10,15 @@ export class SpellCaster extends Subject{
         super(params);
         this.#wizard = null;
         this.raycaster = params.raycaster;
-        this.viewManager = params.viewManager;
         this.renderingPreview = true;
         //TODO: make sure that every equipped spell that needs a preview Object has its preview created on equip.
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
+        this.chargeTimer = 0;
     }
 
     set wizard(wizard){
         this.#wizard = wizard;
-        document.body.style.setProperty("--maxMana", this.#wizard.maxMana);
-        this.changeManaBar();
     }
 
     /**
@@ -76,49 +75,41 @@ export class SpellCaster extends Subject{
         return new CustomEvent("visibleSpellPreview", {detail: {visible: bool}});
     }
 
+    //TODO: use for rotating buildings?
+    createUpdateBuildSpellEvent(type, params){
+        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
+    }
+
+    createCastBuildSpellEvent(type, params){
+        return new CustomEvent("castBuildSpell", {detail: {type: type, params: params}});
+    }
+
     //return correct cast position based on spelltype (is almost always position of wizard wand);
     getSpellCastPosition(spell){
         //TODO: change
         return this.#wizard.position.clone().add(new THREE.Vector3(0,2,0));
     }
-    //TODO: clean up; temp solution
+
     onSpellSwitch(event){
-        let index = 0;
-        switch (event.code) {
-            case slot1Key:
-                break;
-            case slot2Key:
-                index = 1;
-                break;
-            case slot3Key:
-                index = 2;
-                break;
-            case slot4Key:
-                index = 3;
-                break;
-            case slot5Key:
-                index = 4;
-                break;
-        }
-        this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[index]?.hasPreview ?? false));
+        this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
         // check if you need to do something else
     }
 
-    createUpdateBuildSpellEvent(type, params){
-        return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
-    }
-
     update(deltaTime) {
-        //this.dispatchEvent(this.createUpdateBuildSpellEvent(this.#wizard.getCurrentSpell(), {}));
-        //TODO: updatePreviewObject locally?
-        if(this.#wizard?.getCurrentSpell()?.hasPreview && this.#wizard?.getCurrentSpell()?.spell instanceof BuildSpell){
-            // TODO: check collision with plane only
-            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
-        }
-        else if (this.#wizard?.getCurrentSpell()?.hasPreview) {
-            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {position: this.checkRaycaster()}));
+        if (this.#wizard?.getCurrentSpell()?.hasPreview) {
+            //send to worldManager or viewManager
+            this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {
+                position: this.checkRaycaster(),
+                rotation: this.#wizard.getCurrentSpell().previewRotates ? this.#wizard.phi : null}));
         }
         this.#wizard.updateCooldowns(deltaTime);
+    }
+
+    interact(event){
+        const hit = this.checkRaycaster();
+        if(hit){
+            this.dispatchEvent(new CustomEvent("interact", {detail: {position: hit}}));
+        }
     }
 
     checkRaycaster(){
@@ -130,42 +121,34 @@ export class SpellCaster extends Subject{
     }
 
     //use as only signal for spells that can be cast instantly or use as signal to start charging a spell
-    onLeftClickDown(event){
-        // Ignore if the event is not from the left mouse button
-        if (event.button !== 0) return;
+    onLeftClickDown(){
         if (this.#wizard.canCast()) {
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 
-            if(this.#wizard.getCurrentSpell().spell.hitScan){
+            if(this.#wizard.getCurrentSpell().worldHitScan){
                 castPosition = this.checkRaycaster();
             }
 
             if(this.#wizard.getCurrentSpell().spell instanceof EntitySpell){
                 this.dispatchEvent(this.createSpellEntityEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
+                    horizontalRotation: this.#wizard.phi*180/Math.PI + 90,
                     //TODO: base direction on camera not on player direction
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                    team: this.#wizard.team
                 }));
-            } else if(false && this.#wizard.getCurrentSpell().spell instanceof HitScanSpell){
-                this.dispatchEvent(this.createHitScanSpellEvent(this.#wizard.getCurrentSpell(), {}));
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
-                this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell(), {
-                    position: this.checkRaycaster(),
+                this.dispatchEvent(this.createCastBuildSpellEvent(this.#wizard.getCurrentSpell(), {
+                    position: castPosition,
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                 }));
             }
             this.#wizard.cooldownSpell();
-            this.changeManaBar();
         } else {
             //play a sad sound;
         }
-    }
-
-    changeManaBar(){
-        document.body.style.setProperty("--currentMana", this.#wizard.mana);
-        this.manaBar.textContent = `${this.#wizard.mana}/${this.#wizard.maxMana}`;
     }
 
     //use as signal to release charging spells;

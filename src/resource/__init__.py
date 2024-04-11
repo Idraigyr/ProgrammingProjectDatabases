@@ -76,6 +76,11 @@ def attach_resources(app: Flask) -> None:
     import src.resource.placeable.tower_building as tower_building_module
     import src.resource.gems as gems_module
     import src.resource.blueprint as blueprint_module
+    import src.resource.task as task_module
+    import src.resource.upgrade_task as upgrade_task_module
+    import src.resource.user_settings as user_settings_module
+    import src.resource.placeable.prop as prop_module
+    import src.resource.chat_message as chat_message_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -89,6 +94,11 @@ def attach_resources(app: Flask) -> None:
     tower_building_module.attach_resource(app)
     gems_module.attach_resource(app)
     blueprint_module.attach_resource(app)
+    task_module.attach_resource(app)
+    upgrade_task_module.attach_resource(app)
+    user_settings_module.attach_resource(app)
+    prop_module.attach_resource(app)
+    chat_message_module.attach_resources(app)
 
 
 def clean_dict_input(d: dict) -> dict:

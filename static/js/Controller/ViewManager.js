@@ -2,6 +2,8 @@ import {Subject} from "../Patterns/Subject.js";
 import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
+import {convertWorldToGridPosition} from "../helpers.js";
+import {buildTypes} from "../configs/Enums.js";
 
 export class ViewManager extends Subject{
     constructor(params) {
@@ -13,7 +15,41 @@ export class ViewManager extends Subject{
             character: [],
             spellEntity: []
         };
+        this.dyingViews = [];
         this.spellPreview = params.spellPreview;
+        document.addEventListener("changeViewAsset", this.changeViewAsset.bind(this));
+    }
+
+    renderSpellPreview(event){
+        if(!event.detail.params.position){
+            this.spellPreview.charModel.visible = false;
+            return;
+        }
+        const newEvent = {detail: {name: "", position: event.detail.params.position}};
+        if(event.detail.type.name === "build"){
+            if(this.getIslandByPosition(newEvent.detail.position)?.checkCell(newEvent.detail.position) !== buildTypes.getNumber("empty")){
+                newEvent.detail.name = "augmentBuild";
+            } else {
+                newEvent.detail.name = "build";
+            }
+            convertWorldToGridPosition(newEvent.detail.position);
+            newEvent.detail.position.y = 0;
+        } else {
+            newEvent.detail.name = event.detail.type.name;
+            newEvent.detail.rotation = event.detail.params?.rotation;
+        }
+        this.spellPreview.render(newEvent);
+    }
+
+    getIslandByPosition(position){
+        for(const island of this.pairs.island){
+            const min = island.view.boundingBox.min;
+            const max = island.view.boundingBox.max;
+            if(position.x > min.x && position.x < max.x && position.z > min.z && position.z < max.z){
+                return island.model;
+            }
+        }
+        return null;
     }
 
     /**
@@ -46,6 +82,29 @@ export class ViewManager extends Subject{
             return found;
         }
     }
+    changeViewAsset(event){
+        // Model, ViewAsset
+        let model = event.detail.model;
+        let viewAsset = event.detail.viewAsset;
+        // Get the pair
+        let pair = this.getPair(model);
+        // Get the old view
+        let oldView = pair.view;
+        // Copy old parameters (such as position, rotation, scale) to the asset
+        // TODO: is it correct to assume that you have to copy the position, rotation and scale of the old view to the new view?
+        viewAsset.position.copy(oldView.charModel.position);
+        viewAsset.rotation.copy(oldView.charModel.rotation);
+        viewAsset.scale.copy(oldView.charModel.scale);
+        // Get the scene
+        let scene = oldView.charModel.parent;
+        // Remove the old view from the scene
+        scene.remove(oldView.charModel);
+        // Add the new view to the scene
+        scene.add(viewAsset);
+        // Change the asset of the view
+        oldView.charModel = viewAsset;
+    }
+
     /**
     * callback to delete view when model is deleted. Should be called with every deletion of a model object
     * @param {{detail: model}} event
@@ -53,6 +112,9 @@ export class ViewManager extends Subject{
     deleteView(event){
         this.pairs[event.detail.model.type] = this.pairs[event.detail.model.type].filter((pair) => {
             if(pair.model === event.detail.model){
+                if(pair.view.staysAlive){
+                    this.dyingViews.push(pair.view);
+                }
                 pair.view.cleanUp();
                 return false;
             }
@@ -84,11 +146,10 @@ export class ViewManager extends Subject{
         return planes;
     }
 
-    get colliderModels(){
-        let models = [];
-        this.pairs.building.forEach((pair) => models.push(pair.view.charModel));
-        this.pairs.island.forEach((pair) => models.push(pair.view.charModel));
-        return models;
+    getColliderModels(array){
+        array.splice(0, array.length);
+        this.pairs.building.forEach((pair) => array.push(pair.view.charModel));
+        this.pairs.island.forEach((pair) => array.push(pair.view.charModel));
     }
 
     /**
@@ -112,5 +173,6 @@ export class ViewManager extends Subject{
                 }
             });
         }
+        this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime));
     }
 }

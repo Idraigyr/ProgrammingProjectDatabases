@@ -10,6 +10,10 @@ function showBuildings(type) {
     const container = document.getElementById('container1');
     container.innerHTML = ''; // Clear existing items in the container
 
+    // Define lists of buildings and items
+    let buildings = ["Building 1", "Building 2", "Building 3"];
+    let items = ["Item 1", "Item 2", "Item 3"];
+
     // Populate the container based on the selected tab
     let itemList;
     if(type === "Combat"){
@@ -60,6 +64,7 @@ function populateContainer(containerId, itemList, type) {
         item.onclick = function() {
             // TODO: make dictionary or something to map building names to actual building names
             window.parent.postMessage({type: "placeBuilding", buildingName: itemName[0].toUpperCase() + itemName.slice(1)}, "*");
+            exitMenu();
         };
         container.appendChild(item);
     });
@@ -69,7 +74,6 @@ populateContainer("container1", combat, "Combat");
 
 function exitMenu() {
     // Your code to handle closing the menu goes here
-    console.log("Build menu closed");
     // Send message to parent
     window.parent.postMessage("closeBuildMenu", "*");
 }

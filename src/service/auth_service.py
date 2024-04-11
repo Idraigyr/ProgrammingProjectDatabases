@@ -7,10 +7,12 @@ from flask_sqlalchemy import SQLAlchemy
 
 from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
-from src.model.placeable.buildings import AltarBuilding
+from src.model.placeable.buildings import AltarBuilding, MineBuilding
 from src.model.user_profile import UserProfile
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
+from src.model.user_settings import UserSettings
+
 db: SQLAlchemy = current_app.db
 
 class AuthService:
@@ -137,8 +139,13 @@ class AuthService:
         current_app.db.session.commit()
 
         # Create a new altar building
-        altar_building = AltarBuilding(island_id=island.owner_id, x=7, z=7, level=0)
+        altar_building = AltarBuilding(island_id=island.owner_id, x=0, z=0, level=1)
         current_app.db.session.add(altar_building)
+        current_app.db.session.commit()
+
+        # Create first mine building
+        mine_building = MineBuilding(island_id=island.owner_id, x=1, z=0, level=1)
+        current_app.db.session.add(mine_building)
         current_app.db.session.commit()
 
         # Create update the id of the altar in island so we have a ref from island to altar
@@ -146,10 +153,16 @@ class AuthService:
         current_app.db.session.commit()
 
         # Create the player entity
-        player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=7, zpos=7)
+        player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=0, zpos=0, ypos=0, level=1)
         player_entity.player = player
         player.entity = player_entity
         current_app.db.session.add(player_entity)
+        current_app.db.session.commit()
+
+        # player settings
+        settings = UserSettings(player_id=player.user_profile_id)
+        # other default settings are set by the db
+        current_app.db.session.add(settings)
         current_app.db.session.commit()
 
         # The player can initially only build the altar
@@ -157,6 +170,15 @@ class AuthService:
         current_app.db.session.commit()
 
         return player
+
+    def update_last_login(self, user: 'UserProfile') -> None:
+        """
+        Update the last login of the user
+        :param user: The user to update
+        :return: None
+        """
+        user.update({'last_login': current_app.db.func.now()})
+        current_app.db.session.commit()
 
 
 AUTH_SERVICE = AuthService()

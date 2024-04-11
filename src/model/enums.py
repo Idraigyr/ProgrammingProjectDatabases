@@ -44,8 +44,18 @@ class BlueprintType(Enum):
     FUSE_TABLE = 4
     WARRIOR_HUT = 5
 
+    # Props
+    BUSH = 6
+    TREE = 7
     @classmethod
     def has_value(cls, value):
         return value in cls._value2member_map_
+
+    def __eq__(self, other):
+        if isinstance(other, BlueprintType):
+            return self.value == other.value
+        elif isinstance(other, int):
+            return self.value == other
+        return False
 
 

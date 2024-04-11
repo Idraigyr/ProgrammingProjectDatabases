@@ -7,4 +7,8 @@ export class Altar extends Placeable{
     constructor(params) {
         super(params);
     }
+
+    get dbType(){
+        return "altar_building";
+    }
 }

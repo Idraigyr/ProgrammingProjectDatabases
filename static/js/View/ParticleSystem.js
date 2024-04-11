@@ -180,6 +180,14 @@ export class ParticleSystem{
             });
         }
     }
+
+    getRandomVelocity(){
+        return new THREE.Vector3(
+            (Math.random()*0.2 - 0.1),
+            (Math.random()*0.2 - 0.1),
+            (Math.random()*0.2 - 0.1)
+        );
+    }
     /**
      * updates particles
      * @param {number} deltaTime
@@ -227,6 +235,16 @@ export class ParticleSystem{
         this.addParticles(deltaTime);
         this.updateParticles(deltaTime);
         this.updateGeometry();
+    }
+
+    isNotDead(deltaTime){
+        this.updateParticles(deltaTime);
+        this.updateGeometry();
+        if(this.#particles.length === 0){
+            this.cleanUp();
+            return false;
+        }
+        return true;
     }
 
     /**

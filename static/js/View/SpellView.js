@@ -2,6 +2,7 @@ import {IAnimatedView, IView} from "./View.js";
 import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 import {Color} from "three";
+import {iceWall} from "../configs/SpellConfigs.js";
 
 /**
  * Fireball view
@@ -10,18 +11,24 @@ export class Fireball extends IView{
     constructor(params) {
         super(params);
         this.particleSystem = new ParticleSystem(params);
+        this.staysAlive = true;
 
         const geo = new THREE.SphereGeometry(0.1);
         const mat = new THREE.MeshPhongMaterial({color: 0xFF6C00 });
         this.charModel = new THREE.Mesh(geo, mat);
+        this.boundingBox.setFromObject(this.charModel);
+        this.boundingBox.translate(this.position);
     }
 
     cleanUp(){
-        this.charModel.parent.remove(this.charModel);
-        this.particleSystem.cleanUp();
+        super.cleanUp();
     }
     update(deltaTime){
         this.particleSystem.update(deltaTime);
+    }
+
+    isNotDead(deltaTime){
+        return this.particleSystem.isNotDead(deltaTime);
     }
 
     /**
@@ -30,6 +37,8 @@ export class Fireball extends IView{
      */
     updatePosition(event){
         if(!this.charModel) return;
+        this.delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
+        this.boundingBox.translate(this.delta);
         this.charModel.position.copy(event.detail.position);
         this.particleSystem.position.copy(event.detail.position);
     }
@@ -61,6 +70,7 @@ export class ThunderCloud extends IView{
         this.charModel = new THREE.Group();
         this.charModel.add(this.light);
         this.charModel.add(this.planes);
+        this.boundingBox.setFromCenterAndSize(new THREE.Vector3(), new THREE.Vector3(this.width, this.height, this.width));
     }
     #generateCloudMetrics(){
         return [...new Array(this.NrPlanes)].map((_, index) => ({
@@ -137,10 +147,6 @@ export class ThunderCloud extends IView{
         this.#updateLight(deltaTime);
         this.#updateClouds(deltaTime);
     }
-
-    cleanUp(){
-        this.charModel.parent.remove(this.charModel);
-    }
 }
 
 
@@ -166,5 +172,43 @@ export class RitualSpell extends IAnimatedView{
     update(deltaTime) {
         super.update(deltaTime);
         this.animations["RitualSpell"].play();
+    }
+}
+
+//charModel must be a group of iceBlock models
+//make iceWall a compound of iceBlock models because of AABB
+export const IceWall = function (params) {
+    const iceBlocks = [];
+    for(let i = 0; i < iceWall.blocks; i++){
+        const modelWidth = new THREE.Box3().setFromObject(params.charModel).getSize(new THREE.Vector3()).z;
+        iceBlocks.push(new IceBlock({
+            charModel: params.charModel.clone(),
+            horizontalRotation: params.horizontalRotation,
+            //figure out why + 0.5 is needed
+            position: new THREE.Vector3(i*(iceWall.width/iceWall.blocks) - (iceWall.width - modelWidth + 0.5)/2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),params.horizontalRotation*Math.PI/180),
+            offset: new THREE.Vector3().copy(params.position)
+        }));
+        iceBlocks[i].charModel.traverseVisible((child) => {
+            if (child.isMesh) child.material.opacity = Math.random() * 0.3 + 0.6;
+        });
+    }
+    return iceBlocks;
+}
+
+class IceBlock extends IView{
+    constructor(params) {
+        super(params);
+        this.spawnPoint = new THREE.Vector3().copy(params.position);
+        this.offset = params.offset;
+        this.boundingBox.setFromObject(this.charModel);
+        this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
+    }
+    updatePosition(event){
+        if(!this.charModel) return;
+        const newPos = new THREE.Vector3().copy(this.spawnPoint).add(event.detail.position);
+        const delta = new THREE.Vector3().subVectors(newPos, this.position);
+        this.position.copy(newPos);
+        this.charModel.position.copy(this.position);
+        this.boundingBox.translate(delta);
     }
 }

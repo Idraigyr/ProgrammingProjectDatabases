@@ -6,5 +6,9 @@
     "sweetalert2": "^11.10.7",
     "three": "^0.162.0",
     "three-mesh-bvh": "^0.7.3"
+  },
+  "scripts": {
+    "build": "webpack --mode=production",
+    "start": "webpack-dev-server --mode=development --open"
   }
 }

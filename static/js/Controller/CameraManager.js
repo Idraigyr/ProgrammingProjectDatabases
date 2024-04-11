@@ -1,6 +1,5 @@
 import * as THREE from "three";
-import {maxZoomIn, minZoomIn, minCameraY} from "../configs/ControllerConfigs.js";
-import {max, min} from "../helpers.js";
+import {maxZoomIn, minZoomIn} from "../configs/ControllerConfigs.js";
 
 /**
  * Class to manage the camera
@@ -59,8 +58,12 @@ export class CameraManager {
 
         if(hit.length > 0){
             const distance = origin.distanceTo(hit[0].point);
+            let grassZoom = 1;
+            if(Math.abs(hit[0].point.y) < 0.01){
+                grassZoom = 0.5;
+            }
             if(distance < minZoomIn){
-                zoom.add(direction.negate().multiplyScalar(min(minZoomIn-distance, maxZoomIn)));
+                zoom.add(direction.negate().multiplyScalar(Math.min(minZoomIn-distance*grassZoom, maxZoomIn)));
             }
         }
         return zoom;
@@ -78,7 +81,7 @@ export class CameraManager {
      * @param amount amount to zoom in
      */
     zoomIn(amount){
-        this.#zoom = max(maxZoomIn, min(minZoomIn, this.#zoom + amount));
+        this.#zoom = Math.max(maxZoomIn, Math.min(minZoomIn, this.#zoom + amount));
     }
 
     /**

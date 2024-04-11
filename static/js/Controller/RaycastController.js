@@ -24,6 +24,14 @@ export class RaycastController{
         this.raycaster.setFromCamera(new THREE.Vector2(0,0),event.detail.camera);
     }
 
+    getFirstEntityHit(entities){
+
+    }
+
+    getAllEntityHits(entities){
+
+    }
+
     getFirstHitWithWorld(origin, direction){
         const oldRayCopy = new THREE.Ray().copy(this.raycaster.ray);
         this.raycaster.ray.set(origin,direction);

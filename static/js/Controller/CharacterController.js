@@ -9,10 +9,10 @@ import {
     jumpHeight
 } from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
-import {max, min} from "../helpers.js";
-import {Factory} from "./Factory.js";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
-import {BaseCharAttackState} from "../Model/States/CharacterStates.js";
+import {BaseCharAttackState, EatingState} from "../Model/States/CharacterStates.js";
+
+
 
 /**
  * Class to manage the character and its actions
@@ -23,7 +23,7 @@ export class CharacterController extends Subject{
 
     /**
      * adds a listener to inputManager mousedown event
-     * @param {{Character: Wizard, InputManager: InputManager}} params
+     * @param {{Character: Wizard, InputManager: InputManager, collisionDetector: CollisionDetector}} params
      */
     constructor(params) {
         super();
@@ -31,10 +31,12 @@ export class CharacterController extends Subject{
         this.tempPosition = this._character.position.clone();
         this.collisionDetector = params.collisionDetector;
         this.#inputManager = params.InputManager;
-        this.#inputManager.addMouseDownListener(this.onClickEvent.bind(this));
+        this.#inputManager.addMouseDownListener(this.onRightClickEvent.bind(this),"right");
 
-        this.tempTemp = new THREE.Vector3();
+        this.lastMovementVelocity = new THREE.Vector3();
     }
+
+
 
     /**
      * Update the rotation of the character
@@ -72,42 +74,54 @@ export class CharacterController extends Subject{
      * Handle the click event
      * @param event event
      */
-    onClickEvent(event){ //TODO: move to SpellCaster class
-        // RightClick
-        if (event.which === 3 || event.button === 2) {
-            if (this._character.getCurrentSpell() instanceof BuildSpell) {
-                const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
-                document.dispatchEvent(customEvent);
-            }
-        } // TODO: also for left click to place the buildings?
+    onRightClickEvent(event){ //TODO: move to SpellCaster class
+        // // RightClick
+        // if (event.which === 3 || event.button === 2) {
+        //     if (this._character.getCurrentSpell() instanceof BuildSpell) {
+        //         const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
+        //         document.dispatchEvent(customEvent);
+        //     }
+        // } // TODO: also for left click to place the buildings?
+        if (this._character.getCurrentSpell() instanceof BuildSpell) {
+            const customEvent = new CustomEvent('turnPreviewSpell', { detail: {} });
+            document.dispatchEvent(customEvent);
+        }
     }
 
 
     updatePhysics(deltaTime){
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
-        const correctedDeltaTime = min(deltaTime, 0.1);
-        this.tempTemp.copy(this.tempPosition);
+        //const correctedDeltaTime = min(deltaTime, 0.1);
 
-        if ( this._character.onGround ) {
-                this._character.velocity.y = correctedDeltaTime * gravity;
+        if ( this._character.onGround) {
+            this._character.velocity.y = deltaTime * gravity;
+
+        } else if  (this._character.onCollidable) {
+
         } else {
-            this._character.velocity.y += correctedDeltaTime * gravity;
+            this._character.velocity.y += deltaTime * gravity;
         }
 
-        this.tempPosition.addScaledVector( this._character.velocity, correctedDeltaTime );
+        this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
 
-        if ( ! this._character.onGround ) {
+        if ( !this._character.onGround ) {
             deltaVector.normalize();
             this._character.velocity.addScaledVector( deltaVector, - deltaVector.dot( this._character.velocity ) );
         } else {
-            this._character.velocity.set( 0, 0, 0 );
+            if(this.#inputManager.blockedInput){
+                this._character.velocity.set(0,0,0);
+            } else {
+                this._character.velocity.copy(this.lastMovementVelocity);
+            }
+            this._character.velocity.y = 0;
         }
 
         if ( this._character.position.y < - 50 ) {
             //respawn
             this._character.velocity.set(0,0,0);
+            this.lastMovementVelocity.set(0,0,0);
             this._character.position = this._character.spawnPoint;
             this.tempPosition.copy(this._character.spawnPoint);
         } else {
@@ -116,20 +130,35 @@ export class CharacterController extends Subject{
     }
 
     /**
+     * creates a custom event notifying eating being started
+     * @returns {CustomEvent<{}>}
+     */
+    createEatingEvent(){
+        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 10}}});
+    }
+
+
+    /**
      * Update the character (e.g. state, position, spells, etc.)
      * @param deltaTime
      */
     update(deltaTime) {
         if (!this._character.fsm.currentState || this.#inputManager.blockedInput) {
+            this._character.fsm.setState("Idle");
             return;
+        }
+
+        if (this.#inputManager.keys.eating && !(this._character.fsm.currentState instanceof EatingState)) {
+            this.dispatchEvent(this.createEatingEvent());
         }
 
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
+
         if (this._character.fsm.currentState.movementPossible) {
 
-            if(this.#inputManager.keys.up && this._character.onGround) {
+            if (this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;
             }
@@ -158,7 +187,7 @@ export class CharacterController extends Subject{
 
             let speedMultiplier = 0;
             //TODO: keep momentum when in the air
-            if(this._character.fsm.currentState instanceof BaseCharAttackState){
+            if (this._character.fsm.currentState instanceof BaseCharAttackState) {
                 speedMultiplier = spellCastMovementSpeed;
             } else {
                 if (this.#inputManager.keys.sprint && forwardScalar === 1) {
@@ -167,7 +196,9 @@ export class CharacterController extends Subject{
                 speedMultiplier = movementSpeed;
             }
 
-            this.tempPosition.addScaledVector( movement, speedMultiplier * deltaTime );
+            this.lastMovementVelocity.copy(movement).multiplyScalar(speedMultiplier);
+            this._character.velocity.copy(this._character.verticalVelocity).add( this.lastMovementVelocity );
         }
     }
+
 }

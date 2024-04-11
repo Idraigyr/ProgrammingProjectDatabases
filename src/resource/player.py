@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from flask import current_app, Blueprint, request, Flask
@@ -52,10 +53,6 @@ class PlayerSchema(Schema):
             'type': 'integer',
             'description': 'The unique identifier of the user profile'
         },
-        'level': {
-            'type': 'integer',
-            'description': 'The level of the player'
-        },
         'crystals': {
             'type': 'integer',
             'description': 'The amount crystals the player has'
@@ -75,15 +72,26 @@ class PlayerSchema(Schema):
             'items': GemSchema
         },
         'blueprints': IntArraySchema,
-        'entity': PlayerEntitySchema
+        'entity': PlayerEntitySchema,
+        'last_login': {
+            'type': 'string',
+            'format': 'date-time',
+            'description': 'The last login time of the player'
+        },
+        'last_logout': {
+            'type': 'string',
+            'format': 'date-time',
+            'description': 'The last logout time of the player'
+        }
     }
 
     required = []  # nothing is required, but not giving anything is just doing nothing
 
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
-            super().__init__(level=player.level,
-                             crystals=player.crystals, mana=player.mana, xp=player.xp,
+            super().__init__(crystals=player.crystals, mana=player.mana, xp=player.xp,
+                             last_login=str(player.last_login).replace(' ', 'T'),
+                             last_logout=str(player.last_logout).replace(' ', 'T'),
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
@@ -129,7 +137,8 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
-    @summary('Update the player profile by id')
+    @summary('Update the player profile by id. All fields (except id and gems) are updatable. Including entity (and its modifiable fields),'
+             ' spells (by ids), blueprints (by ids), last_login, last_logout, xp, mana and crystals')
     @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
@@ -146,6 +155,10 @@ class PlayerResource(Resource):
         data = clean_dict_input(data)
         data['user_profile_id'] = user_id # overwritten unconditionally
         try:
+            if 'gems' in data:
+                # Gems are not updated directly, but through the gem resource
+                data.pop('gems')
+
             PlayerSchema(**data)  # Validate the input
 
             # Get the player profile
@@ -154,6 +167,14 @@ class PlayerResource(Resource):
             # Check if the target player exists
             if player is None:  # This should never happen, as the player is guaranteed to exist by the JWT
                 return ErrorSchema(f"Player {user_id} not found"), 404
+
+            # Convert the datetime strings to datetime objects
+            if 'last_login' in data:
+                data['last_login'] = data['last_login'].replace('T', ' ')
+                data['last_login'] = datetime.datetime.strptime(data['last_login'], '%Y-%m-%d %H:%M:%S')
+            if 'last_logout' in data:
+                data['last_logout'] = data['last_logout'].replace('T', ' ')
+                data['last_logout'] = datetime.datetime.strptime(data['last_logout'], '%Y-%m-%d %H:%M:%S')
 
             # Update the player profile, might throw semantic errors as ValueError
             player.update(data)

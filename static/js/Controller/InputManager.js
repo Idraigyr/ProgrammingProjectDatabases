@@ -1,6 +1,6 @@
 import {
-    buildKey,
-    DownKey, primaryBackwardKey,
+    buildKey, subSpellKey,
+    DownKey, eatingKey, primaryBackwardKey,
     primaryForwardKey,
     primaryLeftKey,
     primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
@@ -8,11 +8,12 @@ import {
     secondaryRightKey, slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, sprintKey,
     upKey
 } from "../configs/Keybinds.js";
+import {Subject} from "../Patterns/Subject.js";
 
 /**
  * Class that manages the input from the user
  */
-export class InputManager {
+export class InputManager extends Subject{
     keys = {
         forward: false,
         backward: false,
@@ -22,38 +23,35 @@ export class InputManager {
         down: false,
         spellSlot: 1,
         sprint: false,
-        build: false
+        build: false,
+        eating: false
     }
     mouse = {
         leftClick: false,
         rightClick: false,
-        deltaX: 0,
-        deltaY: 0,
-        x: 0,
-        y: 0
     }
-    #callbacks = {mousemove: []};
-    spellSlotChangeCallbacks = [];
+    #callbacks = {mousemove: [], mousedown: {0: [], 2: []}, spellSlotChange: []};
 
 
     /**
      * Constructor that adds event listeners for the input
      */
     constructor(params) {
+        super(params);
         this.blockedInput = true;
         this.canvas = params.canvas;
-        this.canvas.addEventListener("mousedown", async (e) => {
-            if(!this.blockedInput) return;
-            await this.canvas.requestPointerLock();
-        });
+        this.canvas.addEventListener("mousedown", this.requestPointerLock.bind(this));
+        document.addEventListener("mousedown", this.onClickEvent.bind(this));
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;
-            console.log("pointerlockchange");
+            if(this.blockedInput) this.resetKeys();
         });
         document.addEventListener("mousemove", this.onMouseMoveEvent.bind(this));
 
         document.addEventListener("keydown", this.#onKeyDown.bind(this));
         document.addEventListener("keyup", this.#onKeyUp.bind(this));
+
+        //for animation purposes only
         // Add event listener for mouse down
         document.addEventListener("mousedown", (e) => {
             switch (e.button){
@@ -82,12 +80,31 @@ export class InputManager {
         });
     }
 
+    async requestPointerLock(){
+        if(!this.blockedInput) return;
+        await this.canvas.requestPointerLock();
+    }
+
+    exitPointerLock(){
+        this.resetKeys();
+        document.exitPointerLock();
+    }
+
+    resetKeys(){
+        for(const key in this.keys){
+            if(key === "spellSlot") continue;
+            this.keys[key] = false;
+        }
+        this.mouse.leftClick = false;
+        this.mouse.rightClick = false;
+    }
+
     addKeyDownEventListener(key, callback){
         this.#callbacks[key] = callback;
     }
 
     removeKeyDownEventListener(key){
-        delete this.#callbacks[key];
+        this.#callbacks[key] = this.#callbacks[key].filter((cb) => cb !== callback);
     }
 
     /**
@@ -101,10 +118,11 @@ export class InputManager {
 
     /**
      * Adds event listener for mouse down
-     * @param callback function to add
+     * @param {Function} callback function to add
+     * @param {"left" | "right"} button
      */
-    addMouseDownListener(callback){
-        document.addEventListener("mousedown",callback);
+    addMouseDownListener(callback, button){
+        this.#callbacks["mousedown"][button === "left" ? 0 : 2].push(callback);
     }
 
     /**
@@ -126,6 +144,15 @@ export class InputManager {
     onMouseMoveEvent(event){
         if(this.blockedInput) return;
         this.#callbacks["mousemove"].forEach((callback) => callback(event));
+    }
+
+    onClickEvent(event){
+        if(this.blockedInput) return;
+        this.#callbacks["mousedown"][event.button].forEach((callback) => callback(event));
+    }
+
+    createSpellSlotChangeEvent(){
+        return new CustomEvent("spellSlotChange", {detail: {spellSlot: this.keys.spellSlot}});
     }
 
     /**
@@ -176,25 +203,29 @@ export class InputManager {
                 break;
             case slot1Key:
                 this.keys.spellSlot = 1;
-                this.invokeSpellSlotChangeCallbacks();
+                this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
             case slot2Key:
                 this.keys.spellSlot = 2;
-                this.invokeSpellSlotChangeCallbacks();
+                this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
             case slot3Key:
                 this.keys.spellSlot = 3;
-                this.invokeSpellSlotChangeCallbacks();
+                this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
             case slot4Key:
                 this.keys.spellSlot = 4;
-                this.invokeSpellSlotChangeCallbacks();
+                this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
             case slot5Key:
                 this.keys.spellSlot = 5;
-                this.invokeSpellSlotChangeCallbacks();
+                this.dispatchEvent(this.createSpellSlotChangeEvent());
+                break;
+            case eatingKey:
+                this.keys.eating = bool;
                 break;
         }
+
         this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
@@ -212,20 +243,6 @@ export class InputManager {
      */
     #onKeyUp(KeyBoardEvent){
         this.#onKey(KeyBoardEvent, false);
-    }
-        /**
-     * Listener for when the spell slot changes
-     *
-     */
-    addSpellSlotChangeListener(callback) {
-        this.spellSlotChangeCallbacks.push(callback);
-    }
-
-    /**
-     * Invokes all spell slot change callbacks
-     */
-    invokeSpellSlotChangeCallbacks() {
-        this.spellSlotChangeCallbacks.forEach(callback => callback());
     }
 
     addSettingButtonListener(callback) {

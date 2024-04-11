@@ -36,9 +36,13 @@ class EntitySchema(Schema):
         'type': {
             'type': 'string',
             'description': 'The type of the entity'
+        },
+        'level': {
+            'type': 'integer',
+            'description': 'The level of the entity'
         }
     }
-    required = []
+    required = ['island_id', 'x', 'y', 'z']
 
     title = 'Entity'
     description = 'A model representing an entity in the game. An entity is a movable object that can moved without dependence on the grid of an island'
@@ -47,7 +51,8 @@ class EntitySchema(Schema):
         if entity is not None:  # entity -> schema
             super().__init__(entity_id=entity.entity_id, x=entity.xpos,
                              y=entity.ypos, z=entity.zpos, type=entity.type,
-                             island_id=entity.island_id, **kwargs)
+                             island_id=entity.island_id, level=entity.level,
+                             **kwargs)
         else:  # schema -> entity
             super().__init__(**kwargs)
 
