@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             }
         }
-        if (e.key === 'Control'){
+        if (e.key === 'Escape'){
             if (chatPopup.style.display === 'block'){
                 // Close the chat popup only if chat input is not focused
                 chatButton.hidden = false;
