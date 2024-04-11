@@ -14,7 +14,6 @@ import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
-import {OrbitControls} from "three-orbitControls";
 import {buildTypes} from "./configs/Enums.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;

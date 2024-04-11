@@ -18,8 +18,8 @@ export const assetPaths = Object.freeze({
     iceBlock: "./static/assets/3d-models/crystals/Crystal.glb",
     towerTexture: "./static/assets/textures/towerTexture.png",
     Tower: "./static/assets/3d-models/towers/_Wizard_tower_LVL_1.fbx",
-    WarriorHut: "./static/assets/3d-models/towers/warrior-hut.glb",
-    WarriorHut2: "./static/assets/3d-models/towers/warrior-hut-2.glb",
+    WarriorHut: "./static/assets/3d-models/warrior-hut.glb",
+    WarriorHut2: "./static/assets/3d-models/warrior-hut-2.glb",
     SurabanglusFont: "./static/fonts/Surabanglus_Regular.json",
 });
 
