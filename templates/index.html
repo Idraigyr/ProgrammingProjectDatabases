@@ -46,8 +46,10 @@
     <!-- Load App -->
     <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
 
-    <div class="button-container">
-        <button id="chatButton" class="bottom-left-button">Chat</button>
+    <div class="button-container" id="chatButtonContainer">
+        <button id="chatButton" class="bottom-left-button fa fa-comments"></button>
+        <a class="sywh-open-services" data-tooltip="Talk to other ordinary wizards!" data-placement="right">
+      </a>
     </div>
     <div id="chatPopup" class="chat-popup" style="display: none;">
         <!-- Chat interface -->
