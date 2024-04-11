@@ -2,6 +2,7 @@ import {GLTFLoader} from "three-GLTFLoader";
 import {FBXLoader} from "three-FBXLoader";
 import {TextureLoader} from "three-TextureLoader";
 import {FontLoader} from "three-FontLoader";
+import {DRACOLoader} from "three-DRACOLoader";
 import * as THREE from "three";
 import {getFileExtension, setIndexAttribute} from "../helpers.js";
 import {AnimationMixer} from "three";
@@ -28,7 +29,11 @@ export class AssetLoader{
     loadAsset(path){
         let extension = getFileExtension(path);
         if(extension === "glb" || extension === "gltf"){
-            return this.loadGLTF(path);
+            try{
+                return this.loadGLTF(path);
+            }catch (e) {
+                return this.loadDRACOGLTF(path);
+            }
         } else if(extension === "fbx"){
             return this.loadFBX(path);
         } else if(extension === "png" || extension === "jpg") {
@@ -40,8 +45,6 @@ export class AssetLoader{
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
-
-    //TODO:: add timeout error handler
     /**
      * Load a gltf model
      * @param path path to the model
@@ -49,6 +52,37 @@ export class AssetLoader{
      */
     loadGLTF(path){
         let loader = new GLTFLoader(this.loadingManager);
+        return loader.loadAsync(path, function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        }).then((gltf) => {
+            let charModel;
+            let animations = null;
+
+            charModel = gltf.scene;
+            charModel.traverse(c => {
+                c.castShadow = true;
+            });
+            if(gltf.animations.length > 0){
+                animations = gltf.animations;
+                return {charModel, animations};
+            }
+            return {charModel};
+        },(err) => {
+            return this.loadDRACOGLTF(path);
+        });
+    }
+
+    //TODO:: add timeout error handler
+    /**
+     * Load a gltf model
+     * @param path path to the model
+     * @returns {*} the model and its animations
+     */
+    loadDRACOGLTF(path){
+        let loader = new GLTFLoader();
+        let draco = new DRACOLoader();
+        draco.setDecoderPath( './static/decoders/dracoloader/' );
+        loader.setDRACOLoader( draco );
         return loader.loadAsync(path, function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((gltf) => {
