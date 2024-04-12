@@ -139,8 +139,15 @@ class App {
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
-        this.menuManager.addEventListener("addGem", this.itemManager.addGem.bind(this.itemManager));
-        this.menuManager.addEventListener("removeGem", this.itemManager.removeGem.bind(this.itemManager));
+        // this.menuManager.addEventListener("addGem", this.itemManager.addGem.bind(this.itemManager));
+        this.menuManager.addEventListener("addGem", (event) => {
+            event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
+            this.itemManager.addGem(event);
+        });
+        this.menuManager.addEventListener("removeGem", (event) => {
+            event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
+            this.itemManager.removeGem(event);
+        });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
@@ -270,6 +277,7 @@ class App {
             document.querySelector('.loading-animation').style.display = 'none';
             //init();
             this.simulatePhysics = true;
+            this.clock.getDelta();
             this.update();
         } else {
             const warning = WebGL.getWebGLErrorMessage();

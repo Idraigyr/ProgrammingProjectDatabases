@@ -2,7 +2,8 @@ export class Item{
     constructor(params) {
         this.id = params.id;
         this.name = params.name;
-        this.belongsIn = params.belongsIn;
+        this.belongsIn = params.belongsIn; // E.g. gems (sub) menu
+        this.equippedIn = params?.equippedIn ?? null; // Building id
     }
 
     getItemId(){

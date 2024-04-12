@@ -1,15 +1,15 @@
 export class ItemManager {
     constructor() {
-        this.items = [];
+        this.items = []; // map building -> items or property in item
     }
 
     //TODO: equip a gem into a building
-    addGem(){
+    addGem(event){
 
     }
 
     //TODO: unequip a gem from a building
-    removeGem(){
+    removeGem(event){
 
     }
 
@@ -18,9 +18,11 @@ export class ItemManager {
 
     }
 
-    //TODO: add a new gem + add it's corresponding view in MenuManager
+    //TODO: add a new gem + add it's corresponding view in MenuManager (for fuse menu)
     createGem(){
-
+        // Push item with params
+        // Post item to db
+        // Add menu item view in menumanager
     }
 
 

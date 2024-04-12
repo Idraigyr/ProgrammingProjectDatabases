@@ -148,6 +148,7 @@ export class CollisionDetector extends Subject{
                 const capsulePoint = this.tempVector2;
 
                 const distance = tri.closestPointToSegment( playerModel.segment, triPoint, capsulePoint );
+                // Collision with the triangle
                 if ( distance < playerModel.radius) {
 
                     const depth = playerModel.radius - distance;

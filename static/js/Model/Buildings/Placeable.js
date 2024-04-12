@@ -9,11 +9,11 @@ import {gridCellSize} from "../../configs/ViewConfigs.js";
 export class Placeable extends Entity{
     constructor(params) {
         super(params);
-        this.id = null;
+        this.id = params?.id ?? null;
         this.level = params?.level ?? 0;
         this.rotation = params?.rotation ??  0;
         this.gems = [];
-        this.occupiedCells = [];
+        this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
     }
 

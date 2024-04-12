@@ -20,7 +20,7 @@ export class WorldManager{
 
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
 
-        this.persistent = false;
+        this.persistent = true;
     }
 
     async importWorld(islandID){

@@ -119,16 +119,16 @@ export class Factory{
      * @returns {*} model of the building
      */
     //TODO: change arguments => params (= more more extendable)
-    createBuilding(buildingName, position, withTimer=false){
-        const asset = this.assetManager.getAsset(buildingName);
+    createBuilding(params){
+        const asset = this.assetManager.getAsset(params.buildingName);
         correctRitualScale(asset);
         setMinimumY(asset, 0); // TODO: is it always 0?
-        let pos = new THREE.Vector3(position.x, asset.position.y, position.z);
+        let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
         // Correct position to place the asset in the center of the cell
         convertGridIndexToWorldPosition(pos);
         // Convert position
-        const model = new Model[buildingName]({position: pos}); // TODO: add rotation
-        const view = new View[buildingName]({charModel: asset, position: pos, scene: this.scene});
+        const model = new Model[params.buildingName]({position: pos, id: params.id}); // TODO: add rotation
+        const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
         this.scene.add(view.charModel);
 
@@ -145,7 +145,7 @@ export class Factory{
         // put the buildingPreview in dyingViews of viewManager
         // just make the buildingView invisible for the duration of the timer
 
-        if(withTimer){
+        if(params.withTimer){
             // Copy asset object
             const assetClone = asset.clone();
             //TODO: find solution invisible THREE.Object3D do not become a part of staticGeometrywith generateCollider function
@@ -189,7 +189,7 @@ export class Factory{
     #addBuildings(islandModel, buildingsList){
         buildingsList.forEach((building) => {
             try {
-                islandModel.addBuilding(this.createBuilding(building.type, building.position, false));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type, position: building.position, withTimer: false, id: building.id}));
             } catch (e){
                 console.log(`no ctor for ${building.type} building: ${e.message}`);
             }

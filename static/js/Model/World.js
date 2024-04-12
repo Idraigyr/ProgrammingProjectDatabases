@@ -39,6 +39,14 @@ export class World{
         return null;
     }
 
+    getBuildingByPosition(position){
+        const island = this.getIslandByPosition(position);
+        if(island){
+            return island.getBuildingByPosition(position);
+        }
+        return null;
+    }
+
     checkPosForBuilding(worldPosition){
         const island = this.getIslandByPosition(worldPosition);
         if(island){
@@ -61,7 +69,7 @@ export class World{
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
             const {x,z} = returnWorldToGridIndex(position);
-            const building = this.factory.createBuilding(buildingName, {x: x, y: 0, z: z}, withTimer);
+            const building = this.factory.createBuilding({buildingName: buildingName, position: {x: x, y: 0, z: z}, withTimer: withTimer});
             console.log("building: ", building)
             island.addBuilding(building);
             return building;

@@ -101,7 +101,7 @@ export class CharacterController extends Subject{
         } else {
             this._character.velocity.y += deltaTime * gravity;
         }
-
+        // Temp po
         this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustPlayerPosition(this._character, this.tempPosition, deltaTime);
