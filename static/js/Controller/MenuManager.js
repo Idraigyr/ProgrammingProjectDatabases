@@ -281,23 +281,27 @@ export class MenuManager extends Subject{
     #createBuildingItems(){
         const items = [
             {
-                item: {name: "tower", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Tower", getDisplayName: () => "tower"},
+                item: {name: "tower", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Tower", getDisplayName: () => "Tower"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
             },
             {
-                item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "tree"},
+                item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
             },
             {
-                item: {name: "bush", id: 2, belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "bush"},
+                item: {name: "bush", id: 2, belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "Bush"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
             },
             {
-                item: {name: "mine", id: 3, belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "mine"},
+                item: {name: "mine", id: 3, belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "Mine"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
             },
             {
-                item: {name: "fusion table", id: 4, belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "fusion table"},
+                item: {name: "fusion table", id: 4, belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "Fusion table"},
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+            },
+            {
+                item: {name: "warrior hut", id: 5, belongsIn: "CombatBuildingsMenu", getItemId: () => "WarriorHut", getDisplayName: () => "Warrior hut"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
             }
         ];
