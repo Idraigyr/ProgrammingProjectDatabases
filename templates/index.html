@@ -192,20 +192,25 @@
       <button class="applyButton" id="applyButton">Apply</button>
     </div>
 
+    <!-- Menu Container -->
+    <div id="menuContainer"></div>
+
+
     <!-- Tower Menu -->
-        <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Build Menu -->
-        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Altar Menu -->
-        <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Fusion Table Menu -->
-        <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+    <!-- Mine Menu -->
+    <!--    <object type="text/html" id="mineMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/mine.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+
+
+
 
     <!-- UI/HUD -->
-
-
-
-
     <div class="settings-button" id="settings-btn">
             <img src="../static/assets/images/Button_Blue.png" class="button">
             <img src="../static/assets/images/Regular_02.png" class="icon">
@@ -214,18 +219,23 @@
     <div class="HotBar">
         <div class="item Spell1 hovered">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell2">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
             </div>
         <div class="item Spell3">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell4">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell5">
             <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
     </div>
 
@@ -247,7 +257,6 @@
     </div>
 
     <div class="Health">
-        <img src="../static/assets/images/Potion-red.png" class="HealthPotion">
         <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
         <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
         <div class = "HealthAmount">

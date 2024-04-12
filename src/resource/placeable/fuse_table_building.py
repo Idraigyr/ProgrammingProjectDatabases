@@ -35,7 +35,7 @@ class FuseTableBuildingResource(BuildingResource):
 
     @swagger.tags('building')
     @summary("Retrieve the fuse table building object with the given id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The builder minion id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The builder minion id to retrieve', required=True)
     @swagger.response(response_code=200, description="The fuse table building in JSON format",
                       schema=FuseTableBuildingSchema)
     @swagger.response(response_code=404, description='Fuse table with given id not found', schema=ErrorSchema)
@@ -59,7 +59,7 @@ class FuseTableBuildingResource(BuildingResource):
 
 
     @swagger.tags('building')
-    @summary("Update the fuse table building object with the given id")
+    @summary("Update the fuse table building object with the given id. Updateable fields are x,z,rotation & level")
     @swagger.expected(schema=FuseTableBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The fuse table building has been updated. The up-to-date object is returned", schema=FuseTableBuildingSchema)
     @swagger.response(response_code=404, description='Fuse table with given id not found', schema=ErrorSchema)
@@ -74,7 +74,7 @@ class FuseTableBuildingResource(BuildingResource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            FuseTableBuildingSchema(**data)
+            FuseTableBuildingSchema(**data, _check_requirements=False)
             id = int(data['placeable_id'])
 
 
@@ -107,7 +107,19 @@ class FuseTableBuildingResource(BuildingResource):
         data = request.get_json()
         data = clean_dict_input(data)
         try:
-            FuseTableBuildingSchema(**data)
+            if 'gems' in data:
+                # Remove the gems from the building, they are managed by the gem endpoint
+                data.pop('gems')
+            if 'type' in data:
+                # Remove the type field as it's not needed, it's always 'fuse_table_building' since we're in the fuse_table_building endpoint
+                data.pop('type')
+            if 'task' in data:
+                # Remove the task field as it's managed by the task endpoint
+                data.pop('task')
+            if 'blueprint' in data:
+                data.pop('blueprint')
+
+            FuseTableBuildingSchema(**data, _check_requirements=True)
 
             # Create the tower model & add it to the database
             if 'placeable_id' in data:

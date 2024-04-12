@@ -6,7 +6,6 @@ import {Entity} from "./Entity.js";
  */
 export class Character extends Entity{
     #rotation;
-    #onGround;
     constructor(params) {
         super(params);
         if(this.constructor === Character){
@@ -16,8 +15,8 @@ export class Character extends Entity{
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
         this.velocity = new THREE.Vector3();
-        this.horizontalVelocity = new THREE.Vector3();
-        this.#onGround = true;
+        this.onGround = true;
+        this.onCollidable = false;
         this.fsm = null;
         this.health = params?.health ?? 100;
         this.maxHealth = params?.health ?? 100;
@@ -71,14 +70,6 @@ export class Character extends Entity{
         return this._position;
     }
 
-    get onGround(){
-        return this.#onGround;
-    }
-
-    set onGround(bool){
-        this.#onGround = bool;
-    }
-
     /**
      * Set the rotation of the character
      * @param quaternion {Quaternion} the new rotation of the character
@@ -95,6 +86,10 @@ export class Character extends Entity{
      */
     get rotation(){
         return this.#rotation;
+    }
+
+    get verticalVelocity(){
+        return new THREE.Vector3(0, this.velocity.y, 0);
     }
 
     /**

@@ -1,5 +1,4 @@
 import {Character} from "./Character.js";
-import {max} from "../helpers.js";
 
 /**
  * @class Wizard - class for the player character
@@ -30,7 +29,7 @@ export class Wizard extends Character{
      */
     updateCooldowns(deltaTime){
         this.spellCooldowns.forEach((cooldown, index, array) => {
-            array[index] = max(0,cooldown -= deltaTime);
+            array[index] = Math.max(0,cooldown -= deltaTime);
         });
     }
 
@@ -40,6 +39,7 @@ export class Wizard extends Character{
     cooldownSpell(){
         this.spellCooldowns[this.currentSpell] = this.spells[this.currentSpell].getCooldown();
         this.mana -= this.spells[this.currentSpell].cost;
+        this.dispatchEvent(this.#createUpdateManaEvent());
     }
 
     /**
@@ -63,10 +63,61 @@ export class Wizard extends Character{
     }
 
     /**
+     * refill the mana of the player
+     * @param {Number} amount - amount of mana to refill
+     */
+    changeCurrentMana(amount){
+        this.mana = amount > 0 ? Math.min(this.maxMana, this.mana + amount) : Math.max(0, this.mana + amount);
+        this.dispatchEvent(this.#createUpdateManaEvent());
+    }
+
+    /**
+     * refill the health of the player
+     * @param {Number} amount - amount of health to refill
+     */
+    changeCurrentHealth(amount){
+        this.health = amount > 0 ? Math.min(this.maxHealth, this.health + amount) : Math.max(0, this.health + amount);
+        this.dispatchEvent(this.#createUpdateHealthEvent());
+    }
+
+    /**
+     * Increase the maximum mana of the player
+     * @param {Number} amount - amount to increase the maximum mana by, needs to be bigger than 0
+     */
+    increaseMaxMana(amount){
+        this.maxMana += amount;
+        //this.mana += amount;
+    }
+
+    /**
+     * Increase the maximum health of the player
+     * @param {Number} amount - amount to increase the maximum health by, needs to be bigger than 0
+     */
+    increaseMaxHealth(amount){
+        this.maxHealth += amount;
+        //this.health += amount;
+    }
+
+    advertiseCurrentCondition(){
+        this.health = 20;
+        this.dispatchEvent(this.#createUpdateManaEvent());
+        this.dispatchEvent(this.#createUpdateHealthEvent());
+    }
+
+
+    /**
      * Get the type of the entity
      * @returns {string} - the type of the entity
      */
     get type(){
         return "player";
+    }
+
+    #createUpdateManaEvent() {
+        return new CustomEvent("updateMana", {detail: {current: this.mana, total: this.maxMana}});
+    }
+
+    #createUpdateHealthEvent() {
+        return new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}});
     }
 }

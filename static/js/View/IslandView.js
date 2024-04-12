@@ -23,7 +23,7 @@ export class Island extends IView{
         super(params);
         this.#gridCellSize = gridCellSize;
         this.#cellsInRow = params?.cellsInRow ?? 10;
-        this.#islandThickness = params?.islandThickness ?? 10;
+        this.#islandThickness = params?.islandThickness ?? 0.1;
     }
     createIsland(){
 

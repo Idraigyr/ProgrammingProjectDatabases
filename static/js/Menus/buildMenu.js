@@ -64,6 +64,7 @@ function populateContainer(containerId, itemList, type) {
         item.onclick = function() {
             // TODO: make dictionary or something to map building names to actual building names
             window.parent.postMessage({type: "placeBuilding", buildingName: itemName[0].toUpperCase() + itemName.slice(1)}, "*");
+            exitMenu();
         };
         container.appendChild(item);
     });
@@ -73,7 +74,6 @@ populateContainer("container1", combat, "Combat");
 
 function exitMenu() {
     // Your code to handle closing the menu goes here
-    console.log("Build menu closed");
     // Send message to parent
     window.parent.postMessage("closeBuildMenu", "*");
 }

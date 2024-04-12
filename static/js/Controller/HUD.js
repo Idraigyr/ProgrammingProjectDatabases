@@ -3,6 +3,9 @@ import { Controller } from "./Controller.js";
 export class HUD {
 
     constructor(inputManager) {
+        this.manaBar = document.getElementsByClassName("ManaAmount")[0];
+        this.HealthBar = document.getElementsByClassName("HealthAmount")[0];
+        this.crystals = document.getElementsByClassName("CrystalAmount")[0];
         // Add event listener for spell slot index change
         inputManager.addEventListener("spellSlotChange", this.updateHoveredButton.bind(this));
         inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
@@ -10,6 +13,7 @@ export class HUD {
         document.addEventListener("openAltarMenu", this.openAltarMenu.bind(this));
         document.addEventListener("openFusionTableMenu", this.openFusionTableMenu.bind(this));
         document.addEventListener("openTowerMenu", this.openTowerMenu.bind(this));
+        document.addEventListener("openMineMenu", this.openMineMenu.bind(this));
         // Add message listener for menu's
         window.addEventListener("message", this.messageListener.bind(this));
     }
@@ -30,11 +34,57 @@ export class HUD {
         hoveredButton.parentElement.classList.add('hovered');
 
     }
-    toggleSettingsMenu(event)
-    {
+
+    updateManaBar(event){
+        document.body.style.setProperty("--currentMana", event.detail.current);
+        document.body.style.setProperty("--maxMana", event.detail.total);
+        this.manaBar.textContent = `${event.detail.current}/${event.detail.total}`;
+    }
+
+    updateHealthBar(event){
+        document.body.style.setProperty("--currentHP",event.detail.current);
+        document.body.style.setProperty("--maxHP",event.detail.total);
+        this.HealthBar.textContent = `${event.detail.current}/${event.detail.total}`;
+    }
+
+    updateCrystals(event){
+        this.crystals.textContent = event.detail.crystals;
+    }
+
+    updateLevel(event){
+
+    }
+
+    updateXP(event){
+
+    }
+
+    toggleSettingsMenu() {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');
     }
+
+    openMenu(buildType) {
+        switch(buildType) {
+            case "empty":
+                this.openBuildMenu();
+                break;
+            case "altar_building":
+                this.openAltarMenu();
+                break;
+            case "fuse_table":
+                this.openFusionTableMenu();
+                break;
+            case "tower_building":
+                this.openTowerMenu();
+                break;
+            case "mine_building":
+                this.openMineMenu();
+                break;
+        }
+
+    }
+
     openBuildMenu()
     {
         const buildMenu = document.querySelector(`#buildMenu`);
@@ -75,6 +125,16 @@ export class HUD {
         const menu = document.querySelector(`#towerMenu`);
         menu.classList.add('hide');
     }
+    openMineMenu()
+    {
+        const menu = document.querySelector(`#mineMenu`);
+        menu.classList.remove('hide');
+    }
+    closeMineMenu()
+    {
+        const menu = document.querySelector(`#mineMenu`);
+        menu.classList.add('hide');
+    }
     messageListener(event)
     {
         if(event.data === "closeBuildMenu")
@@ -92,5 +152,23 @@ export class HUD {
         {
             this.closeFusionTableMenu();
         }
+        else if (event.data === "closeMineMenu")
+        {
+            this.closeMineMenu();
+        }
+    }
+
+
+    useSpell(spellCooldown, spellSlotIndex) {
+        const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
+        usedSpel.parentElement.classList.add('onCooldown');
+
+        const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex}Icon`);
+        usedSpelIcon.classList.add('onCooldown');
+
+        setTimeout(function() {
+        usedSpel.parentElement.classList.remove('onCooldown');
+        usedSpelIcon.classList.remove('onCooldown');
+        }, spellCooldown * 1000);
     }
 }

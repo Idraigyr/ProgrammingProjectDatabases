@@ -5,15 +5,16 @@ import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
 import {Shield} from "./Shield.js";
-import {PreviewObject} from "./PreviewObject.js";
+import {SpellPreview} from "./SpellPreview.js";
 import {Tower} from "./Buildings/Tower.js";
 import {Bush} from "./Buildings/Bush.js";
 import {FusionTable} from "./Buildings/FusionTable.js";
+import {BuildingPreview} from "./BuildingPreview.js";
 
 /**
  * Namespace for all the view classes
  */
-export let View = {
+export const View = Object.freeze({
     Player: Player,
     Island: Island,
     Fireball: Fireball,
@@ -26,6 +27,7 @@ export let View = {
     Tower: Tower,
     Shield: Shield,
     IceWall: IceWall,
-    PreviewObject: PreviewObject,
+    SpellPreview: SpellPreview,
+    BuildingPreview: BuildingPreview,
     RitualSpell: RitualSpell
-}
+});

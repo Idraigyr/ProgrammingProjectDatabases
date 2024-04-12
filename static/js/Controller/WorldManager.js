@@ -1,6 +1,7 @@
 import {Model} from "../Model/Model.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 
 
 /**
@@ -9,28 +10,22 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
 export class WorldManager{
     constructor(params) {
         this.world = null;
+        this.userInfo = params.userInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
-        this.userInfo = params.userInfo;
+        this.currentPos = null;
 
         this.postRequests = [];
 
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
+
+        this.persistent = false;
     }
 
     async importWorld(islandID){
         let islands = [
-            {buildings: [{
-                    type: "Mine",
-                    position: { //TODO: this should be gridSquare coordinates
-                        x: 2,
-                        y: 0,
-                        z: 1
-                    },
-                    rotation: 0
-                }
-                ],
+            {buildings: [],
                 position: {
                     x: 0,
                     y: 0,
@@ -84,19 +79,59 @@ export class WorldManager{
         this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
     }
 
+    /**
+     * Places a building in the world
+     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
+     */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        const position = event.detail.position;
-        const placeable = this.world.addBuilding(buildingName, position);
-        const requestIndex = this.postRequests.length;
-        this.sendPOST(placeableURI, placeable, 3, requestIndex);
-        this.collisionDetector.generateColliderOnWorker();
+        const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
+        if(placeable){
+            const requestIndex = this.postRequests.length;
+            if(this.persistent){
+                this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+            }
+            this.collisionDetector.generateColliderOnWorker();
+        } else {
+            console.log("failed to add new building at that position");
+        }
+    }
 
+    checkPosForBuilding(worldPosition){
+        return this.world.checkPosForBuilding(worldPosition);
     }
 
 
     async exportWorld(){
 
+    }
+
+    /**
+     * changes to resources of the player, when event removes crystals, crystals should always be the first key
+     * @param event
+     */
+    updatePlayerStats(event){
+        for(const key of event.detail.type){
+            if (key === "crystals"){
+                if(!this.userInfo.changeCrystals(event.detail.params[key])){
+                    break;
+                }
+            } else if(key === "health"){
+                this.world.player.changeCurrentHealth(event.detail.params[key]);
+            } else if(key === "mana"){
+                this.world.player.changeCurrentMana(event.detail.params[key]);
+            } else if(key === "maxHealth") {
+                this.world.player.increaseMaxHealth(event.detail.params[key]);
+            } else if(key === "maxMana") {
+                this.world.player.increaseMaxMana(event.detail.params[key]);
+            } else if (key === "xp"){
+                this.userInfo.changeXP(event.detail.params[key]);
+            } else if (key === "level"){
+                this.userInfo.changeLevel();
+            }
+            //TODO: sad sound when not enough crystals
+            //TODO: update db?
+        }
     }
 
     insertPendingPostRequest(placeable){
@@ -128,31 +163,34 @@ export class WorldManager{
      * @returns {Promise<void>}
      */
     sendPOST(uri, entity, retries, requestIndex){
-        console.log("sending POST");
-        console.log(entity.formatPOSTData(this.userInfo));
-        $.ajax({
-            url: `${API_URL}/${uri}/${entity.dbType}`,
-            type: "POST",
-            data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
-            dataType: "json",
-            contentType: "application/json",
-            error: (e) => {
-                console.log(e);
-            }
-        }).done((data, textStatus, jqXHR) => {
-            console.log("POST success");
-            console.log(textStatus, data);
-            entity.setId(data);
-            this.removePendingPostRequest(requestIndex);
-        }).fail((jqXHR, textStatus, errorThrown) => {
-            console.log("POST fail");
-            if (retries > 0){
-                this.sendPOST(uri, entity, retries - 1, requestIndex);
-            } else {
-                throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
-                //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
-            }
-        });
+        this.insertPendingPostRequest(entity);
+        try {
+            $.ajax({
+                url: `${API_URL}/${uri}/${entity.dbType}`,
+                type: "POST",
+                data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.log(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+                entity.setId(data);
+                this.removePendingPostRequest(requestIndex);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                if (retries > 0){
+                    this.sendPOST(uri, entity, retries - 1, requestIndex);
+                } else {
+                    throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
+                    //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
+                }
+            });
+        } catch (err){
+            console.log(err);
+        }
     }
 
     async updateGems(){

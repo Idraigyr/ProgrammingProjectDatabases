@@ -26,6 +26,10 @@ class Island(current_app.db.Model):
     def placeables(self):
         return relationship("Placeable", back_populates="island")
 
+    @declared_attr
+    def tasks(self):
+        return relationship("Task", back_populates="island")
+
     # Only one altar building can exist on an island
     # So we have a one-to-one relationship with the altar building
     # It should also be non-null as it's the central hub of the island and thus created at the same time as the island

@@ -20,7 +20,6 @@ export class CollisionDetector extends Subject{
         //only use = not needing to allocate extra memory for new vectors
         this.tempVector = new THREE.Vector3();
         this.tempVector2 = new THREE.Vector3();
-        this.tempLine = new THREE.Line3();
 
         this.tempBox = new THREE.Box3();
     }
@@ -69,7 +68,6 @@ export class CollisionDetector extends Subject{
 
     generateCollider(){
         this.viewManager.getColliderModels(this.charModel);
-        console.log(this.charModel);
         let staticGenerator = new StaticGeometryGenerator(this.charModel);
         staticGenerator.attributes = [ 'position' ];
 
@@ -84,8 +82,6 @@ export class CollisionDetector extends Subject{
             //show loading screen
             document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
             document.querySelector('.loading-animation').style.display = 'visible';
-            const sleep =  new Promise(r => setTimeout(r, 100));
-            sleep.then(() => {console.log("waking up")});
             this.collider = this.generateCollider();
             document.querySelector('.loading-animation').style.display = 'none';
         } else {
@@ -112,15 +108,15 @@ export class CollisionDetector extends Subject{
         return box1.intersectsBox(box2);
     }
 
-    checkSpellEntityCollisions(){
+    checkSpellEntityCollisions(deltaTime){
         //TODO: what if spell "phases" through collision because of high velocity/deltaTime?
         for(const spellEntity of this.viewManager.pairs.spellEntity){
             if(this.BoxCollisionWithWorld(spellEntity.view.boundingBox)){
-                spellEntity.model.onWorldCollision();
+                spellEntity.model.onWorldCollision(deltaTime);
             }
             this.viewManager.pairs.player.forEach((player) => {
                 if(this.boxToBoxCollision(spellEntity.view.boundingBox, player.view.boundingBox)){
-                    spellEntity.model.onCharacterCollision(player.model,spellEntity.view.boundingBox, player.view.boundingBox);
+                    spellEntity.model.onCharacterCollision(deltaTime, player.model,spellEntity.view.boundingBox, player.view.boundingBox);
                 }
             });
         }
@@ -172,7 +168,9 @@ export class CollisionDetector extends Subject{
         const deltaVector = this.tempVector2;
         deltaVector.subVectors( newPosition, position );
 
-        playerModel.onGround = deltaVector.y > Math.abs( deltaTime * playerModel.velocity.y * 0.25);
+        playerModel.onGround = playerModel.onCollidable || deltaVector.y > Math.abs( deltaTime * playerModel.velocity.y * 0.25);
+        //console.log(playerModel.onGround)
+        playerModel.onCollidable = false;
 
         const offset = Math.max( 0.0, deltaVector.length() - 1e-5 );
         deltaVector.normalize().multiplyScalar( offset );

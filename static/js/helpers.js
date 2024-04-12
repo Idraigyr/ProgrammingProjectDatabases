@@ -1,25 +1,13 @@
 import * as THREE from "three";
 import {gridCellSize} from "./configs/ViewConfigs.js";
+import {gravity} from "./configs/ControllerConfigs.js";
 
-/**
- * Get the smallest number between x1 and x2
- * @param x1 first number
- * @param x2 second number
- * @returns {*} the smallest number
- */
-export const min = function(x1, x2){
-    return x1 < x2 ? x1 : x2;
-}
-/**
- * Get the largest number between x1 and x2
- * @param x1 first number
- * @param x2 second number
- * @returns {*} the largest number
- */
-export const max = function(x1, x2){
-    return x1 > x2 ? x1 : x2;
-}
+export const assert = function(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
 
+}
 export const setIndexAttribute = function(geometry){
     const numVertices = geometry.attributes.position.count;
     const index = [];
@@ -29,14 +17,116 @@ export const setIndexAttribute = function(geometry){
     geometry.setIndex(index);
 }
 
+export const returnMultipliedString = function(string, length){
+    let str = "";
+    for(let i = 0; i < length; i++){
+        str += string;
+    }
+    return str;
+}
+
+export const printFoundationGrid = function(grid, width, length, oneline=false){
+    console.log(returnMultipliedString("*", width));
+    let arr = "";
+    if(oneline){
+        for(let i = 0; i < grid.length; i++){
+            arr += grid[i] + " ";
+        }
+    } else {
+        for(let i = 0; i < length; i++){
+            for(let j = 0; j < width; j++){
+                arr += grid[i*width + j] + " ";
+            }
+            arr += "\n";
+        }
+    }
+    console.log(arr);
+    console.log(returnMultipliedString("*", width));
+}
+
+export const returnWorldToGridIndex = function(position){
+    return {x: Math.floor(position.x/gridCellSize + 0.5), z: Math.floor(position.z/gridCellSize + 0.5)};
+}
+
 export const convertWorldToGridPosition = function (position){
     position.x = Math.floor(position.x/gridCellSize + 0.5)*gridCellSize;
     position.z = Math.floor(position.z/gridCellSize + 0.5)*gridCellSize;
+    return position;
 }
 
-export const convertGridToWorldPosition = function (position){
+export const convertGridIndexToWorldPosition = function (position){
     position.x = position.x*gridCellSize;
     position.z = position.z*gridCellSize;
+    return position
+}
+
+export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //box1 = spell
+    const characterCenter = movableBox.getCenter(new THREE.Vector3());
+    const hitVector = new THREE.Vector3().copy(staticBox.getCenter(new THREE.Vector3())).sub(characterCenter);
+
+    let box2CenterLow = new THREE.Vector3().copy(characterCenter).setY(movableBox.min.y);
+    if(staticBox.containsPoint(box2CenterLow)){ //currently does not do anything movableBox.min.y is somehow always -2
+        boxVelocity.y += staticBox.max.y - box2CenterLow.y;
+    }
+
+    //TODO: instead of projecting the velocity onto the hitVector, split the velocity into its three components and throw away the component(s) that is in the direction of the StaticBox?
+
+    const projected = boxVelocity.clone().projectOnVector(hitVector);
+    boxVelocity.sub(projected);
+}
+
+const delta = 0.1;
+export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity, deltaTime){
+    let standingOnCollidable = false;
+    if(Math.abs(staticBox.min.x - movableBox.max.x) < delta && boxVelocity.x < 0){
+        boxVelocity.x = 0;
+    }
+    if(Math.abs(staticBox.max.x - movableBox.min.x) < delta && boxVelocity.x > 0){
+        boxVelocity.x = 0;
+    }
+    if(Math.abs(staticBox.min.y - movableBox.max.y) < delta && boxVelocity.y < 0){
+        console.log("bottom y")
+        console.log(boxVelocity.y)
+        console.log(gravity*deltaTime)
+        boxVelocity.y = 0;
+        standingOnCollidable = true;
+    }
+    if(Math.abs(staticBox.max.y - movableBox.min.y) < delta && boxVelocity.y > 0){
+        console.log("top y")
+        boxVelocity.y = 0;
+        standingOnCollidable = true;
+    }
+    if (Math.abs(staticBox.min.z - movableBox.max.z) < delta && boxVelocity.z < 0){
+        boxVelocity.z = 0;
+    }
+    if(Math.abs(staticBox.max.z - movableBox.min.z) < delta && boxVelocity.z > 0){
+        boxVelocity.z = 0;
+    }
+    return standingOnCollidable;
+}
+
+export const adjustVelocity3 = function (staticBox, movableBox, boxVelocity){
+    let standingOnCollidable = false;
+    if(staticBox.min.x - movableBox.max.x < 0 && boxVelocity.x < 0){
+        boxVelocity.x = 0;
+    }
+    if(movableBox.min.x - staticBox.max.x < 0 && boxVelocity.x > 0){
+        boxVelocity.x = 0;
+    }
+    if(staticBox.min.z - movableBox.max.z < 0 && boxVelocity.z < 0){
+        boxVelocity.z = 0;
+    }
+    if(movableBox.min.z - staticBox.max.z < 0 && boxVelocity.z > 0){
+        boxVelocity.z = 0;
+    }
+    if(staticBox.min.y - movableBox.max.y < 0 && boxVelocity.y < 0){
+        boxVelocity.y = 0;
+    }
+    if(movableBox.min.y - staticBox.max.y < 0 && boxVelocity.y > 0){
+        boxVelocity.y = 0;
+        standingOnCollidable = true;
+    }
+    return standingOnCollidable;
 }
 
 /**
@@ -68,7 +158,7 @@ export function scaleAndCorrectPosition(object, viewManager=undefined){
         if (object instanceof THREE.Object3D) {extracted = object;}
         else {extracted = extractObject(object, viewManager);}
         correctRitualScale(extracted);
-        convertGridToWorldPosition(extracted.position);
+        convertGridIndexToWorldPosition(extracted.position);
         //correctRitualPosition(extracted);
     }
 
@@ -84,6 +174,29 @@ export function correctRitualPosition(object) {
     // Centralize the object, because now the left bottom corner is in the center of the cell
     // const boundingBox = new THREE.Box3().setFromObject(object);
     // object.position.add(new THREE.Vector3(-(boundingBox.max.x-boundingBox.min.x) / 2.0, 0, -(boundingBox.max.z-boundingBox.min.z) / 2.0));
+}
+
+/**
+ * Returns the cells occupied by the building
+ * @param building THREE.Object3D
+ * @returns {*[]} array of the occupied cells
+ */
+export function getOccupiedCells(building){
+    let cells = [];
+    // Create bounding box
+    const boundingBox = new THREE.Box3().setFromObject(building);
+    let min = boundingBox.min;
+    let max = boundingBox.max;
+    convertWorldToGridPosition(min);
+    convertWorldToGridPosition(max);
+    for(let x = min.x; x <= max.x; x++){
+        for(let z = min.z; z <= max.z; z++){
+            cells.push({x: x, z: z});
+        }
+    }
+    // Print occupied cells
+    // console.log("occupied cells:", cells);
+    return cells;
 }
 
 export function setMinimumY(object, y){

@@ -28,7 +28,7 @@ class MineBuildingSchema(BuildingSchema):
         'collected_gem': GemSchema
     }
 
-    required = []
+    required = ['mine_type'] + BuildingSchema.required
 
     title = 'MineBuilding'
     description = ('A mine that mines a certain type of resource and keeps it until it is emptied by the player. '
@@ -53,7 +53,7 @@ class MineBuildingResource(Resource):
 
     @swagger.tags('building')
     @summary("Retrieve a mine building by its placeable id")
-    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The mine building id to retrieve')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'int'}, description='The mine building id to retrieve', required=True)
     @swagger.response(response_code=200, description="The altar building in JSON format", schema=MineBuildingSchema)
     @swagger.response(response_code=404, description='Builder minion not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
@@ -76,7 +76,7 @@ class MineBuildingResource(Resource):
 
 
     @swagger.tags('building')
-    @summary("Update the mine building object with the given id")
+    @summary("Update the mine building object with the given id. Updateable fields are x,z,rotation, level, mine_type & mined_amount")
     @swagger.expected(schema=MineBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The mine building has been updated. The up-to-date object is returned", schema=MineBuildingSchema)
     @swagger.response(response_code=404, description='Mine building not found', schema=ErrorSchema)
@@ -92,7 +92,7 @@ class MineBuildingResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            MineBuildingSchema(**data)
+            MineBuildingSchema(**data, _check_requirements=False)
             id = int(data['placeable_id'])
 
             # Get the existing mine building
@@ -125,7 +125,20 @@ class MineBuildingResource(Resource):
         data = clean_dict_input(data)
 
         try:
-            MineBuildingSchema(**data)  # Validate the input
+            if 'gems' in data:
+                # Remove the gems from the building, they are managed by the gem endpoint
+                data.pop('gems')
+            if 'type' in data:
+                # Remove the type field as it's not needed, it's always 'mine_building' since we're in the mine_building endpoint
+                data.pop('type')
+            if 'task' in data:
+                # Remove the task field as it's managed by the task endpoint
+                data.pop('task')
+            if 'blueprint' in data:
+                # Remove the blueprint field as it's always 'mine_building' since we're in the mine_building endpoint
+                data.pop('blueprint')
+
+            MineBuildingSchema(**data, _check_requirements=True)  # Validate the input
 
 
             # Create the MineBuilding model & add it to the database

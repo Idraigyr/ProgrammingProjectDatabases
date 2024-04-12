@@ -5,7 +5,7 @@
 /**
  * Shows default paths to the 3d models
  */
-export const assetPaths = {
+export const assetPaths = Object.freeze({
     Altar: "./static/assets/3d-models/altar.glb",
     Mine: "./static/assets/3d-models/mine.glb",
     Player: "./static/assets/3d-models/Wizard.glb",
@@ -18,6 +18,10 @@ export const assetPaths = {
     iceBlock: "./static/assets/3d-models/crystals/Crystal.glb",
     towerTexture: "./static/assets/textures/towerTexture.png",
     Tower: "./static/assets/3d-models/towers/_Wizard_tower_LVL_1.fbx",
-}
+});
+
+export const menuPaths = Object.freeze({
+
+});
 
 export const gridCellSize = 10;

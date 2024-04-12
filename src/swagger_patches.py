@@ -35,6 +35,8 @@ def check_type(self, type_, key, value):
             if value is None:
                 if not self.properties[key].get('nullable', True):
                     raise ValueError(f'The attribute "{key}" must not be null')
+                else:
+                    return # no need to check further
 
             if type_ == 'integer' and not isinstance(value, int):
                 raise ValueError(f'The attribute "{key}" must be an int, but was "{type(value)}"')
@@ -48,6 +50,60 @@ def check_type(self, type_, key, value):
 
 # Monkey patch the broken check_type method
 Schema.check_type = check_type
+
+def __init__(self, **kwargs):
+    # super().__init__(**kwargs)
+    check_required = kwargs.pop('_check_requirements', False)
+
+    if self.properties:
+        for k, v in kwargs.items():
+            if k not in self.properties:
+                raise ValueError(
+                    'The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
+            if type(self.properties[k]) == type:
+                if self.properties[k].type == 'object':
+                    self.properties[k](**v)
+                self.prop = self.properties[k].definitions()
+            else:
+                self.prop = self.properties[k]
+
+            nullable = self.get_boolean_attribute('nullable')
+            load_only = self.get_boolean_attribute('load_only')
+            dump_only = self.get_boolean_attribute('dump_only')
+            if load_only and dump_only:
+                raise TypeError('A value can\'t be load_only and dump_only in the same schema')
+
+            type_ = self.prop.get('type', None)
+            format_ = self.prop.get('format', None)
+
+            if not (nullable and v is None):
+                self.check_type(type_, k, v)
+                if 'enum' in self.prop:
+                    if type(self.prop['enum']) not in [set, list, tuple]:
+                        raise TypeError(f"'enum' must be 'list', 'set' or 'tuple',"
+                                        f"but was {type(self.prop['enum'])}")
+                    for item in list(self.prop['enum']):
+                        self.check_type(type_, 'enum', item)
+                    if v not in self.prop['enum']:
+                        raise ValueError(f"{k} must have {' or '.join(self.prop['enum'])} but have {v}")
+
+                self.check_format(type_, format_, v)
+
+            if load_only:
+                del self[k]
+                continue
+
+            self[k] = v
+
+    if hasattr(self, 'required') and check_required:
+        self.required = list(self.required)
+        for key in self.required:
+            if key not in kwargs:
+                raise ValueError('The attribute "{0}" is required'.format(key))
+
+
+# Monkey patch the broken __init__ method
+Schema.__init__ = __init__
 
 
 def summary(summary: str):

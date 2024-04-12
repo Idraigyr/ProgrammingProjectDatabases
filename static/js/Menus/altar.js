@@ -30,7 +30,7 @@ function drag(event) {
 }
 
 function drop(event, containerId) {
-    event.preventDefault();
+    // event.preventDefault();
     let data = event.dataTransfer.getData("text");
     let draggedItem = document.getElementById(data);
     let startContainer = event.dataTransfer.getData("startContainer");
@@ -176,7 +176,6 @@ populateContainer('container4', stakes);
 
 function exitMenu() {
     // Your code to handle closing the menu goes here
-    console.log("Altar menu closed");
     // Send message to parent
     window.parent.postMessage("closeAltarMenu", "*");
 }

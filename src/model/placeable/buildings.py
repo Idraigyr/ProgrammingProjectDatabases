@@ -1,4 +1,4 @@
-from sqlalchemy import Column, BigInteger, ForeignKey
+from sqlalchemy import Column, BigInteger, ForeignKey, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SqlEnum
 
@@ -16,7 +16,7 @@ class MineBuilding(Building):
     placeable_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), primary_key=True)
 
     mine_type: Mapped[MineBuildingType] = Column(SqlEnum(MineBuildingType), nullable=False, default='crystal')
-    mined_amount: Mapped[int] = Column(BigInteger, nullable=False, default=0)
+    mined_amount: Mapped[int] = Column(BigInteger, CheckConstraint('mined_amount >= 0'), nullable=False, default=0)
 
     collected_gem: Mapped[Gem] = relationship(back_populates='mine')
 
@@ -37,6 +37,8 @@ class MineBuilding(Building):
         super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.MINE.value, rotation=rotation)
         if not MineBuildingType.has_value(mine_type):
             raise ValueError('Invalid mine_type')
+        if mined_amount < 0:
+            raise ValueError('Mined amount must be greater than or equal to 0')
 
         self.mine_type = MineBuildingType[mine_type.upper()]
         self.mined_amount = mined_amount
@@ -52,6 +54,8 @@ class MineBuilding(Building):
         super().update(data)
         if not MineBuildingType.has_value(data.get('mine_type', self.mine_type)):
             raise ValueError('Invalid mine_type')
+        if data.get('mined_amount', self.mined_amount) < 0:
+            raise ValueError('Mined amount must be greater than or equal to 0')
 
         # Ignore pycharm warning, it's wrong
         self.mine_type = MineBuildingType[data.get('mine_type', self.mine_type).upper()]

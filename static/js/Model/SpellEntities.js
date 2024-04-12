@@ -1,6 +1,6 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
-import {min} from "../helpers.js";
+import {adjustVelocity, adjustVelocity2, adjustVelocity3} from "../helpers.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -33,8 +33,8 @@ class SpellEntity extends Entity{
         }
     }
 
-    onWorldCollision(){}
-    onCharacterCollision(character, characterBBox, spellBBox){
+    onWorldCollision(deltaTime){}
+    onCharacterCollision(deltaTime, character){
         if(this.team !== character.team){
             this.spellType.applyEffects(character);
             this.hitSomething = true;
@@ -72,30 +72,12 @@ export class MobileCollidable extends CollidableSpellEntity{
         this.position = this.position.copy(this.spawnPoint).add(this.moveFunction(this.functionValue, this.moveFunctionParams));
     }
 
-    onWorldCollision(){}
-    onCharacterCollision(character, characterBBox, spellBBox){
-        super.onCharacterCollision(character);
+    onWorldCollision(deltaTime){}
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
 
-        //calculate which face is hit by the character
-        const spellCenter = spellBBox.getCenter(new THREE.Vector3());
-        const characterCenter = characterBBox.getCenter(new THREE.Vector3());
-        const hitVector = new THREE.Vector3().copy(spellCenter).sub(characterCenter);
-
-        //change the character's vertical velocity so that it is standing on the spell -- WIP
-        const upLength = characterCenter.y - spellCenter.y;
-        if(upLength > 0 && upLength > characterBBox.getSize(new THREE.Vector3()).y/2 -  spellBBox.getSize(new THREE.Vector3()).y/2){
-            character.velocity.y = (new THREE.Vector3().copy(this.moveFunction(this.functionValue, this.moveFunctionParams))).sub(new THREE.Vector3(0,character.radius,0)).y + 10;
-        } else {
-            //change the character's horizontal velocity so that it is pushed away from the spell -- WIP
-            hitVector.normalize();
-            character.horizontalVelocity.add(hitVector.multiplyScalar(10));
-        }
-
-
-
-
-        // const distance = hitVector.length();
-        //character.horizontalVelocity.add(new THREE.Vector3().copy(this.moveFunction(this.functionValue, this.moveFunctionParams))).sub(new THREE.Vector3(0,character.radius,0));
+        character.onCollidable = adjustVelocity2(spellBBox, characterBBox, character.velocity, deltaTime);
+        //TODO: make sure player rises with the collidable
     }
 }
 
@@ -128,13 +110,13 @@ export class Projectile extends SpellEntity{
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
 
-    onWorldCollision(){
+    onWorldCollision(deltaTime){
         this.hitSomething = true;
         this.timer += this.duration;
         this.dispatchEvent(this.createDeleteEvent());
     }
-    onCharacterCollision(character, characterBBox, spellBBox){
-        super.onCharacterCollision(character);
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
             this.timer += this.duration;
@@ -147,11 +129,11 @@ export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
     }
-    onWorldCollision(){
-        super.onWorldCollision();
+    onWorldCollision(deltaTime){
+        super.onWorldCollision(deltaTime);
     }
-    onCharacterCollision(character, characterBBox, spellBBox){
-        super.onCharacterCollision(character);
+    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
+        super.onCharacterCollision(deltaTime, character);
     }
 }
 

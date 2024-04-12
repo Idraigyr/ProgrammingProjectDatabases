@@ -192,6 +192,7 @@ class Build extends Effect{
 class ConcreteSpell{
     constructor(params) {
         this.hasPreview = false;
+        this.previewRotates = false;
         this.worldHitScan = false;
         this.EntityHitScan = false;
         this.goesThroughWalls = false;
@@ -292,6 +293,7 @@ export class IceWall extends ConcreteSpell{
         });
         this.name = "icewall";
         this.hasPreview = true;
+        this.previewRotates = true;
         this.worldHitScan = true;
         this.cost = 20;
     }

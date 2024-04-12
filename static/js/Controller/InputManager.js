@@ -1,6 +1,6 @@
 import {
-    buildKey,
-    DownKey, primaryBackwardKey,
+    buildKey, subSpellKey,
+    DownKey, eatingKey, primaryBackwardKey,
     primaryForwardKey,
     primaryLeftKey,
     primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
@@ -23,15 +23,12 @@ export class InputManager extends Subject{
         down: false,
         spellSlot: 1,
         sprint: false,
-        build: false
+        build: false,
+        eating: false
     }
     mouse = {
         leftClick: false,
         rightClick: false,
-        deltaX: 0,
-        deltaY: 0,
-        x: 0,
-        y: 0
     }
     #callbacks = {mousemove: [], mousedown: {0: [], 2: []}, spellSlotChange: []};
 
@@ -43,13 +40,11 @@ export class InputManager extends Subject{
         super(params);
         this.blockedInput = true;
         this.canvas = params.canvas;
-        this.canvas.addEventListener("mousedown", async (e) => {
-            if(!this.blockedInput) return;
-            await this.canvas.requestPointerLock();
-        });
+        this.canvas.addEventListener("mousedown", this.requestPointerLock.bind(this));
         document.addEventListener("mousedown", this.onClickEvent.bind(this));
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;
+            if(this.blockedInput) this.resetKeys();
         });
         document.addEventListener("mousemove", this.onMouseMoveEvent.bind(this));
 
@@ -83,6 +78,25 @@ export class InputManager extends Subject{
                     break;
             }
         });
+    }
+
+    async requestPointerLock(){
+        if(!this.blockedInput) return;
+        await this.canvas.requestPointerLock();
+    }
+
+    exitPointerLock(){
+        this.resetKeys();
+        document.exitPointerLock();
+    }
+
+    resetKeys(){
+        for(const key in this.keys){
+            if(key === "spellSlot") continue;
+            this.keys[key] = false;
+        }
+        this.mouse.leftClick = false;
+        this.mouse.rightClick = false;
     }
 
     addKeyDownEventListener(key, callback){
@@ -207,7 +221,11 @@ export class InputManager extends Subject{
                 this.keys.spellSlot = 5;
                 this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
+            case eatingKey:
+                this.keys.eating = bool;
+                break;
         }
+
         this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 

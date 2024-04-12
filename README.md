@@ -54,6 +54,9 @@ Execute all the following commands from the root directory of the project.
     python3 -m src.app
     ```
    
+**Important note when running Gunicorn WSGI server**: Gunicorn does not support WebSocket connections (as the loadbalancing algorithm does not work with WebSockets), which this app requires.
+In order to fix this, you must run gunicorn with only **1 worker** and use threading for workload spread. 
+
 ## Documentation
 
 Please refer to [DOCUMENTATION.md](docs/DOCUMENTATION.md) for more information about the project structure, the API, the database schema and the 3D visuals.

@@ -10,7 +10,7 @@ import {Bush} from "./Buildings/Bush.js";
 import {FollowPlayer, Immobile, MobileCollidable, Projectile, RitualSpell} from "./SpellEntities.js";
 
 // Model namespace
-export let Model = {
+export const Model = Object.freeze({
     World: World,
     Wizard: Wizard,
     Island: Island,
@@ -25,4 +25,4 @@ export let Model = {
     MobileCollidable: MobileCollidable,
     FollowPlayer: FollowPlayer,
     RitualSpell: RitualSpell
-}
+});
