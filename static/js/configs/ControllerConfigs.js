@@ -14,7 +14,7 @@ export const spellCastMovementSpeed = 2;
 
 export const gravity = -40;
 
-export const physicsSteps = 7;
+export const physicsSteps = 4;
 
 export const jumpHeight = 15;
 
@@ -22,7 +22,7 @@ export const sprintMultiplier = 2;
 
 export const playerSpawn = {
     x: -8.5,
-    y: 10,
+    y: 50,
     z: -10
 }
 
