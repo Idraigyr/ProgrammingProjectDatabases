@@ -69,13 +69,17 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 app.playerInfo.mana = Number(message.match(regex["mana"])[1]);
             }
             else if (message.match(regex["level"])){
-                app.playerInfo.level = Number(message.match(regex["level"])[1]);
+                if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0){
+                    app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
+                } else{
+                    socket.emit('message', messageData);
+                }
             }
             else if (message.match(regex["xp"])){
-                app.playerInfo.experience = Number(message.match(regex["xp"])[1]);
+                app.playerInfo.changeXP(Number(message.match(regex["xp"])[1]));
             }
             else if (message.match(regex["crystal"])){
-                app.playerInfo.crystal = Number(message.match(regex["crystal"])[1]);
+                app.playerInfo.changeCrystals(Number(message.match(regex["crystal"])[1]));
             }
             else if (message.match(regex["health"])){
                 app.playerInfo.health = Number(message.match(regex["health"])[1]);
@@ -114,7 +118,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 for (let i = 0; i < app.playerInfo.spells.length; i++){
                     if(app.playerInfo.spells[i].name === "build"){
                         app.playerInfo.spells[i].cooldown = Number(message.match(regex["buildCooldown"])[1]);
-                        app;
                         break;
                     }
                 }

@@ -2,6 +2,8 @@
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {API_URL, playerURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
+import {popUp} from "../external/LevelUp.js";
+
 export class UserInfo extends Subject{
     constructor() {
         super();
@@ -13,10 +15,17 @@ export class UserInfo extends Subject{
 
         this.crystals = 100;
 
+        this.maxMana = 100;
+        this.maxHealth = 100;
+
+        this.maxGemAttribute = 2;
+
+        this.maxBuildings = 4;
+
         this.mana = 1000;
         this.health = 100;
 
-        this.level = 0;
+        this.level = 1;
         this.experience = 0;
         this.xpTreshold = 100;
 
@@ -79,7 +88,15 @@ export class UserInfo extends Subject{
 
     increaseXpTreshold(){
         this.dispatchEvent(this.createUpdateXpTresholdEvent());
-        return this.level * 100;
+        if(this.level === 0){
+            return 50;
+        } else if(this.level === 1){
+            return 100;
+        } else if(this.level === 2){
+            return 200;
+        } else if(this.level === 3){
+            return 350;
+        }
     }
 
     changeXP(amount){
@@ -95,10 +112,44 @@ export class UserInfo extends Subject{
     }
 
     changeLevel(amount){
+        let old = this.level;
         if(amount < 0 && Math.abs(amount) > this.level) return false;
         this.level = amount > 0 ? this.level + amount : Math.max(0, this.level + amount);
+        if (this.level < 0 || this.level > 4){
+            this.level = old;
+            return false;
+        }
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.xpTreshold = this.increaseXpTreshold();
+        if(this.level === 0){
+            this.maxMana = 50;
+            this.maxHealth = 50;
+            this.maxGemAttribute = 1;
+            this.maxBuildings = 2;
+        }else if(this.level === 1){
+            this.maxMana = 100;
+            this.maxHealth = 100;
+            this.maxGemAttribute = 2;
+            this.maxBuildings = 4;
+        }
+        else if(this.level === 2){
+            this.maxMana = 200;
+            this.maxHealth = 200;
+            this.maxGemAttribute = 4;
+            this.maxBuildings = 6;
+        } else if(this.level === 3){
+            this.maxMana = 400;
+            this.maxHealth = 400;
+            this.maxGemAttribute = 6;
+            this.maxBuildings = 8;
+        } else if(this.level === 4){
+            this.maxMana = 600;
+            this.maxHealth = 600;
+            this.maxGemAttribute = 8;
+            this.maxBuildings = 10;
+        }
+        this.experience = 0;
+        popUp(this.level, this.maxMana, this.maxHealth);
         return true;
     }
 
