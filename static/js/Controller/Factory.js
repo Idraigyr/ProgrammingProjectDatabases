@@ -150,7 +150,9 @@ export class Factory{
             const assetClone = asset.clone();
             //TODO: find solution invisible THREE.Object3D do not become a part of staticGeometrywith generateCollider function
             view.charModel.visible = false;
-
+            // Set that model is not ready
+            model.ready = false;
+            // Create timer
             const timer = this.timerManager.createTimer(
                 model.timeToBuild,
                 [() => {
@@ -175,6 +177,7 @@ export class Factory{
             // Remove watch view when the timer ends
             timer.addCallback(() => {
                 this.scene.remove(watch.charModel);
+                model.ready = true;
             }
             )
         }

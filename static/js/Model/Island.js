@@ -58,7 +58,11 @@ export class Island extends Foundation{
         building.cellIndex = this.occupyCell(building.position, building.dbType);
     }
     getBuildingByPosition(position){
-        return this.getBuildingByIndex(returnWorldToGridIndex(position));
+        let pos = position.clone();
+        pos = returnWorldToGridIndex(pos);
+        // Transform position to cell index
+        pos = (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
+        return this.getBuildingByIndex(pos);
     }
     getBuildingByIndex(index){
         return this.buildings.find(building => building.cellIndex === index);

@@ -152,6 +152,7 @@ class App {
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+        // Onclick event
         //TODO: change nameless callbacks to methods of a class?
         this.spellCaster.addEventListener("castBuildSpell", (event) => {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
@@ -167,6 +168,9 @@ class App {
         });
         this.spellCaster.addEventListener("interact", (event) => {
             // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
+            // Check if the building is ready
+            const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
+            if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
             const items = []; //TODO: fill with equipped gems of selected building if applicable
             console.log(buildTypes.getMenuName(buildingNumber));

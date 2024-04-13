@@ -13,6 +13,7 @@ export class Placeable extends Entity{
         this.level = params?.level ?? 0;
         this.rotation = params?.rotation ??  0;
         this.gems = [];
+        this.ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
     }
