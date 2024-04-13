@@ -55,7 +55,7 @@ export class UserInfo extends Subject{
     }
 
     advertiseCurrentCondition(){
-        this.crystals += 100;
+        this.crystals += 1000;
         this.dispatchEvent(this.createUpdateCrystalsEvent());
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.dispatchEvent(this.createUpdateXpEvent());
@@ -87,6 +87,7 @@ export class UserInfo extends Subject{
         if(amount + this.experience >= this.xpTreshold){
             this.changeLevel(1);
             this.experience = (this.experience + amount) - this.xpTreshold;
+            this.xpTreshold = this.increaseXpTreshold();
         } else {
             this.experience = amount > 0 ? this.experience + amount : Math.max(0, this.experience + amount);
         }
@@ -98,7 +99,6 @@ export class UserInfo extends Subject{
         if(amount < 0 && Math.abs(amount) > this.level) return false;
         this.level = amount > 0 ? this.level + amount : Math.max(0, this.level + amount);
         this.dispatchEvent(this.createUpdateLevelEvent());
-        this.xpTreshold = this.increaseXpTreshold();
         return true;
     }
 
@@ -115,6 +115,6 @@ export class UserInfo extends Subject{
     }
 
     createUpdateXpEvent() {
-        return new CustomEvent("updateXp", {detail: {xp: this.experience}});
+        return new CustomEvent("updateXp", {detail: {xp: this.experience, threshold: this.xpTreshold}});
     }
 }
