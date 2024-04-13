@@ -13,6 +13,7 @@ export class Timer{
         this.id = null;
         this.duration = duration;
         this.timer = 0;
+        this.deltaTime = 0;
         this.callbacks = callbacks;
         this.callbacksParams = callbackParams??[];
         this.repeatable = repeatable;
@@ -40,6 +41,7 @@ export class Timer{
      */
     update(deltaTime){
         if(this.finished) return;
+        this.deltaTime = deltaTime;
         this.timer += deltaTime;
         if(this.timer >= this.duration){
             this.callbacks.forEach((callback, i) => callback(this.callbacksParams?.[i]));

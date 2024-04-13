@@ -113,9 +113,9 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param buildingName name of the building
-     * @param position position of the building, needs to be in grid index format
-     * @param withTimer if true, the building will be created with timer
+     * @params.buildingName name of the building
+     * @params.position position of the building, needs to be in grid index format
+     * @params.withTimer if true, the building will be created with timer
      * @returns {*} model of the building
      */
     //TODO: change arguments => params (= more more extendable)
@@ -169,8 +169,8 @@ export class Factory{
             // Add callback to update view with the up-to-date time
             timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
             // Rotate the watch view each step
-            timer.addRuntimeCallback(() => {
-                watch.charModel.rotation.y += 0.05;
+            timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
+                watch.charModel.rotation.y += 2*deltaTime;
             });
             // Remove watch view when the timer ends
             timer.addCallback(() => {
