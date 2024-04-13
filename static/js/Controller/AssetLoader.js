@@ -46,7 +46,7 @@ export class AssetLoader{
     loadGLTF(path){
         let loader = new GLTFLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((gltf) => {
             let charModel;
             let animations = null;
@@ -73,7 +73,7 @@ export class AssetLoader{
     loadFBX(path){
         let loader = new FBXLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((fbx) => {
             let charModel;
             let animations = null;
@@ -98,7 +98,7 @@ export class AssetLoader{
     loadTexture(path){
         let loader = new TextureLoader();
         return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((texture) => {
             return {texture};
         }, (err) => {

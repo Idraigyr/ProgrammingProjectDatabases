@@ -18,6 +18,17 @@ export const assetPaths = Object.freeze({
     iceBlock: "./static/assets/3d-models/crystals/Crystal.glb",
     towerTexture: "./static/assets/textures/towerTexture.png",
     Tower: "./static/assets/3d-models/towers/_Wizard_tower_LVL_1.fbx",
+    SkeletonMage: "./static/assets/3d-models/minions/Skeleton_Mage.glb",
+    SkeletonWarrior: "./static/assets/3d-models/minions/Skeleton_Warrior.glb",
+    SkeletonMinion: "./static/assets/3d-models/minions/Skeleton_Minion.glb",
+    SkeletonRogue: "./static/assets/3d-models/minions/Skeleton_Rogue.glb",
+    SkeletonArrow: "./static/assets/3d-models/weapons/Skeleton_Arrow.gltf",
+    SkeletonCrossbow: "./static/assets/3d-models/weapons/Skeleton_Crossbow.gltf",
+    SkeletonBlade: "./static/assets/3d-models/weapons/Skeleton_Blade.gltf",
+    SkeletonAxe: "./static/assets/3d-models/weapons/Skeleton_Axe.gltf",
+    SkeletonStaff: "./static/assets/3d-models/weapons/Skeleton_Staff.gltf",
+    SkeletonShield: "./static/assets/3d-models/weapons/Skeleton_Shield_Small_A.gltf",
+    SkeletonTexture1: "./static/assets/textures/skeleton_texture.png",
 });
 
 export const menuPaths = Object.freeze({

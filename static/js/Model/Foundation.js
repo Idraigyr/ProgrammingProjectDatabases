@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {Entity} from "./Entity.js";
 import {buildTypes} from "../configs/Enums.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
-import {assert, returnWorldToGridIndex} from "../helpers.js";
+import {assert, printFoundationGrid, returnWorldToGridIndex} from "../helpers.js";
 
 /**
  * model of foundation which is a grid based plane with a center-square, meaning both width and length are uneven
@@ -58,10 +58,12 @@ export class Foundation extends Entity{
         return {x: Math.floor(position.x + (min ? -1 : 1)*(width -1)*gridCellSize/2), z:  Math.floor(position.z + (min ? -1 : 1)*(length -1)*gridCellSize/2)};
     }
 
-
-    #getCenterPosition(width, length){
-        assert(width % 2 !== 0 && length % 2 !== 0, "width and length need to be uneven");
-        return new THREE.Vector3(Math.floor((width - 1)*gridCellSize/2),0 , Math.floor((length - 1)*gridCellSize/2));
+    /**
+     * calculates the center position of the foundation based on the min and length of the foundation - min and length need ti be initialized
+     * @return {THREE.Vector3}
+     */
+    #getCenterPosition(){
+        return new THREE.Vector3(this.min.x + (this.width - 1)*gridCellSize/2, 0, this.min.z + (this.length - 1)*gridCellSize/2);
     }
 
     /**
@@ -99,9 +101,10 @@ export class Foundation extends Entity{
         this.width = width;
         this.length = length;
         //TODO: augment getCenterPosition so that position is based on position of the foundations
-        this.position = this.#getCenterPosition(width, length);
         this.min = min;
         this.max = max;
+        this.position = this.#getCenterPosition();
+        console.log("foundation center:", this.position);
         this.grid = this.#calculateGridFromFoundations(foundations);
     }
 
@@ -120,21 +123,38 @@ export class Foundation extends Entity{
         //fill in the worldmap with the islands
         for(const foundation of foundations){
             const xMin = (foundation.min.x - min.x)/gridCellSize + 0.5;
-            const xMax = (foundation.min.z - min.z)/gridCellSize + 0.5;
-            for(let z = 0; z < foundation.length; z++){
-                for(let x = 0; x < foundation.width; x++){
+            const zMin = (foundation.min.z - min.z)/gridCellSize + 0.5;
+            //works but mirrored
+            // for(let z = 0; z < foundation.length; z++){
+            //     for(let x = 0; x < foundation.width; x++){
+            //         let xIndex = Math.floor(xMin + x);
+            //         let zIndex = Math.floor(zMin + z);
+            //         let worldIndex = zIndex*width + xIndex;
+            //         let foundationIndex = z*foundation.width + x;
+            //
+            //         if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
+            //             console.error("islands overlap/invalid access");
+            //             return null;
+            //         }
+            //         worldMap[worldIndex] = foundation.grid[foundationIndex];
+            //     }
+            // }
+
+            for(let x = 0; x < foundation.width; x++){
+                for(let z = 0; z < foundation.length; z++){
                     let xIndex = Math.floor(xMin + x);
-                    let zIndex = Math.floor(xMax + z);
+                    let zIndex = Math.floor(zMin + z);
                     let worldIndex = zIndex*width + xIndex;
-                    let foundationIndex = z*foundation.width + x;
+                    let foundationIndex = x*foundation.length + z;
 
                     if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
-                        console.log("islands overlap/invalid access");
+                        console.error("islands overlap/invalid access");
                         return null;
                     }
                     worldMap[worldIndex] = foundation.grid[foundationIndex];
                 }
             }
+
         }
         return worldMap;
     }
@@ -154,8 +174,10 @@ export class Foundation extends Entity{
         let z1 = Math.floor(index1/this.width);
         let x2 = index2 % this.width;
         let z2 = Math.floor(index2/this.width);
+        let dx = Math.abs(x1 - x2);
+        let dz = Math.abs(z1 - z2);
         // return Math.abs(x1 - x2) + Math.abs(z1 - z2);
-        return Math.abs(x1 - x2) > Math.abs(z1 - z2) ? 14*Math.abs(x1 - x2) + 10*Math.abs(z1 - z2) : 14*Math.abs(z1 - z2) + 10*Math.abs(x1 - x2);
+        return dx > dz ? 14*dz + 10*(dx - dz) : 14*dx + 10*(dz - dx);
     }
 
     checkCell(worldPosition){
@@ -189,6 +211,7 @@ export class Foundation extends Entity{
             this.width = this.length;
             this.length = temp;
             //TODO: rotate min & max;
+            //TODO: rotate grid
         }
     }
 }

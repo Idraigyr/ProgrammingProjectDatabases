@@ -22,7 +22,7 @@ export const sprintMultiplier = 2;
 
 export const playerSpawn = {
     x: -8.5,
-    y: 50,
+    y: 10,
     z: -10
 }
 

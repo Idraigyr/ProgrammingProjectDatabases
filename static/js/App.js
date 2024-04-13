@@ -136,8 +136,14 @@ class App {
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
-        this.menuManager.addEventListener("addGem", this.itemManager.addGem.bind(this.itemManager));
-        this.menuManager.addEventListener("removeGem", this.itemManager.removeGem.bind(this.itemManager));
+        this.menuManager.addEventListener("addGem", (event) => {
+            event.detail.building = this.worldManager.getBuildingByPos(this.worldManager.currentPos);
+            this.itemManager.addGem(event);
+        });
+        this.menuManager.addEventListener("removeGem", (event) => {
+            event.detail.building = this.worldManager.getBuildingByPos(this.worldManager.currentPos);
+            this.itemManager.removeGem(event);
+        });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
@@ -158,7 +164,6 @@ class App {
             // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
             const items = []; //TODO: fill with equipped gems of selected building if applicable
-            console.log(buildTypes.getMenuName(buildingNumber));
             this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber), items: items});
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
@@ -194,22 +199,6 @@ class App {
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
-    }
-
-    /**
-     * Adds a new minionController to the list of minionControllers
-     * @param controller - the controller to add
-     */
-    addMinionController(controller){
-        this.minionControllers.push(controller);
-    }
-
-    /**
-     * Removes a minionController from the list of minionControllers
-     * @param controller - the controller to remove
-     */
-    removeMinionController(controller){
-        this.minionControllers.filter((c) => controller !== c);
     }
 
     /**
@@ -264,9 +253,19 @@ class App {
      */
     start(){
         if ( WebGL.isWebGLAvailable()) {
+            //TODO: remove this is test //
+            this.worldManager.addSpawningIsland();
+            this.minionController.worldMap = this.worldManager.world.islands;
+            this.worldManager.world.spawners[0].addEventListener("createMinion", (event) => {
+               this.minionController.addMinion(this.factory.createMinion(event.detail));
+            });
+            //TODO: remove this is test //
+
+
             document.querySelector('.loading-animation').style.display = 'none';
             //init();
             this.simulatePhysics = true;
+            this.clock.getDelta();
             this.update();
         } else {
             const warning = WebGL.getWebGLErrorMessage();
@@ -286,10 +285,12 @@ class App {
 
         this.spellCaster.update(this.deltaTime);
 
+        this.minionController.update(this.deltaTime);
         this.playerController.update(this.deltaTime);
         if(this.simulatePhysics){
             for(let i = 0; i < physicsSteps; i++){
                 this.worldManager.world.update(this.deltaTime/physicsSteps);
+                this.minionController.updatePhysics(this.deltaTime/physicsSteps);
                 this.playerController.updatePhysics(this.deltaTime/physicsSteps);
             }
         }
@@ -305,7 +306,6 @@ class App {
         // this.BuildManager.makePreviewObjectInvisible();
     }
 }
-
 let app = new App({});
 await app.loadAssets();
 app.start();

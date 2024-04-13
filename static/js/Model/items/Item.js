@@ -3,6 +3,7 @@ export class Item{
         this.id = params.id;
         this.name = params.name;
         this.belongsIn = params.belongsIn;
+        this.equippedIn = params?.equippedIn ?? null;
     }
 
     getItemId(){

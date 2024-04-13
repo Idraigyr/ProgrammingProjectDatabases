@@ -396,6 +396,7 @@ export class MenuManager extends Subject{
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
             case "FusionTableMenu":
+                this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");

@@ -37,7 +37,9 @@ export class UserInfo extends Subject{
 
             this.crystals = response.crystals;
 
-            this.level = response?.entity?.level;
+            this.gems = response.gems;
+
+            // this.level = response?.entity?.level;
             this.experience = response.xp
             // this.mana = response?.mana // TODO @Flynn ?
             this.mana += this.calculateManaBonus();
@@ -47,10 +49,12 @@ export class UserInfo extends Subject{
             this.playerPosition.y = response?.entity?.y ?? playerSpawn.y;
             this.playerPosition.z = response?.entity?.z ?? playerSpawn.z;
 
+
+
             this.advertiseCurrentCondition();
 
         } catch (err){
-            console.log(err);
+            console.error(err);
         }
     }
 
@@ -87,6 +91,7 @@ export class UserInfo extends Subject{
         if(amount + this.experience >= this.xpTreshold){
             this.changeLevel(1);
             this.experience = (this.experience + amount) - this.xpTreshold;
+            this.xpTreshold = this.increaseXpTreshold();
         } else {
             this.experience = amount > 0 ? this.experience + amount : Math.max(0, this.experience + amount);
         }
@@ -98,7 +103,6 @@ export class UserInfo extends Subject{
         if(amount < 0 && Math.abs(amount) > this.level) return false;
         this.level = amount > 0 ? this.level + amount : Math.max(0, this.level + amount);
         this.dispatchEvent(this.createUpdateLevelEvent());
-        this.xpTreshold = this.increaseXpTreshold();
         return true;
     }
 

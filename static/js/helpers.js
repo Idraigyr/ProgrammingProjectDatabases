@@ -44,6 +44,31 @@ export const printFoundationGrid = function(grid, width, length, oneline=false){
     console.log(returnMultipliedString("*", width));
 }
 
+export const printGridPath = function(grid, path, width, length, currentNode = null){
+    console.log(returnMultipliedString("*", width));
+    for(let i = 0; i < length; i++){
+            let currentRow = "";
+            const rowColor = [];
+            for(let j = 0; j < width; j++){
+                currentRow += "%c" + grid[i*width + j] + " ";
+                if(currentNode === i*width + j){
+                    rowColor.push("color: red;");
+                    continue;
+                }
+                if(path.includes(i*width + j)){
+                    rowColor.push("color: green;");
+                    continue;
+                }
+                rowColor.push("color: white;");
+            }
+            if(i % 2 === 0){
+                currentRow += " ";
+            }
+            console.log(currentRow, ...rowColor);
+        }
+    console.log(returnMultipliedString("*", width));
+}
+
 export const returnWorldToGridIndex = function(position){
     return {x: Math.floor(position.x/gridCellSize + 0.5), z: Math.floor(position.z/gridCellSize + 0.5)};
 }
@@ -59,6 +84,29 @@ export const convertGridIndexToWorldPosition = function (position){
     position.z = position.z*gridCellSize;
     return position
 }
+
+//TODO: fix that added velocity only counts for one frame
+export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
+    const hitVector = new THREE.Vector3(0,10,0);
+    // const hitVector = box1.getCenter(new THREE.Vector3()).sub(box2.getCenter(new THREE.Vector3()));
+    // hitVector.y += 10;
+    hitVector.normalize();
+    const totalMass = box1Mass + box2Mass;
+
+    box2Velocity.add(hitVector.multiplyScalar(10 * totalMass / box2Mass));
+}
+
+export const pushCollidedObjects = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
+    const distance = box1.getCenter(new THREE.Vector3()).distanceTo(box2.getCenter(new THREE.Vector3()));
+
+    const totalMass = box1Mass + box2Mass;
+    const relativeVelocity = box1Velocity.clone().sub(box2Velocity);
+    const normal = box1.getCenter(new THREE.Vector3()).sub(box2.getCenter(new THREE.Vector3())).normalize();
+    const impulse = 2 * relativeVelocity.dot(normal) / totalMass * Math.max(1, Math.min(200,1/Math.pow(distance,4)));
+    box1Velocity.sub(normal.clone().multiplyScalar(impulse * box2Mass));
+    box2Velocity.add(normal.clone().multiplyScalar(impulse * box1Mass));
+}
+
 
 export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //box1 = spell
     const characterCenter = movableBox.getCenter(new THREE.Vector3());

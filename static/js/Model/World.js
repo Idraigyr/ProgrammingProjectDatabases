@@ -3,6 +3,7 @@ import {convertGridIndexToWorldPosition, convertWorldToGridPosition, returnWorld
 import {buildTypes} from "../configs/Enums.js";
 import {Bridge} from "./Bridge.js";
 import * as THREE from "three";
+import {MinionSpawner} from "./MinionSpawner.js";
 
 /**
  * World class that contains all the islands and the player
@@ -14,9 +15,8 @@ export class World{
         this.collisionDetector = params.collisionDetector;
         this.islands = [];
         params.islands.forEach((island) => {
-            this.islands.push(this.factory.createIsland(island.position,island.rotation, island.buildings));
+            this.islands.push(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
         });
-        this.islands.push(new Bridge({position: convertGridIndexToWorldPosition(new THREE.Vector3(-7,0,-9)), rotation: 0, width: 3, length: 3, height: 0}));
         this.player = this.factory.createPlayer(params.player);
         // Set default values for the inventory slots
         this.player.changeEquippedSpell(0,new BuildSpell({}));
@@ -26,7 +26,7 @@ export class World{
         this.player.changeEquippedSpell(4,new IceWall({}));
         this.entities = [];
         params.characters.forEach((character) => {});
-        this.spellEntities = [];
+        this.spawners = [];
     }
 
     getIslandByPosition(position){
@@ -48,6 +48,14 @@ export class World{
         }
     }
 
+    getBuildingByPos(worldPosition){
+        const island = this.getIslandByPosition(worldPosition);
+        if(island){
+            return island.getBuildingByPos(worldPosition);
+        }
+        return null;
+    }
+
     /**
      *
      * @param buildingName
@@ -57,18 +65,20 @@ export class World{
      */
     addBuilding(buildingName, position, withTimer = false){
         const island = this.getIslandByPosition(position);
-        console.log(island?.checkCell(position));
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
             const {x,z} = returnWorldToGridIndex(position);
-            const building = this.factory.createBuilding(buildingName, {x: x, y: 0, z: z}, withTimer);
-            console.log("building: ", building)
+            const building = this.factory.createBuilding({
+                buildingName: buildingName,
+                position: {x: x, y: 0, z: z},
+                withTimer: withTimer,
+            });
             island.addBuilding(building);
             return building;
         } else {
             console.log("no island/ there's already a building at the position");
         }
-        console.log("failed to add new building to island, there is no island at the position");
+        console.error("failed to add new building to island, there is no island at the position");
         //TODO: throw error?
     }
 
@@ -86,8 +96,9 @@ export class World{
      */
     update(deltaTime){
         //update whole model
-        //this.islands[0].buildings[this.islands[0].buildings.length-1].spellSpawner.update(deltaTime);
+        this.spawners.forEach((spawner) => spawner.update(deltaTime));
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
+        this.collisionDetector.checkCharacterCollisions(deltaTime);
         this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
     }

@@ -1,7 +1,9 @@
 import {Model} from "../Model/Model.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {convertWorldToGridPosition} from "../helpers.js";
+import {convertGridIndexToWorldPosition} from "../helpers.js";
+import {MinionSpawner} from "../Model/MinionSpawner.js";
+import * as THREE from "three";
 
 
 /**
@@ -73,7 +75,7 @@ export class WorldManager{
             }
 
         } catch (e){
-            console.log(e);
+            console.error(e);
         }
 
         this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
@@ -93,12 +95,34 @@ export class WorldManager{
             }
             this.collisionDetector.generateColliderOnWorker();
         } else {
-            console.log("failed to add new building at that position");
+            console.error("failed to add new building at that position");
         }
     }
 
     checkPosForBuilding(worldPosition){
         return this.world.checkPosForBuilding(worldPosition);
+    }
+
+    addSpawningIsland(){
+        //TODO: get a random position for the island which lies outside of the main island
+        let position = {x: -9, y: 0, z: -8};
+        //TODO: if the new island is not connected to the main island, add a bridge that connects the two islands
+
+        //create an island
+        let island = this.factory.createIsland({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), rotation: 0, buildingsList: [], width: 3, length: 3});
+        // //create a bridge
+        // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
+
+        //add the bridge and island to the world
+        this.world.islands.push(island);
+        // this.world.islands.push(bridge);
+
+        //add a enemy warrior hut to the island
+        // let hut = this.factory.createBuilding({buildingName: "Tower", position: position, withTimer: false});
+        // island.addBuilding(hut);
+        this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
+        this.world.spawners.push(new MinionSpawner({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z))}));
+        this.collisionDetector.generateColliderOnWorker();
     }
 
 
@@ -127,7 +151,7 @@ export class WorldManager{
             } else if (key === "xp"){
                 this.userInfo.changeXP(event.detail.params[key]);
             } else if (key === "level"){
-                this.userInfo.changeLevel();
+                this.userInfo.changeLevel(event.detail.params[key]);
             }
             //TODO: sad sound when not enough crystals
             //TODO: update db?
@@ -172,7 +196,7 @@ export class WorldManager{
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
-                    console.log(e);
+                    console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
                 console.log("POST success");
@@ -189,7 +213,7 @@ export class WorldManager{
                 }
             });
         } catch (err){
-            console.log(err);
+            console.error(err);
         }
     }
 

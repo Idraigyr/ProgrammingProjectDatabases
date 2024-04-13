@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import {Entity} from "./Entity.js";
+import {pushCollidedObjects} from "../helpers.js";
 //abstract class
 /**
  * Abstract class for all characters in the game
@@ -17,6 +18,7 @@ export class Character extends Entity{
         this.velocity = new THREE.Vector3();
         this.onGround = true;
         this.onCollidable = false;
+        this.hit = false;
         this.fsm = null;
         this.health = params?.health ?? 100;
         this.maxHealth = params?.health ?? 100;
@@ -41,6 +43,10 @@ export class Character extends Entity{
         this.segment.end.copy(vec3);
         this.segment.start.y += this.height - this.radius;
         this.segment.end.y +=  this.radius;
+    }
+
+    onCharacterCollision(deltaTime, other, thisBox, otherBox){
+        pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity, 1, 20, deltaTime);
     }
 
     /**
@@ -96,8 +102,7 @@ export class Character extends Entity{
      * Get the type of the character
      */
     get type(){
-        if(this.constructor === Character){
-            throw new Error("cannot get type of abstract class Character");
-        }
+        // throw new Error("cannot get type of abstract class Character");
+        return "character";
     }
 }

@@ -45,12 +45,16 @@ const fragmentShader = "uniform sampler2D texture1;\n" +
     "      gl_FragColor.rgb = color;\n" +
     "      gl_FragColor.a = 1.;\n" +
     "    }";
-// Parameters
+// old Parameters
 const PLANE_SIZE = 150;
 const BLADE_COUNT = 1000000;
+
+// old Parameters but still used
 const BLADE_WIDTH = 0.1;
 const BLADE_HEIGHT = 0.8;
 const BLADE_HEIGHT_VARIATION = 0.6;
+//new Parameters - is about 1 * 10^6 blades on main island
+const AVG_BLADE_COUNT_PER_SQUARE = 44;
 
 // Grass Texture
 const grassTexture = new THREE.TextureLoader().load('../static/assets/images/grass.jpg');
@@ -79,7 +83,7 @@ function convertRange (val, oldMin, oldMax, newMin, newMax) {
   return (((val - oldMin) * (newMax - newMin)) / (oldMax - oldMin)) + newMin;
 }
 
-export function generateGrassField ( scene ) {
+function createCircleGrassMetrics () {
   const positions = [];
   const uvs = [];
   const indices = [];
@@ -108,6 +112,80 @@ export function generateGrassField ( scene ) {
     });
     blade.indices.forEach(indice => indices.push(indice));
   }
+
+  return { positions, uvs, indices, colors };
+}
+
+function createGrassMetrics (params) {
+  const positions = [];
+  const uvs = [];
+  const indices = [];
+  const colors = [];
+
+  const VERTEX_COUNT = 5;
+  let surfaceMinX;
+  let surfaceMaxX;
+  let surfaceMinZ;
+  let surfaceMaxZ;
+
+  let generateCoords;
+  let generateCoordsParams = [];
+
+  let bladeCount = 0;
+  //TODO: fix; currently also just gives a square
+  if (params.type === 'circle') {
+    bladeCount = Math.floor(AVG_BLADE_COUNT_PER_SQUARE * Math.PI * Math.pow(params.radius, 2)*1.28);
+    generateCoordsParams = [params.position, params.radius];
+    surfaceMinX = params.position.x - params.radius;
+    surfaceMaxX = params.position.x + params.radius;
+    surfaceMinZ = params.position.z - params.radius;
+    surfaceMaxZ = params.position.z + params.radius;
+
+    generateCoords = (position, radius) => {
+      return {x: radius * Math.sqrt(Math.random()) * Math.cos(Math.random() * 2 * Math.PI) + position.x, z: radius * Math.sqrt(Math.random()) * Math.sin(Math.random() * 2 * Math.PI) + position.z}
+    }
+  } else if (params.type === 'square') {
+    bladeCount = Math.floor(AVG_BLADE_COUNT_PER_SQUARE * params.width * params.length);
+    generateCoordsParams = [params.position, params.width, params.length];
+    surfaceMinX = params.position.x - params.width / 2;
+    surfaceMaxX = params.position.x + params.width / 2;
+    surfaceMinZ = params.position.z - params.length / 2;
+    surfaceMaxZ = params.position.z + params.length / 2;
+
+    generateCoords = (position, width, length) => {
+        return {x: Math.random() * width - width / 2 + position.x, z: Math.random() * length - length / 2 + position.z}
+    }
+  }
+  console.log('bladeCount', bladeCount);
+  for (let i = 0; i < bladeCount; i++) {
+    const {x, z} = generateCoords(...generateCoordsParams);
+
+    const pos = new THREE.Vector3(x, 0, z);
+
+    const uv = [convertRange(pos.x, surfaceMinX, surfaceMaxX, 0, 1), convertRange(pos.z, surfaceMinZ, surfaceMaxZ, 0, 1)];
+
+    if(i === 3587384){
+        console.log('here');
+        console.log('positions', positions.length);
+    }
+    const blade = generateBlade(pos, i * VERTEX_COUNT, uv);
+    blade.verts.forEach(vert => {
+    positions.push(...vert.pos);
+    uvs.push(...vert.uv);
+    colors.push(...vert.color);
+    });
+    blade.indices.forEach(indice => indices.push(indice));
+  }
+  console.log('positions', positions.length);
+  return { positions, uvs, indices, colors };
+}
+
+
+export function generateGrassField ( scene, params) {
+  // this is the old implementation
+  // const { positions, uvs, indices, colors } = createCircleGrassMetrics(params);
+  // this is the new implementation
+  const { positions, uvs, indices, colors } = createGrassMetrics(params);
 
   const geom = new THREE.BufferGeometry();
   geom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(positions), 3));

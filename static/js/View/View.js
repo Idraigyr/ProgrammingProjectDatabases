@@ -62,6 +62,18 @@ export class IAnimatedView extends IView{
     }
 
     /**
+     * put animations in the animations property, only use in loadAnimations
+     * @param clips - clips to search for animation
+     * @param animName - name of the animation (inside the model file)
+     * @param alias - alias for the animation which will be used to reference it within the code
+     * @protected
+     */
+    _getAnimation(clips, animName, alias){
+        let clip = THREE.AnimationClip.findByName(clips, animName);
+        this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
+    }
+
+    /**
      * Update animations
      * @param deltaTime time since last update
      */
