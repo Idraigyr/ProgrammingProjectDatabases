@@ -230,6 +230,32 @@ class GemResource(Resource):
             return ErrorSchema(str(e)), 400
 
 
+    @swagger.tags('gems')
+    @summary('Delete a gem by id')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The gem id to delete', required=True)
+    @swagger.response(200, description='Success', schema=ErrorSchema)
+    @swagger.response(404, description='Gem not found', schema=ErrorSchema)
+    @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        Delete a gem by id
+        :return: Success or error message
+        """
+        id = request.args.get('id', type=int)
+        if id is None:
+            return ErrorSchema('No gem id given'), 400
+
+        gem = Gem.query.get(id)
+        if gem is None:
+            return ErrorSchema(f'Gem {id} not found'), 404
+
+        current_app.db.session.delete(gem)
+        current_app.db.session.commit()
+        return ErrorSchema(f'Gem {id} deleted'), 200
+
+
+
 class GemAttributeListResource(Resource):
     """
     A resource/api endpoint that allows for the listing of all gem attributes

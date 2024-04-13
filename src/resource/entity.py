@@ -1,7 +1,11 @@
-from flask_restful_swagger_3 import Resource
+from flask import request, current_app, Flask, Blueprint
+from flask_jwt_extended import jwt_required
+from flask_restful_swagger_3 import Resource, swagger, Api
 
+from src.resource import add_swagger
+from src.schema import SuccessSchema, ErrorSchema
 from src.model.entity import Entity
-from src.swagger_patches import Schema
+from src.swagger_patches import Schema, summary
 
 
 class EntitySchema(Schema):
@@ -62,9 +66,46 @@ class EntityResource(Resource):
     A resource/api endpoint that allows for the retrieval and modification of entities
     More commonly the retrieval of entity sets, placable sets (buildings) and owner information.
 
-    This class has no functionality as the Entity Model is a pure abstract class.
+    This class has only a delete functionality as the Entity Model is a pure abstract class.
     Modifications and retrieval of entites is done through their respective subclass API endpoints.
 
     Listing of entities is done through the IslandResource.
     """
-    pass
+
+
+    @swagger.tags('entity')
+    @summary('Delete the entity with the given id')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The entity id to delete', required=True)
+    @swagger.response(200, description='Success, the entity was deleted', schema=SuccessSchema)
+    @swagger.response(404, description='Unknown entity id', schema=ErrorSchema)
+    @swagger.response(400, description='No entity id found', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        Delete the entity with the given id
+        """
+        id = request.args.get('id', type=int)
+        if id is None:
+            return ErrorSchema('No entity id found'), 400
+
+        entity = Entity.query.get(id)
+        if entity is None:
+            return ErrorSchema(f'Entity {id} not found'), 404
+
+        current_app.db.session.delete(entity)
+        current_app.db.session.commit()
+
+        return SuccessSchema('Entity has been deleted'), 200
+
+
+def attach_resource(app: Flask):
+    """
+    Attach the PlaceableResource (API endpoint + Swagger docs) to the given Flask app
+    :param app: The app to create the endpoint for
+    :return: None
+    """
+    blueprint = Blueprint('api_entity', __name__)
+    api = Api(blueprint)
+    api.add_resource(EntityResource, '/api/entity')
+    app.register_blueprint(blueprint, url_prefix='/')  # Relative to api.add_resource path
+    add_swagger(api)
