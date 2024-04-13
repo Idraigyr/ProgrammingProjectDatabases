@@ -25,7 +25,6 @@
     --menu-title-width: 50%; /* get width of .menu-title class */
 }
 
-
 #menuContainer{
     position: absolute;
     z-index: 8;
@@ -34,15 +33,24 @@
     top: 20vh;
     left: 30vw;
     display: none;
+    background-image: url('/static/images/menu/listBackground.png');
 }
 
 .close-button {
     position: relative;
     width: var(--close-button-size);
     height: var(--close-button-size);
-    background-color: #f00;
+    background-image: url('/static/images/menu/exit.png');
+    background-color: transparent;
+    background-size: cover;
     z-index: 12;
     cursor: pointer;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.close-button:hover {
+  transform: scale(1.10);
 }
 
 .base-menu{
@@ -72,6 +80,8 @@
     width: 100%;
     height: var(--menu-header-height);
     background-color: #f9f3d2;
+    background-image: url('/static/images/menu/listBackground.png');
+    background-size: cover;
     display: flex;
     flex-direction: row;
     justify-content: end;
@@ -104,6 +114,8 @@
 .play-button-container {
     position: relative;
     width: 100%;
+    background-image: url('/static/images/menu/headerBackground.png');
+    background-size: cover;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -113,7 +125,21 @@
     position: relative;
     height: var(--play-button-height);
     width: var(--play-button-width);
-    font-size: 40px;
+    border: none;
+    cursor: pointer;
+    display: inline-block; /* Change display to inline-block */
+    background-image: url('/static/images/menu/playButton.png'); /* Set background image */
+    background-size: cover; /* Cover the entire button with the image */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent the background image from repeating */
+    background-color: transparent;
+    z-index: 20;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+}
+
+.play-button:hover {
+  transform: scale(1.10);
+
 }
 
 .sub-menu-container {
@@ -154,6 +180,8 @@
     background-color: #f9f3d2;
     border: 2px solid #0f172a;
     border-radius: 15px;
+    background-image: url('/static/images/menu/listBackground.png');
+    background-size: cover;
     z-index: 8;
     flex-grow: 1;
     display: flex;
@@ -280,6 +308,10 @@
     background-color: #37c924;
     border: 2px solid #0f172a;
     border-radius: 10px;
+    background-image: url('/static/images/menu/itemBackground.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
     display: flex;
     flex-direction: row;
     justify-content: start;
@@ -294,11 +326,13 @@
 }
 
 .menu-item-description-name{
+    color: orange;
     font-size: 20px;
     margin: 0;
 }
 
 .menu-item-description-text{
+    color: orange;
     font-size: 20px;
     margin: 5px;
 }
