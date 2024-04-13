@@ -187,6 +187,35 @@ class Build extends Effect{
 }
 
 /**
+ * Factory function to create a concrete spell instance
+ * from an id that corresponds to the database id
+ * @param id - The id of the spell
+ * @returns {ConcreteSpell}
+ * @author Joren
+ */
+function concreteSpellFromId(id){
+    switch(id){
+        case 0:
+            return new BuildSpell();
+        case 1:
+            return new Fireball();
+        case 2:
+            return new IceWall();
+        case 3:
+            return new Zap();
+        case 4:
+            return new ThunderCloud();
+        case 5:
+            return new Shield();
+        case 6:
+            return new Heal();
+        default:
+            throw new Error("Invalid spell id");
+    }
+
+}
+
+/**
  * @class ConcreteSpell - class for concrete spells
  */
 class ConcreteSpell{

@@ -28,6 +28,7 @@ The following is a list of environment variables that can be set in the `.env` f
 | `APP_OAUTH_CLIENT_SECRET      ` | string     | The client secret for the OAuth2 login/registration.                                                                                                                                                    |               | False (unless `APP_OAUTH_ENABLED=true`) |
 | `APP_OAUTH_DISCOVERY_URL      ` | string     | The discovery URI for the OAuth2 provider endpoint.                                                                                                                                                     |               | False (unless `APP_OAUTH_ENABLED=true`) |
 | `APP_GENERATE_DOCS            ` | boolean    | Generate PyDoc documentation on startup into the `pydocs` directory                                                                                                                                     | False         | False                                   |
+| `APP_PASSWORD_RESET_ENABLED   ` | boolean    | Enable/disable the password-reset endpoint. Disabling disallows the reset of a forgotten password                                                                                                       | True          | False                                   |
 
 
 

@@ -167,6 +167,11 @@ class AuthService:
 
         # The player can initially only build the altar
         player.update({'blueprints': [BlueprintType.ALTAR.value]})
+
+        # Update player spells, it initially has the build spell
+        from src.model.spell import Spell
+        player.spells = [Spell.query.get(0)]  # Id 0 is the build spell
+
         current_app.db.session.commit()
 
         return player
