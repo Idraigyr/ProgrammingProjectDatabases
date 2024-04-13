@@ -15,6 +15,7 @@ export class World{
         });
         this.player = this.factory.createPlayer(params.player);
         // Set default values for the inventory slots
+        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
         this.player.changeEquippedSpell(0,new BuildSpell({}));
         this.player.changeEquippedSpell(1,new Fireball({}));
         this.player.changeEquippedSpell(2,new ThunderCloud({}));
