@@ -11,7 +11,10 @@
     <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
     <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/external/chatBox.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     <script type="importmap">
       {
         "imports": {
@@ -34,15 +37,18 @@
             crossorigin="anonymous">
 
     </script>
-
-    <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}"></script>
 </head>
 <body id="body">
     <div id="container">
     </div>
     <!-- Load App -->
     <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
+
+{#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
+
+    <!--<script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetImages.js') }}"></script>-->
+
+
 
     <div class="button-container">
         <button id="chatButton" class="bottom-left-button">Chat</button>
@@ -266,11 +272,12 @@
 
 
     <div class="Mana">
+        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
         <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
-        <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
+                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
 
-        <div class ="ManaAmount">
-            0/100
+        <div class = "ManaAmount">
+            50/100
         </div>
     </div>
 

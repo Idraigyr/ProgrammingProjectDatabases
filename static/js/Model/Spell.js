@@ -349,6 +349,7 @@ export class Shield extends ConcreteSpell{
             })]
         });
         this.cost = 15;
+        this.name = "shield";
     }
 }
 
