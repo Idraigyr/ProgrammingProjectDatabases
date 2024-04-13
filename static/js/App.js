@@ -6,6 +6,9 @@ import {CharacterController} from "./Controller/CharacterController.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
 import {HUD} from "./Controller/HUD.js"
+import "./external/socketio.js"
+import "./external/chatBox.js"
+import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {interactKey, subSpellKey} from "./configs/Keybinds.js";
@@ -164,6 +167,7 @@ class App {
             // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
             const items = []; //TODO: fill with equipped gems of selected building if applicable
+            console.log(buildTypes.getMenuName(buildingNumber));
             this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber), items: items});
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
@@ -306,6 +310,6 @@ class App {
         // this.BuildManager.makePreviewObjectInvisible();
     }
 }
-let app = new App({});
+export let app = new App({});
 await app.loadAssets();
 app.start();
