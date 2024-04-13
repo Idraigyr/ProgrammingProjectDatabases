@@ -1205,6 +1205,120 @@ body {
 
 }
 
+/* xp bar and level */
+
+#account-bar-wrapper{
+  position:absolute;
+  top:0px;
+  left:0px;
+  width:110%;
+  height:100px;
+    font-family: Surabasa, sans-serif; /* Assigning font */
+}
+
+#account-bar{
+  max-width:966px;
+  height:100%;
+  margin:0px auto;
+}
+
+#account-bar-name {
+  font-size: 30px;
+  margin: 15px 15px 0px 15px;
+  display: inline-block;
+  vertical-align: bottom;
+}
+
+#account-bar-level {
+  font-size: 30px;
+  display: inline-block;
+  vertical-align: bottom; /* Align level with the bottom of the player name */
+  margin-left: 50%; /* Add a left margin to create space between player name and level */
+}
+
+#account-bar-next-level{
+  display:inline-block;
+  font-size:25px;
+}
+
+#xp-bar{
+  height:10px;
+  width:75%;
+  background: rgba(0, 0, 0, 0.3);
+  margin:0px 0px 0px 15px;
+  display:inline-block;
+  vertical-align:middle;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 5px;
+}
+
+#xp-bar-fill{
+  height:100%;
+  width:0.1%;
+  background:rgba(0,0,0.88);
+  font-size:12px;
+  line-height:10px;
+  text-align:right;
+  border-radius: 5px;
+  border-top-left-radius: 5px;
+  border-bottom-left-radius: 5px;
+}
+
+#doit-btn{
+  margin:100px 0px 0px 0px;
+  color: #ffffff;
+}
+
+.btn{
+  display:inline-block;
+  padding:5px;
+  height:25px;
+  background:#000;
+  cursor:pointer;
+}
+
+#xp-increase-fx{
+  position:relative;
+  display:none;
+  height:100%;
+}
+
+.xp-increase-glow1{
+  position:absolute;
+  margin:0px 0px 0px -2px;
+  left:0px;
+  top:0px;
+  background:#fff;
+  width:5px;
+  height:100%;
+  border-radius:0px;
+  -webkit-filter:blur(2px);
+}
+
+.xp-increase-glow2{
+  position:absolute;
+  margin:-5px 0px 0px -2px;
+  left:0px;
+  top:0px;
+  background:#aaf;
+  width:5px;
+  height:200%;
+  border-radius:0px;
+  -webkit-filter:blur(10px);
+}
+
+.xp-increase-glow3{
+  position:absolute;
+  margin:0px 0px 0px -5px;
+  left:0px;
+  top:0px;
+  background:#fff;
+  width:10px;
+  height:100%;
+  border-radius:5px;
+  -webkit-filter:blur(5px);
+}
+
 
 
 .HealthPotion {
@@ -1417,6 +1531,17 @@ body {
     height: auto;
 }
 
+.icewallimage {
+    position: absolute;
+    top: 50%;
+    left: 90%;
+    transform: translate(-50%, -50%);
+}
+
+.icewallimage {
+    width: 10%;
+    height: auto;
+}
 
 
 .settings-button:hover .button {

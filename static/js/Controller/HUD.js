@@ -52,10 +52,30 @@ export class HUD {
     }
 
     updateLevel(event){
-
+        $('#account-bar-level').html('Level: ' + event.detail.level);
     }
 
     updateXP(event){
+        var percentage = ((event.detail.xp / event.detail.threshold) * 100);
+
+
+
+      $("#xp-increase-fx").css("display","inline-block");
+      $("#xp-bar-fill").css("box-shadow",/*"0px 0px 15px #06f,*/ "-5px 0px 10px #fff inset");
+      setTimeout(function(){
+        $("#xp-bar-fill").css("-webkit-transition","all 2s ease");
+        $("#xp-bar-fill").css("width",percentage + "%");
+      },100);
+
+      setTimeout(function() {
+        //increase points
+        $('#xp-bar-status').html(event.detail.xp + '/' + event.detail.threshold);
+      }, 10);
+
+      setTimeout(function(){
+        $("#xp-increase-fx").fadeOut(500);
+        $("#xp-bar-fill").css({"-webkit-transition":"all 0.5s ease","box-shadow":""});
+      },2000);
 
     }
 

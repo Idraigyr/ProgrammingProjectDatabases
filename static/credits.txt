@@ -11,8 +11,10 @@ Button_Blue, Button_Blue_9Slides, Button_Blue_9Slides_Pressed, Button_Blue_Press
 https://pixelfrog-assets.itch.io/tiny-swords
 crystal_01a:
 https://shikashipx.itch.io/shikashis-fantasy-icons-pack
-Potion-blue, Potion-red:
+Potion-blue, Potion-red, Potion-Grey:
 https://www.vexels.com/png-svg/preview/307130/potion-hand-drawn-witch
+spell-cast-bolt, spell-cast-fire, spell-cast-ice, spell-cast-plant, double-ringed-orb_4:
+https://mythril-age.itch.io/mythril-age-spell-icons-v2
 -----------------------------------
 3d models:
 Floating island landing page:
@@ -31,6 +33,10 @@ https://sketchfab.com/3d-models/low-poly-bushes-e109272b7ea34cc0a09cbd26e6fdc6d8
 Scripts:
 Grass shader:
 https://github.com/James-Smyth/three-grass-demo
+Wizard animation:
+https://codepen.io/Craaftx/pen/ExyYRMK
+XP-bar animation:
+https://codepen.io/mats-raemen/pen/NWKwRdQ
 -----------------------------------
 repositories that helped:
 https://github.com/simondevyoutube
