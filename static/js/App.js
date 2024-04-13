@@ -139,7 +139,6 @@ class App {
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
-        // this.menuManager.addEventListener("addGem", this.itemManager.addGem.bind(this.itemManager));
         this.menuManager.addEventListener("addGem", (event) => {
             event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
             this.itemManager.addGem(event);
@@ -148,6 +147,8 @@ class App {
             event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
             this.itemManager.removeGem(event);
         });
+
+        this.itemManager.menuManager = this.menuManager;
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));

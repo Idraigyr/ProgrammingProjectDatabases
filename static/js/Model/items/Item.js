@@ -26,6 +26,19 @@ export class Gem extends Item{
     get type(){
         return "Gem";
     }
+    get json(){
+        // TODO: do this properly
+        return {
+            id: this.id,
+            type: this.name,
+            building_id: this.equippedIn,
+            attributes: [{
+                gem_attribute_id: 0,
+                gem_attribute_type: "none",
+                multiplier: 1
+            }]
+        }
+    }
 }
 
 //DO SPELLS NEED TO BE ITEMS?
