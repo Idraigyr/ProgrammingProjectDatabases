@@ -279,7 +279,7 @@ export class MinionController{
             this.paths.push(
                 this.calculatePath(
                     this.#worldMap.grid[this.calculateIndexFromPosition(new THREE.Vector3(-90,0,-80))],
-                    this.#worldMap.grid.find((node) => node.value === buildTypes.getNumber("altar_building"))
+                    this.#worldMap.grid[Math.floor((this.#worldMap.grid.length-1)/2)] // this.#worldMap.grid.find((node) => node.value === buildTypes.getNumber("altar_building"))
                 )
             );
         }
