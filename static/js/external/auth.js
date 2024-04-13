@@ -65,3 +65,30 @@ $("#google-login").on("click", function(event) {
     event.preventDefault(); // Whatever the default action is, just prevent it.
     location.href = "/api/auth/oauth2/login"; // And redirect
 });
+
+
+// Add password reset form event listener
+$("#passwordResetForm").on("submit", function(event) {
+    event.preventDefault();
+    let username = $("#username").val();
+    let newPassword = $("#newPassword").val();
+    $.ajax({url: "/api/auth/password_reset?username=" + username + "&password=" + newPassword, type: "POST", error: function (xhr, ajaxOption, thrownError) {
+        if (xhr.status !== 200) {
+            if (xhr.status >= 500) {
+                alert("Server error. Please try again later.")
+            } else {
+                                      // Handle error
+                // let msg = data.message
+                let message = xhr.responseJSON.message
+                alert(message)
+            }
+        }
+        }}).done(function (data) {
+        if (data.status === 'success') {
+            alert("Password reset successful.") // Alert user that password reset was successful
+            location.href = "/login" // Redirect to login page
+        } else {
+            alert("Password reset failed.") // Alert user that password reset failed, should never happen
+        }
+    })
+});

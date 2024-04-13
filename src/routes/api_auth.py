@@ -265,6 +265,44 @@ def oauth2_callback():
     return response
 
 
+@blueprint.route("/password_reset", methods=["POST"])
+def password_reset():
+    """
+    REST API endpoint for password reset
+    Requires username and a new password as query parameters
+    When succesful, the user should be redirected to the login page
+    If not successful, returns an error message
+    :return: Response
+    """
+    try:
+        if current_app.config.get('APP_PASSWORD_RESET_ENABLED', 'true') != 'true':
+            return Response(json.dumps({'status': 'error', 'message': "Password reset not enabled"}), status=409, mimetype='application/json')
+
+        if 'username' not in request.args or 'password' not in request.args:
+            return Response(json.dumps({'status': 'error', 'message': 'username and/or password not provided'}), status=400, mimetype='application/json')
+
+        username = escape(request.args.get('username'))
+        newPassword = escape(request.args.get('password'))
+
+        # Check if the user exists
+        user = AUTH_SERVICE.get_user(username=username)
+        if user is None:
+            return Response(json.dumps({'status': 'error', 'message': 'User not found'}), status=404, mimetype='application/json')
+
+        # Check if the user uses OAuth2
+        if user.uses_oauth2():
+            return Response(json.dumps({'status': 'error', 'message': 'User uses OAuth2. Authenticate using OAuth portal'}), status=409, mimetype='application/json')
+
+        # Change the password
+        user.credentials.change_password(newPassword)
+        current_app.db.session.commit()
+
+        return Response(json.dumps({'status': 'success', 'message': 'Password changed'}), status=200, mimetype='application/json')
+
+
+    except (KeyError, ValueError) as e:
+        return Response(json.dumps({'status': 'error', 'message': str(e)}), status=400, mimetype='application/json')
+
 
 # Add the register endpoint to the Swagger docs
 # God this is ugly
@@ -304,3 +342,12 @@ add_endpoint_to_swagger('/api/auth/oauth2/callback', 'get', ['auth'], 'OAuth2 ca
                                           400: {'description': 'Invalid request, OAuth2 error (specified)', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
                                           409: {'description': 'OAuth2 not enabled or OAuth2 ID mismatch (rare)', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
                                           500: {'description': 'OAuth2 error (unspecified or invalid response from provider)', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})
+
+# Add the password reset endpoint to the Swagger docs
+add_endpoint_to_swagger('/api/auth/password_reset', 'post', ['auth'], 'Reset the password of a user', 'Reset the password of a user',
+                        parameters=[{'name': 'username', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The username of the user'},
+                                    {'name': 'password', 'in': 'query', 'schema': {'type': 'string'}, 'description': 'The new password of the user'}],
+                        response_schemas={200: {'description': 'Success, returns a message', 'schema': {'$ref': '#/components/schemas/SuccessSchema'}},
+                                          400: {'description': 'username and/or password not provided', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                                          404: {'description': 'User not found', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}},
+                                          409: {'description': 'User uses OAuth2 or password reset is not enabled', 'schema': {'$ref': '#/components/schemas/ErrorSchema'}}})

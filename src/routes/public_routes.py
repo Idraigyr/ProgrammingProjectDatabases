@@ -56,6 +56,14 @@ def register():
     else:
         return render_template('register.html', app_name=current_app.config['APP_NAME'])
 
+@blueprint.route("/password-reset")
+@jwt_required(optional=True)
+def password_reset():
+    user = get_jwt_identity()
+    if user is not None:
+        return redirect("/", 302)
+    else:
+        return render_template('password-reset.html', app_name=current_app.config['APP_NAME'])
 
 @blueprint.route("/logout")
 def logout():

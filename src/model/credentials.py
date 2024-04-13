@@ -56,6 +56,13 @@ class PasswordCredentials(Credentials):
         match = bcrypt.checkpw(loginData['password'].encode('utf-8'), self.password_hash)
         return match
 
+    def change_password(self, new_password: str):
+        """
+        Change the password by creating a new hash with a new salt
+        :param new_password: The new plaintext password
+        """
+        self.password_salt = bcrypt.gensalt()
+        self.password_hash = bcrypt.hashpw(new_password.encode('utf-8'), self.password_salt)
 
 
     @staticmethod
