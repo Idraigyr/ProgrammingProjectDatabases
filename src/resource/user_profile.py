@@ -147,6 +147,43 @@ class UserProfileResource(Resource):
             return ErrorSchema(str(e)), 400
 
 
+    @swagger.tags('user_profile')
+    @summary('Delete the user profile by id. Id defautls to the current user id (by JWT)')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to delete. Defaults to the current user id (by JWT)')
+    @swagger.response(200, description='Success, user profile has been deleted', schema=SuccessSchema)
+    @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        Delete the user profile by id
+        Defaults to the current user id (by JWT)
+        :return: Success message
+        """
+        current_user = get_jwt_identity()
+        target_user_id = int(escape(request.args.get('id', current_user)))
+        invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
+
+        if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
+            logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
+            return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
+
+        # Get the user profile
+        if target_user_id != current_user:
+            # users differ, so we're going to get the profile of the requested user
+            target_user = AUTH_SERVICE.get_user(user_id=target_user_id)
+        else:
+            # The invoker is modifying his own profile
+            target_user = invoker_user
+
+        if target_user is None:
+            return ErrorSchema(f"User {target_user_id} not found"), 404
+        else:
+            current_app.db.session.delete(target_user)
+            current_app.db.session.commit()
+            return SuccessSchema(f"User {target_user_id} has been deleted"), 200
+
+
 
 
 

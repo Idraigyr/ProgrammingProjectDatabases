@@ -81,6 +81,8 @@ def attach_resources(app: Flask) -> None:
     import src.resource.user_settings as user_settings_module
     import src.resource.placeable.prop as prop_module
     import src.resource.chat_message as chat_message_module
+    import src.resource.placeable.placeable as placeable_module
+    import src.resource.entity as entity_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -99,6 +101,8 @@ def attach_resources(app: Flask) -> None:
     user_settings_module.attach_resource(app)
     prop_module.attach_resource(app)
     chat_message_module.attach_resources(app)
+    placeable_module.attach_resource(app)
+    entity_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:

@@ -116,6 +116,33 @@ class SpellResource(Resource):
         return SpellSchema(spell), 200
 
 
+    @swagger.tags('spell')
+    @summary('Delete the spell profile by id. Note: this will remove all references to this spell in the database.')
+    @swagger.response(200, description='Success', schema=SuccessSchema)
+    @swagger.response(404, description='Unknown spell id', schema=ErrorSchema)
+    @swagger.response(400, description='Invalid or no spell id', schema=ErrorSchema)
+    @jwt_required()  # for security
+    def delete(self):
+        """
+        Delete the spell profile by id
+        Note: this will remove all references to this spell in the database.
+        :return: Success message
+        """
+        if 'id' not in request.args:
+            return ErrorSchema('No spell id provided'), 400
+
+        id = int(request.args.get('id'))
+        spell = Spell.query.get(id)
+        if spell is None:
+            return ErrorSchema('Unknown spell id'), 404
+        else:
+            # This should complete successfully, due to the CASCADE DELETE rule added to the constraint
+            # in migration 4589aa4f65e1
+            current_app.db.session.delete(spell)
+            current_app.db.session.commit()
+            return SuccessSchema(f"Spell with id {id} succesfully deleted"), 200
+
+
 class SpellListResource(Resource):
     """
     A SpellList resource is a resource/api endpoint that allows for the retrieval of all spell profiles

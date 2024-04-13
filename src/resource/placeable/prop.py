@@ -2,12 +2,12 @@ from flask import request, current_app, Flask, Blueprint
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
+from src.model.blueprint import Blueprint as BlueprintModel
 from src.model.placeable.prop import Prop
 from src.resource import clean_dict_input, add_swagger
 from src.resource.placeable.placeable import PlaceableSchema
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
-from src.model.blueprint import Blueprint as BlueprintModel
 
 
 class PropSchema(PlaceableSchema):

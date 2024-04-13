@@ -1,3 +1,4 @@
+import sqlalchemy.exc
 from flask import request, current_app, Flask
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
@@ -6,7 +7,7 @@ from flask import Blueprint as FlaskBlueprint
 
 from src.model.blueprint import Blueprint
 from src.resource import clean_dict_input, add_swagger
-from src.schema import ErrorSchema
+from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import Schema, summary
 
 
@@ -70,7 +71,7 @@ class BlueprintResource(Resource):
         id = request.args.get('id', type=int)
 
         if id is None:
-            return ErrorSchema('No gem id given'), 400
+            return ErrorSchema('No blueprint id given'), 400
 
         blueprint = Blueprint.query.get(id)
         if blueprint is None:
@@ -136,6 +137,40 @@ class BlueprintResource(Resource):
             return BlueprintSchema(blueprint), 200
         except (ValueError, TypeError) as e:
             return ErrorSchema(str(e)), 400
+
+
+    @swagger.tags('blueprint')
+    @summary('Delete a blueprint by id. Note that there may no longer be any buildings using this blueprint.')
+    @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The id of the blueprint to delete', required=True)
+    @swagger.response(200, description='Success', schema=SuccessSchema)
+    @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)
+    @swagger.response(400, description='Invalid or no blueprint id', schema=ErrorSchema)
+    @swagger.response(409, description='Cannot delete blueprint as it is still in use by a building', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        Delete a blueprint by id
+        Note: This won't work if the blueprint is still in use by a building
+        :return:
+        """
+        id = request.args.get('id', type=int)
+
+        if id is None:
+            return ErrorSchema('No blueprint id given'), 400
+
+        blueprint = Blueprint.query.get(id)
+        if blueprint is None:
+            return ErrorSchema(f'Unknown blueprint id {id}'), 404
+        else:
+            try:
+                current_app.db.session.delete(blueprint)
+                current_app.db.session.commit()
+                return SuccessSchema(), 200
+            except sqlalchemy.exc.IntegrityError as e:
+                if 'ForeignKeyViolation' in e.args[0]:
+                    return ErrorSchema(f'Cannot delete blueprint {id} as it is still in use by a building'), 409
+                else:
+                    raise e
 
 
 class BlueprintListResource(Resource):

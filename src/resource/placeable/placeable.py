@@ -1,8 +1,13 @@
-from flask_restful_swagger_3 import Resource
+from flask import request, current_app, Blueprint, Flask
+from flask_jwt_extended import jwt_required
+from flask_restful_swagger_3 import Resource, swagger, Api
 
+from src.resource import add_swagger
+from src.schema import ErrorSchema, SuccessSchema
 from src.resource.blueprint import BlueprintSchema
 from src.model.placeable.placeable import Placeable
-from src.swagger_patches import Schema
+from src.swagger_patches import Schema, summary
+
 
 class PlaceableSchema(Schema):
     """
@@ -67,8 +72,45 @@ class PlaceableResource(Resource):
     A resource/api endpoint that allows for the retrieval and modification of placables
     More commonly the retrieval of placable sets on the grid of an island
 
-    This class has no functionality as the Placeable Model is a pure abstract class.
+    This class only has a DELETE functionality as the Placeable Model is a pure abstract class.
     Modifications and retrieval of placables are done through their respective subclass API endpoints.
 
     Listing of placables is done through the IslandResource
     """
+
+    @swagger.tags('placeable')
+    @summary('Delete a placeable by id')
+    @swagger.parameter(_in='query', name='placeable_id', schema={'type': 'integer'}, required=True)
+    @swagger.response(200, 'Success. Placeable has been deleted', schema=SuccessSchema)
+    @swagger.response(404, 'Placeable not found', schema=ErrorSchema)
+    @swagger.response(400, 'No placeable_id found', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        Delete a placeable by id
+        """
+        id = request.args.get('placeable_id', type=int)
+        if id is None:
+            return ErrorSchema('No placeable_id found'), 400
+
+        placeable = Placeable.query.get(id)
+        if placeable is None:
+            return ErrorSchema(f'Placeable {id} not found'), 404
+
+        current_app.db.session.delete(placeable)
+        current_app.db.session.commit()
+        return SuccessSchema(f'Placeable {id} has been deleted'), 200
+
+
+
+def attach_resource(app: Flask) -> None:
+    """
+    Attach the PlaceableResource (API endpoint + Swagger docs) to the given Flask app
+    :param app: The app to create the endpoint for
+    :return: None
+    """
+    blueprint = Blueprint('api_placeable', __name__)
+    api = Api(blueprint)
+    api.add_resource(PlaceableResource, '/api/placeable')
+    app.register_blueprint(blueprint, url_prefix='/')  # Relative to api.add_resource path
+    add_swagger(api)
