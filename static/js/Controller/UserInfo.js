@@ -43,6 +43,7 @@ export class UserInfo extends Subject{
             this.userID = response.entity.player_id;
             this.islandID = response.entity.island_id;
             this.unclockedBuildings = response.blueprints;
+            this.gems = response.gems;
 
             this.crystals = response.crystals;
 

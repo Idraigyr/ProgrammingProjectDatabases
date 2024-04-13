@@ -262,6 +262,13 @@ export function correctRitualScale(object){
         object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
 }
 
+export function setPositionOfCentre(object, position){
+    const pos = position.clone();
+    const boundingBox = new THREE.Box3().setFromObject(object);
+    const center = boundingBox.getCenter(new THREE.Vector3());
+    object.position.add(pos.sub(center));
+}
+
 /*
 const timeout = function (s) {
     return new Promise(function(_,reject){

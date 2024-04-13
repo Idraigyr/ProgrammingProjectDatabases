@@ -29,6 +29,9 @@ export const assetPaths = Object.freeze({
     SkeletonStaff: "./static/assets/3d-models/weapons/Skeleton_Staff.gltf",
     SkeletonShield: "./static/assets/3d-models/weapons/Skeleton_Shield_Small_A.gltf",
     SkeletonTexture1: "./static/assets/textures/skeleton_texture.png",
+    WarriorHut: "./static/assets/3d-models/warrior-hut.glb",
+    WarriorHut2: "./static/assets/3d-models/warrior-hut-2.glb",
+    SurabanglusFont: "./static/fonts/Surabanglus_Regular.json",
 });
 
 export const menuPaths = Object.freeze({

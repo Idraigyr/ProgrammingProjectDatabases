@@ -40,6 +40,14 @@ export class World{
         return null;
     }
 
+    getBuildingByPosition(position){
+        const island = this.getIslandByPosition(position);
+        if(island){
+            return island.getBuildingByPosition(position);
+        }
+        return null;
+    }
+
     checkPosForBuilding(worldPosition){
         const island = this.getIslandByPosition(worldPosition);
         if(island){

@@ -2,7 +2,7 @@
 export class Timer{
     /**
      *
-     * @param parent - parent of the timer, update function will be called by the parent
+     // * @param parent - parent of the timer, update function will be called by the parent
      * @param duration - duration of the timer
      * @param callbacks - array of callbacks to be called when the timer ends
      * @param callbackParams - array of parameters for the callbacks either null or the same length as callbacks
@@ -13,10 +13,13 @@ export class Timer{
         this.id = null;
         this.duration = duration;
         this.timer = 0;
+        this.deltaTime = 0;
         this.callbacks = callbacks;
-        this.callbacksParams = callbackParams;
+        this.callbacksParams = callbackParams??[];
         this.repeatable = repeatable;
         this.finished = false;
+        this.runtimeCallbacks = [];
+        this.runtimeCallbacksParams = [];
     }
 
     /**
@@ -38,6 +41,7 @@ export class Timer{
      */
     update(deltaTime){
         if(this.finished) return;
+        this.deltaTime = deltaTime;
         this.timer += deltaTime;
         if(this.timer >= this.duration){
             this.callbacks.forEach((callback, i) => callback(this.callbacksParams?.[i]));
@@ -49,7 +53,19 @@ export class Timer{
                 //only update the timer from parent!
                 this.parent.removeTimer(this.id);
             }
+            return;
         }
+        // Execute runtime callbacks
+        this.runtimeCallbacks.forEach((callback, i) => callback(this.runtimeCallbacksParams?.[i]));
+    }
+    // Add runtime callbacks
+    addRuntimeCallback(callback, callbackParams){
+        this.runtimeCallbacks.push(callback);
+        this.runtimeCallbacksParams.push(callbackParams);
+    }
+    addCallback(callback, callbackParams){
+        this.callbacks.push(callback);
+        this.callbacksParams.push(callbackParams);
     }
 }
 export class TimerManager {

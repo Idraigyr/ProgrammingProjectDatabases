@@ -16,6 +16,7 @@ export class Placeable extends Entity{
         this.gemSlots = params?.gemSlots ?? 1;
         this.levelUpTime = params?.levelUpTime ?? 0;
         this.gems = [];
+        this.ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
     }

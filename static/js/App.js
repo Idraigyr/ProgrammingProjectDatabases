@@ -8,12 +8,12 @@ import {SpellFactory} from "./Controller/SpellFactory.js";
 import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
+import {OrbitControls} from "three-orbitControls";
 import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
-import {OrbitControls} from "three-orbitControls";
 import {buildTypes} from "./configs/Enums.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -140,16 +140,19 @@ class App {
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
         this.menuManager.addEventListener("addGem", (event) => {
-            event.detail.building = this.worldManager.getBuildingByPos(this.worldManager.currentPos);
+            event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
             this.itemManager.addGem(event);
         });
         this.menuManager.addEventListener("removeGem", (event) => {
-            event.detail.building = this.worldManager.getBuildingByPos(this.worldManager.currentPos);
+            event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
             this.itemManager.removeGem(event);
         });
 
+        this.itemManager.menuManager = this.menuManager;
+
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
+        // Onclick event
         //TODO: change nameless callbacks to methods of a class?
         this.spellCaster.addEventListener("castBuildSpell", (event) => {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
@@ -165,6 +168,9 @@ class App {
         });
         this.spellCaster.addEventListener("interact", (event) => {
             // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
+            // Check if the building is ready
+            const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
+            if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
             const items = []; //TODO: fill with equipped gems of selected building if applicable
             console.log(buildTypes.getMenuName(buildingNumber));
@@ -203,6 +209,22 @@ class App {
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
+    }
+
+    /**
+     * Adds a new minionController to the list of minionControllers
+     * @param controller - the controller to add
+     */
+    addMinionController(controller){
+        this.minionControllers.push(controller);
+    }
+
+    /**
+     * Removes a minionController from the list of minionControllers
+     * @param controller - the controller to remove
+     */
+    removeMinionController(controller){
+        this.minionControllers.filter((c) => controller !== c);
     }
 
     /**

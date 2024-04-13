@@ -7,8 +7,8 @@ let userId = 0;
 $(document).ready(function(){
    $.ajax({url: '/api/user_profile', type: 'GET'}).done(function(data){
        username = data.username;
-       userId = data.id;
        admin = data.admin;
+       userId = data.id;
        console.log("Logged in as " + username)
    });
 });

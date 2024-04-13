@@ -176,12 +176,20 @@ export class Factory{
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         this.viewManager.addPair(model, view);
 
+        //TODO: withTimer:
+        // get total time from config/db
+        // create a timer that has a callback that triggers when the timer ends
+        // put the buildingPreview in dyingViews of viewManager
+        // just make the buildingView invisible for the duration of the timer
+
         if(params.withTimer){
             // Copy asset object
             const assetClone = asset.clone();
             //TODO: find solution invisible THREE.Object3D do not become a part of staticGeometrywith generateCollider function
             view.charModel.visible = false;
-
+            // Set that model is not ready
+            model.ready = false;
+            // Create timer
             const timer = this.timerManager.createTimer(
                 model.timeToBuild,
                 [() => {
@@ -195,7 +203,20 @@ export class Factory{
             });
             this.viewManager.dyingViews.push(buildingPreview);
             this.scene.add(buildingPreview.charModel);
-            // Traverse the original asset to make it green semi-transparent
+            // Create visible watch to see time left
+            const watch = new View.Watch({position: pos, time: model.timeToBuild, scene: this.scene, font: this.assetManager.getAsset("SurabanglusFont")});
+            // Add callback to update view with the up-to-date time
+            timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
+            // Rotate the watch view each step
+            timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
+                watch.charModel.rotation.y += 2*deltaTime;
+            });
+            // Remove watch view when the timer ends
+            timer.addCallback(() => {
+                this.scene.remove(watch.charModel);
+                model.ready = true;
+            }
+            )
         }
         return model;
     }

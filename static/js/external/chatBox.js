@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const sendMessageButton = document.getElementById('sendMessage');
     const chatInput = document.getElementById('chatInput');
     const chatMessages = document.getElementById('chatMessages');
+    const chatButtonContainer = document.getElementById('chatButtonContainer');
 
 
     function scrollToBottom() {
@@ -17,12 +18,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function openChat() {
         chatPopup.style.display = 'block';
         chatButton.hidden = true;
+        chatButtonContainer.hidden = true;
         scrollToBottom(); // Scroll to bottom when chat is opened
         chatInput.focus(); // Set focus to the chat input field
     }
 
     closeChat.onclick = function() {
         chatButton.hidden = false;
+        chatButtonContainer.hidden = false;
         chatPopup.style.display = 'none';
     };
 
@@ -31,6 +34,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         // Check if the clicked area is not the chat button and is outside the chat content
         if (!chatPopup.contains(event.target) && event.target != chatButton) {
             chatButton.hidden = false;
+            chatButtonContainer.hidden = false;
             chatPopup.style.display = 'none';
         }
     };

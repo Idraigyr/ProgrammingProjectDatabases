@@ -2,8 +2,8 @@ export class Item{
     constructor(params) {
         this.id = params.id;
         this.name = params.name;
-        this.belongsIn = params.belongsIn;
-        this.equippedIn = params?.equippedIn ?? null;
+        this.belongsIn = params.belongsIn; // E.g. gems (sub) menu
+        this.equippedIn = params?.equippedIn ?? null; // Building id
     }
 
     getItemId(){
@@ -25,6 +25,19 @@ export class Gem extends Item{
     }
     get type(){
         return "Gem";
+    }
+    get json(){
+        // TODO: do this properly
+        return {
+            id: this.id,
+            type: this.name,
+            building_id: this.equippedIn,
+            attributes: [{
+                gem_attribute_id: 0,
+                gem_attribute_type: "none",
+                multiplier: 1
+            }]
+        }
     }
 }
 
