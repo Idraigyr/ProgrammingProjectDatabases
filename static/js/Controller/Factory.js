@@ -172,6 +172,7 @@ export class Factory{
         this.scene.add(view.boxHelper);
 
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("updateMinY", view.updateMinimumY.bind(view));
         this.viewManager.addPair(model, view);

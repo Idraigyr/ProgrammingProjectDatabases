@@ -164,6 +164,8 @@ class App {
                 if(this.spellCaster.currentObject){
                     // Get selected building
                     const building = this.spellCaster.currentObject;
+                    // Update bounding box of the building
+                    building.dispatchEvent(new CustomEvent("updateBoundingBox"));
                     // Update occupied cells
                     const pos = event.detail.params.position;
                     const island = this.worldManager.world.getIslandByPosition(pos);
@@ -175,6 +177,10 @@ class App {
                     this.spellCaster.currentObject = null;
                     // Update static mesh
                     this.collisionDetector.generateColliderOnWorker();
+                    // Send put request to the server if persistence = true
+                    if(this.worldManager.persistent){
+
+                    }
                     return;
                 }
                 //temp solution:

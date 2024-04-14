@@ -24,6 +24,10 @@ export class IView {
         }
     }
 
+    updateBoundingBox(){
+        this.boundingBox.setFromObject(this.charModel, true);
+    }
+
     cleanUp() {
         try {
             this.boxHelper.parent.remove(this.boxHelper);
