@@ -314,8 +314,7 @@ class App {
             } // TODO: show message
             else {
                 // Subtract the price from the player's crystals
-                this.playerInfo.crystals -= price;
-                this.playerInfo.advertiseCurrentCondition();
+                this.playerInfo.changeCrystals(-price);
             }
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
