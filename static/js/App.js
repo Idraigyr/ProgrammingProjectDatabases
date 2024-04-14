@@ -303,6 +303,20 @@ class App {
             this.menuManager.hideMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
+            // TODO: move things from menuManager, because otherwise you have to use the following code:
+            // Get the price of the building
+            let nameInDB = this.menuManager.ctorToDBName(ctorName);
+            const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            // Check if the player has enough crystals
+            if(this.playerInfo.crystals < price) {
+                console.log("Not enough crystals");
+                return;
+            } // TODO: show message
+            else {
+                // Subtract the price from the player's crystals
+                this.playerInfo.crystals -= price;
+                this.playerInfo.advertiseCurrentCondition();
+            }
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
         this.worldManager.world.player.advertiseCurrentCondition();

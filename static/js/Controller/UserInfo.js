@@ -69,7 +69,7 @@ export class UserInfo extends Subject{
     }
 
     advertiseCurrentCondition(){
-        this.crystals += 1000;
+        this.crystals += 1000; // TODO @Flynn remove this
         this.dispatchEvent(this.createUpdateCrystalsEvent());
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.dispatchEvent(this.createUpdateXpEvent());

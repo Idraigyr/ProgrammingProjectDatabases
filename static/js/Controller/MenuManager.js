@@ -21,6 +21,8 @@ import {Subject} from "../Patterns/Subject.js";
 import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 
 export class MenuManager extends Subject{
+    #ctorToDBNameList;
+
     constructor(params) {
         super();
         this.container = params.container;
@@ -34,9 +36,25 @@ export class MenuManager extends Subject{
         this.dropElement = null;
         this.slot = null;
         this.infoFromDatabase = {};
+        this.#ctorToDBNameList = this.#createCtorToDBNameList();
 
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
+    }
+
+    #createCtorToDBNameList(){
+        return {
+            Tower: "Tower",
+            Tree: "Tree",
+            Bush: "Bush",
+            Mine: "Mine",
+            FusionTable: "Fuse Table",
+            WarriorHut: "Warrior hut"
+        }
+    }
+
+    ctorToDBName(ctorName){
+        return this.#ctorToDBNameList[ctorName];
     }
 
     #addMenuCallbacks(menu){
