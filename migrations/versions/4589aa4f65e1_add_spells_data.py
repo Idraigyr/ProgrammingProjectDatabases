@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '4589aa4f65e1'
-down_revision = 'e18abe977e53'
+down_revision = '081d41bb3cad'
 branch_labels = None
 depends_on = None
 
@@ -23,9 +23,7 @@ def upgrade():
     Then, we finally truncate the table spell
     :return:
     """
-    op.execute("ALTER TABLE  player_spells DROP CONSTRAINT player_spells_spell_id_fkey;")
-    op.execute("ALTER TABLE  player_spells ADD CONSTRAINT player_spells_spell_id_fkey FOREIGN KEY (spell_id) REFERENCES spell(id) ON DELETE CASCADE;")
-    op.execute("DELETE FROM spell CASCADE WHERE true;")
+    op.execute("DELETE FROM spell CASCADE WHERE true;")  # Nuke it lol
 
     spells = [
         {"id": 0, "name": "BuildSpell"},
@@ -47,7 +45,4 @@ def upgrade():
 
 def downgrade():
     op.execute("DELETE FROM spell CASCADE WHERE true;")  # Nuke it lol
-    # Restore the constraint back to its original state
-    op.execute("ALTER TABLE  player_spells DROP CONSTRAINT player_spells_spell_id_fkey;")
-    op.execute("ALTER TABLE  player_spells ADD CONSTRAINT player_spells_spell_id_fkey FOREIGN KEY (spell_id) REFERENCES spell(id);")
 
