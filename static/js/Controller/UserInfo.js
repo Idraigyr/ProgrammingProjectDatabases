@@ -153,7 +153,6 @@ export class UserInfo extends Subject{
             this.maxGemAttribute = 8;
             this.maxBuildings = 10;
         }
-        this.experience = 0;
         popUp(this.level, this.maxMana, this.maxHealth);
         return true;
     }

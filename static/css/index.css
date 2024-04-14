@@ -1478,6 +1478,7 @@ body {
     top: 30px;
     left: 30px;
     display: inline-block; /* Ensure the container has the size of its contents */
+    z-index: 5;
 
 }
 .button {
