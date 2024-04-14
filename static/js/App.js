@@ -164,6 +164,8 @@ class App {
                 if(this.spellCaster.currentObject){
                     this.spellCaster.currentObject.ready = true;
                     this.spellCaster.currentObject = null;
+                    // Update static mesh
+                    this.collisionDetector.generateColliderOnWorker();
                     return;
                 }
                 //temp solution:
