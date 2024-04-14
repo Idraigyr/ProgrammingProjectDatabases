@@ -4,7 +4,7 @@ import {
     RunForwardState, TakeDamageState,
     WalkBackWardState,
     WalkForwardState
-} from "../Model/States/CharacterStates.js";
+} from "../Model/States/PlayerStates.js";
 
 /**
  * @class FiniteStateMachine - A class that represents a finite state machine

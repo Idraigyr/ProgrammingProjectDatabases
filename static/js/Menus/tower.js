@@ -1,6 +1,6 @@
 // variables
 
-// lists for spells, gems and stakes
+// lists for gems, towerGems and boosts
 let gems = {"amberGem": 4, "rubyGem": 3, "sapphireGem": 8, 'diamondGem': 1, "emeraldGem": 2, "amethystGem": 3};
 let towerGems = {"amberGem": 0, "rubyGem": 0, "sapphireGem": 0, 'diamondGem': 0, "emeraldGem": 0, "amethystGem": 0};
 let boosts = {"hp": 100, "damage": 10};
@@ -18,9 +18,7 @@ Amethyst  |500 |20
 Max 3 gems in tower
 */
 
-
-
-// creates name for gem
+// creates text for a gem
 function toGemString(inputString) {
     // Make the first letter uppercase
     let processedString = inputString.charAt(0).toUpperCase() + inputString.slice(1);

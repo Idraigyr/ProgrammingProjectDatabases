@@ -16,17 +16,13 @@ export class Player extends IAnimatedView{
      * @param clips
      */
     loadAnimations(clips){
-        const getAnimation =  (animName, alias) => {
-            let clip = THREE.AnimationClip.findByName(clips, animName);
-            this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
-        }
-        getAnimation('CharacterArmature|Walk',"Walk");
-        getAnimation('CharacterArmature|Idle',"Idle");
-        getAnimation('CharacterArmature|Run',"Run");
-        getAnimation('CharacterArmature|Walk',"WalkForward");
-        getAnimation('CharacterArmature|Roll',"WalkBackward");
-        getAnimation('CharacterArmature|Spell1',"DefaultAttack");
-        getAnimation('CharacterArmature|PickUp', 'Eating')
+        this._getAnimation(clips, 'CharacterArmature|Walk',"Walk");
+        this._getAnimation(clips, 'CharacterArmature|Idle',"Idle");
+        this._getAnimation(clips, 'CharacterArmature|Run',"Run");
+        this._getAnimation(clips, 'CharacterArmature|Walk',"WalkForward");
+        this._getAnimation(clips, 'CharacterArmature|Roll',"WalkBackward");
+        this._getAnimation(clips, 'CharacterArmature|Spell1',"DefaultAttack");
+        this._getAnimation(clips, 'CharacterArmature|PickUp', 'Eating')
     }
 
 }

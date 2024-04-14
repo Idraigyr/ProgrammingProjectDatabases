@@ -2,25 +2,12 @@ import * as THREE from "three";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {gravity} from "./configs/ControllerConfigs.js";
 
-/**
- * Get the smallest number between x1 and x2
- * @param x1 first number
- * @param x2 second number
- * @returns {*} the smallest number
- */
-export const min = function(x1, x2){
-    return x1 < x2 ? x1 : x2;
-}
-/**
- * Get the largest number between x1 and x2
- * @param x1 first number
- * @param x2 second number
- * @returns {*} the largest number
- */
-export const max = function(x1, x2){
-    return x1 > x2 ? x1 : x2;
-}
+export const assert = function(condition, message) {
+    if (!condition) {
+        throw new Error(message || "Assertion failed");
+    }
 
+}
 export const setIndexAttribute = function(geometry){
     const numVertices = geometry.attributes.position.count;
     const index = [];
@@ -28,6 +15,58 @@ export const setIndexAttribute = function(geometry){
         index.push(i);
     }
     geometry.setIndex(index);
+}
+
+export const returnMultipliedString = function(string, length){
+    let str = "";
+    for(let i = 0; i < length; i++){
+        str += string;
+    }
+    return str;
+}
+
+export const printFoundationGrid = function(grid, width, length, oneline=false){
+    console.log(returnMultipliedString("*", width));
+    let arr = "";
+    if(oneline){
+        for(let i = 0; i < grid.length; i++){
+            arr += grid[i] + " ";
+        }
+    } else {
+        for(let i = 0; i < length; i++){
+            for(let j = 0; j < width; j++){
+                arr += grid[i*width + j] + " ";
+            }
+            arr += "\n";
+        }
+    }
+    console.log(arr);
+    console.log(returnMultipliedString("*", width));
+}
+
+export const printGridPath = function(grid, path, width, length, currentNode = null){
+    console.log(returnMultipliedString("*", width));
+    for(let i = 0; i < length; i++){
+            let currentRow = "";
+            const rowColor = [];
+            for(let j = 0; j < width; j++){
+                currentRow += "%c" + grid[i*width + j] + " ";
+                if(currentNode === i*width + j){
+                    rowColor.push("color: red;");
+                    continue;
+                }
+                if(path.includes(i*width + j)){
+                    rowColor.push("color: green;");
+                    continue;
+                }
+                rowColor.push("color: white;");
+            }
+            if(i % 2 === 0){
+                currentRow += " ";
+            }
+            console.log(currentRow, ...rowColor);
+        }
+    console.log(returnMultipliedString("*", width));
 }
 
 export const returnWorldToGridIndex = function(position){
@@ -43,7 +82,31 @@ export const convertWorldToGridPosition = function (position){
 export const convertGridIndexToWorldPosition = function (position){
     position.x = position.x*gridCellSize;
     position.z = position.z*gridCellSize;
+    return position
 }
+
+//TODO: fix that added velocity only counts for one frame
+export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
+    const hitVector = new THREE.Vector3(0,10,0);
+    // const hitVector = box1.getCenter(new THREE.Vector3()).sub(box2.getCenter(new THREE.Vector3()));
+    // hitVector.y += 10;
+    hitVector.normalize();
+    const totalMass = box1Mass + box2Mass;
+
+    box2Velocity.add(hitVector.multiplyScalar(10 * totalMass / box2Mass));
+}
+
+export const pushCollidedObjects = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
+    const distance = box1.getCenter(new THREE.Vector3()).distanceTo(box2.getCenter(new THREE.Vector3()));
+
+    const totalMass = box1Mass + box2Mass;
+    const relativeVelocity = box1Velocity.clone().sub(box2Velocity);
+    const normal = box1.getCenter(new THREE.Vector3()).sub(box2.getCenter(new THREE.Vector3())).normalize();
+    const impulse = 2 * relativeVelocity.dot(normal) / totalMass * Math.max(1, Math.min(200,1/Math.pow(distance,4)));
+    box1Velocity.sub(normal.clone().multiplyScalar(impulse * box2Mass));
+    box2Velocity.add(normal.clone().multiplyScalar(impulse * box1Mass));
+}
+
 
 export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //box1 = spell
     const characterCenter = movableBox.getCenter(new THREE.Vector3());
@@ -197,6 +260,13 @@ export function correctRitualScale(object){
         const biggestSideLength = Math.max(Math.abs(difVec.x), Math.abs(difVec.z));
         const scaleFactor = gridCellSize/biggestSideLength;
         object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
+}
+
+export function setPositionOfCentre(object, position){
+    const pos = position.clone();
+    const boundingBox = new THREE.Box3().setFromObject(object);
+    const center = boundingBox.getCenter(new THREE.Vector3());
+    object.position.add(pos.sub(center));
 }
 
 /*

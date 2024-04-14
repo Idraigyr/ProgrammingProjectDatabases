@@ -9,20 +9,21 @@ import {gridCellSize} from "../configs/ViewConfigs.js";
  */
 export class Island extends IView{
     #gridCellSize;
-    #cellsInRow;
+    #width;
+    #length;
     #islandThickness;
     blockPlane;
 
     /**
      * Constructor for Island view
-     * @param {cellsInRow: number, islandThickness: number} params of grid cell
-     * cellsInRow number of cells in a row
+     * @param {{width: number, length: number, islandThickness: number}} params of grid cell
      * islandThickness thickness of the island plane
      */
     constructor(params) {
         super(params);
         this.#gridCellSize = gridCellSize;
-        this.#cellsInRow = params?.cellsInRow ?? 10;
+        this.#width = params?.width ?? 15;
+        this.#length = params?.length ?? 15;
         this.#islandThickness = params?.islandThickness ?? 0.1;
     }
     createIsland(){
@@ -53,8 +54,8 @@ export class Island extends IView{
      */
     createPlane(){
         const group = new THREE.Group();
-        let pos = {x: 0, y: -this.#islandThickness/2, z: 0};
-        let scale = {x: this.#cellsInRow*this.#gridCellSize, y: this.#islandThickness, z: this.#cellsInRow*this.#gridCellSize};
+        let pos = {x: this.position.x, y: -this.#islandThickness/2, z: this.position.z};
+        let scale = {x: this.#width*this.#gridCellSize, y: this.#islandThickness, z: this.#length*this.#gridCellSize};
 
         //threeJS Section
         this.blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
@@ -75,9 +76,9 @@ export class Island extends IView{
      * Create grass field
      * @returns {THREE.Group} group of grass field
      */
-    createGrassField(){
+    createGrassField(params){
         const group = new THREE.Group();
-        generateGrassField(group);
+        generateGrassField(group, params);
         return group;
     }
 
@@ -127,7 +128,10 @@ export class Island extends IView{
 
         let plane = this.createPlane();
         group.add(plane);
-        group.add(this.createGrassField());
+        // old implementation
+        // group.add(this.createGrassField());
+        // new implementation
+        group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
         this.charModel = plane;
         return group;
     }

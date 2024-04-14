@@ -40,10 +40,8 @@ export class SpellPreview extends IView{
         this.charModel.visible = true;
 
         this.updatePosition(event);
-        if(event.detail.rotation){
-            event.detail.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), event.detail.rotation);
-            super.updateRotation(event);
-        }
+        event.detail.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), event.detail.rotation ?? 0);
+        super.updateRotation(event);
         //TODO: remove magic value
         this.charModel.translateY(1.5);
     }

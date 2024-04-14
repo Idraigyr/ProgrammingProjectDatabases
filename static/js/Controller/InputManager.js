@@ -40,10 +40,7 @@ export class InputManager extends Subject{
         super(params);
         this.blockedInput = true;
         this.canvas = params.canvas;
-        this.canvas.addEventListener("mousedown", async (e) => {
-            if(!this.blockedInput) return;
-            await this.canvas.requestPointerLock();
-        });
+        this.canvas.addEventListener("mousedown", this.requestPointerLock.bind(this));
         document.addEventListener("mousedown", this.onClickEvent.bind(this));
         document.addEventListener("pointerlockchange", (e) => {
             this.blockedInput = !this.blockedInput;
@@ -81,6 +78,16 @@ export class InputManager extends Subject{
                     break;
             }
         });
+    }
+
+    async requestPointerLock(){
+        if(!this.blockedInput) return;
+        await this.canvas.requestPointerLock();
+    }
+
+    exitPointerLock(){
+        this.resetKeys();
+        document.exitPointerLock();
     }
 
     resetKeys(){

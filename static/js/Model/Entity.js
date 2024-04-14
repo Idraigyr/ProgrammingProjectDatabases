@@ -54,7 +54,7 @@ export class Entity extends Subject{
     }
 
     get position(){
-        return this._position;
+        return this._position.clone();
     }
 
     /**

@@ -18,6 +18,10 @@ body {
   border-radius: 10px;
 }
 
+.mineMenu {
+    background-image: url('/static/images/menu/mineBackground.png');
+}
+
 .towerMenu {
   max-width: 745px;
   max-height: 1000px;
@@ -31,6 +35,11 @@ body {
   border-radius: 10px;
 }
 
+.fusionMenu {
+    margin-top: 3%;
+    max-width: 1200px;
+}
+
 h1 {
   text-align: center;
   margin-top: -50px;
@@ -39,12 +48,34 @@ h1 {
   font-size: 50px;
 }
 
+.mineH1 {
+    margin-top: 0;
+    padding-left: 10px;
+    color: #000000;
+}
+
+.fusionH1 {
+    position: relative;
+    top: 30px;
+}
+
+.fusionH2 {
+    position: relative;
+    z-index: 0;
+    right: -50px;
+}
+
+
 h2 {
   text-align: left;
-  margin-top: 2px;
+  margin-top: 0px;
   margin-bottom: 0;
   padding-left: 40%;
   color: #0f172a;
+}
+
+.mineH2 {
+    margin-left: 6%;
 }
 
 h3 {
@@ -91,8 +122,8 @@ h3 {
 }
 
 .fusionButton {
-  margin-left: 45%;
-  margin-top: 20px;
+  margin-left: -6%;
+  margin-top: 30px;
   margin-bottom: 10px;
   background-color: transparent; /* Remove background color */
   color: white;
@@ -106,16 +137,75 @@ h3 {
   background-position: center; /* Center the background image */
   background-repeat: no-repeat; /* Prevent the background image from repeating */
   transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    z-index: 1;
 }
 
 .fusionButton:hover {
   transform: scale(1.10); /* Scale up the button on hover */
+}
 
+.collectButton {
+    margin-left: -9%;
+    margin-top: 4%;
 }
 
 .containers {
   display: flex;
   justify-content: space-between;
+}
+
+.pickaxe {
+    position: relative;
+    top: -50px;
+    right: 25px;
+    width: 200px;
+    height: 200px;
+    padding: 20px;
+    border-radius: 10px;
+    background-image: url('/static/images/menu/pickaxe.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    animation: rotateAnimation 1s linear infinite; /* Adjust the animation duration and timing function as needed */
+    transform-origin: bottom center;
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate(50deg);
+    }
+    20% {
+        transform: rotate(120deg);
+    }
+    100% {
+        transform: rotate(50deg);
+    }
+}
+
+.arrow {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    right: 7%;
+    padding: 10px;
+    border-radius: 10px;
+    background-image: url('/static/images/menu/arrow.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.move-right {
+    animation: moveRight 1s linear infinite; /* Adjust animation duration and timing function as needed */
+}
+
+@keyframes moveRight {
+    0% {
+        transform: translateX(0); /* Start position */
+    }
+    100% {
+        transform: translateX(100%); /* End position */
+    }
 }
 
 .container {
@@ -129,7 +219,32 @@ h3 {
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
+  height: 400px; /* Adjust the height as needed */
+  overflow-y: auto;
 }
+
+.fusionContainer {
+    width: 180px;
+    padding: 10px;
+    margin: 0px;
+}
+
+.container::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+.container::-webkit-scrollbar-track {
+    background: #f9f3d2; /* Color of the track */
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: #565444; /* Color of the scrollbar handle */
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: #3d3c30; /* Color of the scrollbar handle on hover */
+}
+
 
 .containerBuildings {
   border: 2px solid #0f172a;
@@ -216,6 +331,7 @@ h3 {
   background-color: #72715d;
 }
 
+/* exit buttons */
 .exit {
   position: relative;
   right: -510px;
@@ -243,6 +359,40 @@ h3 {
 
 .towerExit{
     margin-left: 26%;
+}
+
+.mineExit{
+    top: -58px;
+}
+
+.fusionExit {
+    top: -15px;
+    right: -620px;
+}
+
+/* loading bars */
+.loading-bar-container {
+  position: relative;
+  top: 360px;
+  right: 120px;
+  width: 15%;
+  height: 30px;
+  background-color: #969478;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
+.loading-bar {
+  width: 0%;
+  height: 100%;
+  background-color: #ff8000;
+  border-radius: 10px;
+  transition: width 0.2s ease;
+}
+
+.fusionBar {
+    top: -120px;
+    right: -510px;
 }
 
 /* Spells images formatting */
@@ -283,6 +433,13 @@ h3 {
 }
 
 /* Gems images formatting */
+.crystal {
+    position: absolute;
+    height: 45px;
+    width: 45px;
+    right: 3%;
+}
+
 .amberGem {
     position: absolute;
     height: 30px;
@@ -323,16 +480,6 @@ h3 {
     height: 40px;
     width: 40px;
     right: 4%;
-}
-
-.arrow{
-    width: 250px;
-    padding: 20px;
-    border-radius: 10px;
-    background-image: url('/static/images/menu/arrow.png');
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center center;
 }
 
 /* Extra icons formatting*/

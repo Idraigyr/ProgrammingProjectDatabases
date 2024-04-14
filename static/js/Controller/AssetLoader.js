@@ -1,6 +1,8 @@
 import {GLTFLoader} from "three-GLTFLoader";
 import {FBXLoader} from "three-FBXLoader";
 import {TextureLoader} from "three-TextureLoader";
+import {FontLoader} from "three-FontLoader";
+import {DRACOLoader} from "three-DRACOLoader";
 import * as THREE from "three";
 import {getFileExtension, setIndexAttribute} from "../helpers.js";
 import {AnimationMixer} from "three";
@@ -27,17 +29,22 @@ export class AssetLoader{
     loadAsset(path){
         let extension = getFileExtension(path);
         if(extension === "glb" || extension === "gltf"){
-            return this.loadGLTF(path);
+            try{
+                return this.loadGLTF(path);
+            }catch (e) {
+                return this.loadDRACOGLTF(path);
+            }
         } else if(extension === "fbx"){
             return this.loadFBX(path);
-        } else if(extension === "png" || extension === "jpg"){
+        } else if(extension === "png" || extension === "jpg") {
             return this.loadTexture(path);
+        }   // TODO: json can be used for fonts, but also for other things...
+          else if (extension === "json"){
+            return this.loadFont(path);
         } else {
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
-
-    //TODO:: add timeout error handler
     /**
      * Load a gltf model
      * @param path path to the model
@@ -47,6 +54,37 @@ export class AssetLoader{
         let loader = new GLTFLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
             console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+        }).then((gltf) => {
+            let charModel;
+            let animations = null;
+
+            charModel = gltf.scene;
+            charModel.traverse(c => {
+                c.castShadow = true;
+            });
+            if(gltf.animations.length > 0){
+                animations = gltf.animations;
+                return {charModel, animations};
+            }
+            return {charModel};
+        },(err) => {
+            return this.loadDRACOGLTF(path);
+        });
+    }
+
+    //TODO:: add timeout error handler
+    /**
+     * Load a gltf model
+     * @param path path to the model
+     * @returns {*} the model and its animations
+     */
+    loadDRACOGLTF(path){
+        let loader = new GLTFLoader();
+        let draco = new DRACOLoader();
+        draco.setDecoderPath( './static/decoders/dracoloader/' );
+        loader.setDRACOLoader( draco );
+        return loader.loadAsync(path, function (xhr) {
+            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((gltf) => {
             let charModel;
             let animations = null;
@@ -73,7 +111,7 @@ export class AssetLoader{
     loadFBX(path){
         let loader = new FBXLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((fbx) => {
             let charModel;
             let animations = null;
@@ -98,9 +136,19 @@ export class AssetLoader{
     loadTexture(path){
         let loader = new TextureLoader();
         return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((texture) => {
             return {texture};
+        }, (err) => {
+            throw new Error(err);
+        });
+    }
+    loadFont(path){
+        let loader = new FontLoader();
+        return loader.loadAsync(path, function (xhr) {
+            console.log((xhr.loaded / xhr.total * 100) + '% of a font loaded');
+        }).then((font) => {
+            return {font};
         }, (err) => {
             throw new Error(err);
         });

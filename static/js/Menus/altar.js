@@ -1,8 +1,8 @@
 // variables
 
 // lists for spells, gems and stakes
-let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell", "buildSpell"];
-let hotbar = []
+let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell"];
+let hotbar = ["buildSpell"]
 let gems = {"amberGem": 4, "rubyGem": 3, "sapphireGem": 8, 'diamondGem': 1, "emeraldGem": 2, "amethystGem": 3};
 let stakes = {"amberGem": 0, "rubyGem": 0, "sapphireGem": 0, 'diamondGem': 0, "emeraldGem": 0, "amethystGem": 0};
 
@@ -30,7 +30,7 @@ function drag(event) {
 }
 
 function drop(event, containerId) {
-    event.preventDefault();
+    // event.preventDefault();
     let data = event.dataTransfer.getData("text");
     let draggedItem = document.getElementById(data);
     let startContainer = event.dataTransfer.getData("startContainer");
@@ -44,9 +44,11 @@ function drop(event, containerId) {
 
     }
     else if(startContainer === 'container2' && targetContainer.id === 'container1'){
-        targetContainer.appendChild(draggedItem);
-        removeByString(hotbar, draggedItem.id);
-        spells.push(draggedItem.id);
+        if(draggedItem.id !== "buildSpell") {
+            targetContainer.appendChild(draggedItem);
+            removeByString(hotbar, draggedItem.id);
+            spells.push(draggedItem.id);
+        }
     }
     else if(startContainer === 'container3' && targetContainer.id === 'container4'){
         if(gems[draggedItem.id] !== 0){

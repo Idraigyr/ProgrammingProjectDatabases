@@ -1,6 +1,7 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
-import {adjustVelocity, adjustVelocity2, adjustVelocity3} from "../helpers.js";
+import {adjustVelocity, adjustVelocity2, adjustVelocity3, launchCollidedObject} from "../helpers.js";
+import {Minion} from "./Minions/Minion.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -38,6 +39,7 @@ class SpellEntity extends Entity{
         if(this.team !== character.team){
             this.spellType.applyEffects(character);
             this.hitSomething = true;
+            character.hit = true;
         }
     }
 }
@@ -119,6 +121,7 @@ export class Projectile extends SpellEntity{
         super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
+            launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, 1, 20, deltaTime);
             this.timer += this.duration;
             this.dispatchEvent(this.createDeleteEvent());
         }

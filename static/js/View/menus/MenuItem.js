@@ -1,0 +1,141 @@
+export class MenuItem{
+    constructor(params) {
+        this.id = params.id;
+        this.name = params.name;
+        this.belongsIn = params.belongsIn;
+        this.icon = new Image(params.icon.width,params.icon.height);
+        this.icon.src = params.icon.src;
+        this.element = this.createElement(params);
+    }
+
+    render(){
+        this.element.style.display = "block";
+    }
+
+    hide(){
+        this.element.style.display = "none";
+    }
+
+    detach(){
+        this.element.parentNode.removeChild(this.element);
+    }
+
+    attachTo(parent){
+        parent.addChild("afterbegin", this);
+    }
+
+    createElement(params){
+        const element = document.createElement("li");
+        const description = document.createElement("div");
+        const descriptionName = document.createElement("p");
+        const descriptionText = document.createElement("p");
+        description.classList.add("menu-item-description");
+        descriptionName.classList.add("menu-item-description-name");
+        descriptionText.classList.add("menu-item-description-text");
+        description.appendChild(descriptionName);
+        description.appendChild(descriptionText);
+        element.id = this.id;
+        element.classList.add("menu-item");
+        element.draggable = true;
+        element.appendChild(this.icon);
+        element.appendChild(description);
+        descriptionName.innerText = this.name;
+        descriptionText.innerText = "placeholder description";
+        return element;
+    }
+
+    get type(){
+        return "undefined";
+    }
+}
+
+export class SpellItem extends MenuItem{
+    constructor(params) {
+        super(params);
+        this.unlocked = false;
+    }
+
+    render() {
+        super.render();
+    }
+
+    unlock(params){
+        this.unlocked = true;
+        this.element.classList.add("unlocked");
+        //add drag and drop callbacks
+    }
+
+    get type(){
+        return "Spell";
+    }
+}
+
+export class GemItem extends MenuItem{
+    constructor(params) {
+        super(params);
+        this.equipped = false;
+        this.slot = null;
+    }
+
+    get type(){
+        return "Gem";
+    }
+}
+
+export class BuildingItem extends MenuItem{
+    constructor(params) {
+        super(params);
+        this.element.classList.add("building-item");
+        this.element.draggable = false;
+    }
+
+    get type(){
+        return "Building";
+    }
+}
+
+export class CombatBuildingItem extends BuildingItem{
+    constructor(params) {
+        super(params);
+    }
+
+    get type(){
+        return "CombatBuilding";
+    }
+
+}
+
+export class ResourceBuildingItem extends BuildingItem{
+    constructor(params) {
+        super(params);
+    }
+
+    get type(){
+        return "ResourceBuilding";
+    }
+
+}
+
+export class DecorationBuildingItem extends BuildingItem{
+    constructor(params) {
+        super(params);
+    }
+
+    get type(){
+        return "DecorationBuilding";
+    }
+
+}
+
+export class StatItem extends MenuItem{
+    constructor(params) {
+        super(params);
+        this.element.draggable = false;
+        this.value = 0;
+        this.name = "";
+    }
+
+    get type(){
+        return "Stat";
+    }
+}

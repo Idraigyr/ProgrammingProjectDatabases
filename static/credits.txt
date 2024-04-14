@@ -11,8 +11,10 @@ Button_Blue, Button_Blue_9Slides, Button_Blue_9Slides_Pressed, Button_Blue_Press
 https://pixelfrog-assets.itch.io/tiny-swords
 crystal_01a:
 https://shikashipx.itch.io/shikashis-fantasy-icons-pack
-Potion-blue, Potion-red:
+Potion-blue, Potion-red, Potion-Grey:
 https://www.vexels.com/png-svg/preview/307130/potion-hand-drawn-witch
+spell-cast-bolt, spell-cast-fire, spell-cast-ice, spell-cast-plant, double-ringed-orb_4:
+https://mythril-age.itch.io/mythril-age-spell-icons-v2
 -----------------------------------
 3d models:
 Floating island landing page:
@@ -24,13 +26,32 @@ https://tarasov3d-studio.itch.io/fantasy-portal-lowpoly-3d-model
 Mine:
 https://sketchfab.com/3d-models/low-poly-mine-51f04c3d37784904b12fc020f0e9bee2
 Fusion table:
-https://sketchfab.com/3d-models/alchemy-table-57450896404c4450968189a7b0a8befe
+https://sketchfab.com/3d-models/alchemists-table-76b6056457fa471f8d9acd085849d815
 Bushes:
 https://sketchfab.com/3d-models/low-poly-bushes-e109272b7ea34cc0a09cbd26e6fdc6d8
+WarriorHut:
+https://sketchfab.com/3d-models/viking-guardpost-6f27ada661a14a0aa651475cff81d656
+WarriorHut2:
+https://sketchfab.com/3d-models/viking-bone-carver-feca1e04fcb642608b349011891ea764
+wizard model:
+https://poly.pizza/m/kttbFvCl2C
+skeleton minion models:
+https://kaylousberg.itch.io/kaykit-skeletons
+icewall block model:
+https://poly.pizza/bundle/Crystal-Pack-AywAG7aywi
 -----------------------------------
 Scripts:
 Grass shader:
 https://github.com/James-Smyth/three-grass-demo
+Wizard animation:
+https://codepen.io/Craaftx/pen/ExyYRMK
+XP-bar animation:
+https://codepen.io/mats-raemen/pen/NWKwRdQ
 -----------------------------------
-repositories that helped:
+repositories used in any shape or form:
+for inspiration on threejs implementations of characters:
 https://github.com/simondevyoutube
+for collision detection between player and static geometry:
+https://github.com/gkjohnson/three-mesh-bvh/tree/master
+for making shaders (mainly the shield shader):
+https://stemkoski.github.io/Three.js/index.html

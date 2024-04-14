@@ -8,31 +8,35 @@
 </head>
 <body style="background-color: transparent">
 
-<div class="menu">
-    <span class="exit" onclick="exitMenu()">✖</span>
-  <h1>Fusion Table</h1>
-    <button class="exit" id="exit"></button>
+<div class="menu fusionMenu">
+  <h1 class="fusionH1">Fusion Table</h1>
+    <button class="exit fusionExit" onclick="exitMenu()"></button>
   <div class="combat">
-    <h2>Start fusion</h2>
-    <button class="fusionButton" id="playButton"></button>
+    <h2 class="fusionH2">Start fusion</h2>
+    <button class="fusionButton" onclick="startFusion()"></button>
   </div>
 
   <div class="containers">
-        <div class="container">
+        <div class="container fusionContainer" id="container1" ondrop="drop(event, 'container1')" ondragover="allowDrop(event)">
             <label><h2>Crystals</h2></label>
-            <div class="item">You have 5 crystals</div>
-            <div class="item">
-            <label for="quantity">Input crystals:</label>
-            <input type="number" id="quantity" name="quantity" min="1" max="100">
-            </div>
+            <!-- Container will be populated dynamically -->
         </div>
-        <div class="arrow"></div>
-        <div class="container" id="container1">
-            <label><h2>Received gems</h2></label>
-            <div class="item">Emerald</div>
-            <div><button>Take all</button></div>
+        <div class="container fusionContainer" id="container2" ondrop="drop(event, 'container2')" ondragover="allowDrop(event)">
+            <label><h2>Input</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="arrow" id="arrow"></div>
+        <div class="container fusionContainer" id="container3" ondrop="drop(event, 'container3')" ondragover="allowDrop(event)">
+            <label><h2>Output</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="container fusionContainer" id="container4" ondrop="drop(event, 'container4')" ondragover="allowDrop(event)">
+            <label><h2>Gems</h2></label>
+            <!-- Container will be populated dynamically -->
         </div>
   </div>
+    <div class="loading-bar-container fusionBar">
+    <div class="loading-bar"></div>
 
 </div>
 

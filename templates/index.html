@@ -11,14 +11,20 @@
     <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
     <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script defer src="{{ url_for('static', filename='js/external/chatBox.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
     <script type="importmap">
       {
         "imports": {
           "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
           "three-GLTFLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/GLTFLoader.js",
+          "three-DRACOLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/DRACOLoader.js",
           "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
           "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
+          "three-FontLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FontLoader.js",
+          "three-TextGeometry": "https://unpkg.com/three@0.162.0/examples/jsm/geometries/TextGeometry.js",
           "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
           "three-BufferGeometryUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/BufferGeometryUtils.js",
           "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
@@ -34,9 +40,6 @@
             crossorigin="anonymous">
 
     </script>
-
-    <!-- Custom SocketIO JS -->
-    <script src="{{ url_for('static', filename="js/external/socketio.js")  }}"></script>
 </head>
 <body id="body">
     <div id="container">
@@ -44,8 +47,16 @@
     <!-- Load App -->
     <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
 
-    <div class="button-container">
-        <button id="chatButton" class="bottom-left-button">Chat</button>
+{#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
+
+    <!--<script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetImages.js') }}"></script>-->
+
+
+
+    <div class="button-container" id="chatButtonContainer">
+        <button id="chatButton" class="bottom-left-button fa fa-comments"></button>
+        <a class="sywh-open-services" data-tooltip="Chat with other ordinary wizards!" data-placement="right">
+      </a>
     </div>
     <div id="chatPopup" class="chat-popup" style="display: none;">
         <!-- Chat interface -->
@@ -86,6 +97,7 @@
 
     <!-- loading screen -->
     <div class="loading-animation">
+        <div class="loading-background"></div>
         <div class="progress-bar-container">
             <label for="progress-bar">Loading...</label> <!-- preff?-->
             <progress id="progress-bar" value="0" max="100"></progress>
@@ -192,21 +204,25 @@
       <button class="applyButton" id="applyButton">Apply</button>
     </div>
 
+    <!-- Menu Container -->
+    <div id="menuContainer"></div>
+
+
     <!-- Tower Menu -->
-        <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Build Menu -->
-        <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Altar Menu -->
-        <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Fusion Table Menu -->
-        <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
     <!-- Mine Menu -->
-        <object type="text/html" id="mineMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/mine.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object>
+    <!--    <object type="text/html" id="mineMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/mine.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+
+
+
+
     <!-- UI/HUD -->
-
-
-
-
     <div class="settings-button" id="settings-btn">
             <img src="../static/assets/images/Button_Blue.png" class="button">
             <img src="../static/assets/images/Regular_02.png" class="icon">
@@ -249,6 +265,7 @@
             <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
         </div>
         <div class="Spell5Icon">
+            <img src="../static/assets/images/spell-cast-ice.png" class= "icewallimage">
         </div>
     </div>
 
@@ -262,11 +279,12 @@
 
 
     <div class="Mana">
+        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
         <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
-        <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
+                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
 
-        <div class ="ManaAmount">
-            0/100
+        <div class = "ManaAmount">
+            50/100
         </div>
     </div>
 
@@ -279,6 +297,23 @@
             <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
         </div>
     </div>
+
+    <!-- XP bar and level -->
+    <div id='account-bar-wrapper'>
+      <div id='account-bar'>
+        <div id='account-bar-name'>Player Name</div>
+        <div id ='account-bar-level'>Level 0</div>
+        <div id='xp-bar'>
+          <div id='xp-bar-fill'>
+            <div id='xp-increase-fx'><div id='xp-increase-fx-flicker'><div class='xp-increase-glow1'></div><div class='xp-increase-glow2'></div><div class='xp-increase-glow3'></div></div><div class='xp-increase-glow2'></div></div>
+          </div>
+        </div>
+        <div id='xp-bar-status'>0</div>
+      </div>
+    </div>
+
+
+
 
     <canvas id="canvas"></canvas>
     <!-- Script for toggling FPS counter -->

@@ -3,6 +3,7 @@ import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
 import {convertWorldToGridPosition} from "../helpers.js";
+import {buildTypes} from "../configs/Enums.js";
 
 export class ViewManager extends Subject{
     constructor(params) {
@@ -26,7 +27,7 @@ export class ViewManager extends Subject{
         }
         const newEvent = {detail: {name: "", position: event.detail.params.position}};
         if(event.detail.type.name === "build"){
-            if(this.getIslandByPosition(newEvent.detail.position)?.checkCell(newEvent.detail.position) !== "empty"){
+            if(this.getIslandByPosition(newEvent.detail.position)?.checkCell(newEvent.detail.position) !== buildTypes.getNumber("empty")){
                 newEvent.detail.name = "augmentBuild";
             } else {
                 newEvent.detail.name = "build";

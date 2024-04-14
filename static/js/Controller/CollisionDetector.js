@@ -92,6 +92,7 @@ export class CollisionDetector extends Subject{
             this.worker.addEventListener('message', this.receiveCollider.bind(this));
             this.worker.postMessage(this.stringifyCharModel());
         }
+        console.log("generating done")
         this.startUp = false;
     }
 
@@ -119,21 +120,36 @@ export class CollisionDetector extends Subject{
                     spellEntity.model.onCharacterCollision(deltaTime, player.model,spellEntity.view.boundingBox, player.view.boundingBox);
                 }
             });
+            this.viewManager.pairs.character.forEach((character) => {
+                if(this.boxToBoxCollision(spellEntity.view.boundingBox, character.view.boundingBox)){
+                    spellEntity.model.onCharacterCollision(deltaTime, character.model, spellEntity.view.boundingBox, character.view.boundingBox);
+                }
+            });
+        }
+    }
+
+    checkCharacterCollisions(deltaTime){
+        for(const character of this.viewManager.pairs.character){
+            this.viewManager.pairs.player.forEach((player) => {
+                if(this.boxToBoxCollision(character.view.boundingBox, player.view.boundingBox)){
+                    character.model.onCharacterCollision(deltaTime, player.model, character.view.boundingBox, player.view.boundingBox);
+                }
+            });
         }
     }
 
 
 
-    adjustPlayerPosition(playerModel, position, deltaTime){
-        playerModel.setSegmentFromPosition(position);
+    adjustCharacterPosition(character, position, deltaTime){
+        character.setSegmentFromPosition(position);
 
         this.tempBox.makeEmpty();
 
-        this.tempBox.expandByPoint( playerModel.segment.start );
-        this.tempBox.expandByPoint( playerModel.segment.end );
+        this.tempBox.expandByPoint( character.segment.start );
+        this.tempBox.expandByPoint( character.segment.end );
 
-        this.tempBox.min.addScalar( - playerModel.radius );
-        this.tempBox.max.addScalar( playerModel.radius );
+        this.tempBox.min.addScalar( - character.radius );
+        this.tempBox.max.addScalar( character.radius );
 
 
         this.collider.geometry.boundsTree.shapecast( {
@@ -147,14 +163,24 @@ export class CollisionDetector extends Subject{
                 const triPoint = this.tempVector;
                 const capsulePoint = this.tempVector2;
 
-                const distance = tri.closestPointToSegment( playerModel.segment, triPoint, capsulePoint );
-                if ( distance < playerModel.radius) {
+                const distance = tri.closestPointToSegment( character.segment, triPoint, capsulePoint );
+                if ( distance < character.radius) {
 
-                    const depth = playerModel.radius - distance;
+                    const depth = character.radius - distance;
                     const direction = capsulePoint.sub( triPoint ).normalize();
 
-                    playerModel.segment.start.addScaledVector( direction, depth );
-                    playerModel.segment.end.addScaledVector( direction, depth );
+                    character.segment.start.addScaledVector( direction, depth );
+                    character.segment.end.addScaledVector( direction, depth );
+
+                    // solution for clipping through ground and getting stuck
+                    this.tempVector2.y = triPoint.y - character.segment.end.y;
+
+                    if(character.segment.end.y < triPoint.y && character.segment.start.y > triPoint.y){
+                        character.segment.start.add(new THREE.Vector3(0, this.tempVector2.y, 0));
+                        character.segment.end.add(new THREE.Vector3(0, this.tempVector2.y, 0));
+                    }
+                    // solution for clipping through ground and getting stuck
+
                     return false;
                 }
             }
@@ -162,15 +188,15 @@ export class CollisionDetector extends Subject{
         } );
 
         const newPosition = this.tempVector;
-        newPosition.copy( playerModel.segment.end );
-        newPosition.y -= playerModel.radius;
+        newPosition.copy( character.segment.end );
+        newPosition.y -= character.radius;
 
         const deltaVector = this.tempVector2;
         deltaVector.subVectors( newPosition, position );
 
-        playerModel.onGround = playerModel.onCollidable || deltaVector.y > Math.abs( deltaTime * playerModel.velocity.y * 0.25);
+        character.onGround = character.onCollidable || deltaVector.y > Math.abs( deltaTime * character.velocity.y * 0.25);
         //console.log(playerModel.onGround)
-        playerModel.onCollidable = false;
+        character.onCollidable = false;
 
         const offset = Math.max( 0.0, deltaVector.length() - 1e-5 );
         deltaVector.normalize().multiplyScalar( offset );
