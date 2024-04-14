@@ -64,11 +64,11 @@ def upgrade():
     # Populate the db with initial blueprints
     print("INFO Inserting default blueprints")
     # We need to do this with raw SQL as SQLAlchemy already knows there's a new column, but the DB doesn't have that column yet (as it's in a later migration)
-    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (0, 'Altar', 'The main hub of the island', 0)")
-    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (1, 'Mine', 'The mine of them all', 200)")
-    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (2, 'Tower', 'A simple defense tower', 300)")
-    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (3, 'Fuse Table', 'Fuse crystals to create a gem', 500)")
-    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (4, 'Warrior Hut', 'Spawns minons to attack enemies', 1000)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (1, 'Altar', 'The main hub of the island', 0)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (2, 'Mine', 'The mine of them all', 200)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (3, 'Tower', 'A simple defense tower', 300)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (4, 'Fuse Table', 'Fuse crystals to create a gem', 500)")
+    op.execute("INSERT INTO blueprint (id, name, description, cost) VALUES (5, 'Warrior Hut', 'Spawns minons to attack enemies', 1000)")
 
 
 def downgrade():

@@ -83,6 +83,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.chat_message as chat_message_module
     import src.resource.placeable.placeable as placeable_module
     import src.resource.entity as entity_module
+    import src.resource.time as time_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -103,6 +104,7 @@ def attach_resources(app: Flask) -> None:
     chat_message_module.attach_resources(app)
     placeable_module.attach_resource(app)
     entity_module.attach_resource(app)
+    time_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:
