@@ -133,6 +133,8 @@ class App {
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
         this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
+        this.playerInfo.addEventListener("updateUsername", this.hud.updateUsername.bind(this.hud));
+
 
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
         this.inputManager.addKeyDownEventListener(interactKey, this.spellCaster.interact.bind(this.spellCaster));

@@ -55,6 +55,10 @@ export class HUD {
         $('#account-bar-level').html('Level: ' + event.detail.level);
     }
 
+    updateUsername(event){
+        $('#account-bar-name').html(event.detail.username);
+    }
+
     updateXP(event){
         var percentage = ((event.detail.xp / event.detail.threshold) * 100);
 

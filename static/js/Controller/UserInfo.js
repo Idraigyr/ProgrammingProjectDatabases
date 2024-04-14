@@ -43,7 +43,6 @@ export class UserInfo extends Subject{
 
             this.userID = response.entity.player_id;
             this.username = response2.username;
-            console.log(`username: ${this.username}`);
 
 
             this.islandID = response.entity.island_id;
@@ -79,6 +78,8 @@ export class UserInfo extends Subject{
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.dispatchEvent(this.createUpdateXpEvent());
         this.dispatchEvent(this.createUpdateXpTresholdEvent());
+        this.dispatchEvent(this.createUpdateUsernameEvent());
+
     }
 
     calculateHealthBonus(){
@@ -176,5 +177,8 @@ export class UserInfo extends Subject{
 
     createUpdateXpEvent() {
         return new CustomEvent("updateXp", {detail: {xp: this.experience, threshold: this.xpTreshold}});
+    }
+    createUpdateUsernameEvent() {
+        return new CustomEvent("updateUsername", {detail: {username: this.username}});
     }
 }
