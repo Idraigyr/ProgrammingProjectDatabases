@@ -6,6 +6,7 @@ import {convertWorldToGridPosition} from "../helpers.js";
 
 export class SpellCaster extends Subject{
     #wizard;
+    #currentObject;
     constructor(params) {
         super(params);
         this.#wizard = null;
@@ -15,11 +16,19 @@ export class SpellCaster extends Subject{
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
-        this.currentObject = null;
+        this.#currentObject = null;
+        this.previousSelectedPosition = null;
     }
 
     set wizard(wizard){
         this.#wizard = wizard;
+    }
+    set currentObject(object){
+        this.#currentObject = object;
+        this.previousSelectedPosition = object?.position.clone();
+    }
+    get currentObject(){
+        return this.#currentObject;
     }
 
     /**

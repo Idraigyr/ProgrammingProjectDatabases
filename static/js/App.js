@@ -162,6 +162,15 @@ class App {
                 // If there is an object selected, drop it
                 // TODO: more advanced
                 if(this.spellCaster.currentObject){
+                    // Get selected building
+                    const building = this.spellCaster.currentObject;
+                    // Update occupied cells
+                    const pos = event.detail.params.position;
+                    const island = this.worldManager.world.getIslandByPosition(pos);
+                    island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
+                    // Occupy cell
+                    building.cellIndex = island.occupyCell(pos, building.dbType);
+                    // Remove the object from spellCaster
                     this.spellCaster.currentObject.ready = true;
                     this.spellCaster.currentObject = null;
                     // Update static mesh

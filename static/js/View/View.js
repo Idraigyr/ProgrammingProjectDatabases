@@ -49,7 +49,6 @@ export class IView {
         //this.boundingBox.setFromObject(this.charModel, true);
     }
     updateMinimumY(event){
-        console.log("updateMinimumEvent: ", event);
         let y = event.detail.minY;
         if(y === undefined) return y;
         // Create bounding box
