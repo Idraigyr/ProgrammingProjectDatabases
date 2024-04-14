@@ -277,9 +277,9 @@ export class MinionController{
         //TODO: temp solution
         if(islands.length > 1){
             this.paths.push(
-                this.calculatePath(
+                this.calculatePath( //TODO: change indeces depending on starting position and team
                     this.#worldMap.grid[this.calculateIndexFromPosition(new THREE.Vector3(-90,0,-80))],
-                    this.#worldMap.grid[Math.floor((this.#worldMap.grid.length-1)/2)] // this.#worldMap.grid.find((node) => node.value === buildTypes.getNumber("altar_building"))
+                    this.#worldMap.grid[Math.floor((this.#worldMap.grid.length-1)/2)] // this.#worldMap.grid.find((node) => node.value === buildTypes.getNumber("altar_building")) -> not used temporarily since broken db
                 )
             );
         }
