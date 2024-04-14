@@ -18,4 +18,9 @@ export class Mine extends Placeable{
         obj.mine_type = "crystal";
         return obj;
     }
+    formatPUTData(userInfo) {
+        const obj = super.formatPUTData(userInfo);
+        obj.mine_type = "crystal";
+        return obj;
+    }
 }

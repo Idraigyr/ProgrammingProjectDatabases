@@ -43,6 +43,11 @@ export class Placeable extends Entity{
         }
         return obj;
     }
+    formatPUTData(userInfo){
+       const obj = this.formatPOSTData(userInfo);
+       obj.placeable_id = this.id;
+       return obj;
+    }
 
     get type(){
         return "building";

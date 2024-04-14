@@ -109,7 +109,7 @@ def setup_jwt(app: Flask):
     @app.jwt.expired_token_loader
     def custom_expired_token_loader(jwt_header, jwt_data):
         _jwt_log.debug(f"Expired token (log back in): {jwt_header}, {jwt_data}")
-        return redirect("/login", code=401)
+        # return redirect("/landing", code=401)
         return jsonify(
             {'status': 'error', 'message': 'Token has expired (log back in)', 'type': 'jwt_token_expired'}), 401
 

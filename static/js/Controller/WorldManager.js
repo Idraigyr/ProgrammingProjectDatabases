@@ -216,6 +216,32 @@ export class WorldManager{
             console.error(err);
         }
     }
+    sendPUT(uri, entity, retries){
+        try {
+            $.ajax({
+                url: `${API_URL}/${uri}/${entity.dbType}`,
+                type: "PUT",
+                data: JSON.stringify(entity.formatPUTData(this.userInfo)),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                if (retries > 0){
+                    this.sendPUT(uri, entity, retries - 1);
+                } else {
+                    throw new Error(`Could not send PUT request for building: Error: ${textStatus} ${errorThrown}`);
+                    }
+            });
+        } catch (err){
+            console.error(err);
+        }
+    }
 
     async updateGems(){
 

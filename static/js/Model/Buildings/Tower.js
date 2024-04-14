@@ -15,4 +15,9 @@ export class Tower extends Placeable{
         obj.tower_type = "magic";
         return obj;
     }
+    formatPUTData(userInfo){
+        const obj = super.formatPUTData(userInfo);
+        obj.tower_type = "magic";
+        return obj;
+    }
 }

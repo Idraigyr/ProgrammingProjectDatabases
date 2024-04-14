@@ -18,4 +18,9 @@ export class Tree extends Placeable{
         obj.prop_type = "tree";
         return obj;
     }
+    formatPUTData(userInfo){
+        const obj = super.formatPUTData(userInfo);
+        obj.prop_type = "tree";
+        return obj;
+    }
 }

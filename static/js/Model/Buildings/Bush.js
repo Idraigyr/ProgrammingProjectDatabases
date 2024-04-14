@@ -18,4 +18,9 @@ export class Bush extends Placeable{
         obj.prop_type = "bush";
         return obj;
     }
+    formatPUTData(userInfo){
+        const obj = super.formatPUTData(userInfo);
+        obj.prop_type = "bush";
+        return obj;
+    }
 }

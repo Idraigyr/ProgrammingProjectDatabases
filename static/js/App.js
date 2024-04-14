@@ -9,7 +9,7 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import {OrbitControls} from "three-orbitControls";
-import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
+import {API_URL, islandURI, playerURI, placeableURI, postRetries} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {interactKey, subSpellKey} from "./configs/Keybinds.js";
@@ -179,7 +179,7 @@ class App {
                     this.collisionDetector.generateColliderOnWorker();
                     // Send put request to the server if persistence = true
                     if(this.worldManager.persistent){
-
+                        this.worldManager.sendPUT(placeableURI, building, postRetries);
                     }
                     return;
                 }
