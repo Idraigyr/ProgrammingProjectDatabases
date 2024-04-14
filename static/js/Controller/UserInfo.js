@@ -1,6 +1,6 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 
@@ -39,8 +39,13 @@ export class UserInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${playerURI}`);
+            const response2 = await $.getJSON(`${API_URL}/${playerProfileURI}`);
 
             this.userID = response.entity.player_id;
+            this.username = response2.username;
+            console.log(`username: ${this.username}`);
+
+
             this.islandID = response.entity.island_id;
             this.unclockedBuildings = response.blueprints;
             this.gems = response.gems;
