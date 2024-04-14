@@ -48,6 +48,23 @@ export class IView {
         this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
         //this.boundingBox.setFromObject(this.charModel, true);
     }
+    updateMinimumY(event){
+        console.log("updateMinimumEvent: ", event);
+        let y = event.detail.minY;
+        if(y === undefined) return y;
+        // Create bounding box
+        let box = new THREE.Box3().setFromObject(this.charModel);
+        // Get current minimum y
+        let minY = box.min.y;
+        // Calculate the difference
+        let diff = y - minY;
+        // Move the model
+        this.charModel.position.y += diff;
+        // Update the bounding box
+        this.boundingBox.translate(new THREE.Vector3(0, diff, 0));
+        // Return current y value
+        return this.charModel.position.y;
+    }
 }
 
 /**

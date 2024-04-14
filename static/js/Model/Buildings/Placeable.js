@@ -83,6 +83,7 @@ export class Placeable extends Entity{
         return true;
     }
 
+    // TODO: move it entity class and add degrees as parameter (default 90)
     rotate(){
         this.rotation += 90;
         this.rotation %= 360;

@@ -173,6 +173,7 @@ export class Factory{
 
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("updateMinY", view.updateMinimumY.bind(view));
         this.viewManager.addPair(model, view);
 
         //TODO: withTimer:

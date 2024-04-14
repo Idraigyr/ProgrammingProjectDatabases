@@ -112,6 +112,8 @@ export class SpellCaster extends Subject{
                     convertWorldToGridPosition(pos);
                     // Set the position of the object
                     this.currentObject.position = pos;
+                    // Set minimum y value
+                    this.currentObject.setMinimumY(0);
                 }
             }
         }
