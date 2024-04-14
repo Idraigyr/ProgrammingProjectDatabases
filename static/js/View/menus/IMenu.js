@@ -85,8 +85,10 @@ export class CollectMenu extends ButtonsMenu{
         const pickaxeDiv = document.createElement("div");
         const loadingBarContainer = document.createElement("div");
         const loadingBarDiv = document.createElement("div");
+        const crystalAmountContainer = document.createElement("div");
         const crystalAmountDiv = document.createElement("div");
-        crystalAmountDiv.classList.add("crystal-collect-meter");
+        crystalAmountContainer.classList.add("crystal-meter-container");
+        crystalAmountDiv.classList.add("crystal-meter"); //TODO: change css styling for this div so that it looks like a meter for the amount of crystals collected so far (+number in the middle of the meter), with this is loading-bar necessary?
         pickaxeDiv.classList.add("pickaxe");
         loadingBarContainer.classList.add("loading-bar-container");
         loadingBarDiv.classList.add("loading-bar");
@@ -97,7 +99,8 @@ export class CollectMenu extends ButtonsMenu{
         buttonDiv.appendChild(pickaxeDiv);
         buttonDiv.appendChild(loadingBarContainer);
         loadingBarContainer.appendChild(loadingBarDiv);
-        buttonDiv.appendChild(crystalAmountDiv);
+        crystalAmountContainer.appendChild(crystalAmountDiv);
+        buttonDiv.appendChild(crystalAmountContainer);
 
         return element;
     }

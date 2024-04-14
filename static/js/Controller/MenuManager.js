@@ -374,6 +374,10 @@ export class MenuManager extends Subject{
         this.blockInputCallback.activate();
     }
 
+    /**
+     * arrange menus in preparation for rendering
+     * @param {{name: "AltarMenu" | "BuildMenu" | "FusionTableMenu"} | {name: "TowerMenu", items: Item[]} | {name: "MineMenu", items: Item[], crystals: number, maxCrystals: number}} params
+     */
     #arrangeMenus(params){
         // arrange the menus in the container
         const icons = [];
@@ -403,6 +407,9 @@ export class MenuManager extends Subject{
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
+                const meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
+                meter.style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
+                meter.innerText = `${params.crystals}/${params.maxCrystals}`;
                 // show correct Gems based on received params
                 for(let i = 0; i < params.items.length; i++){
                     icons.push(this.createSlotIcon({

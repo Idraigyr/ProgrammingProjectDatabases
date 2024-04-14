@@ -172,9 +172,19 @@ class App {
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
-            const items = []; //TODO: fill with equipped gems of selected building if applicable
-            console.log(buildTypes.getMenuName(buildingNumber));
-            this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber), items: items});
+
+            let params = {name: buildTypes.getMenuName(buildingNumber)}
+
+            if(buildingNumber === buildTypes.getNumber("tower_building") || buildingNumber === buildTypes.getNumber("mine_building")){
+                params.items = []; //TODO: fill with equipped gems of selected building if applicable
+
+            }
+            if(buildingNumber === buildTypes.getNumber("mine_building")){
+                params.crystals = building.crystals;
+                params.maxCrystals = building.maxCrystals;
+            }
+
+            this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
         });

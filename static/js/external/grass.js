@@ -156,7 +156,6 @@ function createGrassMetrics (params) {
         return {x: Math.random() * width - width / 2 + position.x, z: Math.random() * length - length / 2 + position.z}
     }
   }
-  console.log('bladeCount', bladeCount);
   for (let i = 0; i < bladeCount; i++) {
     const {x, z} = generateCoords(...generateCoordsParams);
 
@@ -164,10 +163,6 @@ function createGrassMetrics (params) {
 
     const uv = [convertRange(pos.x, surfaceMinX, surfaceMaxX, 0, 1), convertRange(pos.z, surfaceMinZ, surfaceMaxZ, 0, 1)];
 
-    if(i === 3587384){
-        console.log('here');
-        console.log('positions', positions.length);
-    }
     const blade = generateBlade(pos, i * VERTEX_COUNT, uv);
     blade.verts.forEach(vert => {
     positions.push(...vert.pos);
@@ -176,7 +171,6 @@ function createGrassMetrics (params) {
     });
     blade.indices.forEach(indice => indices.push(indice));
   }
-  console.log('positions', positions.length);
   return { positions, uvs, indices, colors };
 }
 
