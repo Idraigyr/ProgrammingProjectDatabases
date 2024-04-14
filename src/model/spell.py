@@ -4,8 +4,8 @@ from sqlalchemy.orm import Mapped
 
 
 association_table = current_app.db.Table('player_spells', current_app.db.Model.metadata,
-    Column('player_id', current_app.db.Integer,ForeignKey('player.user_profile_id'), primary_key=True),
-    Column('spell_id', current_app.db.Integer, ForeignKey('spell.id'), primary_key=True)
+    Column('player_id', current_app.db.Integer,ForeignKey('player.user_profile_id', ondelete='CASCADE'), primary_key=True),
+    Column('spell_id', current_app.db.Integer, ForeignKey('spell.id', ondelete='CASCADE'), primary_key=True)
 )
 
 class Spell(current_app.db.Model):
