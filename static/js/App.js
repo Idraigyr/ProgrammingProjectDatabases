@@ -272,6 +272,8 @@ class App {
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
+        // Load info for building menu. May be extended to other menus
+        await this.menuManager.fetchInfoFromDatabase();
         this.menuManager.createMenus();
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";

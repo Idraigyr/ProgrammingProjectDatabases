@@ -9,4 +9,6 @@ export const placeableURI = 'api/placeable';
 
 export const islandURI = 'api/island';
 
+export const blueprintURI = 'api/blueprint';
+
 export const postRetries = 3;

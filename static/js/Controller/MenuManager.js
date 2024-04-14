@@ -18,6 +18,7 @@ import {
     StatItem
 } from "../View/menus/MenuItem.js";
 import {Subject} from "../Patterns/Subject.js";
+import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 
 export class MenuManager extends Subject{
     constructor(params) {
@@ -32,6 +33,7 @@ export class MenuManager extends Subject{
         this.isSlotItem = false;
         this.dropElement = null;
         this.slot = null;
+        this.infoFromDatabase = {};
 
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
@@ -217,7 +219,9 @@ export class MenuManager extends Subject{
             id: params.item.getItemId(),
             name: params.item.getDisplayName(),
             belongsIn: params.item.belongsIn,
-            icon: params.icon
+            icon: params.icon,
+            description: params.description,
+            extra: params.extra
         });
 
         if(menuItem instanceof BuildingItem){
@@ -282,32 +286,53 @@ export class MenuManager extends Subject{
     }
 
     #createBuildingItems(){
+        // TODO: apart config from code?
+        const towerName = "Tower";
+        const treeName = "Tree";
+        const bushName = "Bush";
+        const mineName = "Mine";
+        const fusionTableName = "Fuse Table";
+        const warriorHutName = "Warrior hut";
+
         const items = [
             {
                 item: {name: "tower", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Tower", getDisplayName: () => "Tower"},
-                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime}
             },
             {
                 item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
-                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.buildTime}
             },
             {
                 item: {name: "bush", id: 2, belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "Bush"},
-                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.buildTime}
             },
             {
                 item: {name: "mine", id: 3, belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "Mine"},
-                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.buildTime}
             },
             {
                 item: {name: "fusion table", id: 4, belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "Fusion table"},
-                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.buildTime}
             },
             {
                 item: {name: "warrior hut", id: 5, belongsIn: "CombatBuildingsMenu", getItemId: () => "WarriorHut", getDisplayName: () => "Warrior hut"},
-                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.buildTime}
             }
         ];
+
         this.addItems(items);
     }
 
@@ -411,6 +436,26 @@ export class MenuManager extends Subject{
                 this.#moveMenu("ResourceBuildingsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");
                 break;
+        }
+    }
+    async fetchInfoFromDatabase(){
+        // Get info for build menu
+        try {
+            this.infoFromDatabase["buildings"] = [];
+            // GET request to server
+            const response = await $.getJSON(`${API_URL}/${blueprintURI}/list`);
+            for(const blueprint of response){
+                // Extract info from response
+                this.infoFromDatabase["buildings"].push({
+                    id: blueprint.id,
+                    name: blueprint.name,
+                    description: blueprint.description,
+                    cost: blueprint.cost,
+                    buildTime: blueprint.buildtime
+                });
+            }
+        } catch (e){
+            console.error("Error in MenuManager: ", e);
         }
     }
 }
