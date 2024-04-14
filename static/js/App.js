@@ -166,7 +166,7 @@ class App {
                 //TODO: logic for moving the building.
             }
         });
-        this.spellCaster.addEventListener("interact", (event) => {
+        this.spellCaster.addEventListener("interact", async (event) => {
             // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
@@ -175,13 +175,18 @@ class App {
 
             let params = {name: buildTypes.getMenuName(buildingNumber)}
 
+            //TODO: move if statements into their own method of the placeable class' subclasses
             if(buildingNumber === buildTypes.getNumber("tower_building") || buildingNumber === buildTypes.getNumber("mine_building")){
                 params.items = []; //TODO: fill with equipped gems of selected building if applicable
 
             }
+
+            //if the building is a mine, forward stored crystal information
             if(buildingNumber === buildTypes.getNumber("mine_building")){
-                params.crystals = building.crystals;
+                const currentTime = new Date(await this.playerInfo.getCurrentTime());
+                params.crystals = building.checkStoredCrystals(currentTime);
                 params.maxCrystals = building.maxCrystals;
+                params.rate = building.productionRate;
             }
 
             this.menuManager.renderMenu(params);
@@ -242,6 +247,7 @@ class App {
      * @returns {Promise<void>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
+        console.log( await this.playerInfo.getCurrentTime());
         const progressBar = document.getElementById('progress-bar');
         //TODO: try to remove awaits? what can we complete in parallel?
         progressBar.labels[0].innerText = "retrieving user info...";
@@ -273,6 +279,8 @@ class App {
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+
+        this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
 
         this.menuManager.addEventListener("build", (event) => {
             this.menuManager.hideMenu();

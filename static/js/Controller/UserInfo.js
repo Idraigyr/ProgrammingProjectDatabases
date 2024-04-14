@@ -1,6 +1,6 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 
@@ -71,6 +71,18 @@ export class UserInfo extends Subject{
         } catch (err){
             console.error(err);
         }
+    }
+
+    async getCurrentTime(){
+        try {
+            // GET request to server
+            const response = await $.getJSON(`${API_URL}/${timeURI}`);
+            console.log(response.time);
+            return response.time;
+        } catch (err){
+            console.error(err);
+        }
+
     }
 
     advertiseCurrentCondition(){

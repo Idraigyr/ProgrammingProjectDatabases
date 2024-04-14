@@ -22,7 +22,7 @@ export class WorldManager{
 
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
 
-        this.persistent = true;
+        this.persistent = false;
     }
 
     async importWorld(islandID){
@@ -78,6 +78,7 @@ export class WorldManager{
             console.error(e);
         }
 
+        this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
         this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
     }
 
@@ -120,9 +121,19 @@ export class WorldManager{
         //add a enemy warrior hut to the island
         // let hut = this.factory.createBuilding({buildingName: "Tower", position: position, withTimer: false});
         // island.addBuilding(hut);
-        this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
+        // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
         this.world.spawners.push(new MinionSpawner({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z))}));
         this.collisionDetector.generateColliderOnWorker();
+    }
+
+    async collectCrystals(){
+        const building = this.world.getBuildingByPosition(this.currentPos);
+        console.log("collect from min - worldManager", building);
+        if(building){
+            this.userInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.userInfo.getCurrentTime())));
+        } else {
+            console.error("no building found at that position");
+        }
     }
 
 
