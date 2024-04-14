@@ -16,6 +16,7 @@ export class Factory{
         this.viewManager = params.viewManager;
         this.assetManager = params.assetManager;
         this.timerManager = params.timerManager;
+        this.collisionDetector = params.collisionDetector;
     }
 
     /**
@@ -216,6 +217,7 @@ export class Factory{
             timer.addCallback(() => {
                 this.scene.remove(watch.charModel);
                 model.ready = true;
+                this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
             }
             )
         }
