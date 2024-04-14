@@ -1,7 +1,7 @@
 import {
     AltarMenu,
     BaseMenu,
-    BuildMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu,
+    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu,
     HotbarMenu,
     ListMenu, MineMenu,
     PageMenu, ResourceBuildingsMenu,
@@ -59,6 +59,9 @@ export class MenuManager extends Subject{
         if(menu instanceof BuildMenu){
             menu.element.querySelector(".sub-menu-container").addEventListener("click", this.dispatchBuildEvent.bind(this));
         }
+        if(menu instanceof CollectMenu){
+            menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
+        }
         //if(menu instanceof FusionTableMenu){
         //    menu.element.querySelector(".fuse-button").addEventListener("click", () => console.log("fuse button clicked"));
         //}
@@ -96,6 +99,10 @@ export class MenuManager extends Subject{
         });
     }
 
+    createCollectEvent() {
+        return new CustomEvent("collect");
+    }
+
     createBuildEvent(buildingId){
         return new CustomEvent("build", {
             detail: {
@@ -108,6 +115,11 @@ export class MenuManager extends Subject{
         if(event.target.classList.contains("build-item")){
             this.dispatchEvent(this.createBuildEvent(event.target.id));
         }
+    }
+
+    dispatchCollectEvent(event){
+        console.log("Collecting resources");
+        this.dispatchEvent(this.createCollectEvent());
     }
 
     drag(event){
@@ -328,7 +340,7 @@ export class MenuManager extends Subject{
 
     //TODO: refactor this? maybe make create MenuItems less hard coded/more dynamic
     createMenus(){
-        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu]);
+        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu]);
         this.#createStatMenuItems();
         this.#createBuildingItems();
     }
@@ -390,6 +402,7 @@ export class MenuManager extends Subject{
             case "MineMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
+                this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
                 // show correct Gems based on received params
                 for(let i = 0; i < params.items.length; i++){
                     icons.push(this.createSlotIcon({
@@ -401,7 +414,6 @@ export class MenuManager extends Subject{
                 this.menus["GemInsertMenu"].addSlotIcons(icons);
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
-                //this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
                 break;
             case "FusionTableMenu":
                 //this.#moveMenu("InputMenu", "FuseTableMenu", "afterbegin");

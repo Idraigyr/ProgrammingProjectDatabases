@@ -17,7 +17,10 @@ export class IMenu {
     }
 
     addChild(position, child){
-        if(!this.allows.includes(child.name)) return;
+        if(!this.allows.includes(child.name)) {
+            console.error(`${child.name} is not allowed in ${this.name}`);
+            return;
+        }
         this.element.insertAdjacentElement(position, child.element);
     }
 
@@ -40,6 +43,73 @@ export class IMenu {
     get name(){
         return "Abstract Menu";
     }
+}
+
+export class ButtonsMenu extends IMenu{
+    constructor(params) {
+        params.classes = ["buttons-menu"];
+        super(params);
+        this.display = "flex";
+    }
+
+    createElement(params){
+        const element = document.createElement("div");
+        const titleBar = document.createElement("h1");
+        const buttonDiv = document.createElement("div");
+        buttonDiv.classList.add("buttons-container");
+        titleBar.classList.add("list-menu-title-bar");
+        titleBar.innerText = this.title;
+        element.appendChild(titleBar);
+        element.appendChild(buttonDiv);
+        element.id = this.name;
+        params.classes.forEach(c => element.classList.add(c));
+        element.style.display = "none";
+        element.draggable = false;
+        return element;
+    }
+
+    get name(){
+        return "ButtonsMenu";
+    }
+}
+
+export class CollectMenu extends ButtonsMenu{
+    constructor(params) {
+        super(params);
+    }
+
+    createElement(params) {
+        const element = super.createElement(params);
+        const buttonDiv = element.querySelector(".buttons-container");
+        const collectButton = document.createElement("button");
+        const pickaxeDiv = document.createElement("div");
+        const loadingBarContainer = document.createElement("div");
+        const loadingBarDiv = document.createElement("div");
+        const crystalAmountDiv = document.createElement("div");
+        crystalAmountDiv.classList.add("crystal-collect-meter");
+        pickaxeDiv.classList.add("pickaxe");
+        loadingBarContainer.classList.add("loading-bar-container");
+        loadingBarDiv.classList.add("loading-bar");
+        collectButton.innerText = "Collect";
+        crystalAmountDiv.innerText = "0";
+        collectButton.classList.add("collect-button");
+        buttonDiv.appendChild(collectButton);
+        buttonDiv.appendChild(pickaxeDiv);
+        buttonDiv.appendChild(loadingBarContainer);
+        loadingBarContainer.appendChild(loadingBarDiv);
+        buttonDiv.appendChild(crystalAmountDiv);
+
+        return element;
+    }
+
+    get name(){
+        return "CollectMenu";
+    }
+
+    get title(){
+        return "Crystals";
+    }
+
 }
 
 export class SlotMenu extends IMenu{
@@ -165,7 +235,10 @@ export class ListMenu extends IMenu{
     }
 
     addChild(position, child){
-        if(!this.allows.includes(child.type)) return;
+        if(!this.allows.includes(child.type)) {
+            console.error(`${child.name} is not allowed in ${this.name}`);
+            return;
+        }
         this.element.querySelector(".list-menu-ul").insertAdjacentElement(position, child.element);
     }
 
@@ -311,7 +384,10 @@ export class BaseMenu extends IMenu{
     }
 
     addChild(position, child){
-        if(!this.allows.includes(child.name)) return;
+        if(!this.allows.includes(child.name)) {
+            console.error(`${child.name} is not allowed in ${this.name}`);
+            return;
+        }
         this.element.querySelector(".sub-menu-container").insertAdjacentElement(position, child.element);
     }
 
@@ -399,7 +475,7 @@ export class MineMenu extends BaseMenu{
     constructor(params) {
         params.classes = ["mine-menu"];
         super(params);
-        this.allows = ["GemsMenu", "GemInsertMenu", "StatsMenu"];
+        this.allows = ["GemsMenu", "GemInsertMenu", "StatsMenu", "CollectMenu"];
     }
 
     get name(){
@@ -437,7 +513,10 @@ export class PageMenu extends IMenu{
     }
 
     addChild(position, child){
-        if(!this.allows.includes(child.name)) return;
+        if(!this.allows.includes(child.name)) {
+            console.error(`${child.name} is not allowed in ${this.name}`);
+            return;
+        }
         this.element.querySelector(".sub-menu-container").insertAdjacentElement(position, child.element);
     }
 
