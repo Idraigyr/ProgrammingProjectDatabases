@@ -104,6 +104,16 @@ export class SpellCaster extends Subject{
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {
                 position: this.checkRaycaster(),
                 rotation: this.#wizard.getCurrentSpell().previewRotates ? this.#wizard.phi : null}));
+            // If there is currentObject, update its position
+            if(this.currentObject){
+                let pos = this.checkRaycaster();
+                if(pos){
+                    // Correct the position of the object
+                    convertWorldToGridPosition(pos);
+                    // Set the position of the object
+                    this.currentObject.position = pos;
+                }
+            }
         }
         this.#wizard.updateCooldowns(deltaTime);
     }

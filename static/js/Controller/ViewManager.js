@@ -17,7 +17,6 @@ export class ViewManager extends Subject{
         };
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
-        document.addEventListener("changeViewAsset", this.changeViewAsset.bind(this));
     }
 
     renderSpellPreview(event){
@@ -82,6 +81,11 @@ export class ViewManager extends Subject{
             return found;
         }
     }
+
+    /**
+     * Change the view asset of the given model
+     * @param event {{detail: {model: Model, viewAsset: THREE.Object3D}}}
+     */
     changeViewAsset(event){
         // Model, ViewAsset
         let model = event.detail.model;
