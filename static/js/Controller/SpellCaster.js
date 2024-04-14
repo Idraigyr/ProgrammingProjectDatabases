@@ -15,6 +15,7 @@ export class SpellCaster extends Subject{
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
+        this.currentObject = null;
     }
 
     set wizard(wizard){
@@ -92,7 +93,9 @@ export class SpellCaster extends Subject{
 
     onSpellSwitch(event){
         this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
-        // check if you need to do something else
+        // TODO: add sound
+        // TODO: drop current object if it exists
+        this.currentObject = null;
     }
 
     update(deltaTime) {
@@ -158,7 +161,12 @@ export class SpellCaster extends Subject{
 
     //use as signal for secondary spell action (e.g. buildspell rotation)
     onRightClickDown(){
-
+        if(this.#wizard.getCurrentSpell() instanceof BuildSpell){
+            // If there is currentObject, rotate it
+            if(this.currentObject){
+                this.currentObject.rotate();
+            }
+        }
     }
 
     // just for completion, can't think of a use just yet

@@ -155,7 +155,6 @@ export class Factory{
      * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number}} params name of the building
      * @returns {Placeable} model of the building
      */
-    //TODO: change arguments => params (= more more extendable)
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
         correctRitualScale(asset);

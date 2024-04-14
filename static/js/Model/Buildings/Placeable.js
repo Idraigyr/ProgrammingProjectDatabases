@@ -82,4 +82,13 @@ export class Placeable extends Entity{
         popUp(this.level, this.maxMana, this.maxHealth);
         return true;
     }
+
+    rotate(){
+        this.rotation += 90;
+        this.rotation %= 360;
+        // Create quaternion from rotation
+        let quaternion = new THREE.Quaternion();
+        quaternion.setFromEuler(new THREE.Euler(0, this.rotation * Math.PI / 180, 0));
+        this.dispatchEvent(new CustomEvent("updateRotation", {detail: {rotation: quaternion}}));
+    }
 }

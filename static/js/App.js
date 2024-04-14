@@ -135,6 +135,7 @@ class App {
         this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
 
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
+        this.inputManager.addMouseDownListener(this.spellCaster.onRightClickDown.bind(this.spellCaster), "right");
         this.inputManager.addKeyDownEventListener(interactKey, this.spellCaster.interact.bind(this.spellCaster));
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
@@ -158,12 +159,27 @@ class App {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
             if(buildingNumber === buildTypes.getNumber("void")) return;
             if (buildingNumber === buildTypes.getNumber("empty")) {
+                // If there is an object selected, drop it
+                // TODO: more advanced
+                if(this.spellCaster.currentObject){
+                    this.spellCaster.currentObject.ready = true;
+                    this.spellCaster.currentObject = null;
+                    return;
+                }
                 //temp solution:
                 this.worldManager.currentPos = event.detail.params.position;
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
                 this.inputManager.exitPointerLock();
             } else {
-                //TODO: logic for moving the building.
+                /* Logic for moving building */
+                // There is already object
+                if(this.spellCaster.currentObject) return;
+                let selectedObject =  this.worldManager.world.getBuildingByPosition(event.detail.params.position);
+                // If no object selected or the object is not ready, return
+                if (!selectedObject || !selectedObject.ready) return;
+                // Select current object
+                this.spellCaster.currentObject = selectedObject;
+                this.spellCaster.currentObject.ready = false;
             }
         });
         this.spellCaster.addEventListener("interact", (event) => {
