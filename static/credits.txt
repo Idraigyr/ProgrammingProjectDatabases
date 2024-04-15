@@ -15,6 +15,8 @@ Potion-blue, Potion-red, Potion-Grey:
 https://www.vexels.com/png-svg/preview/307130/potion-hand-drawn-witch
 spell-cast-bolt, spell-cast-fire, spell-cast-ice, spell-cast-plant, double-ringed-orb_4:
 https://mythril-age.itch.io/mythril-age-spell-icons-v2
+Menu background
+https://www.shutterstock.com/video/clip-32550625-beige-low-poly-background-waving-motion-design
 -----------------------------------
 3d models:
 Floating island landing page:
