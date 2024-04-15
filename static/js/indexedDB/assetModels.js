@@ -1,5 +1,6 @@
 import {db} from './IndexedDB.js'
 import {assetPaths} from "../configs/ViewConfigs.js";
+import {API_URL} from "../configs/EndpointConfigs.js";
 
 /**
  * Function to store Models
@@ -81,5 +82,4 @@ export async function fetchAndStoreModels(baseURL){
     }
 }
 
-const baseURL = 'http://127.0.0.1:5000';
-fetchAndStoreModels(baseURL);
+fetchAndStoreModels(API_URL);
