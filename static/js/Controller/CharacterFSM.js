@@ -19,6 +19,10 @@ import {
  * Class to manage the player's states
  */
 export class PlayerFSM extends FiniteStateMachine{
+    /**
+     * Constructor for the player's state machine
+     * @param {{key: animation}} animations
+     */
     constructor(animations) {
         super();
         this.init();
@@ -40,7 +44,14 @@ export class PlayerFSM extends FiniteStateMachine{
     }
 }
 
+/**
+ * Class to manage the minion's states
+ */
 export class MinionFSM extends FiniteStateMachine{
+    /**
+     * Constructor for the minion's state machine
+     * @param {{key: animation}} animations
+     */
     constructor(animations) {
         super();
         this.init();

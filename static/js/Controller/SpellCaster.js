@@ -7,6 +7,11 @@ import {convertWorldToGridPosition} from "../helpers.js";
 export class SpellCaster extends Subject{
     #wizard;
     #currentObject;
+
+    /**
+     * Constructor for the SpellCaster
+     * @param {{raycaster: Raycaster}} params
+     */
     constructor(params) {
         super(params);
         this.#wizard = null;
@@ -20,13 +25,28 @@ export class SpellCaster extends Subject{
         this.previousSelectedPosition = null;
     }
 
+    /**
+     * Sets the wizard of the SpellCaster
+     * @param wizard
+     */
     set wizard(wizard){
         this.#wizard = wizard;
     }
+
+    /**
+     * sets the current object
+     * @param object
+     */
+    //TODO: move this?
     set currentObject(object){
         this.#currentObject = object;
         this.previousSelectedPosition = object?.position.clone();
     }
+
+    /**
+     * returns the current object
+     * @return {*}
+     */
     get currentObject(){
         return this.#currentObject;
     }
@@ -86,20 +106,41 @@ export class SpellCaster extends Subject{
     }
 
     //TODO: use for rotating buildings?
+    /**
+     * not used
+     * @param type
+     * @param params
+     * @return {CustomEvent<{type, params}>}
+     */
     createUpdateBuildSpellEvent(type, params){
         return new CustomEvent("updateBuildSpell", {detail: {type: type, params: params}});
     }
 
+    /**
+     * creates a custom event notifying a BuildSpell being cast
+     * @param type
+     * @param params
+     * @return {CustomEvent<{type, params}>}
+     */
     createCastBuildSpellEvent(type, params){
         return new CustomEvent("castBuildSpell", {detail: {type: type, params: params}});
     }
 
     //return correct cast position based on spelltype (is almost always position of wizard wand);
+    /**
+     * Get the position where the spell should be cast
+     * @param spell
+     * @return {*}
+     */
     getSpellCastPosition(spell){
         //TODO: change
         return this.#wizard.position.clone().add(new THREE.Vector3(0,2,0));
     }
 
+    /**
+     * change state for next spell
+     * @param event
+     */
     onSpellSwitch(event){
         this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
         // TODO: add sound
@@ -107,6 +148,10 @@ export class SpellCaster extends Subject{
         this.currentObject = null;
     }
 
+    /**
+     * update cooldowns and potential spellPreview
+     * @param deltaTime
+     */
     update(deltaTime) {
         if (this.#wizard?.getCurrentSpell()?.hasPreview) {
             //send to worldManager or viewManager
@@ -129,6 +174,10 @@ export class SpellCaster extends Subject{
         this.#wizard.updateCooldowns(deltaTime);
     }
 
+    /**
+     * dispatch event for interacting with the world
+     * @param event
+     */
     interact(event){
         const hit = this.checkRaycaster();
         if(hit){
@@ -136,6 +185,10 @@ export class SpellCaster extends Subject{
         }
     }
 
+    /**
+     * check for hit with raycaster
+     * @return {*|null}
+     */
     checkRaycaster(){
         const hit = this.raycaster.getFirstHitWithWorld(this.getSpellCastPosition(this.#wizard.getCurrentSpell()), new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation));
         if(hit.length > 0){
@@ -145,6 +198,9 @@ export class SpellCaster extends Subject{
     }
 
     //use as only signal for spells that can be cast instantly or use as signal to start charging a spell
+    /**
+     * cast spell on left click down
+     */
     onLeftClickDown(){
         if (this.#wizard.canCast()) {
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
@@ -181,6 +237,9 @@ export class SpellCaster extends Subject{
     }
 
     //use as signal for secondary spell action (e.g. buildspell rotation)
+    /**
+     * rotate object on right click down if build spell is equipped
+     */
     onRightClickDown(){
         if(this.#wizard.getCurrentSpell() instanceof BuildSpell){
             // If there is currentObject, rotate it

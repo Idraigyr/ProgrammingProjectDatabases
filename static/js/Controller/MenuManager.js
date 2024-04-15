@@ -19,6 +19,7 @@ import {
 } from "../View/menus/MenuItem.js";
 import {Subject} from "../Patterns/Subject.js";
 import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
+import {assert} from "../helpers.js";
 
 // loading bar
 
@@ -27,6 +28,10 @@ import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 export class MenuManager extends Subject{
     #ctorToDBNameList;
 
+    /**
+     * ctor for the MenuManager
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}}} params
+     */
     constructor(params) {
         super();
         this.container = params.container;
@@ -70,6 +75,10 @@ export class MenuManager extends Subject{
         return this.#ctorToDBNameList[ctorName];
     }
 
+    /**
+     * add callbacks to menu for interactive menus
+     * @param menu
+     */
     #addMenuCallbacks(menu){
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
@@ -117,13 +126,19 @@ export class MenuManager extends Subject{
       }, 100); // Total time to load bar
     }
 
+    /**
+     * exit the current menu
+     */
     exitMenu(){
-        //if the menu is the AltarMenu, return all gems from stakes menu to gems menu
         this.hideMenu(this.currentMenu);
     }
-    
 
+    /**
+     * switch to a different page in the current menu (only if currentMenu is a PageMenu)
+     * @param {{target: HTMLElement}} event
+     */
     switchPage(event){
+        assert(this.currentMenu instanceof PageMenu, "currentMenu is not a PageMenu");
         this.menus[this.currentMenu].allows.forEach(child => {
             if(child === event.target.dataset.name){
                 this.menus[child].render();
@@ -133,6 +148,10 @@ export class MenuManager extends Subject{
         });
     }
 
+    /**
+     * creates a custom addGem event
+     * @return {CustomEvent<{id: number | null}>}
+     */
     createAddGemEvent(){
         return new CustomEvent("addGem", {
             detail: {
@@ -141,6 +160,10 @@ export class MenuManager extends Subject{
         });
     }
 
+    /**
+     * creates a custom removeGem event
+     * @return {CustomEvent<{id: number | null}>}
+     */
     createRemoveGemEvent(){
         return new CustomEvent("removeGem", {
             detail: {
@@ -149,10 +172,19 @@ export class MenuManager extends Subject{
         });
     }
 
+    /**
+     * creates a custom collect event
+     * @return {CustomEvent<>}
+     */
     createCollectEvent() {
         return new CustomEvent("collect");
     }
 
+    /**
+     * creates a custom build event
+     * @param {number} buildingId
+     * @return {CustomEvent<{id: number}>}
+     */
     createBuildEvent(buildingId){
         return new CustomEvent("build", {
             detail: {
@@ -161,12 +193,20 @@ export class MenuManager extends Subject{
         });
     }
 
+    /**
+     * dispatches a build event
+     * @param {{target: HTMLElement}} event
+     */
     dispatchBuildEvent(event){
         if(event.target.classList.contains("build-item")){
             this.dispatchEvent(this.createBuildEvent(event.target.id));
         }
     }
 
+    /**
+     * dispatches a collect event
+     * @param event
+     */
     dispatchCollectEvent(event){
         console.log("Collecting resources");
         this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = "0%";
@@ -175,6 +215,10 @@ export class MenuManager extends Subject{
         this.dispatchEvent(this.createCollectEvent());
     }
 
+    /**
+     * drag event handler
+     * @param event
+     */
     drag(event){
         let id = event.target.id;
         this.isSlotItem = event.target.classList.contains("slot-item")
@@ -191,6 +235,10 @@ export class MenuManager extends Subject{
         this.dragElement = id;
     }
 
+    /**
+     * dragend event handler
+     * @param event
+     */
     dragend(event){
         if(!this.dragElement) return;
         if (!this.isSlotItem && !this.items[this.dragElement]?.equipped) {
@@ -200,6 +248,12 @@ export class MenuManager extends Subject{
         this.dropElement = null;
     }
 
+    /**
+     * get the parent menu of an element by class or null if container is reached and class is not found
+     * @param {HTMLElement} element
+     * @param {string} className
+     * @return {HTMLElement | null}
+     */
     getParentMenuByClass(element, className){
         let parent = element;
         while(true){
@@ -214,6 +268,10 @@ export class MenuManager extends Subject{
     }
 
     //is this optimised? can we do better?
+    /**
+     * dragover event handler
+     * @param event
+     */
     dragover(event){
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "list-menu").id;
@@ -223,6 +281,10 @@ export class MenuManager extends Subject{
         }
     }
 
+    /**
+     * drop event handler
+     * @param event
+     */
     drop(event){
         event.preventDefault();
         if(this.isSlotItem){
@@ -236,6 +298,10 @@ export class MenuManager extends Subject{
         this.items[this.dragElement].attachTo(this.menus[this.dropElement]);
     }
 
+    /**
+     * dragover event handler for slot menu
+     * @param event
+     */
     dragoverSlot(event){
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "slot-menu").id;
@@ -246,6 +312,11 @@ export class MenuManager extends Subject{
         }
     }
 
+    /**
+     * create a slot icon image HTMLElement
+     * @param {{itemId: number, src: string, id: number}} params
+     * @return {HTMLImageElement}
+     */
     createSlotIcon(params){
         const element = document.createElement("img");
         element.src = params.src;
@@ -257,6 +328,10 @@ export class MenuManager extends Subject{
     }
 
     //TODO: add line that says in what building it is in
+    /**
+     * drop event handler for slot menu
+     * @param event
+     */
     dropInSlot(event){
         event.preventDefault();
         this.menus[this.dropElement].addIcon(this.slot, this.createSlotIcon({
@@ -271,12 +346,20 @@ export class MenuManager extends Subject{
         this.dispatchEvent(this.createAddGemEvent());
     }
 
+    /**
+     * add multiple items to the menuManager
+     * @param {Object[]} items
+     */
     addItems(items){
         for(const item of items){
             this.addItem(item);
         }
     }
 
+    /**
+     * add a single item to the menuManager
+     * @param {{item: Item, icon: {src: string, width: number, height: number}, description: string, extra: Object}} params
+     */
     addItem(params){
         const menuItem = this.#createMenuItem({
             id: params.item.getItemId(),
@@ -295,6 +378,10 @@ export class MenuManager extends Subject{
         this.items[params.item.getItemId()] = menuItem;
     }
 
+    /**
+     * add a menuItem to the menu
+     * @param {MenuItem} item
+     */
     #addItemToMenu(item){
         this.menus[item.belongsIn].addChild("afterbegin", item);
     }
@@ -310,7 +397,7 @@ export class MenuManager extends Subject{
         });
     }
 
-    //untested
+    //untested - should not be necessary
     moveItem(itemId, fromMenu, toMenu){
         this.items.forEach(i => {
             if(i.id === itemId){
@@ -319,11 +406,23 @@ export class MenuManager extends Subject{
         });
     }
 
+    /**
+     * move a subMenu from one menu to another
+     * @param {ListMenu | SlotMenu | CollectMenu} child
+     * @param {BaseMenu | PageMenu} parent
+     * @param {"afterbegin" | "beforeend"} position
+     * @return {boolean}
+     */
     #moveMenu(child, parent, position){
         if(position !== "afterbegin" && position !== "beforeend") return false;
         this.menus[parent].addChild(position, this.menus[child]);
     }
 
+    /**
+     * create a menuItem based on the item
+     * @param item
+     * @return {StatItem|DecorationBuildingItem|null|ResourceBuildingItem|SpellItem|GemItem|CombatBuildingItem}
+     */
     #createMenuItem(item){
         if(item.belongsIn === "SpellsMenu"){
             return new SpellItem(item);
@@ -341,6 +440,9 @@ export class MenuManager extends Subject{
         return null;
     }
 
+    /**
+     * create stat menu items
+     */
     #createStatMenuItems(){
         const stats = [];
         for(const stat in stats){
@@ -348,6 +450,9 @@ export class MenuManager extends Subject{
         }
     }
 
+    /**
+     * create building menu items
+     */
     #createBuildingItems(){
         // TODO: apart config from code?
         const towerName = "Tower";
@@ -399,6 +504,11 @@ export class MenuManager extends Subject{
         this.addItems(items);
     }
 
+    /**
+     * create a menu
+     * @param {string} ctor - corresponds to the name of a ctor which is a subclass of IMenu
+     * @return {boolean}
+     */
     #createMenu(ctor){
         const menu = new ctor({parent: this});
         if(this.menus[menu.name]) return false;
@@ -410,11 +520,18 @@ export class MenuManager extends Subject{
         return true;
     }
 
+    /**
+     * create menus, calls createMenu for each ctor in ctorList
+     * @param {string[]} ctorList
+     */
     #createMenus(ctorList){
         ctorList.forEach(ctor => this.#createMenu(ctor));
     }
 
     //TODO: refactor this? maybe make create MenuItems less hard coded/more dynamic
+    /**
+     * create menus and menu items
+     */
     createMenus(){
         this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
@@ -422,6 +539,10 @@ export class MenuManager extends Subject{
         this.#createBuildingItems();
     }
 
+    /**
+     * render a menu and call the blockInputCallback.block function
+     * @param {{name: string}} params
+     */
     renderMenu(params){
         console.log(params)
         if(!params.name) return;
@@ -436,6 +557,10 @@ export class MenuManager extends Subject{
         this.menus[params.name].render();
     }
 
+    /**
+     * hide the current menu and call the blockInputCallback.activate function
+     * @param {string} name
+     */
     hideMenu(name = this.currentMenu){
         if(!name) return;
         this.container.style.display = "none";
@@ -456,6 +581,9 @@ export class MenuManager extends Subject{
         this.blockInputCallback.activate();
     }
 
+    /**
+     * update the amount of crystals that appear in the CollectMenu
+     */
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
@@ -525,6 +653,11 @@ export class MenuManager extends Subject{
                 break;
         }
     }
+
+    /**
+     * fetch info from the database
+     * @return {Promise<void>}
+     */
     async fetchInfoFromDatabase(){
         // Get info for build menu
         try {

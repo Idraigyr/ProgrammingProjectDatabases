@@ -16,8 +16,8 @@ import {ItemManager} from "./ItemManager.js";
 import {MinionController} from "./MinionController.js";
 
 /**
- * Controller object that contains all the controllers (aka controller namespace)
- * @type {{AssetLoader: AssetLoader, WorldLoader: WorldManager, CharacterController: CharacterController, CameraManager: CameraManager, InputManager: InputManager}}
+ * Controller namespace
+ * @type {Readonly<{AssetManager: AssetManager, ItemManager: ItemManager, ViewManager: ViewManager, WorldManager: WorldManager, CameraManager: CameraManager, RaycastController: RaycastController, UserInfo: UserInfo, TimerManager: TimerManager, AssetLoader: AssetLoader, MinionController: MinionController, WorldLoader: WorldManager, CharacterController: CharacterController, BuildManager: BuildManager, MenuManager: MenuManager, CollisionDetector: CollisionDetector, InputManager: InputManager, SpellCaster: SpellCaster}>}
  */
 export const Controller = Object.freeze({
     AssetLoader: AssetLoader,

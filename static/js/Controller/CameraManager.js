@@ -33,9 +33,9 @@ export class CameraManager {
 
     /**
      * Calculate the zoom
-     * @param idealOffset ideal offset
-     * @param idealLookAt ideal look at
-     * @returns {THREE.Vector3} the zoom
+     * @param {THREE.Vector3} idealOffset ideal offset
+     * @param {THREE.Vector3} idealLookAt ideal look at
+     * @returns {THREE.Vector3} the zoom position
      */
     calculateZoom(idealOffset, idealLookAt){
         this.#collisionLine.start.copy(idealLookAt);
@@ -78,7 +78,7 @@ export class CameraManager {
 
     /**
      * Zoom in the camera
-     * @param amount amount to zoom in
+     * @param {number} amount amount to zoom in
      */
     zoomIn(amount){
         this.#zoom = Math.max(maxZoomIn, Math.min(minZoomIn, this.#zoom + amount));
@@ -86,7 +86,7 @@ export class CameraManager {
 
     /**
      * Transform a vector with the target's position and rotation
-     * @param vector vector to transform
+     * @param {THREE.Vector3} vector vector to transform
      * @returns {*} the transformed vector
      */
     transformVecWithTarget(vector){
@@ -97,7 +97,7 @@ export class CameraManager {
 
     /**
      * Update the camera configurations (e.g. position, zoom, look at, etc.)
-     * @param deltaTime time since last update
+     * @param {number} deltaTime time since last update
      */
     update(deltaTime){
         let idealOffset = this.transformVecWithTarget(new THREE.Vector3().copy(this.#offset));
@@ -109,13 +109,17 @@ export class CameraManager {
 
     }
 
+    /**
+     * Create an update camera position event
+     * @return {CustomEvent<{camera}>}
+     */
     createUpdatePositionEvent(){
         return new CustomEvent('updateCameraPosition', {detail: {camera: this.camera}})
     }
 
     /**
      * Set the target for the camera
-     * @param target new target
+     * @param {Entity} target new target
      */
     set target(target){
         this.#target = target;

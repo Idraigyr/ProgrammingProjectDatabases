@@ -24,14 +24,28 @@ export class RaycastController{
         this.raycaster.setFromCamera(new THREE.Vector2(0,0),event.detail.camera);
     }
 
+    /**
+     * NYI
+     * @param entities
+     */
     getFirstEntityHit(entities){
 
     }
 
+    /**
+     * NYI
+     * @param entities
+     */
     getAllEntityHits(entities){
 
     }
 
+    /**
+     * Returns the first hit with the world
+     * @param {THREE.Vector3} origin
+     * @param {THREE.Vector3} direction
+     * @return {*[]}
+     */
     getFirstHitWithWorld(origin, direction){
         const oldRayCopy = new THREE.Ray().copy(this.raycaster.ray);
         this.raycaster.ray.set(origin,direction);
@@ -43,7 +57,7 @@ export class RaycastController{
     /**
      * Returns extracted from models intersected objects
      * @param touchableObjects list with models
-     * @returns {[]} three js intersection objects
+     * @returns {*[]} three js intersection objects
      */
     getIntersects(touchableObjects){
         let extracted = []

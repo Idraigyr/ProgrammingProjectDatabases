@@ -2,6 +2,10 @@ import { Controller } from "./Controller.js";
 
 export class HUD {
 
+    /**
+     * Constructor for the HUD class
+     * @param {InputManager} inputManager
+     */
     constructor(inputManager) {
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.HealthBar = document.getElementsByClassName("HealthAmount")[0];
@@ -9,13 +13,6 @@ export class HUD {
         // Add event listener for spell slot index change
         inputManager.addEventListener("spellSlotChange", this.updateHoveredButton.bind(this));
         inputManager.addSettingButtonListener(this.toggleSettingsMenu.bind(this))
-        document.addEventListener("openBuildMenu", this.openBuildMenu.bind(this));
-        document.addEventListener("openAltarMenu", this.openAltarMenu.bind(this));
-        document.addEventListener("openFusionTableMenu", this.openFusionTableMenu.bind(this));
-        document.addEventListener("openTowerMenu", this.openTowerMenu.bind(this));
-        document.addEventListener("openMineMenu", this.openMineMenu.bind(this));
-        // Add message listener for menu's
-        window.addEventListener("message", this.messageListener.bind(this));
     }
 
     /**
@@ -35,30 +32,54 @@ export class HUD {
 
     }
 
+    /**
+     * Function to update the mana bar in HUD
+     * @param {{detail: {current: number, total: number}}} event
+     */
     updateManaBar(event){
         document.body.style.setProperty("--currentMana", event.detail.current);
         document.body.style.setProperty("--maxMana", event.detail.total);
         this.manaBar.textContent = `${event.detail.current}/${event.detail.total}`;
     }
 
+    /**
+     * Function to update the health bar in HUD
+     * @param {{detail: {current: number, total: number}}} event
+     */
     updateHealthBar(event){
         document.body.style.setProperty("--currentHP",event.detail.current);
         document.body.style.setProperty("--maxHP",event.detail.total);
         this.HealthBar.textContent = `${event.detail.current}/${event.detail.total}`;
     }
 
+    /**
+     * Function to update the crystals in HUD
+     * @param {{detail: {crystals: number}}} event
+     */
     updateCrystals(event){
         this.crystals.textContent = event.detail.crystals;
     }
 
+    /**
+     * Function to update the level in HUD
+     * @param {{detail: {level: number}}} event
+     */
     updateLevel(event){
         $('#account-bar-level').html('Level: ' + event.detail.level);
     }
 
+    /**
+     * Function to update the username in HUD
+     * @param {{detail: {username: string}}} event
+     */
     updateUsername(event){
         $('#account-bar-name').html(event.detail.username);
     }
 
+    /**
+     * Function to update the xp bar in HUD
+     * @param {{detail: {xp: number, treshold: number}}} event
+     */
     updateXP(event){
         var percentage = ((event.detail.xp / event.detail.threshold) * 100);
 
@@ -83,106 +104,19 @@ export class HUD {
 
     }
 
+    /**
+     * Function to toggle visibility of the settings menu
+     */
     toggleSettingsMenu() {
         const settingsMenu = document.querySelector(`.container`);
         settingsMenu.classList.toggle('hide');
     }
 
-    openMenu(buildType) {
-        switch(buildType) {
-            case "empty":
-                this.openBuildMenu();
-                break;
-            case "altar_building":
-                this.openAltarMenu();
-                break;
-            case "fuse_table":
-                this.openFusionTableMenu();
-                break;
-            case "tower_building":
-                this.openTowerMenu();
-                break;
-            case "mine_building":
-                this.openMineMenu();
-                break;
-        }
-
-    }
-
-    openBuildMenu()
-    {
-        const buildMenu = document.querySelector(`#buildMenu`);
-        buildMenu.classList.remove('hide');
-    }
-    closeBuildMenu()
-    {
-        const menu = document.querySelector(`#buildMenu`);
-        menu.classList.add('hide');
-    }
-    openAltarMenu()
-    {
-        const menu = document.querySelector(`#altarMenu`);
-        menu.classList.remove('hide');
-    }
-    closeAltarMenu()
-    {
-        const menu = document.querySelector(`#altarMenu`);
-        menu.classList.add('hide');
-    }
-    openFusionTableMenu()
-    {
-        const menu = document.querySelector(`#fusionTableMenu`);
-        menu.classList.remove('hide');
-    }
-    closeFusionTableMenu()
-    {
-        const menu = document.querySelector(`#fusionTableMenu`);
-        menu.classList.add('hide');
-    }
-    openTowerMenu()
-    {
-        const menu = document.querySelector(`#towerMenu`);
-        menu.classList.remove('hide');
-    }
-    closeTowerMenu()
-    {
-        const menu = document.querySelector(`#towerMenu`);
-        menu.classList.add('hide');
-    }
-    openMineMenu()
-    {
-        const menu = document.querySelector(`#mineMenu`);
-        menu.classList.remove('hide');
-    }
-    closeMineMenu()
-    {
-        const menu = document.querySelector(`#mineMenu`);
-        menu.classList.add('hide');
-    }
-    messageListener(event)
-    {
-        if(event.data === "closeBuildMenu")
-        {
-            this.closeBuildMenu();
-        }else if(event.data === "closeTowerMenu")
-        {
-            this.openBuildMenu();
-        }
-        else if (event.data === "closeAltarMenu")
-        {
-            this.closeAltarMenu();
-        }
-        else if (event.data === "closeFusionTableMenu")
-        {
-            this.closeFusionTableMenu();
-        }
-        else if (event.data === "closeMineMenu")
-        {
-            this.closeMineMenu();
-        }
-    }
-
-
+    /**
+     * Function to update the spell cooldown in HUD - currently unused
+     * @param spellCooldown
+     * @param spellSlotIndex
+     */
     useSpell(spellCooldown, spellSlotIndex) {
         const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
         usedSpel.parentElement.classList.add('onCooldown');
