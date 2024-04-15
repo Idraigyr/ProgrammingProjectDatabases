@@ -20,6 +20,10 @@ import {
 import {Subject} from "../Patterns/Subject.js";
 import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 
+// loading bar
+
+//simulateLoading();
+
 export class MenuManager extends Subject{
     #ctorToDBNameList;
 
@@ -94,6 +98,23 @@ export class MenuManager extends Subject{
         //if(menu instanceof FusionTableMenu){
         //    menu.element.querySelector(".fuse-button").addEventListener("click", () => console.log("fuse button clicked"));
         //}
+    }
+
+    // loading bar
+    simulateLoading() {
+      let progress = 0;
+      const progressBar = document.querySelector('.loading-bar');
+
+      const intervalId = setInterval(() => {
+        progress += 1; // Increase bar progress
+        progressBar.style.width = `${progress}%`;
+
+        if (progress >= 100) {
+          clearInterval(intervalId);
+          // Loading complete -> restart
+          simulateLoading();
+        }
+      }, 100); // Total time to load bar
     }
 
     exitMenu(){

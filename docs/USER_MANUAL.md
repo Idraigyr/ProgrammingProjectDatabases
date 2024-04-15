@@ -30,12 +30,20 @@ It contains the name of the game and buttons to register or login. Also, desktop
 # Register page
 ___
 
-TODO: Thomas
+Upon arrival of the landing page, the player has the option to create a new island, this will redirect the player to the register page.
+Here, the player can create a new account and get a new island by filling in the following fields:
+- Username
+- Password
+- First name
+- Last name
 
 # Login page
 ___
 
-TODO: Thomas
+If the player already has an account, they can log in by clicking "I have already eaten some gems" which refers to
+the crystals that grant magical abilities when eaten which the player already has if they have an island.
+For the login the player needs to fill in their username and password.
+There is also an option to log in with Google.
 
 # Index page
 ___
@@ -60,7 +68,8 @@ The index page is the main page of the game. It contains the following elements:
 
 ### Settings menu
 
-TODO: Thomas
+By clicking the top left icon, the player can open the settings menu. Here, the player can change
+some basic settings about the game, such audio, graphics and controls.
 
 ### Chat
 
@@ -97,23 +106,30 @@ TODO: Flynn
 # In-game menus
 ___
 
-TODO: Thomas
+The buildings can be accessed through menus. Here you can interact
+with the buildings and use their functionalities and upgrade them.
+Most buildings can be upgraded by using gems and enhancing their abilities.
+Opening a menu is done by default by pressing the `E` key when the player is
+aiming at the building.
 
 ### Altar menu
 
-...
+In the altar menu the player can configure their inventory and equip spells.
+They can also select stakes to start a multiplayer battle.
 
 ### Mine menu
 
-...
+The mine menu passively generates crystals for the player and also has
+a small chance of generating gems.
 
 ### Fusion table menu
 
-...
+In the fusion table the player can use crystals and fuse them into gems.
+This will take some time.
 
 ### Tower menu
 
-...
+The tower is used for combat and displays its health and damage.
 
 # Spells
 ___
@@ -127,7 +143,9 @@ TODO: Daria
 
 ## Currency
 
-TODO: Thomas
+The general currency in the game are the crystals. These can be mined by the player and are used
+for most actions in the game. There are also different gems with attributes that can be used to
+upgrade buildings.
 
 # Optimizations
 ___
