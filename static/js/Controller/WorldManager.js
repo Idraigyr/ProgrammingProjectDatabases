@@ -88,15 +88,20 @@ export class WorldManager{
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
-        if(placeable){
-            const requestIndex = this.postRequests.length;
-            if(this.persistent){
-                this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+        if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
+            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
+            if(placeable){
+                const requestIndex = this.postRequests.length;
+                if(this.persistent){
+                    this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+                }
+                this.collisionDetector.generateColliderOnWorker();
+                this.userInfo.changeXP(10);
+                this.userInfo.buildingsPlaced++;
+            } else {
+                console.error("failed to add new building at that position");
             }
-            this.collisionDetector.generateColliderOnWorker();
-        } else {
-            console.error("failed to add new building at that position");
+
         }
     }
 

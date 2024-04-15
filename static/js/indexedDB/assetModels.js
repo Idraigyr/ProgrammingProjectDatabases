@@ -13,10 +13,10 @@ async function storeModel(modelName, blob){
           name: modelName,
           content: blob
         });
-        console.log(`Image ${modelName} stored successfully.`);
+        console.log(`Model ${modelName} stored successfully.`);
         return blob; // Return the blob if successfully stored
   } catch (error) {
-        console.error(`Error storing image ${modelName}:`, error);
+        console.error(`Error storing model ${modelName}:`, error);
         return null; // Return null if there was an error
   }
 }
@@ -46,27 +46,40 @@ async function getModelUrl(modelName) {
 
 export async function fetchAndStoreModels(baseURL){
     for(const m in assetPaths){
-        if(m !== "cloud" && m !== "fire") {
-            const modelURL = `${baseURL}/static/assets/3d-models/${assetPaths[m]}`;
+        if(m === "Tower"){
+
+        } else if (m === "SkeletonArrow"){}
+        else if (m === "SkeletonCrossbow"){}
+        else if (m === "SkeletonBlade"){}
+        else if (m === "SkeletonAxe"){}
+        else if (m === "SkeletonStaff"){}
+        else if (m === "SkeletonShield"){}
+        else{
+            let path = assetPaths[m][0].slice(1);
+            const modelURL = `${baseURL}` + path;
             try {
-                let blobUrl = await getModelUrl(assetPaths[m]);
+                let blobUrl = await getModelUrl(path);
                 if (!blobUrl) {
                     const response = await fetch(modelURL);
                     const blob = await response.blob();
                     if (blob.size > 0) {
-                        await storeModel(assetPaths[m], blob); // Store the image and get the blob back
+                        await storeModel(path, blob); // Store the image and get the blob back
                         blobUrl = URL.createObjectURL(blob); // Create a blob URL
                     } else {
-                        console.error(`Received empty blob for model: ${assetPaths[m]}`);
+                        console.error(`Received empty blob for model: ${path}`);
                     }
                 }
                 if (blobUrl) {
-                    assetPaths[m] = blobUrl;
+                    assetPaths[m][0] = blobUrl;
                 }
             } catch (error) {
-                console.error('Error handling model:', assetPaths[m], error);
+                console.error('Error handling model:', path, error);
             }
         }
+
+
     }
 }
 
+const baseURL = 'http://127.0.0.1:5000';
+fetchAndStoreModels(baseURL);
