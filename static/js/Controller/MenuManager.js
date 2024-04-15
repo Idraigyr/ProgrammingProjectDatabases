@@ -33,6 +33,14 @@ export class MenuManager extends Subject{
         this.dropElement = null;
         this.slot = null;
 
+        this.collectParams = {
+            meter: null,
+            current: 0,
+            max: 0,
+            rate: 0
+        };
+        this.collectInterval = null;
+
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
     }
@@ -119,6 +127,9 @@ export class MenuManager extends Subject{
 
     dispatchCollectEvent(event){
         console.log("Collecting resources");
+        this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = "0%";
+        this.collectParams.current = 0;
+        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
         this.dispatchEvent(this.createCollectEvent());
     }
 
@@ -341,11 +352,13 @@ export class MenuManager extends Subject{
     //TODO: refactor this? maybe make create MenuItems less hard coded/more dynamic
     createMenus(){
         this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu]);
+        this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
     }
 
     renderMenu(params){
+        console.log(params)
         if(!params.name) return;
         if(this.currentMenu) this.hideMenu(this.currentMenu);
         this.blockInputCallback.block();
@@ -366,6 +379,10 @@ export class MenuManager extends Subject{
                     this.items[item.id].attachTo(this.menus["GemsMenu"]);
             });
         }
+        if(name === "MineMenu"){
+            clearInterval(this.collectInterval);
+            this.collectInterval = null;
+        }
         this.currentMenu = null;
         this.menus[name].hide();
         this.menus[name].allows.forEach(child => {
@@ -374,6 +391,16 @@ export class MenuManager extends Subject{
         this.blockInputCallback.activate();
     }
 
+    updateCrystals(){
+        this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
+        this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
+        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+    }
+
+    /**
+     * arrange menus in preparation for rendering
+     * @param {{name: "AltarMenu" | "BuildMenu" | "FusionTableMenu"} | {name: "TowerMenu", items: Item[]} | {name: "MineMenu", items: Item[], crystals: number, maxCrystals: number, rate: number}} params
+     */
     #arrangeMenus(params){
         // arrange the menus in the container
         const icons = [];
@@ -403,6 +430,14 @@ export class MenuManager extends Subject{
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
+                this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
+                this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
+
+                this.collectParams.current = params.crystals;
+                this.collectParams.max = params.maxCrystals;
+                this.collectParams.rate = params.rate;
+                this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
+
                 // show correct Gems based on received params
                 for(let i = 0; i < params.items.length; i++){
                     icons.push(this.createSlotIcon({

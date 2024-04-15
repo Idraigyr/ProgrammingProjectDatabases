@@ -33,14 +33,14 @@
     top: 20vh;
     left: 30vw;
     display: none;
-    background-image: url('/static/images/menu/listBackground.png');
+    background-image: url('/static/assets/images/menu/listBackground.png');
 }
 
 .close-button {
     position: relative;
     width: var(--close-button-size);
     height: var(--close-button-size);
-    background-image: url('/static/images/menu/exit.png');
+    background-image: url('/static/assets/images/menu/exit.png');
     background-color: transparent;
     background-size: cover;
     z-index: 12;
@@ -80,7 +80,7 @@
     width: 100%;
     height: var(--menu-header-height);
     background-color: #f9f3d2;
-    background-image: url('/static/images/menu/listBackground.png');
+    background-image: url('/static/assets/images/menu/listBackground.png');
     background-size: cover;
     display: flex;
     flex-direction: row;
@@ -114,7 +114,7 @@
 .play-button-container {
     position: relative;
     width: 100%;
-    background-image: url('/static/images/menu/headerBackground.png');
+    background-image: url('/static/assets/images/menu/headerBackground.png');
     background-size: cover;
     display: flex;
     justify-content: center;
@@ -128,7 +128,7 @@
     border: none;
     cursor: pointer;
     display: inline-block; /* Change display to inline-block */
-    background-image: url('/static/images/menu/playButton.png'); /* Set background image */
+    background-image: url('/static/assets/images/menu/playButton.png'); /* Set background image */
     background-size: cover; /* Cover the entire button with the image */
     background-position: center; /* Center the background image */
     background-repeat: no-repeat; /* Prevent the background image from repeating */
@@ -192,7 +192,7 @@
     background-color: #f9f3d2;
     border: 2px solid #0f172a;
     border-radius: 15px;
-    background-image: url('/static/images/menu/listBackground.png');
+    background-image: url('/static/assets/images/menu/listBackground.png');
     background-size: cover;
     z-index: 8;
     flex-grow: 1;
@@ -251,10 +251,10 @@
 }
 
 .collect-button:hover {
-  box-shadow: inset 0 0 20px rgba(255, 255, 255, .5), 0 0 20px rgba(255, 255, 255, .2);
-  outline-color: rgba(255, 255, 255, 0);
-  outline-offset: 15px;
-  text-shadow: 1px 1px 2px #427388;
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, .5), 0 0 20px rgba(255, 255, 255, .2);
+    outline-color: rgba(255, 255, 255, 0);
+    outline-offset: 15px;
+    text-shadow: 1px 1px 2px #427388;
 }
 
 .collect-button:active {
@@ -267,7 +267,7 @@
     position: relative;
     aspect-ratio: 1/1;
     width: 75%;
-    background-image: url('/static/images/menu/pickaxe.png');
+    background-image: url('/static/assets/images/menu/pickaxe.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -288,20 +288,44 @@
 }
 
 .loading-bar-container {
-  position: relative;
-  width: 50%;
-  height: 30px;
-  background-color: #969478;
-  border: 2px solid #0f172a;
-  border-radius: 10px;
+    position: relative;
+    width: 50%;
+    height: 30px;
+    background-color: #969478;
+    border: 2px solid #0f172a;
+    border-radius: 10px;
 }
 
 .loading-bar {
-  width: 0%;
-  height: 100%;
-  background-color: #ff8000;
-  border-radius: 10px;
-  transition: width 0.2s ease;
+    width: 0%;
+    height: 100%;
+    background-color: #ff8000;
+    border-radius: 10px;
+    transition: width 0.2s ease;
+}
+
+.crystal-meter-container {
+    position: relative;
+    width: 50%;
+    height: 30px;
+    background-color: #969478;
+    border: 2px solid #0f172a;
+    border-radius: 10px;
+}
+
+.crystal-meter {
+    position: absolute;
+    width: 0%;
+    height: 100%;
+    background-color: #00a6ff;
+    border-radius: 10px;
+}
+
+.crystal-meter-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
 }
 
 .list-menu-title-bar{
@@ -410,7 +434,7 @@
     background-color: #37c924;
     border: 2px solid #0f172a;
     border-radius: 10px;
-    background-image: url('/static/images/menu/itemBackground.png');
+    background-image: url('/static/assets/images/menu/itemBackground.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;

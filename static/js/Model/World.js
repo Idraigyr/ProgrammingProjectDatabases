@@ -32,7 +32,7 @@ export class World{
 
     getIslandByPosition(position){
         for(const island of this.islands){
-            //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2
+            //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2 (depends on implementation of Foundation class)
             if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
                 return island;
             }
@@ -55,14 +55,6 @@ export class World{
         } else {
             return buildTypes.getNumber("void");
         }
-    }
-
-    getBuildingByPos(worldPosition){
-        const island = this.getIslandByPosition(worldPosition);
-        if(island){
-            return island.getBuildingByPos(worldPosition);
-        }
-        return null;
     }
 
     /**
