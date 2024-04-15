@@ -27,6 +27,9 @@ def upgrade():
     bps = session.query(Blueprint).filter(Blueprint.id == BlueprintType.FUSE_TABLE.value).all()
     for bp in bps:
         bp.name = "FusionTable"
+    bps = session.query(Blueprint).filter(Blueprint.id == BlueprintType.WARRIOR_HUT.value).all()
+    for bp in bps:
+        bp.name = "WarriorHut"
     session.commit()
 
 def downgrade():
@@ -39,4 +42,7 @@ def downgrade():
     bps = session.query(Blueprint).filter(Blueprint.id == BlueprintType.FUSE_TABLE.value).all()
     for bp in bps:
         bp.name = "Fuse Table"
+    bps = session.query(Blueprint).filter(Blueprint.id == BlueprintType.WARRIOR_HUT.value).all()
+    for bp in bps:
+        bp.name = "Warrior Hut"
     session.commit()
