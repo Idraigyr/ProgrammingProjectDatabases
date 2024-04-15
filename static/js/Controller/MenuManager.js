@@ -127,10 +127,9 @@ export class MenuManager extends Subject{
 
     dispatchCollectEvent(event){
         console.log("Collecting resources");
-        const meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter")
+        this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
-        meter.style.width = "0%";
-        meter.innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
         this.dispatchEvent(this.createCollectEvent());
     }
 
@@ -395,7 +394,7 @@ export class MenuManager extends Subject{
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
     }
 
     /**
@@ -431,9 +430,8 @@ export class MenuManager extends Subject{
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
-                const meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
-                meter.style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
-                meter.innerText = `${params.crystals}/${params.maxCrystals}`;
+                this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
+                this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
 
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
