@@ -42,14 +42,15 @@ export class MenuManager extends Subject{
         this.container.addEventListener("dragend", this.dragend.bind(this));
     }
 
+    // TODO: remove this
     #createCtorToDBNameList(){
         return {
             Tower: "Tower",
             Tree: "Tree",
             Bush: "Bush",
             Mine: "Mine",
-            FusionTable: "Fuse Table",
-            WarriorHut: "Warrior hut"
+            FusionTable: "FusionTable",
+            WarriorHut: "WarriorHut"
         }
     }
 
