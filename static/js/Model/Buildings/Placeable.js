@@ -51,35 +51,4 @@ export class Placeable extends Entity{
     get dbType(){
         return "placeable";
     }
-
-    changeLevel(amount){
-        let old = this.level;
-        if(amount < 0 && Math.abs(amount) > this.level) return false;
-        this.level = amount > 0 ? this.level + amount : Math.max(0, this.level + amount);
-        if (this.level < 0 || this.level > 4){
-            this.level = old;
-            return false;
-        }
-        this.dispatchEvent(this.createUpdateLevelEvent());
-        this.xpTreshold = this.increaseXpTreshold();
-        if(this.level === 0){
-            this.levelUpTime = 0;
-            this.gemSlots = 1;
-        }else if(this.level === 1){
-            this.levelUpTime = 30;
-            this.gemSlots = 2;
-        }
-        else if(this.level === 2){
-            this.levelUpTime = 600;
-            this.gemSlots = 4;
-        } else if(this.level === 3){
-            this.levelUpTime = 1800;
-            this.gemSlots = 6;
-        } else if(this.level === 4){
-            this.levelUpTime = 3600;
-            this.gemSlots = 8;
-        }
-        popUp(this.level, this.maxMana, this.maxHealth);
-        return true;
-    }
 }
