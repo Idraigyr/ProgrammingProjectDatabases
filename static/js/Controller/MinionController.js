@@ -132,7 +132,6 @@ export class MinionController{
             minion.tempPosition.copy(minion.spawnPoint);
 
             minion.input.currentNode = this.paths[this.paths.length-1][0];
-            console.log(minion.input.currentNode);
             minion.input.currentNodeIndex = 0;
         } else {
             minion.position = minion.tempPosition;
@@ -162,9 +161,7 @@ export class MinionController{
             //walk towards altar:
             // set current target node that minion is moving towards
             if(!minion.input.currentNode) {
-                console.log("paths:", this.paths)
                 minion.input.currentNode = this.paths[this.paths.length-1][0];
-                console.log(minion.input.currentNode);
                 minion.input.currentNodeIndex = 0;
             } //TODO: change indeces depending on starting position and team
             // if current target node is reached, set next target node
@@ -172,7 +169,6 @@ export class MinionController{
                 minion.input.currentNodeIndex++;
                 if(minion.input.currentNodeIndex < this.paths[this.paths.length-1].length){
                     minion.input.currentNode = this.paths[this.paths.length-1][minion.input.currentNodeIndex];
-                    console.log(minion.input.currentNode);
                 }
             }
             // rotate towards current node

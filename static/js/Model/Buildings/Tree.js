@@ -15,7 +15,7 @@ export class Tree extends Placeable{
 
     formatPOSTData(userInfo){
         const obj = super.formatPOSTData(userInfo);
-        obj.prop_type = "tree";
+        obj.prop_type = "Tree";
         return obj;
     }
 }

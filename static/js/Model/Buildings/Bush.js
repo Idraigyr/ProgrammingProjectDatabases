@@ -15,7 +15,7 @@ export class Bush extends Placeable{
 
     formatPOSTData(userInfo){
         const obj = super.formatPOSTData(userInfo);
-        obj.prop_type = "bush";
+        obj.prop_type = "Bush";
         return obj;
     }
 }
