@@ -131,9 +131,9 @@ export class UserInfo extends Subject{
     changeXP(amount){
         if(amount < 0 && Math.abs(amount) > this.experience) return false;
         if(amount + this.experience >= this.xpTreshold){
+            var oldThreshold = this.xpTreshold
             this.changeLevel(0,true);
-            this.experience = (this.experience + amount) - this.xpTreshold;
-            this.xpTreshold = this.increaseXpTreshold();
+            this.experience = (this.experience + amount) - oldThreshold;
         } else {
             this.experience = amount > 0 ? this.experience + amount : Math.max(0, this.experience + amount);
         }
@@ -167,7 +167,9 @@ export class UserInfo extends Subject{
             this.maxGemAttribute = 1;
             this.maxBuildings = 2;
             this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree"];
+            this.xpTreshold = 50;
             this.dispatchEvent(this.createUpdateXpEvent());
+            this.dispatchEvent(this.createUpdateXpTresholdEvent());
         }else if(this.level === 1){
             this.maxMana = 100;
             this.dispatchEvent(this.createUpdateManaEvent());
@@ -176,7 +178,10 @@ export class UserInfo extends Subject{
             this.maxGemAttribute = 2;
             this.maxBuildings = 4;
             this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
+            this.xpTreshold = 100;
             this.dispatchEvent(this.createUpdateXpEvent());
+            this.dispatchEvent(this.createUpdateXpTresholdEvent());
+
         }
         else if(this.level === 2){
             this.maxMana = 200;
@@ -186,6 +191,8 @@ export class UserInfo extends Subject{
             this.maxGemAttribute = 4;
             this.maxBuildings = 6;
             this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
+            this.xpTreshold = 200;
+            this.dispatchEvent(this.createUpdateXpTresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
         } else if(this.level === 3){
             this.maxMana = 400;
@@ -195,6 +202,8 @@ export class UserInfo extends Subject{
             this.maxGemAttribute = 6;
             this.maxBuildings = 8;
             this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
+            this.xpTreshold = 350;
+            this.dispatchEvent(this.createUpdateXpTresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
         } else if(this.level === 4){
             this.maxMana = 600;
@@ -204,6 +213,8 @@ export class UserInfo extends Subject{
             this.maxGemAttribute = 8;
             this.maxBuildings = 10;
             this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
+            this.xpTreshold = 100000;
+            this.dispatchEvent(this.createUpdateXpTresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
         }
         popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute, this.maxBuildings, this.unlockedBuildings);
@@ -215,7 +226,8 @@ export class UserInfo extends Subject{
     }
 
     createUpdateXpTresholdEvent() {
-        return new CustomEvent("updateXpTreshold", {detail: {crystals: this.crystals}});
+        console.log(this.xpTreshold)
+        return new CustomEvent("updateXpTreshold", {detail: {xp: this.experience, threshold: this.xpTreshold}});
     }
 
     createUpdateLevelEvent() {

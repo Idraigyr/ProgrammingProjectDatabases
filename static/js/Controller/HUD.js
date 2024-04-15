@@ -53,6 +53,10 @@ export class HUD {
 
     updateLevel(event){
         $('#account-bar-level').html('Level: ' + event.detail.level);
+
+    }
+    updateXPTreshold(event){
+        $('#xp-bar-status').html(event.detail.xp + '/' + event.detail.threshold);
     }
 
     updateUsername(event){
