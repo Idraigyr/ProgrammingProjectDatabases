@@ -33,6 +33,12 @@ WarriorHut:
 https://sketchfab.com/3d-models/viking-guardpost-6f27ada661a14a0aa651475cff81d656
 WarriorHut2:
 https://sketchfab.com/3d-models/viking-bone-carver-feca1e04fcb642608b349011891ea764
+wizard model:
+https://poly.pizza/m/kttbFvCl2C
+skeleton minion models:
+https://kaylousberg.itch.io/kaykit-skeletons
+icewall block model:
+https://poly.pizza/bundle/Crystal-Pack-AywAG7aywi
 -----------------------------------
 Scripts:
 Grass shader:
@@ -42,5 +48,10 @@ https://codepen.io/Craaftx/pen/ExyYRMK
 XP-bar animation:
 https://codepen.io/mats-raemen/pen/NWKwRdQ
 -----------------------------------
-repositories that helped:
+repositories used in any shape or form:
+for inspiration on threejs implementations of characters:
 https://github.com/simondevyoutube
+for collision detection between player and static geometry:
+https://github.com/gkjohnson/three-mesh-bvh/tree/master
+for making shaders (mainly the shield shader):
+https://stemkoski.github.io/Three.js/index.html

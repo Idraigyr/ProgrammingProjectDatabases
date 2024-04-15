@@ -9,6 +9,6 @@ export class WarriorHut extends Placeable{
     }
 
     get dbType(){
-        return "warrior_hut_building";
+        return "warrior_hut";
     }
 }

@@ -21,10 +21,6 @@ class Gem(current_app.db.Model):
     # The many-to-one relationsip between gems and buildings
     building_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), nullable=True)
 
-    # The one-to-one relationship between a gem and a mine (when a mine digs up a new gem, rare)
-    mine_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('mine_building.placeable_id'), nullable=True)
-    mine: Mapped['MineBuilding'] = relationship('MineBuilding', back_populates='collected_gem', foreign_keys=[mine_id])
-
     # The many-to-one relationship between gems and players
     player_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player.user_profile_id'), nullable=True)
 
@@ -67,7 +63,7 @@ class Gem(current_app.db.Model):
         :param data: The new data
         :return:
         """
-        colliding_keys = ['building_id', 'mine_id', 'player_id']
+        colliding_keys = ['building_id', 'player_id']
         if len(list(data.keys() & colliding_keys)) > 1:
             raise ValueError(f'Invalid data object, at most one of the following keys is allowed: {",".join(colliding_keys)}. '
                              'Note that the absence of the key will unlink it from its relation with said attribute')
@@ -106,17 +102,6 @@ class Gem(current_app.db.Model):
             # If the building_id is not in the data, set it to None (NULL), therefore unlinking its relation with
             # (in this case) the building
             self.building_id = None
-
-        if 'mine_id' in data:
-            from src.model.placeable.buildings import MineBuilding
-            if not MineBuilding.query.get(data['mine_id']):
-                raise ValueError('Invalid mine_id')
-
-            self.mine_id = int(data['mine_id'])
-        else:
-            # If the mine_id is not in the data, set it to None (NULL), therefore unlinking its relation with
-            # (in this case) the mine
-            self.mine_id = None
 
         if 'player_id' in data:
             from src.model.player import Player

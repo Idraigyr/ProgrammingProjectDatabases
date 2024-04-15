@@ -8,6 +8,12 @@ export const assert = function(condition, message) {
     }
 
 }
+
+
+export const timeDifferenceInSeconds = function(time1, time2){
+    return Math.round(Math.abs(time1 - time2) / 1000);
+}
+
 export const setIndexAttribute = function(geometry){
     const numVertices = geometry.attributes.position.count;
     const index = [];

@@ -10,14 +10,27 @@ import {SpellSpawner} from "../Model/SpellSpawner.js";
  * Factory class that creates models and views for the entities
  */
 export class Factory{
-    //TODO: add factory itself and model class of object to view.userData
+    #currentTime;
     constructor(params) {
         this.scene = params.scene;
         this.viewManager = params.viewManager;
         this.assetManager = params.assetManager;
         this.timerManager = params.timerManager;
         this.collisionDetector = params.collisionDetector;
+        this.#currentTime = null;
     }
+
+    set currentTime(time){
+        this.#currentTime = time;
+    }
+
+    get currentTime(){
+        if(!this.#currentTime) throw new Error("currentTime is not set");
+        return this.#currentTime;
+    }
+
+
+
 
     /**
      * Creates minion model and view
@@ -164,7 +177,14 @@ export class Factory{
         // Correct position to place the asset in the center of the cell
         convertGridIndexToWorldPosition(pos);
         // Convert position
-        const model = new Model[params.buildingName]({position: pos, id: params.id}); // TODO: add rotation
+        const modelParams = {position: pos, id: params.id};
+
+        //TODO: refactor this! not dynamic enough
+        if(params.buildingName === "Mine"){
+            modelParams.lastCollected = this.currentTime;
+        }
+
+        const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
         this.scene.add(view.charModel);
@@ -178,7 +198,7 @@ export class Factory{
         model.addEventListener("updateMinY", view.updateMinimumY.bind(view));
         this.viewManager.addPair(model, view);
 
-        //TODO: withTimer:
+        //TODO: withTimer: (DONE?)
         // get total time from config/db
         // create a timer that has a callback that triggers when the timer ends
         // put the buildingPreview in dyingViews of viewManager

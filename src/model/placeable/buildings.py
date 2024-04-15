@@ -1,4 +1,6 @@
-from sqlalchemy import Column, BigInteger, ForeignKey, CheckConstraint
+import datetime
+
+from sqlalchemy import Column, BigInteger, ForeignKey, CheckConstraint, DateTime
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import Enum as SqlEnum
 
@@ -16,13 +18,10 @@ class MineBuilding(Building):
     placeable_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), primary_key=True)
 
     mine_type: Mapped[MineBuildingType] = Column(SqlEnum(MineBuildingType), nullable=False, default='crystal')
-    mined_amount: Mapped[int] = Column(BigInteger, CheckConstraint('mined_amount >= 0'), nullable=False, default=0)
-
-    collected_gem: Mapped[Gem] = relationship(back_populates='mine')
+    last_collected: Mapped[DateTime] = Column(DateTime, nullable=False, default=0)
 
 
-
-    def __init__(self, island_id:int = 0, x:int = 0, z: int = 0, level: int = 0, mine_type: str = 'crystal', mined_amount: int = 0, rotation: int = 0) -> None:
+    def __init__(self, island_id:int = 0, x:int = 0, z: int = 0, level: int = 0, mine_type: str = 'crystal', rotation: int = 0, last_collected: DateTime = None) -> None:
         """
         Create a new mine building object with the given parameters
         :param island_id: The id of the island that this building belongs to
@@ -30,18 +29,15 @@ class MineBuilding(Building):
         :param z: The z position of the building on the grid
         :param level: The level of the building
         :param mine_type: The type of the mine (default is 'crystal')
-        :param mined_amount: The amount the mine has already mined since the last pickup by the player
-        After pickup, this is reset to 0 and the player crystal count is increased
+        :param last_collected: The last time the mine contents were collected
         :param rotation: The rotation of the building (0=North, 1=East, 2=South, 3=West)
         """
         super().__init__(island_id, xpos=x, zpos=z, level=level, blueprint_id=BlueprintType.MINE.value, rotation=rotation)
         if not MineBuildingType.has_value(mine_type):
             raise ValueError('Invalid mine_type')
-        if mined_amount < 0:
-            raise ValueError('Mined amount must be greater than or equal to 0')
 
         self.mine_type = MineBuildingType[mine_type.upper()]
-        self.mined_amount = mined_amount
+        self.last_collected = last_collected if last_collected is not None else datetime.datetime(1970, 1, 1, 0, 0)
 
 
     def update(self, data: dict):
@@ -52,13 +48,15 @@ class MineBuilding(Building):
         :return:
         """
         super().update(data)
-        if not MineBuildingType.has_value(data.get('mine_type', self.mine_type)):
-            raise ValueError('Invalid mine_type')
-        if data.get('mined_amount', self.mined_amount) < 0:
-            raise ValueError('Mined amount must be greater than or equal to 0')
+        if 'mine_type' in data:
+            if not MineBuildingType.has_value(data.get('mine_type', self.mine_type)):
+                raise ValueError('Invalid mine_type')
 
-        # Ignore pycharm warning, it's wrong
-        self.mine_type = MineBuildingType[data.get('mine_type', self.mine_type).upper()]
+            # Ignore pycharm warning, it's wrong
+            self.mine_type = MineBuildingType[data.get('mine_type').upper()]
+
+        self.last_collected = data.get('last_collected', self.last_collected)
+
 
     __mapper_args__ = {
         'polymorphic_identity': 'mine_building'

@@ -1,3 +1,5 @@
+import datetime
+
 from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
@@ -21,11 +23,11 @@ class MineBuildingSchema(BuildingSchema):
             'type': 'string',
             'description': 'The type of the mine'
         },
-        'mined_amount': {
-            'type': 'integer',
-            'description': 'The amount the mine has mined since the last time it was emptied'
-        },
-        'collected_gem': GemSchema
+        'last_collected': {
+            'type': 'string',
+            'format': 'date-time',
+            'description': 'The datetime when the mine was last emptied'
+        }
     }
 
     required = ['mine_type'] + BuildingSchema.required
@@ -38,8 +40,7 @@ class MineBuildingSchema(BuildingSchema):
         if mine is not None:
             super().__init__(mine,
                              mine_type=mine.mine_type.value,
-                             mined_amount=mine.mined_amount,
-                             collected_gem=GemSchema(mine.collected_gem) if mine.collected_gem else None,
+                             last_collected=str(mine.last_collected).replace(' ', 'T'),
                              **kwargs)
         else:
             super().__init__(**kwargs)
@@ -99,6 +100,11 @@ class MineBuildingResource(Resource):
             mine = MineBuilding.query.get(id)
             if not mine:
                 return ErrorSchema(f'Mine building with id {id} not found'), 404
+
+            # Convert the datetime strings to datetime objects
+            if 'last_collected' in data:
+                data['last_collected'] = data['last_collected'].replace('T', ' ')
+                data['last_collected'] = datetime.datetime.strptime(data['last_collected'], '%Y-%m-%d %H:%M:%S')
 
             # Update the mine building
             mine.update(data)

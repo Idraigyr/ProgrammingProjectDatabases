@@ -86,11 +86,6 @@ class GemSchema(Schema):
             'format': 'int64',
             'nullable': True,
         },
-        'mine_id': {
-            'type': 'integer',
-            'format': 'int64',
-            'nullable': True,
-        },
         'player_id': {
             'type': 'integer',
             'format': 'int64',
@@ -108,7 +103,6 @@ class GemSchema(Schema):
                              type=gem.type.value,
                              attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association],
                              building_id=gem.building_id,
-                             mine_id=gem.mine_id,
                              player_id=gem.player_id,
                              **kwargs)
         else:
@@ -145,7 +139,7 @@ class GemResource(Resource):
 
     @swagger.tags('gems')
     @summary('Update a gem by id. All fields (except ids) are updatable. Including attributes and their multipliers.'
-             ' Note that only one of the building_id, mine_id or player_id can have a non-null value')
+             ' Note that only one of the building_id or player_id can have a non-null value')
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the updated gem in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)
