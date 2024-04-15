@@ -11,7 +11,7 @@ export class IView {
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
-        this.boxHelper.visible = true;
+        this.boxHelper.visible = false; // TODO: set in env
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
     }
