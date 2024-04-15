@@ -1,0 +1,111 @@
+import * as THREE from "three";
+
+/**
+ * View base class
+ */
+export class IView {
+    constructor(params) {
+        this.position = params?.position ?? new THREE.Vector3(0,0,0);
+        this.charModel = params?.charModel;
+        if(this.charModel) this.charModel.position.copy(this.position);
+        this.boundingBox = new THREE.Box3();
+        //only for visualisation
+        this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
+        this.boxHelper.visible = false; // TODO: set in env
+        this.horizontalRotation = params?.horizontalRotation ?? 0;
+        this.staysAlive = false;
+    }
+    firstUpdate() {
+        try {
+            this.updatePosition({detail: {position: params.position}});
+            this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
+        } catch (err){
+            console.log(err);
+        }
+    }
+
+    updateBoundingBox(){
+        this.boundingBox.setFromObject(this.charModel, true);
+    }
+
+    cleanUp() {
+        try {
+            this.boxHelper.parent.remove(this.boxHelper);
+        } catch (err){
+            console.log("BoxHelper not added to scene.");
+        }
+        this.charModel.parent.remove(this.charModel);
+    }
+    update(deltaTime) {}
+
+    updatePosition(event){
+        if(!this.charModel) return;
+        const delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
+        this.position.copy(event.detail.position);
+        this.charModel.position.copy(this.position);
+        this.boundingBox.translate(delta);
+    }
+
+    updateRotation(event){
+        if(!this.charModel) return;
+        this.charModel.setRotationFromQuaternion(event.detail.rotation);
+        this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
+        //this.boundingBox.setFromObject(this.charModel, true);
+    }
+    updateMinimumY(event){
+        let y = event.detail.minY;
+        if(y === undefined) return y;
+        // Create bounding box
+        let box = new THREE.Box3().setFromObject(this.charModel);
+        // Get current minimum y
+        let minY = box.min.y;
+        // Calculate the difference
+        let diff = y - minY;
+        // Move the model
+        this.charModel.position.y += diff;
+        // Update the bounding box
+        this.boundingBox.translate(new THREE.Vector3(0, diff, 0));
+        // Return current y value
+        return this.charModel.position.y;
+    }
+}
+
+/**
+ * Animated view pure virtual base class
+ */
+export class IAnimatedView extends IView{
+    constructor(params) {
+        super(params);
+        this.animated = true;
+        this.mixer = new THREE.AnimationMixer(params.charModel);
+        this.animations = {};
+    }
+
+    /**
+     * put animations in the animations property, only use in loadAnimations
+     * @param clips - clips to search for animation
+     * @param animName - name of the animation (inside the model file)
+     * @param alias - alias for the animation which will be used to reference it within the code
+     * @protected
+     */
+    _getAnimation(clips, animName, alias){
+        let clip = THREE.AnimationClip.findByName(clips, animName);
+        this.animations[alias] =  new THREE.AnimationAction(this.mixer, clip, this.charModel);
+    }
+
+    /**
+     * Update animations
+     * @param deltaTime time since last update
+     */
+    update(deltaTime) {
+        if(this.mixer) this.mixer.update(deltaTime);
+    }
+
+    /**
+     * Load animations
+     * @param clips clips to load
+     */
+    loadAnimations(clips){
+        throw new Error("pure virtual function called (IAnimatedView.loadAnimations)");
+    }
+}

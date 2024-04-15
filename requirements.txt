@@ -7,6 +7,16 @@ MarkupSafe==2.1.2
 psycopg2-binary==2.9.5
 Werkzeug==3.0.1
 python-dotenv==1.0.1
-sqlalchemy==2.0.27
+sqlalchemy==2.0.28
 pytest==6.2.4
 flask-sqlalchemy==3.1.1
+flask-jwt-extended==4.6.0
+bcrypt==4.1.2
+flask-restful-swagger-3==0.5.1
+flask-migrate==4.0.5
+deepmerge==1.1.1
+flask-socketio==5.3.6
+oauthlib==3.2.2
+alembic-postgresql-enum==1.1.2
+requests==2.31.0
+pdoc3==0.10.0

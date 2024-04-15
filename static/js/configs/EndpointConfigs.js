@@ -1,0 +1,18 @@
+// export const API_URL = 'https://team2.ua-ppdb.me:8081';
+export const API_URL = window.location.origin;
+
+export const workerURI = './static/js/workers/ColliderWorker.js';
+
+export const playerURI = 'api/player';
+
+export const playerProfileURI = 'api/user_profile';
+
+export const placeableURI = 'api/placeable';
+
+export const timeURI = 'api/time';
+
+export const islandURI = 'api/island';
+
+export const blueprintURI = 'api/blueprint';
+
+export const postRetries = 3;

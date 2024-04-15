@@ -1,0 +1,516 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 30px;
+  padding: 0px;
+  background-color: #f1f5f9;
+}
+
+.menu {
+  max-width: 1000px;
+  max-height: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background-image: url('/static/assets/images/background-landing.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
+.mineMenu {
+    background-image: url('/static/assets/images/menu/mineBackground.png');
+}
+
+.towerMenu {
+  max-width: 745px;
+  max-height: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  background-image: url('/static/assets/images/background-landing.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
+.fusionMenu {
+    margin-top: 3%;
+    max-width: 1200px;
+}
+
+h1 {
+  text-align: center;
+  margin-top: -50px;
+  margin-bottom: 5px;
+  color: #0f172a;
+  font-size: 50px;
+}
+
+.mineH1 {
+    margin-top: 0;
+    padding-left: 10px;
+    color: #000000;
+}
+
+.fusionH1 {
+    position: relative;
+    top: 30px;
+}
+
+.fusionH2 {
+    position: relative;
+    z-index: 0;
+    right: -50px;
+}
+
+
+h2 {
+  text-align: left;
+  margin-top: 0px;
+  margin-bottom: 0;
+  padding-left: 40%;
+  color: #0f172a;
+}
+
+.mineH2 {
+    margin-left: 6%;
+}
+
+h3 {
+  font-size: 25px;
+  text-align: center;
+  margin-top: 2px;
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+.combat {
+  border: 2px solid #0f172a;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #f9f3d2;
+  border-radius: 10px;
+  background-image: url('/static/assets/images/menu/listBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.play-button {
+  margin-left: -15.5%;
+  margin-top: 30px;
+  padding: 0; /* Remove padding */
+  background-color: transparent; /* Remove background color */
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: inline-block; /* Change display to inline-block */
+  width: 100px; /* Set a fixed width */
+  height: 100px; /* Set a fixed height */
+  background-image: url('/static/assets/images/menu/playButton.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+}
+
+.play-button:hover {
+  transform: scale(1.10); /* Scale up the button on hover */
+
+}
+
+.fusionButton {
+  margin-left: -6%;
+  margin-top: 30px;
+  margin-bottom: 10px;
+  background-color: transparent; /* Remove background color */
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: inline-block; /* Change display to inline-block */
+  width: 100px; /* Set a fixed width */
+  height: 100px; /* Set a fixed height */
+  background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    z-index: 1;
+}
+
+.fusionButton:hover {
+  transform: scale(1.10); /* Scale up the button on hover */
+}
+
+.collectButton {
+    margin-left: -9%;
+    margin-top: 4%;
+}
+
+.containers {
+  display: flex;
+  justify-content: space-between;
+}
+
+.pickaxe {
+    position: relative;
+    top: -50px;
+    right: 25px;
+    width: 200px;
+    height: 200px;
+    padding: 20px;
+    border-radius: 10px;
+    background-image: url('/static/assets/images/menu/pickaxe.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+    animation: rotateAnimation 1s linear infinite; /* Adjust the animation duration and timing function as needed */
+    transform-origin: bottom center;
+}
+
+@keyframes rotateAnimation {
+    0% {
+        transform: rotate(50deg);
+    }
+    20% {
+        transform: rotate(120deg);
+    }
+    100% {
+        transform: rotate(50deg);
+    }
+}
+
+.arrow {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    right: 7%;
+    padding: 10px;
+    border-radius: 10px;
+    background-image: url('/static/assets/images/menu/arrow.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.move-right {
+    animation: moveRight 1s linear infinite; /* Adjust animation duration and timing function as needed */
+}
+
+@keyframes moveRight {
+    0% {
+        transform: translateX(0); /* Start position */
+    }
+    100% {
+        transform: translateX(100%); /* End position */
+    }
+}
+
+.container {
+  margin: 5px;
+  width: 240px;
+  border: 2px solid #0f172a;
+  padding: 20px;
+  background-color: #f9f3d2;
+  border-radius: 10px;
+  background-image: url('/static/assets/images/menu/listBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  height: 400px; /* Adjust the height as needed */
+  overflow-y: auto;
+}
+
+.fusionContainer {
+    width: 180px;
+    padding: 10px;
+    margin: 0px;
+}
+
+.container::-webkit-scrollbar {
+    width: 12px; /* Width of the scrollbar */
+}
+
+.container::-webkit-scrollbar-track {
+    background: #f9f3d2; /* Color of the track */
+}
+
+.container::-webkit-scrollbar-thumb {
+    background: #565444; /* Color of the scrollbar handle */
+}
+
+.container::-webkit-scrollbar-thumb:hover {
+    background: #3d3c30; /* Color of the scrollbar handle on hover */
+}
+
+
+.containerBuildings {
+  border: 2px solid #0f172a;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #f9f3d2;
+  border-radius: 10px;
+  background-image: url('/static/assets/images/menu/listBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  overflow: clip;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  height: 55px;
+  margin-bottom: 10px;
+  color: #ff8000;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  position: relative;
+  background-image: url('/static/assets/images/menu/itemBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  overflow: hidden; /* Prevent text from pushing other elements */
+}
+
+.item > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* Set a maximum width for the text */
+  max-width: calc(100% - 20px); /* Adjust the width as needed */
+}
+
+.item:hover {
+  background-color: rgba(206, 133, 25, 0.8); /* Adjust the background color with transparency */
+}
+
+.building {
+  text-align: center;
+  height: 55px;
+  margin-bottom: 10px;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+  position: relative; /* Set position to relative */
+  background-image: url('/static/assets/images/menu/itemBackground.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.building:hover {
+  background-color: rgba(206, 133, 25, 0.8); /* Adjust the background color with transparency */
+}
+.combat {
+  display: flex;
+}
+
+.tab {
+  flex: 1;
+  padding: 15px;
+  margin: 0;
+  border: none;
+  border-radius: 5px;
+  background-color: #969478;
+  color: #000000;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.tab:not(:last-child) {
+  margin-right: 10px; /* Adjust as needed */
+}
+
+.tab:hover {
+  background-color: #72715d;
+}
+
+/* exit buttons */
+.exit {
+  position: relative;
+  right: -510px;
+  margin-left: 45%;
+  margin-top: 0;
+  padding: 0;
+  background-color: transparent; /* Remove background color */
+  border: none;
+  width: 40px; /* Set a fixed width */
+  height: 40px; /* Set a fixed height */
+  background-image: url('/static/assets/images/menu/exit.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+}
+
+.exit:hover {
+  transform: scale(1.10);
+}
+
+.altarExit{
+    margin-left: 45%;
+}
+
+.towerExit{
+    margin-left: 26%;
+}
+
+.mineExit{
+    top: -58px;
+}
+
+.fusionExit {
+    top: -15px;
+    right: -620px;
+}
+
+/* loading bars */
+.loading-bar-container {
+  position: relative;
+  top: 360px;
+  right: 120px;
+  width: 15%;
+  height: 30px;
+  background-color: #969478;
+  border: 2px solid #0f172a;
+  border-radius: 10px;
+}
+
+.loading-bar {
+  width: 0%;
+  height: 100%;
+  background-color: #ff8000;
+  border-radius: 10px;
+  transition: width 0.2s ease;
+}
+
+.fusionBar {
+    top: -120px;
+    right: -510px;
+}
+
+/* Spells images formatting */
+.fireSpell{
+    height: 50px;
+    width: 50px;
+    transform: translate(125%, -5%);
+}
+
+.freezeSpell{
+    height: 50px;
+    width: 80px;
+    transform: translate(30%, 0%);
+}
+
+.shieldSpell{
+    height: 55px;
+    width: 90px;
+    transform: translate(28%, 0%);
+}
+
+.thunderSpell{
+    height: 50px;
+    width: 55px;
+    transform: translate(50%, 0%);
+}
+
+.healSpell{
+    height: 40px;
+    width: 40px;
+    transform: translate(155%, 0%);
+}
+
+.buildSpell{
+    height: 40px;
+    width: 40px;
+    transform: translate(135%, 0%);
+}
+
+/* Gems images formatting */
+.crystal {
+    position: absolute;
+    height: 45px;
+    width: 45px;
+    right: 3%;
+}
+
+.amberGem {
+    position: absolute;
+    height: 30px;
+    width: 30px;
+    right: 6%;
+}
+
+.rubyGem{
+    position: absolute;
+    height: 55px;
+    width: 55px;
+    right: 0%;
+}
+
+.sapphireGem{
+    position: absolute;
+    height: 60px;
+    width: 60px;
+    right: -1%;
+}
+
+.diamondGem{
+    position: absolute;
+    height: 35px;
+    width: 35px;
+    right: 5%;
+}
+
+.emeraldGem{
+    position: absolute;
+    height: 50px;
+    width: 40px;
+    right: 4%;
+}
+
+.amethystGem{
+    position: absolute;
+    height: 40px;
+    width: 40px;
+    right: 4%;
+}
+
+/* Extra icons formatting*/
+.hp{
+    position: absolute;
+    height: 50px;
+    width: 50px;
+    right: 5%;
+}
+
+.damage{
+    position: absolute;
+    height: 60px;
+    width: 60px;
+    right: 2%;
+}
+
+.tree{
+    height: 50px;
+    width: 50px;
+    transform: translate(150%, 5%);
+}
+
+.tower{
+    height: 70px;
+    width: 70px;
+    transform: translate(97%, -10%);
+}
+
+.bush{
+    height: 50px;
+    width: 50px;
+    transform: translate(150%, 5%);
+}

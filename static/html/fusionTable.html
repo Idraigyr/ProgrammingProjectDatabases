@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FusionTable</title>
+  <link rel="stylesheet" href="../css/menus.css">
+</head>
+<body style="background-color: transparent">
+
+<div class="menu fusionMenu">
+  <h1 class="fusionH1">Fusion Table</h1>
+    <button class="exit fusionExit" onclick="exitMenu()"></button>
+  <div class="combat">
+    <h2 class="fusionH2">Start fusion</h2>
+    <button class="fusionButton" onclick="startFusion()"></button>
+  </div>
+
+  <div class="containers">
+        <div class="container fusionContainer" id="container1" ondrop="drop(event, 'container1')" ondragover="allowDrop(event)">
+            <label><h2>Crystals</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="container fusionContainer" id="container2" ondrop="drop(event, 'container2')" ondragover="allowDrop(event)">
+            <label><h2>Input</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="arrow" id="arrow"></div>
+        <div class="container fusionContainer" id="container3" ondrop="drop(event, 'container3')" ondragover="allowDrop(event)">
+            <label><h2>Output</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+        <div class="container fusionContainer" id="container4" ondrop="drop(event, 'container4')" ondragover="allowDrop(event)">
+            <label><h2>Gems</h2></label>
+            <!-- Container will be populated dynamically -->
+        </div>
+  </div>
+    <div class="loading-bar-container fusionBar">
+    <div class="loading-bar"></div>
+
+</div>
+
+</body>
+<script src="/static/js/Menus/fusionTable.js"></script>
+</html>

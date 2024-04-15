@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/external/auth.js') }}" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{app_name}}</title>
+    <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <link rel="stylesheet" href="{{url_for('static', filename='css/register-login.css')}}">
+</head>
+<body>
+<div class="container">
+    <h2>Register</h2>
+    <form id="registerForm" action="/register" method="POST">
+    <input id="username" type="text" name="username" placeholder="Username" required>
+    <input id="password"  type="password" name="password" placeholder="Password" required>
+    <input  id="firstname" type="text" name="firstname" placeholder="First Name" required>
+    <input  id="lastname" type="text" name="lastname" placeholder="Last Name" required>
+    <input type="submit" value="Register">
+</form>
+
+    <div class="footer">
+        Already have an account? <a href="login">Login here</a>
+    </div>
+</div>
+</body>
+</html>

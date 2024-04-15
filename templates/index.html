@@ -1,23 +1,355 @@
-<html lang="nl">
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>{{app_name}}</title>
-    
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    
-	<link rel="stylesheet" href="{{ url_for('static',filename='css/bootstrap-4.0.0.min.css') }}">
-	<link rel="stylesheet" href="{{ url_for('static',filename='css/mystyle.css') }}">
-    
-	<script src="{{ url_for('static',filename='js/jquery-3.2.1.js') }}"></script>
-	<script src="{{ url_for('static',filename='js/bootstrap-4.0.0.min.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
+    <!-- Inline load jQuery so that inline scripts such as socketio.js can use it -->
+    <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
+    <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
+          "three-GLTFLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/GLTFLoader.js",
+          "three-DRACOLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/DRACOLoader.js",
+          "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
+          "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
+          "three-FontLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FontLoader.js",
+          "three-TextGeometry": "https://unpkg.com/three@0.162.0/examples/jsm/geometries/TextGeometry.js",
+          "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
+          "three-BufferGeometryUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/BufferGeometryUtils.js",
+          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
+          "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/src/index.js",
+          "three-orbitControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/OrbitControls.js"
+        }
+      }
+    </script>
+    <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
+    <!--SocketIO JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
+            integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
+            crossorigin="anonymous">
+
+    </script>
 </head>
-<body>	
-<div class="h-100 d-flex align-items-center justify-content-center">
-    <div>
-        <h3>Hello, World!</h3>
-        <p>Team 2 FTW</p>
+<body id="body">
+    <div id="container">
+    </div>
+    <!-- Load App -->
+    <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
+
+{#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
+
+    <script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetModels.js') }}"></script>
+
+
+
+    <div class="button-container" id="chatButtonContainer">
+        <button id="chatButton" class="bottom-left-button fa fa-comments"></button>
+        <a class="sywh-open-services" data-tooltip="Chat with other ordinary wizards!" data-placement="right">
+      </a>
+    </div>
+    <div id="chatPopup" class="chat-popup" style="display: none;">
+        <!-- Chat interface -->
+        <div class="chat-content">
+            <span class="close" id="closeChat">&times;</span>
+            <!-- Chat messages and input -->
+            <div id="chatMessages" class="chat-messages">
+                <!-- Chat messages will be displayed here -->
+                <div id="MyMessage" class="MyMsg">
+                    <!-- for message box -->
+                    <div class="message" id="Message"></div>
+                    <div class="time" id="Time"></div>
+                </div>
+
+                <div id="OtherMessage" class="OtherMsg">
+                    <!-- for other message box -->
+                    <div class="user" id="username"></div>
+                    <div class="message" id="Message"></div>
+                    <div class="time" id="Time"></div>
+                </div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type your message...">
+                <button id="sendMessage" class="btn btn-primary">
+                    <i class="fa fa-paper-plane"></i> Send
+                </button>
+            </div>
+
+        </div>
     </div>
 
-</div>
+    <!--SocketIO JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
+            integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
+            crossorigin="anonymous">
+
+    </script>
+
+    <!-- loading screen -->
+    <div class="loading-animation">
+        <div class="loading-background"></div>
+        <div class="progress-bar-container">
+            <label for="progress-bar">Loading...</label> <!-- preff?-->
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
+
+        <div class="scene">
+          <div class="objects">
+            <div class="square"></div>
+            <div class="circle"></div>
+            <div class="triangle"></div>
+          </div>
+          <div class="wizard">
+            <div class="body"></div>
+            <div class="right-arm">
+              <div class="right-hand"></div>
+            </div>
+            <div class="left-arm">
+              <div class="left-hand"></div>
+            </div>
+            <div class="head">
+              <div class="beard"></div>
+              <div class="face">
+                <div class="adds"></div>
+              </div>
+              <div class="hat">
+                <div class="hat-of-the-hat"></div>
+                <div class="four-point-star --first"></div>
+                <div class="four-point-star --second"></div>
+                <div class="four-point-star --third"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="noise"></div>
+    </div>
+
+
+        <!-- Setting menu -->
+
+
+        <div class="container hide" style="z-index: 1000">
+      <h1>Game Settings</h1>
+
+      <div class="settings">
+        <div class="slider">
+          <label for="volume">Volume:</label>
+          <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+        </div>
+
+        <div class="checkbox">
+          <input type="checkbox" id="sound" name="sound" checked>
+          <label for="sound">Sound Effects</label>
+        </div>
+
+        <div class="checkbox">
+          <input type="checkbox" id="music" name="music">
+          <label for="music">Background Music</label>
+        </div>
+
+        <div class="dropdown">
+          <label for="resolution">Resolution:</label>
+          <select id="resolution" name="resolution">
+            <option value="720p">720p</option>
+            <option value="1080p">1080p</option>
+            <option value="4k">4K</option>
+          </select>
+        </div>
+
+        <div class="key-binds">
+          <div class="key-bind">
+            <label for="move-forward">Move forward:</label>
+            <input type="text" id="move-forward" name="move-forward" placeholder="w" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="move-left">Move left:</label>
+            <input type="text" id="move-left" name="move-left" placeholder="a" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="move-right">Move right:</label>
+            <input type="text" id="move-right" name="move-right" placeholder="d" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="move-backwards">Move backwards:</label>
+            <input type="text" id="move-backwards" name="move-backwards" placeholder="s" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="jump">Jump:</label>
+            <input type="text" id="jump" name="jump" placeholder="Space" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="open-inventory">Open inventory:</label>
+            <input type="text" id="open-inventory" name="open-inventory" placeholder="e" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="attack">Attack:</label>
+            <input type="text" id="attack" name="attack" placeholder="Left Mouse Button" maxlength="1">
+          </div>
+          <div class="key-bind">
+            <label for="pause">Pause:</label>
+            <input type="text" id="pause" name="pause" placeholder="Esc" maxlength="1">
+          </div>
+        </div>
+      </div>
+      <button class="applyButton" id="applyButton">Apply</button>
+    </div>
+
+    <!-- Menu Container -->
+    <div id="menuContainer"></div>
+
+
+    <!-- Tower Menu -->
+    <!--    <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+    <!-- Build Menu -->
+    <!--    <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+    <!-- Altar Menu -->
+    <!--    <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+    <!-- Fusion Table Menu -->
+    <!--    <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+    <!-- Mine Menu -->
+    <!--    <object type="text/html" id="mineMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/mine.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
+
+
+
+
+    <!-- UI/HUD -->
+    <div class="settings-button" id="settings-btn">
+            <img src="../static/assets/images/Button_Blue.png" class="button">
+            <img src="../static/assets/images/Regular_02.png" class="icon">
+    </div>
+
+    <div class="HotBar">
+        <div class="item Spell1 hovered">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
+        </div>
+        <div class="item Spell2">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
+            </div>
+        <div class="item Spell3">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
+        </div>
+        <div class="item Spell4">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
+        </div>
+        <div class="item Spell5">
+            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <div class="countdown-overlay"></div> <!-- Countdown overlay -->
+        </div>
+    </div>
+
+    <div class="HotBarIcons">
+        <div class="Spell1Icon">
+            <img src="../static/assets/images/spell-cast-plant.png" class= "buildimage">
+        </div>
+        <div class="Spell2Icon">
+            <img src="../static/assets/images/spell-cast-fire.png" class= "firebalimage">
+            </div>
+        <div class="Spell3Icon">
+            <img src="../static/assets/images/spell-cast-bolt.png" class= "lighningimage">
+        </div>
+        <div class="Spell4Icon">
+            <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
+        </div>
+        <div class="Spell5Icon">
+            <img src="../static/assets/images/spell-cast-ice.png" class= "icewallimage">
+        </div>
+    </div>
+
+    <div class="Health">
+        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
+        <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
+        <div class = "HealthAmount">
+            20/100
+        </div>
+    </div>
+
+
+    <div class="Mana">
+        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
+        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
+                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
+
+        <div class = "ManaAmount">
+            50/100
+        </div>
+    </div>
+
+    <div class="Crystals">
+        <img src="../static/assets/images/Ribbon_Blue_3Slides.png" class="Banner">
+        <div class = "CrystalAmount">
+            2746
+        </div>
+        <div class = "CrystalIcon">
+            <img src="../static/assets/images/crystal_01a.png" class = "NewCrystalIcon">
+        </div>
+    </div>
+
+    <!-- XP bar and level -->
+    <div id='account-bar-wrapper'>
+      <div id='account-bar'>
+        <div id='account-bar-name'>Player Name</div>
+        <div id ='account-bar-level'>Level 0</div>
+        <div id='xp-bar'>
+          <div id='xp-bar-fill'>
+            <div id='xp-increase-fx'><div id='xp-increase-fx-flicker'><div class='xp-increase-glow1'></div><div class='xp-increase-glow2'></div><div class='xp-increase-glow3'></div></div><div class='xp-increase-glow2'></div></div>
+          </div>
+        </div>
+        <div id='xp-bar-status'>0</div>
+      </div>
+    </div>
+
+
+
+
+    <canvas id="canvas"></canvas>
+    <!-- Script for toggling FPS counter -->
+    <script>
+        // Create the Stats instance outside the event listeners to use it globally
+        var stats = new Stats();
+
+        // Configuration object
+        var config = {
+            showFPS: false, // Default is off, change to true if you want it on by default
+        };
+
+        // Animation frame function
+        function animate() {
+            if (config.showFPS && !stats.dom.parentElement) {
+                document.body.appendChild(stats.dom);
+            } else if (!config.showFPS && stats.dom.parentElement) {
+                stats.dom.remove();
+            }
+            stats.update();
+            requestAnimationFrame(animate);
+        }
+
+        // Start the animation loop
+        requestAnimationFrame(animate);
+
+        // Event listener for keydown to toggle FPS display
+        document.addEventListener('keydown', function(e) {
+            if (document.activeElement === chatInput) {
+                return;
+            }
+            if (e.code === 'KeyF') {
+                config.showFPS = !config.showFPS;
+            }
+        });
+    </script>
 
 
 </body>
