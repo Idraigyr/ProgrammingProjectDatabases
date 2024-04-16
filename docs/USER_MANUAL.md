@@ -50,7 +50,11 @@ ___
 
 ![Loading Screen image](/docs/img/loading-screen.png)
 
-Level popup: TODO Aaditya
+Level popup: After the player has gained some experience playing the game, the player can level up. When the level increases
+the player gets a popup message saying "Level {currentLevel}". If the player clicks on "Show Features", the player
+can view the features of current Level.
+
+![Level up image](/docs/img/levelUP.png)
 
 After logging in, the player will be redirected to the index page. First at all, the loading screen will appear, after which the player will be redirected to the game.
 The loading screen consists of a progress bar showing the amount of the game that is loaded, some text displaying what part of the game is
@@ -76,7 +80,8 @@ some basic settings about the game, such as audio, graphics and controls.
 
 ### Chat
 
-TODO: Aaditya
+By clicking on the bottom left icon, the player can open the chat. The chat is a global chat where every
+player can chat with each other. The chat is implemented with Socket.IO library.
 
 ### Inventory
 
@@ -164,7 +169,8 @@ ___
 
 ## Asset caching
 
-TODO: Aaditya
+When player logs in for the first time certain 3D-models and images are stored in cache. This makes the process of loading 
+assets faster every time the player opens the game. To store the models we use IndexedDB.
 
 
 
