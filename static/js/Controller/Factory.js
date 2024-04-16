@@ -1,4 +1,4 @@
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY} from "../helpers.js";

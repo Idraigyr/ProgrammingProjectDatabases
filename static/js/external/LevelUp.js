@@ -1,3 +1,12 @@
+/**
+ * This function is called when the player levels up
+ * @param level level of the player
+ * @param maxMana maximum mana of the player
+ * @param maxHealth maximum health of the player
+ * @param maxGemAttribute maximum number of gem attributes of the player
+ * @param maxBuildings maximum number of buildings of the player
+ * @param buildings buildings of the player
+ */
 export function popUp(level, maxMana, maxHealth, maxGemAttribute, maxBuildings, buildings){
     let builds = "";
     for(let i = 0; i < buildings.length; i++){

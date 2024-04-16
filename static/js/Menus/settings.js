@@ -15,6 +15,9 @@ keyBinds.set('attack', 'LMB');
 keyBinds.set('pause', 'Esc');
 
 // changing the variables when changed and applied in settings menu
+/**
+ * Function to change the game settings
+ */
 document.addEventListener("DOMContentLoaded", function() {
     // Select the button and text input elements by their ids
     const button = document.getElementById('applyButton');
@@ -42,6 +45,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // exit button
+/**
+ * Exit the settings menu
+ */
 document.addEventListener("DOMContentLoaded", function() {
     const button = document.getElementById('exit');
     button.addEventListener('click', function() {

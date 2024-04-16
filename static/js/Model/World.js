@@ -30,6 +30,11 @@ export class World{
         this.spawners = [];
     }
 
+    /**
+     * Get island by position
+     * @param position - position in world coordinates
+     * @returns {*|null} - the island at the position or null if there is no island at the position
+     */
     getIslandByPosition(position){
         for(const island of this.islands){
             //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2 (depends on implementation of Foundation class)
@@ -40,6 +45,11 @@ export class World{
         return null;
     }
 
+    /**
+     * Get the building at the position
+     * @param position - position in world coordinates
+     * @returns {*|null} - the building at the position or null if there is no building
+     */
     getBuildingByPosition(position){
         const island = this.getIslandByPosition(position);
         if(island){
@@ -48,6 +58,11 @@ export class World{
         return null;
     }
 
+    /**
+     * Return type of building at worldPosition
+     * @param worldPosition - position in world coordinates
+     * @returns {*} - the type of building at the position
+     */
     checkPosForBuilding(worldPosition){
         const island = this.getIslandByPosition(worldPosition);
         if(island){
@@ -83,10 +98,18 @@ export class World{
         //TODO: throw error?
     }
 
+    /**
+     * Export the world to a json object
+     * @param json - the json object to export to
+     */
     exportWorld(json){
 
     }
 
+    /**
+     * Import a world from a json object
+     * @param json - the json object to import
+     */
     importWorld(json){
 
     }

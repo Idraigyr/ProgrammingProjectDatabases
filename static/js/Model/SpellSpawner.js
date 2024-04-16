@@ -2,6 +2,9 @@ import {Fireball} from "./Spell.js";
 import * as THREE from "three";
 import {Subject} from "../Patterns/Subject.js";
 
+/**
+ * @class SpellSpawner - class for spawning spells
+ */
 export class SpellSpawner extends Subject{
     /**
      * ctor
@@ -16,11 +19,20 @@ export class SpellSpawner extends Subject{
         this.spellParams = params?.spell?.params;
     }
 
+    /**
+     * Set the spell to spawn
+     * @param type - the type of spell to spawn
+     * @param params - the parameters of the spell
+     */
     setSpell(type, params){
         this.spell = type;
         this.spellParams = params;
     }
 
+    /**
+     * Update the spawner
+     * @param deltaTime - time since last update
+     */
     update(deltaTime) {
         this.timer += deltaTime;
         if(this.timer >= this.interval && this.spell){
@@ -29,6 +41,11 @@ export class SpellSpawner extends Subject{
         }
     }
 
+    /**
+     * Create a spawn spell event
+     * @returns {CustomEvent<{type, params: {position: Vector3, team: number, direction: Vector3}}>} - the spawn spell event
+     * @private - helper function
+     */
     _createSpawnSpellEvent() {
         return new CustomEvent("spawnSpell", {
             detail: {

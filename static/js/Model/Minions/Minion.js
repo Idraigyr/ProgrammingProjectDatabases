@@ -1,6 +1,10 @@
 import * as THREE from "three";
 import {Character} from "../Character.js";
 
+/**
+ * Class representing a Minion
+ * @extends Character
+ */
 export class Minion extends Character{
     constructor(params) {
         super(params);

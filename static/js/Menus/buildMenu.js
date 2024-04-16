@@ -6,6 +6,10 @@ let resources = ["fusionTable", "mine"];
 let decorations = ["tree", "bush"];
 
 // Function to show buildings or items based on the selected tab
+/**
+ * Show buildings based on the selected tab
+ * @param type - The selected tab
+ */
 function showBuildings(type) {
     const container = document.getElementById('container1');
     container.innerHTML = ''; // Clear existing items in the container
@@ -29,6 +33,12 @@ function showBuildings(type) {
 }
 
 
+/**
+ * Populate the container with items
+ * @param containerId - The id of the container to populate
+ * @param itemList - The list of items to populate the container with
+ * @param type - The type of items in the list
+ */
 function populateContainer(containerId, itemList, type) {
     const container = document.getElementById(containerId);
 
@@ -72,6 +82,9 @@ function populateContainer(containerId, itemList, type) {
 
 populateContainer("container1", combat, "Combat");
 
+/**
+ * Function to handle closing the build menu
+ */
 function exitMenu() {
     // Your code to handle closing the menu goes here
     // Send message to parent

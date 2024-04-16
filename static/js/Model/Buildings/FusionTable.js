@@ -9,6 +9,10 @@ export class FusionTable extends Placeable{
         this.timeToBuild = 4;
     }
 
+    /**
+     * Getter for the database type
+     * @returns {string} the database type
+     */
     get dbType(){
         return "fuse_table";
     }

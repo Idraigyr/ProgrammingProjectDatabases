@@ -8,6 +8,10 @@ export class WarriorHut extends Placeable{
         super(params);
     }
 
+    /**
+     * Getter for the database type
+     * @returns {string} the database type
+     */
     get dbType(){
         return "warrior_hut";
     }

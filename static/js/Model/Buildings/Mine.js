@@ -76,6 +76,12 @@ export class Mine extends Placeable{
         obj.mine_type = "crystal";
         return obj;
     }
+
+    /**
+     * return a json object with the data of the mine formatted for a PUT request
+     * @param userInfo {JSON} the user information
+     * @returns {*} the building type
+     */
     formatPUTData(userInfo) {
         const obj = super.formatPUTData(userInfo);
         obj.mine_type = "crystal";

@@ -1,4 +1,4 @@
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";

@@ -1,5 +1,5 @@
 import {Controller} from "./Controller.js";
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {Fireball, ThunderCloud, Shield, BuildSpell, IceWall} from "../Model/Spell.js";
 import * as THREE from "three";

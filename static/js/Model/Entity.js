@@ -75,9 +75,17 @@ export class Entity extends Subject{
         throw new Error("cannot get type of abstract class Entity");
     }
 
+    /**
+     * Get database type of entity
+     */
     get dbType(){
         throw new Error("cannot get type of abstract class Entity");
     }
+
+    /**
+     * Set minimum y value of the entity bounding box
+     * @param y - new minimum y value
+     */
     setMinimumY(y){
         this._position.y = y;
         this.dispatchEvent(this._createUpdateMinYEvent(y));
