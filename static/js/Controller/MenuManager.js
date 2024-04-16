@@ -19,7 +19,6 @@ import {
 } from "../View/menus/MenuItem.js";
 import {Subject} from "../Patterns/Subject.js";
 import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
-import {assert} from "../helpers.js";
 
 // loading bar
 
@@ -138,7 +137,6 @@ export class MenuManager extends Subject{
      * @param {{target: HTMLElement}} event
      */
     switchPage(event){
-        assert(this.currentMenu instanceof PageMenu, "currentMenu is not a PageMenu");
         this.menus[this.currentMenu].allows.forEach(child => {
             if(child === event.target.dataset.name){
                 this.menus[child].render();
