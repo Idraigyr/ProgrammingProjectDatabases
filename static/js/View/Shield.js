@@ -21,6 +21,9 @@ const fs = 'uniform vec3 glowColor;\n' +
     '    gl_FragColor = vec4( glow, 1.0 );\n' +
     '}';
 
+/**
+ * Shield view
+ */
 export class Shield extends IView{
     constructor(params) {
         super(params);
@@ -31,6 +34,9 @@ export class Shield extends IView{
         this.initTriShield();
     }
 
+    /**
+     * @public Initializes the tri shield
+     */
     initTriShield(){
         let shield1 = this.#createShieldMesh();
         shield1.rotation.y = 120 * Math.PI/180;
@@ -50,11 +56,20 @@ export class Shield extends IView{
         this.charModel.add(shield2);
         this.charModel.add(shield3);
     }
+
+    /**
+     * @public Initializes the mono shield
+     */
     initMonoShield(){
         let shield1 = this.#createShieldMesh();
         shield1.translateY(this.heightOffset);
         this.charModel.add(shield1);
     }
+
+    /**
+     * @public Updates the shield's rotation
+     * @param deltaTime The time passed since the last update
+     */
     update(deltaTime){
         this.charModel.rotateY((Math.PI/180)*deltaTime*20);
 
@@ -62,6 +77,11 @@ export class Shield extends IView{
             child.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(this.camera.position, child.position);
         });
     }
+
+    /**
+     * @private Creates a shield mesh
+     * @returns {Mesh} The shield mesh
+     */
     #createShieldMesh(){
         let shieldShape = new THREE.Shape();
         shieldShape.moveTo(0,0);

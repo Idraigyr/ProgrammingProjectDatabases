@@ -1,7 +1,7 @@
 import {Building} from "../BuildingView.js";
 
 /**
- * Altar building view
+ * Warrior hut building view
  */
 export class WarriorHut extends Building{
     constructor(params) {

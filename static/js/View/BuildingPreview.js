@@ -2,6 +2,9 @@ import {IView} from "./View.js";
 import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 
+/**
+ * Building preview view
+ */
 export class BuildingPreview extends IView{
     constructor(params) {
         super(params);
@@ -17,6 +20,11 @@ export class BuildingPreview extends IView{
 
     }
 
+    /**
+     * Check if building preview is not dead
+     * @param deltaTime time passed since last update
+     * @returns {boolean} true if building preview is not dead
+     */
     isNotDead(deltaTime){
         if(this.timer.finished){
             // if(!this.particleSystem.isNotDead(deltaTime)){

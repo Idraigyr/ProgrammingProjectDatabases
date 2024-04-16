@@ -237,6 +237,12 @@ export class ParticleSystem{
         this.updateGeometry();
     }
 
+    /**
+     * checks if the system is not dead
+     * @param deltaTime {number} time since last frame
+     * @returns {boolean} true if system is not dead
+     */
+
     isNotDead(deltaTime){
         this.updateParticles(deltaTime);
         this.updateGeometry();
