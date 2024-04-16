@@ -31,6 +31,11 @@ export class Island extends Foundation{
         this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)] = buildTypes.getNumber("empty");
     }
 
+    /**
+     * Check the cell at the given world position
+     * @param worldPosition - world position to check
+     * @returns {*} - the type of the cell
+     */
     checkCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
@@ -63,6 +68,12 @@ export class Island extends Foundation{
         // Transform position to cell index
         pos = (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
         return this.getBuildingByIndex(pos);
+    }
+    getCellIndex(position){
+        let pos = position.clone();
+        pos = returnWorldToGridIndex(pos);
+        // Transform position to cell index
+        return (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
     }
     getBuildingByIndex(index){
         return this.buildings.find(building => building.cellIndex === index);

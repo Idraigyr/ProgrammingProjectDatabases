@@ -452,13 +452,13 @@ export class MenuManager extends Subject{
      * create building menu items
      */
     #createBuildingItems(){
-        // TODO: apart config from code?
+        // TODO: remove and refactor code below
         const towerName = "Tower";
         const treeName = "Tree";
         const bushName = "Bush";
         const mineName = "Mine";
-        const fusionTableName = "Fuse Table";
-        const warriorHutName = "Warrior hut";
+        const fusionTableName = "FusionTable";
+        const warriorHutName = "WarriorHut";
 
         const items = [
             {
