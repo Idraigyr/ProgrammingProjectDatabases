@@ -13,6 +13,13 @@ class LightBeamView extends IView{
         super(params);
     }
 
+    /**
+     * create a material for the light beam
+     * @param primaryColor primary color of the light beam
+     * @param secondaryColor secondary color of the light beam
+     * @param cutoff the cutoff value
+     * @returns {ShaderMaterial} the material for the light beam
+     */
     createMaterial(primaryColor, secondaryColor, cutoff){
         const uniforms = {
             time: {value : 0},

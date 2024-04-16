@@ -20,15 +20,28 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 // functions for dragging items
+/**
+ * Function to allow dropping items in the container
+ * @param event - the event object
+ */
 function allowDrop(event) {
     event.preventDefault();
 }
 
+/**
+ * Function to handle the drag event
+ * @param event - the event object
+ */
 function drag(event) {
     event.dataTransfer.setData("text", event.target.id);
     event.dataTransfer.setData("startContainer", event.target.parentNode.id);
 }
 
+/**
+ * Function to handle the drop event
+ * @param event - the event object
+ * @param containerId - the id of the container where the item is dropped
+ */
 function drop(event, containerId) {
     // event.preventDefault();
     let data = event.dataTransfer.getData("text");
@@ -68,7 +81,11 @@ function drop(event, containerId) {
     }
 }
 
-// creates name for spell
+/**
+ * Spell string conversion function
+ * @param inputString - the input string
+ * @returns {string} - the processed string
+ */
 function toSpellString(inputString) {
     // Make the first letter uppercase
     let processedString = inputString.charAt(0).toUpperCase() + inputString.slice(1);
@@ -79,7 +96,11 @@ function toSpellString(inputString) {
     return processedString;
 }
 
-// creates name for gem
+/**
+ * Gem string conversion function
+ * @param inputString - the input string
+ * @returns {string} - the processed string
+ */
 function toGemString(inputString) {
     // Make the first letter uppercase
     let processedString = inputString.charAt(0).toUpperCase() + inputString.slice(1);
@@ -90,7 +111,11 @@ function toGemString(inputString) {
     return processedString;
 }
 
-// Function to remove an element by its string value
+/**
+ * Function to remove an item from an array by value
+ * @param array - the input array
+ * @param value - the value to remove
+ */
 function removeByString(array, value) {
     const index = array.indexOf(value);
     if (index !== -1) {
@@ -98,7 +123,11 @@ function removeByString(array, value) {
     }
 }
 
-// create and populate items in the containers
+/**
+ * Function to populate a container with items
+ * @param containerId - the id of the container
+ * @param itemList - the list of items to populate the container with
+ */
 function populateContainer(containerId, itemList) {
     let type = 'Spells';
     if(containerId === 'container2') {
@@ -174,6 +203,9 @@ populateContainer('container2', hotbar);
 populateContainer('container3', gems);
 populateContainer('container4', stakes);
 
+/**
+ * Function to handle the exit menu button of the altar menu
+ */
 function exitMenu() {
     // Your code to handle closing the menu goes here
     // Send message to parent

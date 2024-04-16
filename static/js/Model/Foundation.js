@@ -169,6 +169,12 @@ export class Foundation extends Entity{
         return neighbors;
     }
 
+    /**
+     * Returns the distance between two cells
+     * @param index1 - index of the first cell
+     * @param index2 - index of the second cell
+     * @returns {number} - distance between the two cells
+     */
     getDistance(index1, index2){
         let x1 = index1 % this.width;
         let z1 = Math.floor(index1/this.width);
@@ -180,6 +186,11 @@ export class Foundation extends Entity{
         return dx > dz ? 14*dz + 10*(dx - dz) : 14*dx + 10*(dz - dx);
     }
 
+    /**
+     * Returns the type of the cell at the worldPosition
+     * @param worldPosition - position in world coordinates
+     * @returns {any} - type of the cell
+     */
     checkCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition);
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
@@ -187,6 +198,10 @@ export class Foundation extends Entity{
     }
 
 
+    /**
+     * Set position of the foundation, also updates min and max
+     * @param vector - new position
+     */
     set position(vector){
         const delta = vector.clone().sub(this._position);
         this.min.x += delta.x;
@@ -198,11 +213,19 @@ export class Foundation extends Entity{
         super.position = vector;
     }
 
+    /**
+     * Get position of the foundation
+     * @returns {*} - position of the foundation
+     */
     get position(){
         return super.position;
     }
 
 
+    /**
+     * Set rotation of the foundation, also updates width and length
+     * @param value
+     */
     set rotation(value){
         if([0,180,-0,-180].includes(value%360)) return;
         if([90,270,-90,-270].includes(value%360)){

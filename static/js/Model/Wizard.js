@@ -58,6 +58,10 @@ export class Wizard extends Character{
         return this.spells[this.currentSpell];
     }
 
+    /**
+     * Return if the player can cast the current spell
+     * @returns {boolean|boolean} - if the player can cast the current spell
+     */
     canCast(){
         return (this.getCurrentSpell() ? (this.spellCooldowns[this.currentSpell] === 0 && this.mana >= this.getCurrentSpell().cost) : false);
     }
@@ -98,6 +102,9 @@ export class Wizard extends Character{
         //this.health += amount;
     }
 
+    /**
+     * Notify observers of the current condition of the player
+     */
     advertiseCurrentCondition(){
         this.health = 20;
         this.dispatchEvent(this.#createUpdateManaEvent());
@@ -113,10 +120,18 @@ export class Wizard extends Character{
         return "player";
     }
 
+    /**
+     * Create a custom event to update the mana of the player
+     * @returns {CustomEvent<{current: (*|number|RegExp|number), total: (*|number|number)}>} - the custom event
+     */
     #createUpdateManaEvent() {
         return new CustomEvent("updateMana", {detail: {current: this.mana, total: this.maxMana}});
     }
 
+    /**
+     * Create a custom event to update the health of the player
+     * @returns {CustomEvent<{current: (*|number|RegExp), total: (*|number|RegExp)}>} - the custom event
+     */
     #createUpdateHealthEvent() {
         return new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}});
     }

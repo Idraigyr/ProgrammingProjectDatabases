@@ -1,13 +1,23 @@
 import {Gem} from "../Model/items/Item.js";
 import {API_URL} from "../configs/EndpointConfigs.js";
 
+/**
+ * Class for managing items in menu's
+ */
 export class ItemManager {
+    /**
+     * Constructor for the ItemManager
+     */
     constructor() {
         this.items = []; // map building -> items or property in item
         this.menuManager = null;
     }
 
     // Equip a gem into a building
+    /**
+     * Add a gem to a building
+     * @param {{detail: {id: number, building: Placeable}}} event
+     */
     addGem(event){
         // Get id of gem
         let gemId = event.detail.id;
@@ -19,11 +29,20 @@ export class ItemManager {
         item.equippedIn = buildingId;
     }
 
+    /**
+     * Get an item by its id
+     * @param {number} id
+     * @return {*}
+     */
     #getItemById(id){
         return this.items.find(item => item.id === id);
     }
 
     //TODO: unequip a gem from a building
+    /**
+     * Remove a gem from a building
+     * @param {{detail: {id: number}}} event
+     */
     removeGem(event){
         // Get id of gem
         let gemId = event.detail.id;
@@ -34,6 +53,10 @@ export class ItemManager {
     }
 
     //TODO: forward equipped gem info from a building to the MenuManager when opening the building's menu
+    /**
+     * Check the equipped gems in a building
+     * @param {Placeable} building
+     */
     checkEquippedGems(building){
         // Get id of the building
         let buildingId = building.id;
@@ -43,8 +66,14 @@ export class ItemManager {
         let equippedGems = this.items.filter(item => item.equippedIn === buildingId);
         let menuItems = equippedGems.map(this.#itemToMenuItem);
         // Forward the equipped gems to the MenuManager
-        this.menuManager.addItems(menuItems);
+        this.menuManager.addItems(menuItems); //TODO: remove this!! addItems of menuManager may only be called on new Item creation / on game initialisation from db
     }
+
+    /**
+     *
+     * @param item
+     * @return {{item, icon: {src: string, width: number, height: number}}}
+     */
     #itemToMenuItem(item){
         // TODO: advanced options for the icon
         return {item: item, icon: {src: "https://via.placeholder.com/50", width: 50, height: 50}};

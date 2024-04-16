@@ -1,3 +1,6 @@
+/**
+ * WorkerPool
+ */
 export class WorkerPool {
 
 	get workerCount() {

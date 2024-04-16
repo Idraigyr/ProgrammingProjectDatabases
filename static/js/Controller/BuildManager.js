@@ -15,9 +15,9 @@ export class BuildManager {
     #raycaster;
     /**
      * Creates objects that controls which ritual to put
-     * @param raycastController raycaster for the builder
-     * @param scene scene where to build
-     * @param gridCellSize length of the grid square side
+     * @param {RaycastController} raycastController raycaster for the builder
+     * @param {THREE.Scene} scene scene where to build
+     * @param {number} gridCellSize length of the grid square side
      * @param previewMaterial Material of the ritual preview
      */
     // TODO: connect gridcellsize from here to the gridcellsize of the terrain

@@ -8,6 +8,10 @@ export class Altar extends Placeable{
         super(params);
     }
 
+    /**
+     * Getter for the database type
+     * @returns {string} the database type
+     */
     get dbType(){
         return "altar_building";
     }

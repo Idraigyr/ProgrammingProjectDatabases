@@ -14,7 +14,7 @@ export class Mine extends Placeable{
      */
     constructor(params) {
         super(params);
-        this.timeToBuild = 10;
+        this.timeToBuild = 300;
         this.lastCollected = params.lastCollected;
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
         this.#maxCrystals = this.#calculateMaxCrystals();
@@ -76,6 +76,12 @@ export class Mine extends Placeable{
         obj.mine_type = "crystal";
         return obj;
     }
+
+    /**
+     * return a json object with the data of the mine formatted for a PUT request
+     * @param userInfo {JSON} the user information
+     * @returns {*} the building type
+     */
     formatPUTData(userInfo) {
         const obj = super.formatPUTData(userInfo);
         obj.mine_type = "crystal";

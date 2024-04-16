@@ -9,6 +9,7 @@ import {
     upKey
 } from "../configs/Keybinds.js";
 import {Subject} from "../Patterns/Subject.js";
+import {assert} from "../helpers.js";
 
 /**
  * Class that manages the input from the user
@@ -35,6 +36,7 @@ export class InputManager extends Subject{
 
     /**
      * Constructor that adds event listeners for the input
+     * @param {{canvas: HTMLCanvasElement}} params
      */
     constructor(params) {
         super(params);
@@ -80,16 +82,26 @@ export class InputManager extends Subject{
         });
     }
 
+    /**
+     * requests pointer lock on canvas if input is not blocked
+     * @return {Promise<void>}
+     */
     async requestPointerLock(){
         if(!this.blockedInput) return;
         await this.canvas.requestPointerLock();
     }
 
+    /**
+     * exits pointer lock and resets input
+     */
     exitPointerLock(){
         this.resetKeys();
         document.exitPointerLock();
     }
 
+    /**
+     * Resets all input
+     */
     resetKeys(){
         for(const key in this.keys){
             if(key === "spellSlot") continue;
@@ -99,29 +111,39 @@ export class InputManager extends Subject{
         this.mouse.rightClick = false;
     }
 
+    /**
+     * adds callback to execute for when a keydown event is triggered
+     * @param {string} key
+     * @param {function} callback
+     */
     addKeyDownEventListener(key, callback){
         this.#callbacks[key] = callback;
     }
 
-    removeKeyDownEventListener(key){
+    /**
+     * removes callback from keydown event
+     * @param {string} key
+     * @param {function} callback
+     */
+    removeKeyDownEventListener(key, callback){
         this.#callbacks[key] = this.#callbacks[key].filter((cb) => cb !== callback);
     }
 
     /**
-     * Adds event listener for mouse move
-     * @param callback function to add
+     * Adds callback for mouse move event
+     * @param {function} callback
      */
-
     addMouseMoveListener(callback){
         this.#callbacks["mousemove"].push(callback);
     }
 
     /**
-     * Adds event listener for mouse down
+     * Adds callback for mouse down event
      * @param {Function} callback function to add
      * @param {"left" | "right"} button
      */
     addMouseDownListener(callback, button){
+        assert(button === "left" || button === "right", "button must be either 'left' or 'right'");
         this.#callbacks["mousedown"][button === "left" ? 0 : 2].push(callback);
     }
 
@@ -141,16 +163,28 @@ export class InputManager extends Subject{
         this.#callbacks["mousemove"] = this.#callbacks["mousemove"].filter((cb) => cb !== callback);
     }
 
+    /**
+     * executes added callbacks for mouse move event
+     * @param event
+     */
     onMouseMoveEvent(event){
         if(this.blockedInput) return;
         this.#callbacks["mousemove"].forEach((callback) => callback(event));
     }
 
+    /**
+     * executes added callbacks for mouse down event
+     * @param event
+     */
     onClickEvent(event){
         if(this.blockedInput) return;
         this.#callbacks["mousedown"][event.button].forEach((callback) => callback(event));
     }
 
+    /**
+     * creates custom event for spell slot change
+     * @return {CustomEvent<{spellSlot: number}>}
+     */
     createSpellSlotChangeEvent(){
         return new CustomEvent("spellSlotChange", {detail: {spellSlot: this.keys.spellSlot}});
     }
@@ -165,8 +199,8 @@ export class InputManager extends Subject{
 
     /**
      * Updates pressed keys
-     * @param KeyBoardEvent event
-     * @param bool true if key is pressed, false if released
+     * @param {event} KeyBoardEvent event
+     * @param {boolean} bool true if key is pressed, false if released
      */
 
     //TODO: remove all keys that need not be checked within an update function
@@ -231,7 +265,7 @@ export class InputManager extends Subject{
 
     /**
      * Updates pressed keys
-     * @param KeyBoardEvent event
+     * @param {event} KeyBoardEvent event
      */
     #onKeyDown(KeyBoardEvent){
         this.#onKey(KeyBoardEvent,true);
@@ -239,12 +273,16 @@ export class InputManager extends Subject{
 
     /**
      * Updates released keys
-     * @param KeyBoardEvent event
+     * @param {event} KeyBoardEvent event
      */
     #onKeyUp(KeyBoardEvent){
         this.#onKey(KeyBoardEvent, false);
     }
 
+    /**
+     * Adds callback for settings button clicked
+     * @param callback
+     */
     addSettingButtonListener(callback) {
         const settingsButton = document.querySelector('.settings-button');
         settingsButton.addEventListener('click', callback);

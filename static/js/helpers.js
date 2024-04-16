@@ -2,6 +2,11 @@ import * as THREE from "three";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {gravity} from "./configs/ControllerConfigs.js";
 
+/**
+ * Assert the condition
+ * @param condition - the condition to assert
+ * @param message - the message to display if the condition is not met
+ */
 export const assert = function(condition, message) {
     if (!condition) {
         throw new Error(message || "Assertion failed");
@@ -10,10 +15,20 @@ export const assert = function(condition, message) {
 }
 
 
+/**
+ * Get the time difference in seconds
+ * @param time1 - the first time
+ * @param time2 - the second time
+ * @returns {number} the time difference in seconds
+ */
 export const timeDifferenceInSeconds = function(time1, time2){
     return Math.round(Math.abs(time1 - time2) / 1000);
 }
 
+/**
+ * Get the distance between two points
+ * @param geometry - the geometry to get the distance of
+ */
 export const setIndexAttribute = function(geometry){
     const numVertices = geometry.attributes.position.count;
     const index = [];
@@ -23,6 +38,12 @@ export const setIndexAttribute = function(geometry){
     geometry.setIndex(index);
 }
 
+/**
+ * Return the multiplied string
+ * @param string - the string to multiply
+ * @param length - the length to multiply the string by
+ * @returns {string} the multiplied string
+ */
 export const returnMultipliedString = function(string, length){
     let str = "";
     for(let i = 0; i < length; i++){
@@ -31,6 +52,13 @@ export const returnMultipliedString = function(string, length){
     return str;
 }
 
+/**
+ * Print the foundation grid
+ * @param grid - the grid to print
+ * @param width - the width of the grid
+ * @param length - the length of the grid
+ * @param oneline - whether to print the grid on one line
+ */
 export const printFoundationGrid = function(grid, width, length, oneline=false){
     console.log(returnMultipliedString("*", width));
     let arr = "";
@@ -50,6 +78,14 @@ export const printFoundationGrid = function(grid, width, length, oneline=false){
     console.log(returnMultipliedString("*", width));
 }
 
+/**
+ * Print the grid with the path
+ * @param grid - the grid to print
+ * @param path - the path to print
+ * @param width - the width of the grid
+ * @param length - the length of the grid
+ * @param currentNode - the current node to print
+ */
 export const printGridPath = function(grid, path, width, length, currentNode = null){
     console.log(returnMultipliedString("*", width));
     for(let i = 0; i < length; i++){
@@ -75,16 +111,31 @@ export const printGridPath = function(grid, path, width, length, currentNode = n
     console.log(returnMultipliedString("*", width));
 }
 
+/**
+ * Get grid index from world position
+ * @param position world position
+ * @returns {{x: number, z: number}} grid index
+ */
 export const returnWorldToGridIndex = function(position){
     return {x: Math.floor(position.x/gridCellSize + 0.5), z: Math.floor(position.z/gridCellSize + 0.5)};
 }
 
+/**
+ * Convert the world position to the grid position
+ * @param position - the world position
+ * @returns {*} the grid position
+ */
 export const convertWorldToGridPosition = function (position){
     position.x = Math.floor(position.x/gridCellSize + 0.5)*gridCellSize;
     position.z = Math.floor(position.z/gridCellSize + 0.5)*gridCellSize;
     return position;
 }
 
+/**
+ * Convert the grid position to the world position
+ * @param position - the grid position
+ * @returns {*} the world position
+ */
 export const convertGridIndexToWorldPosition = function (position){
     position.x = position.x*gridCellSize;
     position.z = position.z*gridCellSize;
@@ -101,7 +152,16 @@ export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velo
 
     box2Velocity.add(hitVector.multiplyScalar(10 * totalMass / box2Mass));
 }
-
+/**
+ * Push the collided objects apart
+ * @param box1 - the first object
+ * @param box2 - the second object
+ * @param box1Velocity - the velocity of the first object
+ * @param box2Velocity - the velocity of the second object
+ * @param box1Mass - the mass of the first object
+ * @param box2Mass - the mass of the second object
+ * @param deltaTime - the time elapsed since the last frame
+ */
 export const pushCollidedObjects = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
     const distance = box1.getCenter(new THREE.Vector3()).distanceTo(box2.getCenter(new THREE.Vector3()));
 
@@ -113,7 +173,12 @@ export const pushCollidedObjects = function (box1, box2, box1Velocity, box2Veloc
     box2Velocity.add(normal.clone().multiplyScalar(impulse * box1Mass));
 }
 
-
+/**
+ * Adjust the velocity of the object if it collides with the staticBox
+ * @param staticBox - the static box to collide with
+ * @param movableBox - the movable box to collide with
+ * @param boxVelocity - the velocity of the movable box
+ */
 export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //box1 = spell
     const characterCenter = movableBox.getCenter(new THREE.Vector3());
     const hitVector = new THREE.Vector3().copy(staticBox.getCenter(new THREE.Vector3())).sub(characterCenter);
@@ -130,6 +195,14 @@ export const adjustVelocity = function (staticBox, movableBox, boxVelocity){ //b
 }
 
 const delta = 0.1;
+/**
+ * Adjust the velocity of the object if it collides with the staticBox
+ * @param staticBox - the static box to collide with
+ * @param movableBox - the movable box to collide with
+ * @param boxVelocity - the velocity of the movable box
+ * @param deltaTime - the time elapsed since the last frame
+ * @returns {boolean} whether the movable box is standing on the static box
+ */
 export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity, deltaTime){
     let standingOnCollidable = false;
     if(Math.abs(staticBox.min.x - movableBox.max.x) < delta && boxVelocity.x < 0){
@@ -159,6 +232,13 @@ export const adjustVelocity2 = function (staticBox, movableBox, boxVelocity, del
     return standingOnCollidable;
 }
 
+/**
+ * Adjust the velocity of the object if it collides with the staticBox
+ * @param staticBox - the static box to collide with
+ * @param movableBox - the movable box to collide with
+ * @param boxVelocity - the velocity of the movable box
+ * @returns {boolean} whether the movable box is standing on the static box
+ */
 export const adjustVelocity3 = function (staticBox, movableBox, boxVelocity){
     let standingOnCollidable = false;
     if(staticBox.min.x - movableBox.max.x < 0 && boxVelocity.x < 0){
@@ -207,6 +287,11 @@ export function drawBoundingBox(object, scene){
     scene.add(boundingBox);
 }
 
+/**
+ * Scale and correct the position of the object
+ * @param object - the object to scale and correct the position of
+ * @param viewManager - the viewManager to extract the object from
+ */
 export function scaleAndCorrectPosition(object, viewManager=undefined){
         let extracted;
         if (object instanceof THREE.Object3D) {extracted = object;}
@@ -216,12 +301,23 @@ export function scaleAndCorrectPosition(object, viewManager=undefined){
         //correctRitualPosition(extracted);
     }
 
+/**
+ * Extract the object from the viewManager if it is a view
+ * @param object - the object to extract
+ * @param viewManager - the viewManager to extract the object from
+ * @returns {*|Object3D} the extracted object
+ */
 export function extractObject(object, viewManager){
         if(!object || object instanceof Object3D) return object;
         const {_, view} = viewManager.getPair(object);
         if(view) return view.charModel;
         return object.charModel;
 }
+
+/**
+ * Correct the position of the object to fit the grid cell size
+ * @param object - the object to correct the position of
+ */
 export function correctRitualPosition(object) {
     object.position.x = Math.floor(object.position.x / gridCellSize + 0.5) * gridCellSize;
     object.position.z = Math.floor(object.position.x / gridCellSize + 0.5) * gridCellSize;
@@ -253,11 +349,20 @@ export function getOccupiedCells(building){
     return cells;
 }
 
+/**
+ * Set the minimum y position of the object
+ * @param object - the object to set the minimum y position of
+ * @param y - the y position to set the minimum y position to
+ */
 export function setMinimumY(object, y){
     const boundingBox = new THREE.Box3().setFromObject(object);
     object.position.y += y - boundingBox.min.y;
 }
 
+/**
+ * Correct the scale of the object to fit the grid cell size
+ * @param object - the object to correct the scale of
+ */
 export function correctRitualScale(object){
         let boundingBox = new THREE.Box3().setFromObject(object);
         const minVec = boundingBox.min;
@@ -268,11 +373,28 @@ export function correctRitualScale(object){
         object.scale.set(scaleFactor*object.scale.x, scaleFactor*object.scale.y, scaleFactor*object.scale.z);
 }
 
+/**
+ * Function to set the position of the object centre to the given position
+ * @param object - the object to set the centre position of
+ * @param position - the position to set the centre to
+ */
 export function setPositionOfCentre(object, position){
     const pos = position.clone();
     const boundingBox = new THREE.Box3().setFromObject(object);
     const center = boundingBox.getCenter(new THREE.Vector3());
     object.position.add(pos.sub(center));
+}
+
+/**
+ * Function to get a random integer between min and max
+ * @param min minimum value
+ * @param max maximum value
+ * @returns {number} random integer
+ */
+export function getRandomInt(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 /*

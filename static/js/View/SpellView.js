@@ -20,13 +20,26 @@ export class Fireball extends IView{
         this.boundingBox.translate(this.position);
     }
 
+    /**
+     * Clean up fireball
+     */
     cleanUp(){
         super.cleanUp();
     }
+
+    /**
+     * Update fireball
+     * @param deltaTime time passed
+     */
     update(deltaTime){
         this.particleSystem.update(deltaTime);
     }
 
+    /**
+     * Check if fireball is not dead
+     * @param deltaTime time passed
+     * @returns {boolean} true if fireball is not dead
+     */
     isNotDead(deltaTime){
         return this.particleSystem.isNotDead(deltaTime);
     }
@@ -44,6 +57,9 @@ export class Fireball extends IView{
     }
 }
 
+/**
+ * ThunderCloud view
+ */
 export class ThunderCloud extends IView{
     constructor(params) {
         super(params);
@@ -72,6 +88,11 @@ export class ThunderCloud extends IView{
         this.charModel.add(this.planes);
         this.boundingBox.setFromCenterAndSize(new THREE.Vector3(), new THREE.Vector3(this.width, this.height, this.width));
     }
+
+    /**
+     * Generate cloud metrics
+     * @returns {{density: number, rotation, x, y, scale, z}[]} array of cloud metrics
+     */
     #generateCloudMetrics(){
         return [...new Array(this.NrPlanes)].map((_, index) => ({
             x: (this.width / 2 - Math.random() * this.width) + this.position.x,
@@ -83,17 +104,36 @@ export class ThunderCloud extends IView{
         }));
     }
 
+    /**
+     * Rotate object around position
+     * @param obj object to rotate
+     * @param axis axis to rotate around
+     * @param angle angle to rotate
+     */
     #rotateAroundPosition(obj, axis, angle){
         obj.position.sub(this.position);
         obj.position.applyAxisAngle(axis, angle);
         obj.position.add(this.position);
     }
+
+    /**
+     * Create plane
+     * @param color color
+     * @param scale scale of the plane
+     * @param density density of the plane
+     * @param opacity opacity of the plane
+     * @returns {Mesh} plane
+     */
     #createPlane(color, scale, density, opacity){
         let geo = new THREE.PlaneGeometry(0.2*scale,0.2*scale);
         let mat = new THREE.MeshStandardMaterial({map: this.texture, color: color, blending: THREE.NormalBlending, depthWrite: false, transparent: true, depthTest: true, opacity: (scale / 6) * density * opacity});
         return new THREE.Mesh(geo, mat);
     }
 
+    /**
+     * Create point light
+     * @returns {PointLight} point light
+     */
     #createPointLight(){
         const light = new THREE.PointLight( 0x7777FF, 0);
         light.position.copy(this.position);
@@ -102,6 +142,12 @@ export class ThunderCloud extends IView{
         return light;
     }
 
+    /**
+     * Create cloud
+     * @param color color
+     * @param opacity opacity
+     * @returns {Group} cloud
+     */
     #createCloud(color,opacity){
         let group = new THREE.Group();
         this.cloudMetrics.forEach((segment, index) => {
@@ -113,6 +159,10 @@ export class ThunderCloud extends IView{
         return group;
     }
 
+    /**
+     * Update light
+     * @param deltaTime time passed
+     */
     #updateLight(deltaTime){
         this.timer += deltaTime;
         if(this.lightOn){
@@ -133,6 +183,10 @@ export class ThunderCloud extends IView{
         }
     }
 
+    /**
+     * Update clouds
+     * @param deltaTime time passed
+     */
     #updateClouds(deltaTime){
         for(let i = 0; i < this.planes.children.length; i++){
             this.#rotateAroundPosition(this.planes.children[i],new THREE.Vector3(0,1,0),0.2*deltaTime);
@@ -143,13 +197,19 @@ export class ThunderCloud extends IView{
         }
     }
 
+    /**
+     * Update thundercloud
+     * @param deltaTime time passed
+     */
     update(deltaTime){
         this.#updateLight(deltaTime);
         this.#updateClouds(deltaTime);
     }
 }
 
-
+/**
+ * RitualSpell view
+ */
 export class RitualSpell extends IAnimatedView{
     constructor(params) {
         super(params);
@@ -169,6 +229,11 @@ export class RitualSpell extends IAnimatedView{
         }
         getAnimation('Scene',"RitualSpell");
     }
+
+    /**
+     * Update build ritual
+     * @param deltaTime time passed
+     */
     update(deltaTime) {
         super.update(deltaTime);
         this.animations["RitualSpell"].play();
@@ -177,6 +242,12 @@ export class RitualSpell extends IAnimatedView{
 
 //charModel must be a group of iceBlock models
 //make iceWall a compound of iceBlock models because of AABB
+/**
+ * IceWall view
+ * @param params {charModel: THREE.Group, position: THREE.Vector3, horizontalRotation: number} params
+ * @returns {*[]} array of iceBlocks
+ * @constructor
+ */
 export const IceWall = function (params) {
     const iceBlocks = [];
     for(let i = 0; i < iceWall.blocks; i++){
@@ -195,6 +266,9 @@ export const IceWall = function (params) {
     return iceBlocks;
 }
 
+/**
+ * IceBlock view
+ */
 class IceBlock extends IView{
     constructor(params) {
         super(params);
@@ -203,6 +277,11 @@ class IceBlock extends IView{
         this.boundingBox.setFromObject(this.charModel);
         this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
     }
+
+    /**
+     * Update iceBlock position
+     * @param event event with position
+     */
     updatePosition(event){
         if(!this.charModel) return;
         const newPos = new THREE.Vector3().copy(this.spawnPoint).add(event.detail.position);

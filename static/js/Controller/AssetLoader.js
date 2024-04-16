@@ -23,7 +23,7 @@ export class AssetLoader{
 
     /**
      * Load asset
-     * @param path path to the asset
+     * @param {string} path path to the asset
      * @returns {*} the model and its animations
      */
     loadAsset(path){
@@ -48,7 +48,7 @@ export class AssetLoader{
     }
     /**
      * Load a gltf model
-     * @param path path to the model
+     * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
     loadGLTF(path){
@@ -76,7 +76,7 @@ export class AssetLoader{
     //TODO:: add timeout error handler
     /**
      * Load a gltf model
-     * @param path path to the model
+     * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
     loadDRACOGLTF(path){
@@ -106,7 +106,7 @@ export class AssetLoader{
 
     /**
      * Load a fbx model
-     * @param path path to the model
+     * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
     loadFBX(path){
@@ -134,6 +134,11 @@ export class AssetLoader{
         });
     }
 
+    /**
+     * Load a texture
+     * @param {string} path
+     * @return {*}
+     */
     loadTexture(path){
         let loader = new TextureLoader();
         return loader.loadAsync(path, function (xhr) {
@@ -144,6 +149,12 @@ export class AssetLoader{
             throw new Error(err);
         });
     }
+
+    /**
+     * Load a font
+     * @param {string} path
+     * @return {*}
+     */
     loadFont(path){
         let loader = new FontLoader();
         return loader.loadAsync(path, function (xhr) {

@@ -1,5 +1,5 @@
 import {Controller} from "./Controller.js";
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {Fireball, ThunderCloud, Shield, BuildSpell, IceWall} from "../Model/Spell.js";
 import * as THREE from "three";
@@ -90,6 +90,11 @@ export class SpellFactory{
         return model;
     }
 
+    /**
+     * Creates thunder cloud model and view
+     * @param details
+     * @return {*}
+     */
     #createThunderCloud(details){
         let model = new Model.Immobile({
             spellType: details.type,
@@ -115,6 +120,11 @@ export class SpellFactory{
         return model;
     }
 
+    /**
+     * Creates shield model and view
+     * @param details
+     * @return {*}
+     */
     #createShield(details){
         let model = new Model.FollowPlayer({
             target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
@@ -137,6 +147,11 @@ export class SpellFactory{
     }
 
     //TODO: can we remove this?
+    /**
+     * not used
+     * @param details
+     * @return {*}
+     */
     createRitualSpell(details){
         let model = new Model.RitualSpell({
             spellType: details.type,
@@ -156,6 +171,11 @@ export class SpellFactory{
         return model;
     }
 
+    /**
+     * Creates ice wall model and view
+     * @param details
+     * @return {*}
+     */
     #createIceWall(details) {
         let position = new THREE.Vector3().copy(details.params.position);
         position.y -= 7;

@@ -1,4 +1,4 @@
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
@@ -25,6 +25,11 @@ export class WorldManager{
         this.persistent = true;
     }
 
+    /**
+     * Imports a world from the server
+     * @param islandID - the id of the island to import
+     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     */
     async importWorld(islandID){
         let islands = [
             {buildings: [],
@@ -105,10 +110,18 @@ export class WorldManager{
         }
     }
 
+    /**
+     * Checks if a building can be placed at the given position
+     * @param worldPosition - the position to check
+     * @returns {*} - the building that is at that position or null if no building is there
+     */
     checkPosForBuilding(worldPosition){
         return this.world.checkPosForBuilding(worldPosition);
     }
 
+    /**
+     * Adds a new island to the world to spawn minions
+     */
     addSpawningIsland(){
         //TODO: get a random position for the island which lies outside of the main island
         let position = {x: -9, y: 0, z: -8};
@@ -131,6 +144,10 @@ export class WorldManager{
         this.collisionDetector.generateColliderOnWorker();
     }
 
+    /**
+     * Collects the crystals from the building at the current position
+     * @returns {Promise<void>} - a promise that resolves when the crystals have been collected
+     */
     async collectCrystals(){
         const building = this.world.getBuildingByPosition(this.currentPos);
         console.log("collect from min - worldManager", building);
@@ -141,7 +158,10 @@ export class WorldManager{
         }
     }
 
-
+    /**
+     * Exports the world to the server
+     * @returns {Promise<void>} - a promise that resolves when the world has been exported
+     */
     async exportWorld(){
 
     }
@@ -174,6 +194,11 @@ export class WorldManager{
         }
     }
 
+    /**
+     * Add new post request to the postRequests array
+     * @param placeable - the placeable to add to the postRequests array
+     * @returns {number} - the index of the request in the postRequests array
+     */
     insertPendingPostRequest(placeable){
         for (let i = 0; i < this.postRequests.length; i++){
             if(this.postRequests[i] === null){
@@ -185,6 +210,10 @@ export class WorldManager{
         return this.postRequests.length - 1;
     }
 
+    /**
+     * Removes post request from the postRequests array
+     * @param index - the index of the request in the postRequests array
+     */
     removePendingPostRequest(index){
         this.postRequests[index] = null;
         while(this.postRequests[this.postRequests.length - 1] === null){
@@ -232,6 +261,13 @@ export class WorldManager{
             console.error(err);
         }
     }
+
+    /**
+     * Send a PUT request to the server
+     * @param uri - the URI to send the PUT request to
+     * @param entity - the Entity that we want to update in the db
+     * @param retries - the number of retries to resend the PUT request
+     */
     sendPUT(uri, entity, retries){
         try {
             $.ajax({

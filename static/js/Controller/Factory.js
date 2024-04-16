@@ -1,4 +1,4 @@
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY} from "../helpers.js";
@@ -11,6 +11,11 @@ import {SpellSpawner} from "../Model/SpellSpawner.js";
  */
 export class Factory{
     #currentTime;
+
+    /**
+     * Constructor for the factory
+     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector}} params
+     */
     constructor(params) {
         this.scene = params.scene;
         this.viewManager = params.viewManager;
@@ -20,10 +25,18 @@ export class Factory{
         this.#currentTime = null;
     }
 
+    /**
+     * Setter for the current time
+     * @param {Date} time
+     */
     set currentTime(time){
         this.#currentTime = time;
     }
 
+    /**
+     * Getter for the current time
+     * @return {Date | Error} throws error if the current time is not set
+     */
     get currentTime(){
         if(!this.#currentTime) throw new Error("currentTime is not set");
         return this.#currentTime;
@@ -73,6 +86,7 @@ export class Factory{
 
     /**
      * Creates player model and view
+     * @param {{position: THREE.Vector3, maxMana: number, mana: number}} params
      * @returns {Wizard}
      */
     createPlayer(params){
@@ -100,6 +114,12 @@ export class Factory{
         return player;
     }
 
+    /**
+     * Creates tower model and view
+     * @deprecated - use createBuilding instead
+     * @param {{position: THREE.Vector3}} params
+     * @return {Tower}
+     */
     createTower(params){
         const asset = this.assetManager.getAsset("Tower");
         correctRitualScale(asset);
@@ -142,7 +162,7 @@ export class Factory{
     /**
      * Creates island model and view
      * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, buildingsList: Object[]}} params
-     * @returns model of the island
+     * @returns {Island} model of the island
      */
     createIsland(params){
         let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length});
@@ -166,7 +186,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number}} params name of the building
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number}} params - buildingName needs to correspond to the name of a building in the Model namespace
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -247,7 +267,8 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {Object} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number}[]} buildingsList list of the buildings to add
+     * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
         buildingsList.forEach((building) => {
