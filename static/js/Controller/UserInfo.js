@@ -155,7 +155,7 @@ export class UserInfo extends Subject{
                 data: JSON.stringify({
                     user_profile_id: this.userID,
                     crystals: this.crystals,
-                    xp: this.experience,
+                    /// xp: this.experience, // TODO: add it back
                     mana: this.mana,
                     entity: {
                         // x: this.playerPosition.x,
