@@ -22,3 +22,6 @@ Each manual test has the following attributes:
 - [ ] [REG-001](/test-cases/tests/REG-001.md): Registration Form Submission 
 - [ ] [CHAT-002](/test-cases/tests/CHAT-002.md): Chat Menu Test
 - [ ] [CTRL-003](/test-cases/tests/CTRL-003.md): Game Controls Test
+- [ ] [ISL-BUILD-004](/test-cases/tests/ISL-BUILD-004.md): Island Building Functionality Test
+- [ ] [ISL-BUILD-005](/test-cases/tests/ISL-BUILD-005.md): Building Placement and Interaction Test
+- [ ] [MINE-006](/test-cases/tests/MINE-006.md): Mining Resources Test
