@@ -129,7 +129,11 @@ The player can move around the game using the following keys (can be changes in 
 
 ![Collision detection animation](/docs/gif/collision-detection.gif)
 
-The player can't walk through buildings or other objects. For the current implementation we use raycasting to detect collisions.
+The player can't walk through buildings or other objects. Collision detection in the game is always done via basic axis aligned bounding box intersection tests. However for the static geometry (= island + buildings) there is an extra optimisation: 
+
+We use a library to add a bounding volume hierarchy (=bvh) which allows us to optimally test collision between the entities in our game and the individual polygons in our static geometry. This way we can let our entities move smoothly over every terrain in our game.
+
+Spell to entity, spell to spell and entity to entity collision does not make use of this optimisation and may appear more “clunky” (for example player movement when moving along an icewall spell). 
 
 # In-game menus
 ___
@@ -173,13 +177,21 @@ By eating, the player will consume crystals in exchange for mana, health and exp
 # Spells
 ___
 
-Fireball ![Fireball spell image](/docs/gif/fire-spell.gif)
+Fireball: creates a fireball projectile that will damage enemies on hit. 
 
-Thunderstorm ![Thunderstorm spell image](/docs/gif/thunder-spell.gif)
+![Fireball spell image](/docs/gif/fire-spell.gif)
 
-Shield ![Shield spell image](/docs/gif/shield.gif)
+Thundercloud: creates a thundercloud above the position the player is looking at. 
 
-Ice wall ![Ice wall spell image](/docs/gif/ice-wall-spell.gif)
+![Thunderstorm spell image](/docs/gif/thunder-spell.gif)
+
+Shield: creates 3 rotating shields around the player 
+
+![Shield spell image](/docs/gif/shield.gif)
+
+Icewall: conjures an ice wall out of the ground, blocking entities movement.
+
+![Ice wall spell image](/docs/gif/ice-wall-spell.gif)
 
 Each spell has own cooldown period and mana cost. The player can cast a spell by pressing the left mouse button.
 
@@ -187,6 +199,8 @@ The first spell is the build spell, which is used to build buildings on the isla
 
 # Building system
 ___
+
+BuildSpell is used to build and move buildings. Will always be present in slot 1 in the hotbar.
 
 ![Build spell icon](/docs/img/build-spell-icon.png)
 
