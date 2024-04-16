@@ -1,7 +1,7 @@
 # User manual
 ___
 
-This document is intended to provide a high-level overview of the project, with links to more detailed technical documentation. 
+This document is intended to provide a high-level overview of the project, with some technical details. 
 
 # Historical setting
 ___
@@ -58,7 +58,7 @@ can view the features of current Level.
 
 After logging in, the player will be redirected to the index page. First at all, the loading screen will appear, after which the player will be redirected to the game.
 The loading screen consists of a progress bar showing the amount of the game that is loaded, some text displaying what part of the game is
-being loaded, and an animation of a wizard casting a spell to keek it visually interesting.
+being loaded, and an animation of a wizard casting a spell to keep it visually interesting.
 
 
 ![Game screen image](/docs/img/game.png)
@@ -104,7 +104,7 @@ The player can move around the game using the following keys (can be changes in 
 - F: Toggle fps counter
 - Space: jump
 - Shift: sprint
-- CTRL: toggle chat
+- C: toggle chat
 - 1-5: select a spell slot
 - E: interact with objects
 - Mouse: look around
@@ -131,8 +131,12 @@ They can also select stakes to start a multiplayer battle.
 
 ### Mine menu
 
+![Mine menu image](/docs/img/mine-menu.png)
+
 The mine menu passively generates crystals for the player and also has
 a small chance of generating gems.
+
+You can collect the crystals by clicking on the collect button. The number of crystals will be added to the player's inventory.
 
 ### Fusion table menu
 
@@ -156,7 +160,26 @@ By eating, the player will consume crystals in exchange for mana, health and exp
 # Building system
 ___
 
-TODO: Daria
+![Build spell icon](/docs/img/build-spell-icon.png)
+
+You can fully customize your island by building different buildings. Each building has its own functionality. To place a building, the player have to select the build spell in the inventory and click on the desired location. Then the build menu will appear, where the player can select the building he/she wants to place. 
+
+![Build menu image](/docs/img/build-menu.png)
+
+The build menu has three tabs:
+- Combat: buildings that are used for combat (e.g. tower)
+- Resources: buildings that are used to generate resources (e.g. mine)
+- Decorations: buildings that are used for decoration (e.g. tree)
+In each item cell you can see the required number of crystals and time in seconds to build the building. Also, there is an icon and the description of the building.
+After you select the building you want to place, the build menu will disappear, the number of crystals will decrease and the building preview will be placed on the selected location.
+
+![Building preview image](/docs/img/building-green-preview.png) 
+
+Above the building preview you can see the timer that shows the remaining time to build the building. When the timer reaches 0, the building will be placed on the selected location.
+
+After that, you can interact with the building by pressing the `E` key. 
+
+If you want to move the building, you have to select the build spell in the inventory and click on the building. Then the building will be selected and you can move it to the desired location. To place the selected object on the new place, click on the desired cell. If you want to rotate the building, you have to click with the right mouse button.
 
 ## Currency
 
