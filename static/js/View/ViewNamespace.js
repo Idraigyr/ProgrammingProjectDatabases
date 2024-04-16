@@ -13,9 +13,11 @@ import {WarriorHut} from "./Buildings/WarriorHut.js";
 import {BuildingPreview} from "./BuildingPreview.js";
 import {Minion} from "./Characters/Minion.js";
 import {Watch} from "./Watch.js";
+import {Bridge} from "../Model/Bridge.js";
 
 /**
- * Namespace for all the view classes
+ * View namespace
+ * @type {Readonly<{BuildingPreview: BuildingPreview, Player: Player, FusionTable: FusionTable, Shield: Shield, WarriorHut: WarriorHut, Island: Island, ThunderCloud: ThunderCloud, Fireball: Fireball, Minion: Minion, Bush: Bush, Mine: Mine, Watch: Watch, Tree: Tree, Tower: Tower, IceWall: ((function(*): *[])|*), Altar: Altar, Bridge: Bridge, SpellPreview: SpellPreview, RitualSpell: RitualSpell}>}
  */
 export const View = Object.freeze({
     Player: Player,
@@ -35,5 +37,6 @@ export const View = Object.freeze({
     SpellPreview: SpellPreview,
     BuildingPreview: BuildingPreview,
     RitualSpell: RitualSpell,
-    Watch: Watch
+    Watch: Watch,
+    Bridge: Bridge
 });

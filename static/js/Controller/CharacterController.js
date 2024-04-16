@@ -40,7 +40,7 @@ export class CharacterController extends Subject{
 
     /**
      * Update the rotation of the character
-     * @param event event
+     * @param {{detail: {MovementX: number, MovementY: number}}} event
      */
     updateRotation(event){
         const {movementX, movementY} = event;
@@ -71,7 +71,7 @@ export class CharacterController extends Subject{
     }
 
     /**
-     * Handle the click event
+     * Handle the rightClick event
      * @param event event
      */
     onRightClickEvent(event){ //TODO: move to SpellCaster class
@@ -89,6 +89,10 @@ export class CharacterController extends Subject{
     }
 
 
+    /**
+     * Update the physics of the character (position) based on current state
+     * @param {number} deltaTime
+     */
     updatePhysics(deltaTime){
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
         //const correctedDeltaTime = min(deltaTime, 0.1);
@@ -131,7 +135,7 @@ export class CharacterController extends Subject{
 
     /**
      * dispatches an eating event after checking if the player is in the eating state
-     * @returns {}
+     * @fires {CustomEvent<{}>} eatingEvent
      */
     eat()
     {
@@ -144,7 +148,7 @@ export class CharacterController extends Subject{
 
 
     /**
-     * Update the character (e.g. state, position, spells, etc.)
+     * Update the character state based on input
      * @param deltaTime
      */
     update(deltaTime) {
