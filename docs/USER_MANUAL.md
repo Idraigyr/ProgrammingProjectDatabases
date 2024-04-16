@@ -40,17 +40,17 @@ Here, the player can create a new account and get a new island by filling in the
 # Login page
 ___
 
-If the player already has an account, they can log in by clicking "I have already eaten some gems" which refers to
+If the player already has an account, they can log in by clicking "I have already eaten some crystals" which refers to
 the crystals that grant magical abilities when eaten which the player already has if they have an island.
 For the login the player needs to fill in their username and password.
-There is also an option to log in with Google.
+There is also an option to log in with Google and reset the password.
 
 # Index page
 ___
 
 ![Loading Screen image](/docs/img/loading-screen.png)
 
-Level popup: After the player has gained some experience playing the game, the player can level up. When the level increases
+Level popup: After the player has gained some experience playing the game (e.g. for eating crystal or placing buildings), the player can level up. When the level increases
 the player gets a popup message saying "Level {currentLevel}". If the player clicks on "Show Features", the player
 can view the features of current Level.
 
@@ -71,6 +71,8 @@ The index page is the main page of the game. It contains the following elements:
 - Health bar (red potion): shows the health of the player
 - Mana bar (blue potion): shows the mana of the player
 - Inventory: shows the equipped spells
+- Username: shows the username of the player
+- Current level: shows the current level and the progress bar of the player
 - Game screen: shows the game
 
 ### Settings menu
@@ -83,7 +85,17 @@ some basic settings about the game, such as audio, graphics and controls.
 By clicking on the bottom left icon, the player can open the chat. The chat is a global chat where every
 player can chat with each other. The chat is implemented with Socket.IO library.
 
+### Cheats
+
+If the player has the right to use cheats, the player can open the chat menu and type the following commands:
+
+- \level(level): set the level of the player
+- \xp(xp): increase the xp of the player
+- \crystal(crystals): increase the crystals of the player
+
 ### Inventory
+
+![Spell inventory image](/docs/img/spell-inventory.png)
 
 At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell cant be changed and 
 will always be the build spell, with which the player can build buildings on his island. The other 4 equipped spells can be changed
@@ -94,6 +106,8 @@ highlighting of the selected spell slot. Each individual spell has a unique icon
 ___
 
 ## Basic player movements
+
+![Player sprinting forward image](/docs/img/sprint-forward.png)
 
 The player can move around the game using the following keys (can be changes in the settings menu):
 
@@ -113,7 +127,9 @@ The player can move around the game using the following keys (can be changes in 
 
 ## Collision detection
 
-TODO: Flynn
+![Collision detection animation](/docs/gif/collision-detection.gif)
+
+The player can't walk through buildings or other objects. For the current implementation we use raycasting to detect collisions.
 
 # In-game menus
 ___
@@ -125,6 +141,8 @@ Opening a menu is done by default by pressing the `E` key when the player is
 aiming at the building.
 
 ### Altar menu
+
+![Altar menu image](/docs/img/altar-menu.png)
 
 In the altar menu the player can configure their inventory and equip spells.
 They can also select stakes to start a multiplayer battle.
@@ -147,15 +165,25 @@ This will take some time.
 
 The tower is used for combat and displays its health and damage.
 
-# Spells
-___
-
-TODO: Flynn
-
 # Eating
 ___
 
 By eating, the player will consume crystals in exchange for mana, health and experience.
+
+# Spells
+___
+
+Fireball ![Fireball spell image](/docs/gif/fire-spell.gif)
+
+Thunderstorm ![Thunderstorm spell image](/docs/gif/thunder-spell.gif)
+
+Shield ![Shield spell image](/docs/gif/shield.gif)
+
+Ice wall ![Ice wall spell image](/docs/gif/ice-wall-spell.gif)
+
+Each spell has own cooldown period and mana cost. The player can cast a spell by pressing the left mouse button.
+
+The first spell is the build spell, which is used to build buildings on the island.
 
 # Building system
 ___
@@ -191,6 +219,8 @@ upgrade buildings.
 ___
 
 ## Asset caching
+
+![Asset caching image](/docs/img/index-db.png)
 
 When player logs in for the first time certain 3D-models and images are stored in cache. This makes the process of loading 
 assets faster every time the player opens the game. To store the models we use IndexedDB.
