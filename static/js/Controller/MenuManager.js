@@ -24,6 +24,9 @@ import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 
 //simulateLoading();
 
+/**
+ * MenuManager class
+ */
 export class MenuManager extends Subject{
     #ctorToDBNameList;
 

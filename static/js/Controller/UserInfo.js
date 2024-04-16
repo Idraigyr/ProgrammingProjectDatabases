@@ -4,6 +4,9 @@ import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/Endpoint
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 
+/**
+ * Class that holds the user information
+ */
 export class UserInfo extends Subject{
     constructor() {
         super();
@@ -36,6 +39,11 @@ export class UserInfo extends Subject{
             z: 0
         }
     }
+
+    /**
+     * Retrieves the user information from the server
+     * @returns {Promise<void>} - Promise that resolves when the user information is retrieved
+     */
     async retrieveInfo(){
         try {
             // GET request to server
@@ -73,6 +81,10 @@ export class UserInfo extends Subject{
         }
     }
 
+    /**
+     * Retrieves the current time from the server
+     * @returns {Promise<*>} - Promise that resolves with the current time
+     */
     async getCurrentTime(){
         try {
             // GET request to server
@@ -85,6 +97,9 @@ export class UserInfo extends Subject{
 
     }
 
+    /**
+     * Updates the user information on the server and frontend
+     */
     advertiseCurrentCondition(){
         // TODO: do you need to call updateUserInfoBackend() here?
         this.dispatchEvent(this.createUpdateCrystalsEvent());
@@ -97,14 +112,27 @@ export class UserInfo extends Subject{
         this.updateUserInfoBackend();
     }
 
+    /**
+     * Calculates the health bonus based on the level
+     * @returns {number} - Health bonus
+     */
     calculateHealthBonus(){
         return this.level*10;
     }
 
+    /**
+     * Calculates the mana bonus based on the level
+     * @returns {number} - Mana bonus
+     */
     calculateManaBonus(){
         return this.level*10;
     }
 
+    /**
+     * Changes the amount of crystals
+     * @param amount - Amount of crystals to change
+     * @returns {boolean} - True if the crystals were changed, false otherwise
+     */
     changeCrystals(amount){
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
@@ -113,6 +141,10 @@ export class UserInfo extends Subject{
         this.updateUserInfoBackend();
         return true;
     }
+
+    /**
+     * Updates the user information on the server
+     */
     updateUserInfoBackend(){
         try {
             // PUT request to server
@@ -144,6 +176,10 @@ export class UserInfo extends Subject{
         }
     }
 
+    /**
+     * Increases the experience threshold based on the level
+     * @returns {number} - New experience threshold
+     */
     increaseXpTreshold(){
         this.dispatchEvent(this.createUpdateXpTresholdEvent());
         if(this.level === 0){
@@ -160,6 +196,11 @@ export class UserInfo extends Subject{
         this.updateUserInfoBackend();
     }
 
+    /**
+     * Changes the amount of experience
+     * @param amount - Amount of experience to add
+     * @returns {boolean} - True if the experience was changed, false otherwise
+     */
     changeXP(amount){
         if(amount < 0 && Math.abs(amount) > this.experience) return false;
         if(amount + this.experience >= this.xpTreshold){
@@ -174,6 +215,12 @@ export class UserInfo extends Subject{
         return true;
     }
 
+    /**
+     * Increases the level of the player
+     * @param amount - Level to set
+     * @param increase - True if the level should be increased, false if it should be set to 0
+     * @returns {boolean} - True if the level was changed, false otherwise
+     */
     changeLevel(amount=0, increase=false){
         if(amount === 0){
             if(increase){
@@ -255,30 +302,59 @@ export class UserInfo extends Subject{
         return true;
     }
 
+    /**
+     * Changes the amount of mana
+     * @returns {CustomEvent<{crystals: number}>} - Event that contains the new amount of mana
+     */
     createUpdateCrystalsEvent() {
         return new CustomEvent("updateCrystals", {detail: {crystals: this.crystals}});
     }
 
+    /**
+     * Changes the amount of xp threshold
+     * @returns {CustomEvent<{xp: number, threshold: number}>} - Event that contains the new amount of xp threshold
+     */
     createUpdateXpTresholdEvent() {
         console.log(this.xpTreshold)
         return new CustomEvent("updateXpTreshold", {detail: {xp: this.experience, threshold: this.xpTreshold}});
     }
 
+    /**
+     * Create event to change level of the player
+     * @returns {CustomEvent<{level: number}>} - Event that contains the new level
+     */
     createUpdateLevelEvent() {
         return new CustomEvent("updateLevel", {detail: {level: this.level}});
     }
 
+    /**
+     * Create event to change the amount of xp
+     * @returns {CustomEvent<{xp: number, threshold: number}>} - Event that contains the new amount of xp
+     */
     createUpdateXpEvent() {
         return new CustomEvent("updateXp", {detail: {xp: this.experience, threshold: this.xpTreshold}});
     }
 
+    /**
+     * Create event to change the amount of mana
+     * @returns {CustomEvent<{current: number, total: number}>}
+     */
     createUpdateManaEvent(){
         return new CustomEvent("updateManaBar", {detail: {current: this.mana, total: this.maxMana}});
     }
 
+    /**
+     * Create event to change the amount of health
+     * @returns {CustomEvent<{current: number, total: number}>} - Event that contains the new amount of health
+     */
     createUpdateHealthEvent() {
         return new CustomEvent("updateHealthBar", {detail: {current: this.health, total: this.maxHealth}});
     }
+
+    /**
+     * Create event to change the username
+     * @returns {CustomEvent<{username}>} - Event that contains the new username
+     */
     createUpdateUsernameEvent() {
         return new CustomEvent("updateUsername", {detail: {username: this.username}});
     }

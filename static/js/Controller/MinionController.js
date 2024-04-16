@@ -13,6 +13,9 @@ import {
 } from "../configs/ControllerConfigs.js";
 
 //TODO: put this directly in grid of foundation?
+/**
+ * Class for a node in a path
+ */
 class PathNode{
     /**
      * PathNode constructor
@@ -103,6 +106,9 @@ class PathNode{
 
 }
 
+/**
+ * Class for a minion controller
+ */
 export class MinionController{
     #worldMap;
 

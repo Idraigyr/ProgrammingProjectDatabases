@@ -272,12 +272,18 @@ class App {
         //visualise camera line -- DEBUG STATEMENTS --
     }
 
+    /**
+     * Updates the camera aspect ratio and the renderer size when the window is resized
+     */
     onResize(){
         this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
         this.cameraManager.camera.updateProjectionMatrix();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
     }
 
+    /**
+     * Pauses the physics simulation when the tab is not visible
+     */
     onVisibilityChange(){
         if(document.visibilityState === "visible"){
             this.simulatePhysics = true;

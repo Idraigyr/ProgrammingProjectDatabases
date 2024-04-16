@@ -1,5 +1,8 @@
 import { Controller } from "./Controller.js";
 
+/**
+ * Class for the HUD controller
+ */
 export class HUD {
 
     /**

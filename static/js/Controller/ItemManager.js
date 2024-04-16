@@ -1,6 +1,9 @@
 import {Gem} from "../Model/items/Item.js";
 import {API_URL} from "../configs/EndpointConfigs.js";
 
+/**
+ * Class for managing items in menu's
+ */
 export class ItemManager {
     /**
      * Constructor for the ItemManager

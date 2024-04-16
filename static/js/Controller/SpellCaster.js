@@ -4,6 +4,9 @@ import {Subject} from "../Patterns/Subject.js";
 import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "../configs/Keybinds.js";
 import {convertWorldToGridPosition} from "../helpers.js";
 
+/**
+ * Class for the SpellCaster
+ */
 export class SpellCaster extends Subject{
     #wizard;
     #currentObject;
