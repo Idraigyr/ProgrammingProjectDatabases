@@ -162,7 +162,7 @@ class App {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
             if(buildingNumber === buildTypes.getNumber("void")) return;
             // Skip altar
-            if(buildingNumber === buildTypes.getNumber("altar")) return;
+            if(buildingNumber === buildTypes.getNumber("altar_building")) return;
             // If the selected cell is empty
             if (buildingNumber === buildTypes.getNumber("empty")) {
                 // If there is an object selected, drop it
