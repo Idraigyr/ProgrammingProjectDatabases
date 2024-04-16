@@ -14,7 +14,7 @@ export class Mine extends Placeable{
      */
     constructor(params) {
         super(params);
-        this.timeToBuild = 10;
+        this.timeToBuild = 300;
         this.lastCollected = params.lastCollected;
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
         this.#maxCrystals = this.#calculateMaxCrystals();
