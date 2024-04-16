@@ -48,11 +48,14 @@ There is also an option to log in with Google.
 # Index page
 ___
 
-Loading screen: TODO Lucas
+![Loading Screen image](/docs/img/loading-screen.png)
 
 Level popup: TODO Aaditya
 
 After logging in, the player will be redirected to the index page. First at all, the loading screen will appear, after which the player will be redirected to the game.
+The loading screen consists of a progress bar showing the amount of the game that is loaded, some text displaying what part of the game is
+being loaded, and an animation of a wizard casting a spell to keek it visually interesting.
+
 
 ![Game screen image](/docs/img/game.png)
 
@@ -69,7 +72,7 @@ The index page is the main page of the game. It contains the following elements:
 ### Settings menu
 
 By clicking the top left icon, the player can open the settings menu. Here, the player can change
-some basic settings about the game, such audio, graphics and controls.
+some basic settings about the game, such as audio, graphics and controls.
 
 ### Chat
 
@@ -77,7 +80,10 @@ TODO: Aaditya
 
 ### Inventory
 
-TODO: Lucas
+At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell cant be changed and 
+will always be the build spell, with which the player can build buildings on his island. The other 4 equipped spells can be changed
+in the altar menu, and will be displayed in the inventory hot-bar. The player always has one spell selected, which is shown by gold
+highlighting of the selected spell slot. Each individual spell has a unique icon, which is then shown on its equipped spot on the hot-bar.
 
 # Game
 ___
@@ -98,6 +104,7 @@ The player can move around the game using the following keys (can be changes in 
 - E: interact with objects
 - Mouse: look around
 - Left mouse button: cast spell
+- Q: eat
 
 ## Collision detection
 
@@ -135,6 +142,11 @@ The tower is used for combat and displays its health and damage.
 ___
 
 TODO: Flynn
+
+# Eating
+___
+
+By eating, the player will consume crystals in exchange for mana, health and experience.
 
 # Building system
 ___
