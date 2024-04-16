@@ -161,6 +161,9 @@ class App {
         this.spellCaster.addEventListener("castBuildSpell", (event) => {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
             if(buildingNumber === buildTypes.getNumber("void")) return;
+            // Skip altar
+            if(buildingNumber === buildTypes.getNumber("altar")) return;
+            // If the selected cell is empty
             if (buildingNumber === buildTypes.getNumber("empty")) {
                 // If there is an object selected, drop it
                 // TODO: more advanced
@@ -172,6 +175,13 @@ class App {
                     // Update occupied cells
                     const pos = event.detail.params.position;
                     const island = this.worldManager.world.getIslandByPosition(pos);
+                    // // Get if the cell is occupied
+                    // let buildOnCell = island.getCellIndex(pos);
+                    // if (buildOnCell !== building.cellIndex){// TODO!!!!
+                    //     let cell = island.checkCell(pos);
+                    //     // Check if the cell is occupied
+                    //     if(cell !== buildTypes.getNumber("empty")) return;
+                    // }
                     island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
                     // Occupy cell
                     building.cellIndex = island.occupyCell(pos, building.dbType);
@@ -190,8 +200,25 @@ class App {
                 this.worldManager.currentPos = event.detail.params.position;
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
                 this.inputManager.exitPointerLock();
-            } else {
-                /* Logic for moving building */
+            }
+            else if (this.spellCaster.currentObject) {
+                // Get selected building
+                const building = this.spellCaster.currentObject;
+                // Update bounding box of the building
+                building.dispatchEvent(new CustomEvent("updateBoundingBox"));
+                // Update occupied cells
+                const pos = event.detail.params.position;
+                const island = this.worldManager.world.getIslandByPosition(pos);
+                // Get if the cell is occupied
+                let buildOnCell = island.getCellIndex(pos);
+                if (buildOnCell !== building.cellIndex) return;
+                // You have placed the same building on the same cell, so remove info from spellCaster
+                this.spellCaster.currentObject.ready = true;
+                this.spellCaster.currentObject = null;
+                this.spellCaster.previousSelectedPosition = null;
+            }
+            else {
+                /* Logic for selecting a building */
                 // There is already object
                 if(this.spellCaster.currentObject) return;
                 let selectedObject =  this.worldManager.world.getBuildingByPosition(event.detail.params.position);
