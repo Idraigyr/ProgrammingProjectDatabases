@@ -55,3 +55,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
+function exitSettingsMenu() {
+    // Your code to handle closing the menu goes here
+    // Send message to parent
+    window.parent.postMessage("toggleSettingsMenu", "*");
+}
+

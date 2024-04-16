@@ -53,6 +53,11 @@
   transform: scale(1.10);
 }
 
+.close-setting {
+    top: 50%;
+    left: 95%;
+}
+
 .base-menu{
     position: relative;
     z-index: 9;
