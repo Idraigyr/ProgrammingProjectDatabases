@@ -324,6 +324,7 @@ export class UserInfo extends Subject{
      * @returns {CustomEvent<{level: number}>} - Event that contains the new level
      */
     createUpdateLevelEvent() {
+        // this.updateUserInfoBackend(); // TODO: why do this line is not working properly?
         return new CustomEvent("updateLevel", {detail: {level: this.level}});
     }
 
