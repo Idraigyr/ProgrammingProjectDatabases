@@ -86,16 +86,15 @@ export class UserInfo extends Subject{
     }
 
     advertiseCurrentCondition(){
-        this.crystals += 1000; // TODO @Flynn remove this
+        // TODO: do you need to call updateUserInfoBackend() here?
         this.dispatchEvent(this.createUpdateCrystalsEvent());
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.dispatchEvent(this.createUpdateXpEvent());
         this.dispatchEvent(this.createUpdateXpTresholdEvent());
         this.dispatchEvent(this.createUpdateManaEvent());
         this.dispatchEvent(this.createUpdateHealthEvent());
-
         this.dispatchEvent(this.createUpdateUsernameEvent());
-
+        this.updateUserInfoBackend();
     }
 
     calculateHealthBonus(){
@@ -110,7 +109,39 @@ export class UserInfo extends Subject{
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());
+        // Send put request to server to update the crystals
+        this.updateUserInfoBackend();
         return true;
+    }
+    updateUserInfoBackend(){
+        try {
+            // PUT request to server
+            // TODO: add info about gems
+            $.ajax({
+                url: `${API_URL}/${playerURI}`,
+                type: 'PUT',
+                data: JSON.stringify({
+                    user_profile_id: this.userID,
+                    crystals: this.crystals,
+                    xp: this.experience,
+                    mana: this.mana,
+                    entity: {
+                        // x: this.playerPosition.x,
+                        // y: this.playerPosition.y,
+                        // z: this.playerPosition.z,
+                        level: this.level
+                    }
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                async: false,
+                error: (e) => {
+                    console.error(e);
+                }
+            });
+        } catch (err){
+            console.error(err);
+        }
     }
 
     increaseXpTreshold(){
@@ -126,6 +157,7 @@ export class UserInfo extends Subject{
         } else if(this.level === 4){
             return 100000;
         }
+        this.updateUserInfoBackend();
     }
 
     changeXP(amount){
@@ -138,6 +170,7 @@ export class UserInfo extends Subject{
             this.experience = amount > 0 ? this.experience + amount : Math.max(0, this.experience + amount);
         }
         this.dispatchEvent(this.createUpdateXpEvent());
+        this.updateUserInfoBackend();
         return true;
     }
 
@@ -207,6 +240,7 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateXpEvent());
         }
         popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute, this.maxBuildings, this.unlockedBuildings);
+        this.updateUserInfoBackend();
         return true;
     }
 
