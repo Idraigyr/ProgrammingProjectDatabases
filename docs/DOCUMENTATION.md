@@ -10,7 +10,7 @@ In general, the documentation is divided into the following parts:
 - Entity-Relationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)
 - Backend code documentation: see PyDoc documentation at `/pydocs`
 - Frontend code documentation: see JSDoc documentation at `/jsDocs`
-- High-level user manual, with links to technical details: see [USER_MANUAL.md](docs/USER_MANUAL.md)
+- High-level user manual, with links to technical details: see [USER_MANUAL.md](/docs/USER_MANUAL.md)
 - Test cases: see [TEST_INDEX.md](/test-cases/TEST_INDEX.md)
 
 ### Backend code documentation
