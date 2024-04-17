@@ -124,11 +124,14 @@ document.addEventListener('DOMContentLoaded', ()=>{
                         break;
                     }
                 }
-            } else{
+            }
+            else if (message !== ""){
                 socket.emit('message', messageData);
             }
         } else{
-            socket.emit('message', messageData);
+            if (message !== ""){
+                socket.emit('message', messageData);
+            }
         }
     }
 })
