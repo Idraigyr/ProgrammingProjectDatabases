@@ -5,6 +5,9 @@ import {RitualSpell} from "../View/SpellView.js";
 import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 
+/**
+ * Class to manage the views of the game
+ */
 export class ViewManager extends Subject{
     constructor(params) {
         super(params);
@@ -17,9 +20,12 @@ export class ViewManager extends Subject{
         };
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
-        document.addEventListener("changeViewAsset", this.changeViewAsset.bind(this));
     }
 
+    /**
+     * Renders the spell preview
+     * @param event {{detail: {type: {name: string}, params: {position: THREE.Vector3, rotation: THREE.Euler}}}} event
+     */
     renderSpellPreview(event){
         if(!event.detail.params.position){
             this.spellPreview.charModel.visible = false;
@@ -41,6 +47,11 @@ export class ViewManager extends Subject{
         this.spellPreview.render(newEvent);
     }
 
+    /**
+     * Returns the island model at the given position
+     * @param position position to check
+     * @returns {Model|*|null} island model
+     */
     getIslandByPosition(position){
         for(const island of this.pairs.island){
             const min = island.view.boundingBox.min;
@@ -82,6 +93,11 @@ export class ViewManager extends Subject{
             return found;
         }
     }
+
+    /**
+     * Change the view asset of the given model
+     * @param event {{detail: {model: Model, viewAsset: THREE.Object3D}}}
+     */
     changeViewAsset(event){
         // Model, ViewAsset
         let model = event.detail.model;
@@ -146,6 +162,10 @@ export class ViewManager extends Subject{
         return planes;
     }
 
+    /**
+     * Get the collider models of the manager
+     * @param array array to fill with collider models
+     */
     getColliderModels(array){
         array.splice(0, array.length);
         this.pairs.building.forEach((pair) => array.push(pair.view.charModel));

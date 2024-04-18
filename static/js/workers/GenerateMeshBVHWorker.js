@@ -2,6 +2,9 @@ import { Box3, BufferAttribute } from 'three';
 import { MeshBVH } from 'three-mesh-bvh';
 import { WorkerBase } from './utils/WorkerBase.js';
 
+/**
+ * Worker that generates a MeshBVH from a BufferGeometry.
+ */
 export class GenerateMeshBVHWorker extends WorkerBase {
 
 	constructor() {
@@ -11,6 +14,9 @@ export class GenerateMeshBVHWorker extends WorkerBase {
 
 	}
 
+	/**
+	 * Restarts the worker.
+	 */
 	restartWorker() {
 		this.worker.terminate();
 		this.running = false;
@@ -30,6 +36,13 @@ export class GenerateMeshBVHWorker extends WorkerBase {
 		};
 	}
 
+	/**
+	 * Runs the task.
+	 * @param worker Worker to run the task.
+	 * @param geometry Geometry to generate the BVH from.
+	 * @param options Options for the BVH.
+	 * @returns {Promise<unknown>} Promise that resolves with the generated BVH.
+	 */
 	runTask( worker, geometry, options = {} ) {
 
 		return new Promise( ( resolve, reject ) => {

@@ -1,4 +1,4 @@
-import {Model} from "../Model/Model.js";
+import {Model} from "../Model/ModelNamespace.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
@@ -25,6 +25,11 @@ export class WorldManager{
         this.persistent = true;
     }
 
+    /**
+     * Imports a world from the server
+     * @param islandID - the id of the island to import
+     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     */
     async importWorld(islandID){
         let islands = [
             {buildings: [],
@@ -78,6 +83,7 @@ export class WorldManager{
             console.error(e);
         }
 
+        this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
         this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
     }
 
@@ -87,22 +93,35 @@ export class WorldManager{
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
-        if(placeable){
-            const requestIndex = this.postRequests.length;
-            if(this.persistent){
-                this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+        if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
+            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
+            if(placeable){
+                const requestIndex = this.postRequests.length;
+                if(this.persistent){
+                    this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+                }
+                this.collisionDetector.generateColliderOnWorker();
+                this.userInfo.changeXP(10);
+                this.userInfo.buildingsPlaced++;
+            } else {
+                console.error("failed to add new building at that position");
             }
-            this.collisionDetector.generateColliderOnWorker();
-        } else {
-            console.error("failed to add new building at that position");
+
         }
     }
 
+    /**
+     * Checks if a building can be placed at the given position
+     * @param worldPosition - the position to check
+     * @returns {*} - the building that is at that position or null if no building is there
+     */
     checkPosForBuilding(worldPosition){
         return this.world.checkPosForBuilding(worldPosition);
     }
 
+    /**
+     * Adds a new island to the world to spawn minions
+     */
     addSpawningIsland(){
         //TODO: get a random position for the island which lies outside of the main island
         let position = {x: -9, y: 0, z: -8};
@@ -120,12 +139,29 @@ export class WorldManager{
         //add a enemy warrior hut to the island
         // let hut = this.factory.createBuilding({buildingName: "Tower", position: position, withTimer: false});
         // island.addBuilding(hut);
-        this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
+        // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
         this.world.spawners.push(new MinionSpawner({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z))}));
         this.collisionDetector.generateColliderOnWorker();
     }
 
+    /**
+     * Collects the crystals from the building at the current position
+     * @returns {Promise<void>} - a promise that resolves when the crystals have been collected
+     */
+    async collectCrystals(){
+        const building = this.world.getBuildingByPosition(this.currentPos);
+        console.log("collect from min - worldManager", building);
+        if(building){
+            this.userInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.userInfo.getCurrentTime())));
+        } else {
+            console.error("no building found at that position");
+        }
+    }
 
+    /**
+     * Exports the world to the server
+     * @returns {Promise<void>} - a promise that resolves when the world has been exported
+     */
     async exportWorld(){
 
     }
@@ -158,6 +194,11 @@ export class WorldManager{
         }
     }
 
+    /**
+     * Add new post request to the postRequests array
+     * @param placeable - the placeable to add to the postRequests array
+     * @returns {number} - the index of the request in the postRequests array
+     */
     insertPendingPostRequest(placeable){
         for (let i = 0; i < this.postRequests.length; i++){
             if(this.postRequests[i] === null){
@@ -169,6 +210,10 @@ export class WorldManager{
         return this.postRequests.length - 1;
     }
 
+    /**
+     * Removes post request from the postRequests array
+     * @param index - the index of the request in the postRequests array
+     */
     removePendingPostRequest(index){
         this.postRequests[index] = null;
         while(this.postRequests[this.postRequests.length - 1] === null){
@@ -211,6 +256,39 @@ export class WorldManager{
                     throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
                     //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
                 }
+            });
+        } catch (err){
+            console.error(err);
+        }
+    }
+
+    /**
+     * Send a PUT request to the server
+     * @param uri - the URI to send the PUT request to
+     * @param entity - the Entity that we want to update in the db
+     * @param retries - the number of retries to resend the PUT request
+     */
+    sendPUT(uri, entity, retries){
+        try {
+            $.ajax({
+                url: `${API_URL}/${uri}/${entity.dbType}`,
+                type: "PUT",
+                data: JSON.stringify(entity.formatPUTData(this.userInfo)),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                if (retries > 0){
+                    this.sendPUT(uri, entity, retries - 1);
+                } else {
+                    throw new Error(`Could not send PUT request for building: Error: ${textStatus} ${errorThrown}`);
+                    }
             });
         } catch (err){
             console.error(err);

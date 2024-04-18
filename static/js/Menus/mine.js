@@ -137,22 +137,21 @@ function exitMenu(){
     window.parent.postMessage("closeMineMenu", "*");
 }
 
-// loading progress
+// loading bar
 function simulateLoading() {
   let progress = 0;
   const progressBar = document.querySelector('.loading-bar');
 
   const intervalId = setInterval(() => {
-    progress += 1; // Increase progress randomly
+    progress += 1; // Increase bar progress
     progressBar.style.width = `${progress}%`;
 
     if (progress >= 100) {
       clearInterval(intervalId);
-      // Loading complete, hide the loading bar or perform other actions
-      addGem();
+      // Loading complete -> restart
       simulateLoading();
     }
-  }, 100); // Adjust the interval as needed
+  }, 100); // Total time to load bar
 }
 
 // Call the function to start loading simulation

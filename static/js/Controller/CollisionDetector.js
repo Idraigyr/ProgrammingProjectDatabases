@@ -4,6 +4,10 @@ import * as THREE from "three";
 import {workerURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 export class CollisionDetector extends Subject{
+    /**
+     * Constructor for the collision detector
+     * @param {{scene: THREE.Scene, viewManager: ViewManager}} params
+     */
     constructor(params) {
         super(params);
         this.startUp = true;
@@ -24,6 +28,10 @@ export class CollisionDetector extends Subject{
         this.tempBox = new THREE.Box3();
     }
 
+    /**
+     * visualizes the BVH or the collision mesh
+     * @param params
+     */
     visualize(params = {collisionMesh: false, bvh: false, bvhDepth: 10}){
         if(params.collisionMesh){
             this.collider.material.wireframe = true;
@@ -51,6 +59,10 @@ export class CollisionDetector extends Subject{
         }
     }
 
+    /**
+     * converts a Object3D to a JSON string
+     * @return {string}
+     */
     stringifyCharModel(){
         const json = [];
         for(const index in this.charModel){
@@ -59,6 +71,10 @@ export class CollisionDetector extends Subject{
         return JSON.stringify(json);
     }
 
+    /**
+     * parses a JSON string representation of the static geometry + BVH to a Object3D
+     * @param json
+     */
     parseColliderWorkerJSON(json){
         json = JSON.parse(json);
         //this.collider = new THREE.Mesh(mergeVertices(this.loader.parse(json.geometry)));
@@ -66,6 +82,10 @@ export class CollisionDetector extends Subject{
         this.collider.geometry.boundsTree = MeshBVH.deserialize(json.boundsTree, this.collider.geometry, {setIndex: true});
     }
 
+    /**
+     * generates a collider mesh from the building and island charModels in the viewManager
+     * @return {THREE.Mesh}
+     */
     generateCollider(){
         this.viewManager.getColliderModels(this.charModel);
         let staticGenerator = new StaticGeometryGenerator(this.charModel);
@@ -77,6 +97,9 @@ export class CollisionDetector extends Subject{
         return new THREE.Mesh(this.mergedGeometry);
     }
 
+    /**
+     * generates a collider mesh from the building and island charModels in the viewManager on a webWorker if supported, currently just calls generateCollider
+     */
     generateColliderOnWorker(){
         if(typeof Worker === 'undefined' || this.startUp || true){
             //show loading screen
@@ -90,25 +113,46 @@ export class CollisionDetector extends Subject{
             this.worker = new Worker(workerURI, {type: 'module'});
             console.log(this.worker);
             this.worker.addEventListener('message', this.receiveCollider.bind(this));
+            this.viewManager.getColliderModels(this.charModel);
             this.worker.postMessage(this.stringifyCharModel());
         }
         console.log("generating done")
         this.startUp = false;
     }
 
+    /**
+     * receives the collider mesh from the worker and parses it
+     * @param msg
+     */
     receiveCollider(msg){
         this.parseColliderWorkerJSON(msg.data);
         this.dispatchEvent(this.createColliderReadyEvent());
     }
 
+    /**
+     * checks if a bounding box collides with the static geometry (=world)
+     * @param {THREE.Box3} boundingBox
+     * @return {boolean}
+     * @constructor
+     */
     BoxCollisionWithWorld(boundingBox){
         return this.collider.geometry.boundsTree.intersectsBox(boundingBox, new THREE.Matrix4());
     }
 
-    boxToBoxCollision(box1, box2, ){
+    /**
+     * checks if two bounding boxes collide
+     * @param {THREE.Box3} box1
+     * @param {THREE.Box3} box2
+     * @return {*}
+     */
+    boxToBoxCollision(box1, box2){
         return box1.intersectsBox(box2);
     }
 
+    /**
+     * checks if a spellEntity collides with anything
+     * @param {number} deltaTime
+     */
     checkSpellEntityCollisions(deltaTime){
         //TODO: what if spell "phases" through collision because of high velocity/deltaTime?
         for(const spellEntity of this.viewManager.pairs.spellEntity){
@@ -128,6 +172,10 @@ export class CollisionDetector extends Subject{
         }
     }
 
+    /**
+     * checks if a character collides with anything
+     * @param {number} deltaTime
+     */
     checkCharacterCollisions(deltaTime){
         for(const character of this.viewManager.pairs.character){
             this.viewManager.pairs.player.forEach((player) => {
@@ -139,7 +187,13 @@ export class CollisionDetector extends Subject{
     }
 
 
-
+    /**
+     * checks if a player collides with static geometry and adjusts the player position accordingly
+     * @param {Character} character
+     * @param {THREE.Vector3} position
+     * @param {number} deltaTime
+     * @return {THREE.Vector3}
+     */
     adjustCharacterPosition(character, position, deltaTime){
         character.setSegmentFromPosition(position);
 
@@ -206,10 +260,17 @@ export class CollisionDetector extends Subject{
         return deltaVector;
     }
 
+    /**
+     * NYI
+     */
     checkSpellCollisions(){
 
     }
 
+    /**
+     * creates a custom event notifying the collider is ready
+     * @return {CustomEvent<>}
+     */
     createColliderReadyEvent() {
         console.log("Collider ready event.");
         return new CustomEvent('colliderReady');

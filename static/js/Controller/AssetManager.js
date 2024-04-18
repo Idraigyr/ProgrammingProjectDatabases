@@ -61,7 +61,7 @@ export class AssetManager{
     }
     /**
      * Get a clone of a 3d model
-     * @param name name of the model
+     * @param {string} name name of the model
      * @returns {*} the 3d model
      */
     getAsset(name){
@@ -78,7 +78,7 @@ export class AssetManager{
     }
     /**
      * Get the animations of a 3d model
-     * @param name name of the model
+     * @param {string} name name of the model
      * @returns {*} the animations
      */
     getAnimations(name){

@@ -25,6 +25,11 @@ export class Placeable extends Entity{
        this.id = data.placeable_id;
     }
 
+    /**
+     * Formats the data for a POST request
+     * @param userInfo {JSON} the user information
+     * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
+     */
     formatPOSTData(userInfo){
         const gridPos = new THREE.Vector3().copy(this.position);
         convertWorldToGridPosition(this.position);
@@ -44,14 +49,38 @@ export class Placeable extends Entity{
         return obj;
     }
 
+    /**
+     * Formats the data for a PUT request
+     * @param userInfo {JSON} the user information
+     * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
+     */
+    formatPUTData(userInfo){
+       const obj = this.formatPOSTData(userInfo);
+       obj.placeable_id = this.id;
+       return obj;
+    }
+
+    /**
+     * Get the type of the building
+     * @returns {string} the type of the building
+     */
     get type(){
         return "building";
     }
 
+    /**
+     * Get the type of the building
+     * @returns {string} the type of the building
+     */
     get dbType(){
         return "placeable";
     }
 
+    /**
+     * Change the level of the building
+     * @param amount {number} the amount to change the level by
+     * @returns {boolean} if the level was changed
+     */
     changeLevel(amount){
         let old = this.level;
         if(amount < 0 && Math.abs(amount) > this.level) return false;
@@ -81,5 +110,18 @@ export class Placeable extends Entity{
         }
         popUp(this.level, this.maxMana, this.maxHealth);
         return true;
+    }
+
+    /**
+     * Create an event for updating the rotation
+     */
+    // TODO: move it entity class and add degrees as parameter (default 90)
+    rotate(){
+        this.rotation += 90;
+        this.rotation %= 360;
+        // Create quaternion from rotation
+        let quaternion = new THREE.Quaternion();
+        quaternion.setFromEuler(new THREE.Euler(0, this.rotation * Math.PI / 180, 0));
+        this.dispatchEvent(new CustomEvent("updateRotation", {detail: {rotation: quaternion}}));
     }
 }

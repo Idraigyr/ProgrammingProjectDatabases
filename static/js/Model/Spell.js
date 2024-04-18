@@ -31,6 +31,9 @@ export class EntitySpell extends Spell{
     }
 }
 
+/**
+ * @class Follower - class for follower spells. Determines how the spell follows the caster
+ */
 class Follower extends EntitySpell{
     constructor(params) {
         super(params);
@@ -63,6 +66,10 @@ class Cloud extends EntitySpell{
     }
 }
 
+/**
+ * Functions to determine the movement of the spell
+ * @type {{linear: (function(*, *): Vector3), sinX: (function(*, *): Vector3), sinZ: (function(*, *): Vector3), minLinearY: (function(*, *): Vector3)}} - moveFunctions
+ */
 const moveFunctions = {
     linear: function (value, params) {
         return new THREE.Vector3(0, 0, value);
@@ -251,6 +258,10 @@ class ConcreteSpell{
         }
     }
 
+    /**
+     * Apply effects to the target
+     * @param target - the target of the effects
+     */
     applyEffects(target){
         this.effects.forEach((effect) => effect.apply(target));
     }
@@ -308,6 +319,9 @@ export class Fireball extends ConcreteSpell{
     }
 }
 
+/**
+ * @class IceWall - class for icewall spell
+ */
 export class IceWall extends ConcreteSpell{
     constructor() {
         super({
@@ -364,6 +378,9 @@ export class ThunderCloud extends ConcreteSpell{
     }
 }
 
+/**
+ * @class Shield - class for shield spell
+ */
 export class Shield extends ConcreteSpell{
     constructor() {
         super({

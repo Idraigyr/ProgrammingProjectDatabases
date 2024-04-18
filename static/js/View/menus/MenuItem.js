@@ -40,7 +40,11 @@ export class MenuItem{
         element.appendChild(this.icon);
         element.appendChild(description);
         descriptionName.innerText = this.name;
-        descriptionText.innerText = "placeholder description";
+        // If there is this.extra.cost, add it to the name
+        if(params?.extra?.cost) descriptionName.innerText += ` 💎 ${params.extra.cost}`;
+        // If there is this.extra.buildTime, add it to the name
+        if(params?.extra?.buildTime) descriptionName.innerText += ` ⌛ ${params.extra.buildTime}`;
+        descriptionText.innerText = params?.description ?? "placeholder description";
         return element;
     }
 

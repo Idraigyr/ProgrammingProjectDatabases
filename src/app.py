@@ -3,7 +3,7 @@ import os
 from json import JSONEncoder
 
 from dotenv import load_dotenv
-from flask import Flask, jsonify
+from flask import Flask, jsonify, redirect
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_migrate import check as check_db_schema
@@ -110,6 +110,7 @@ def setup_jwt(app: Flask):
     @app.jwt.expired_token_loader
     def custom_expired_token_loader(jwt_header, jwt_data):
         _jwt_log.debug(f"Expired token (log back in): {jwt_header}, {jwt_data}")
+        # return redirect("/landing", code=401)
         return jsonify(
             {'status': 'error', 'message': 'Token has expired (log back in)', 'type': 'jwt_token_expired'}), 401
 

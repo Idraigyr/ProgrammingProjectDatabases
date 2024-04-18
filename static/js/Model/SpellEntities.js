@@ -35,6 +35,11 @@ class SpellEntity extends Entity{
     }
 
     onWorldCollision(deltaTime){}
+    /**
+     * Function to handle collision with characters
+     * @param deltaTime - time since last update
+     * @param character - character to check collision with
+     */
     onCharacterCollision(deltaTime, character){
         if(this.team !== character.team){
             this.spellType.applyEffects(character);
@@ -65,16 +70,35 @@ export class MobileCollidable extends CollidableSpellEntity{
         this.functionValue = 0;
     }
 
+    /**
+     * updates the entity
+     * @param deltaTime
+     */
     update(deltaTime) {
         super.update(deltaTime);
         this.functionValue += deltaTime;
         this.moveEntity();
     }
+
+    /**
+     * Moves the entity according to the moveFunction
+     */
     moveEntity(){
         this.position = this.position.copy(this.spawnPoint).add(this.moveFunction(this.functionValue, this.moveFunctionParams));
     }
+    /**
+     * Function to handle collision with world
+     * @param deltaTime - time since last update
+     */
 
     onWorldCollision(deltaTime){}
+    /**
+     * Function to handle collision with characters
+     * @param deltaTime - time since last update
+     * @param character - character to check collision with
+     * @param characterBBox - bounding box of character
+     * @param spellBBox - bounding box of spell
+     */
     onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
         super.onCharacterCollision(deltaTime, character);
 
@@ -112,11 +136,23 @@ export class Projectile extends SpellEntity{
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
 
+    /**
+     * Function to handle collision with world
+     * @param deltaTime - time since last update
+     */
     onWorldCollision(deltaTime){
         this.hitSomething = true;
         this.timer += this.duration;
         this.dispatchEvent(this.createDeleteEvent());
     }
+
+    /**
+     * Function to handle collision with characters
+     * @param deltaTime - time since last update
+     * @param character - character to check collision with
+     * @param characterBBox - bounding box of character
+     * @param spellBBox - bounding box of spell
+     */
     onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
         super.onCharacterCollision(deltaTime, character);
 
@@ -128,18 +164,35 @@ export class Projectile extends SpellEntity{
     }
 }
 
+/**
+ * @class Immobile - class for immobile spells
+ */
 export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
     }
+    /**
+     * Function to handle collision with world
+     * @param deltaTime - time since last update
+     */
     onWorldCollision(deltaTime){
         super.onWorldCollision(deltaTime);
     }
+    /**
+     * Function to handle collision with characters
+     * @param deltaTime - time since last update
+     * @param character - character to check collision with
+     * @param characterBBox - bounding box of character
+     * @param spellBBox - bounding box of spell
+     */
     onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
         super.onCharacterCollision(deltaTime, character);
     }
 }
 
+/**
+ * @class RitualSpell - class for ritual spells
+ */
 export class RitualSpell extends SpellEntity{
     constructor(params) {
         super(params);
@@ -150,6 +203,9 @@ export class RitualSpell extends SpellEntity{
     }
 }
 
+/**
+ * @class FollowPlayer - class for entities that follow the player
+ */
 export class FollowPlayer extends SpellEntity{
     constructor(params) {
         super(params);

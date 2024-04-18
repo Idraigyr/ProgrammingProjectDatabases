@@ -1,3 +1,7 @@
+/**
+ * Enum for the different types of game objects
+ * @type {{getNumber: (function(*): *), getName: (function(*): *), getMenuName: (function(*): *)}} number - The number of the type
+ */
 export const buildTypes = (function (){
     const number = {
         void: 0,

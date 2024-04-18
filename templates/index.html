@@ -49,7 +49,7 @@
 
 {#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
 
-    <!--<script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetImages.js') }}"></script>-->
+    <script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetModels.js') }}"></script>
 
 
 
@@ -142,6 +142,7 @@
       <h1>Game Settings</h1>
 
       <div class="settings">
+          <button class="close-button close-setting" onclick="exitSettingsMenu()"></button>
         <div class="slider">
           <label for="volume">Volume:</label>
           <input type="range" id="volume" name="volume" min="0" max="100" value="50">

@@ -9,6 +9,10 @@ export const playerProfileURI = 'api/user_profile';
 
 export const placeableURI = 'api/placeable';
 
+export const timeURI = 'api/time';
+
 export const islandURI = 'api/island';
+
+export const blueprintURI = 'api/blueprint';
 
 export const postRetries = 3;

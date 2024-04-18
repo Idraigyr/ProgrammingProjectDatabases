@@ -1,15 +1,19 @@
 // variables
+import {getRandomInt} from "../helpers.js";
 
 // crystals for fusion
 let crystals = 555;
 let inputCrystals = 0;
 let gemsOdds = {"amberGem": [0,100], "rubyGem": [0,30], "sapphireGem": [0,20], 'diamondGem': [0,6], "emeraldGem": [0,3], "amethystGem": [0,1]};
-oddIndex = 0;
+let oddIndex = 0;
 let outputGems = {"amberGem": 0, "rubyGem": 0, "sapphireGem": 0, 'diamondGem': 0, "emeraldGem": 0, "amethystGem": 0};
 let gems = {"amberGem": 4, "rubyGem": 3, "sapphireGem": 8, 'diamondGem': 1, "emeraldGem": 2, "amethystGem": 3};
 let fusion = false;
 let animation = false;
 
+/**
+ * Function to calculate the odds of getting a gem
+ */
 function calculateOdds(){
     let a;
     let b;
@@ -27,6 +31,9 @@ function calculateOdds(){
 
 calculateOdds();
 
+/**
+ * Function to start the fusion process
+ */
 function startFusion(){
     if(!fusion && inputCrystals !== 0) {
         fusion = true;
@@ -37,6 +44,9 @@ function startFusion(){
     }
 }
 
+/**
+ * Function to end the fusion process
+ */
 function endFusion(){
     toggleAnimation(false);
     progress = 0;
@@ -50,12 +60,10 @@ function endFusion(){
     populateContainers();
 }
 
-function getRandomInt(min, max) {
-  min = Math.ceil(min);
-  max = Math.floor(max);
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
+/**
+ * Count total gems
+ * @returns {number} total number of gems
+ */
 function countTotalGems() {
     let totalCount = 0;
     for (let key in outputGems) {
@@ -254,6 +262,9 @@ function toggleAnimation(condition) {
     }
 }
 
+/**
+ * Exit the fusion table menu
+ */
 function exitMenu() {
     // Your code to handle closing the menu goes here
     // Send message to parent

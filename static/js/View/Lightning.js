@@ -5,6 +5,9 @@ import {IView} from "./View";
 // the lightning strike should have a shader material that creates a lightning effect between the two points.
 // the lightning bolt should move and change shape over time.
 
+/**
+ * @class Lightning - A class that creates a lightning bolt between two points.
+ */
 class Lightning extends IView{
     constructor(params) {
         super(params);
@@ -17,7 +20,10 @@ class Lightning extends IView{
     }
 
 
-
+    /**
+     * @method createMaterial - A method that creates a shader material that creates a lightning effect between two points.
+     * @returns {ShaderMaterial} - A shader material that creates a lightning effect between two points.
+     */
     createMaterial(){
         return new THREE.ShaderMaterial({
             uniforms: {
@@ -62,6 +68,10 @@ class Lightning extends IView{
         });
     }
 
+    /**
+     * @method createGeometry - A method that creates a geometry for the lightning bolt.
+     * @param deltaTime - The time between frames.
+     */
     update(deltaTime){
         this.time += deltaTime;
         this.material.uniforms.time.value = this.time;

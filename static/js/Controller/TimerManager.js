@@ -1,4 +1,6 @@
-
+/**
+ * Timer class
+ */
 export class Timer{
     /**
      *
@@ -58,16 +60,31 @@ export class Timer{
         // Execute runtime callbacks
         this.runtimeCallbacks.forEach((callback, i) => callback(this.runtimeCallbacksParams?.[i]));
     }
-    // Add runtime callbacks
+
+    /**
+     * Adds a callback to the timer that will be called every time the timer is updated
+     * @param callback - callback to be called
+     * @param callbackParams - parameters for the callback
+     */
     addRuntimeCallback(callback, callbackParams){
         this.runtimeCallbacks.push(callback);
         this.runtimeCallbacksParams.push(callbackParams);
     }
+
+    /**
+     * Adds a callback to the timer that will be called when the timer ends
+     * @param callback - callback to be called
+     * @param callbackParams - parameters for the callback
+     */
     addCallback(callback, callbackParams){
         this.callbacks.push(callback);
         this.callbacksParams.push(callbackParams);
     }
 }
+
+/**
+ * TimerManager class
+ */
 export class TimerManager {
     #timers;
 
@@ -122,6 +139,11 @@ export class TimerManager {
     }
 
 
+    /**
+     * Decreases the timer by deltaTime
+     * @param timerId `id of the timer
+     * @param deltaTime - time to decrease the timer by
+     */
     decreaseTimer(timerId, deltaTime){
         const timer = this.getTimer(timerId);
         if(timer){
@@ -130,6 +152,10 @@ export class TimerManager {
 
     }
 
+    /**
+     * Updates all timers
+     * @param deltaTime - time to decrease the timers by
+     */
     update(deltaTime) {
         this.#timers.forEach((timer) => {
             if(!timer) return;

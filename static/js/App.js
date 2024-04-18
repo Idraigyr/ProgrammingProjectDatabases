@@ -9,10 +9,10 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import {OrbitControls} from "three-orbitControls";
-import {API_URL, islandURI, playerURI} from "./configs/EndpointConfigs.js";
+import {API_URL, islandURI, playerURI, placeableURI, postRetries} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
-import {interactKey, subSpellKey} from "./configs/Keybinds.js";
+import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes} from "./configs/Enums.js";
 
@@ -126,18 +126,23 @@ class App {
         }});
 
 
-        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager});
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new Controller.BuildManager(this.raycastController, this.scene);
 
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
+        this.playerInfo.addEventListener("updateXpTreshold", this.hud.updateXPTreshold.bind(this.hud));
         this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
+        this.playerInfo.addEventListener("updateUsername", this.hud.updateUsername.bind(this.hud));
+
 
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
+        this.inputManager.addMouseDownListener(this.spellCaster.onRightClickDown.bind(this.spellCaster), "right");
         this.inputManager.addKeyDownEventListener(interactKey, this.spellCaster.interact.bind(this.spellCaster));
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
+
 
         this.menuManager.addEventListener("addGem", (event) => {
             event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
@@ -157,24 +162,98 @@ class App {
         this.spellCaster.addEventListener("castBuildSpell", (event) => {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
             if(buildingNumber === buildTypes.getNumber("void")) return;
+            // Skip altar
+            if(buildingNumber === buildTypes.getNumber("altar_building")) return;
+            // If the selected cell is empty
             if (buildingNumber === buildTypes.getNumber("empty")) {
+                // If there is an object selected, drop it
+                // TODO: more advanced
+                if(this.spellCaster.currentObject){
+                    // Get selected building
+                    const building = this.spellCaster.currentObject;
+                    // Update bounding box of the building
+                    building.dispatchEvent(new CustomEvent("updateBoundingBox"));
+                    // Update occupied cells
+                    const pos = event.detail.params.position;
+                    const island = this.worldManager.world.getIslandByPosition(pos);
+                    // // Get if the cell is occupied
+                    // let buildOnCell = island.getCellIndex(pos);
+                    // if (buildOnCell !== building.cellIndex){// TODO!!!!
+                    //     let cell = island.checkCell(pos);
+                    //     // Check if the cell is occupied
+                    //     if(cell !== buildTypes.getNumber("empty")) return;
+                    // }
+                    island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
+                    // Occupy cell
+                    building.cellIndex = island.occupyCell(pos, building.dbType);
+                    // Remove the object from spellCaster
+                    this.spellCaster.currentObject.ready = true;
+                    this.spellCaster.currentObject = null;
+                    // Update static mesh
+                    this.collisionDetector.generateColliderOnWorker();
+                    // Send put request to the server if persistence = true
+                    if(this.worldManager.persistent){
+                        this.worldManager.sendPUT(placeableURI, building, postRetries);
+                    }
+                    return;
+                }
                 //temp solution:
                 this.worldManager.currentPos = event.detail.params.position;
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
                 this.inputManager.exitPointerLock();
-            } else {
-                //TODO: logic for moving the building.
+            }
+            else if (this.spellCaster.currentObject) {
+                // Get selected building
+                const building = this.spellCaster.currentObject;
+                // Update bounding box of the building
+                building.dispatchEvent(new CustomEvent("updateBoundingBox"));
+                // Update occupied cells
+                const pos = event.detail.params.position;
+                const island = this.worldManager.world.getIslandByPosition(pos);
+                // Get if the cell is occupied
+                let buildOnCell = island.getCellIndex(pos);
+                if (buildOnCell !== building.cellIndex) return;
+                // You have placed the same building on the same cell, so remove info from spellCaster
+                this.spellCaster.currentObject.ready = true;
+                this.spellCaster.currentObject = null;
+                this.spellCaster.previousSelectedPosition = null;
+            }
+            else {
+                /* Logic for selecting a building */
+                // There is already object
+                if(this.spellCaster.currentObject) return;
+                let selectedObject =  this.worldManager.world.getBuildingByPosition(event.detail.params.position);
+                // If no object selected or the object is not ready, return
+                if (!selectedObject || !selectedObject.ready) return;
+                // Select current object
+                this.spellCaster.currentObject = selectedObject;
+                this.spellCaster.currentObject.ready = false;
             }
         });
-        this.spellCaster.addEventListener("interact", (event) => {
+        this.spellCaster.addEventListener("interact", async (event) => {
             // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
-            const items = []; //TODO: fill with equipped gems of selected building if applicable
-            console.log(buildTypes.getMenuName(buildingNumber));
-            this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber), items: items});
+
+            let params = {name: buildTypes.getMenuName(buildingNumber)}
+
+            //TODO: move if statements into their own method of the placeable class' subclasses
+            if(buildingNumber === buildTypes.getNumber("tower_building") || buildingNumber === buildTypes.getNumber("mine_building")){
+                params.items = []; //TODO: fill with equipped gems of selected building if applicable
+
+            }
+
+            //if the building is a mine, forward stored crystal information
+            if(buildingNumber === buildTypes.getNumber("mine_building")){
+                const currentTime = new Date(await this.playerInfo.getCurrentTime());
+                params.crystals = building.checkStoredCrystals(currentTime);
+                params.maxCrystals = building.maxCrystals;
+                params.rate = building.productionRate;
+            }
+
+            this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
         });
@@ -193,12 +272,18 @@ class App {
         //visualise camera line -- DEBUG STATEMENTS --
     }
 
+    /**
+     * Updates the camera aspect ratio and the renderer size when the window is resized
+     */
     onResize(){
         this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
         this.cameraManager.camera.updateProjectionMatrix();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
     }
 
+    /**
+     * Pauses the physics simulation when the tab is not visible
+     */
     onVisibilityChange(){
         if(document.visibilityState === "visible"){
             this.simulatePhysics = true;
@@ -232,6 +317,7 @@ class App {
      * @returns {Promise<void>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
+        console.log( await this.playerInfo.getCurrentTime());
         const progressBar = document.getElementById('progress-bar');
         //TODO: try to remove awaits? what can we complete in parallel?
         progressBar.labels[0].innerText = "retrieving user info...";
@@ -239,6 +325,8 @@ class App {
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
         await this.assetManager.loadViews();
+        // Load info for building menu. May be extended to other menus
+        await this.menuManager.fetchInfoFromDatabase();
         this.menuManager.createMenus();
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
@@ -263,11 +351,28 @@ class App {
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
+
+
+        this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
 
         this.menuManager.addEventListener("build", (event) => {
             this.menuManager.hideMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
+            // TODO: move things from menuManager, because otherwise you have to use the following code:
+            // Get the price of the building
+            let nameInDB = this.menuManager.ctorToDBName(ctorName);
+            const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            // Check if the player has enough crystals
+            if(this.playerInfo.crystals < price) {
+                console.log("Not enough crystals");
+                return;
+            } // TODO: show message
+            else {
+                // Subtract the price from the player's crystals
+                this.playerInfo.changeCrystals(-price);
+            }
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
         this.worldManager.world.player.advertiseCurrentCondition();

@@ -5,24 +5,51 @@ export class MinionState extends State{
         super(fsm);
         this.movementPossible = false;
     }
+
+    /**
+     * Name of the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
 
     }
 
+    /**
+     * Enter the state
+     * @param prevState previous state
+     */
+
     enter(prevState){}
 
+    /**
+     * Exit the state
+     */
     exit(){}
 }
 
+/**
+ * Minion Idle State
+ */
 export class MinionIdleState extends MinionState{
     constructor(fsm) {
         super(fsm);
         this.movementPossible = true;
     }
 
+    /**
+     * Name of the state
+     * @returns {string}
+     */
     get name(){
         return "Idle";
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
         if(input.currentNode){
             this.manager.setState("WalkForward");
@@ -53,6 +80,9 @@ export class MinionIdleState extends MinionState{
     }
 }
 
+/**
+ * Minion Walk Forward State
+ */
 export class MinionWalkForwardState extends MinionState{
     constructor(fsm) {
         super(fsm);
@@ -60,9 +90,19 @@ export class MinionWalkForwardState extends MinionState{
 
     }
 
+    /**
+     * Name of the state
+     * @returns {string}
+     */
     get name(){
         return "WalkForward";
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
         // this.manager.setState("Idle");
     }
@@ -91,26 +131,46 @@ export class MinionWalkForwardState extends MinionState{
     }
 }
 
+/**
+ * Minion Walk Backward State
+ */
 export class MinionWalkBackwardState extends MinionState{
     constructor(fsm) {
         super(fsm);
         this.movementPossible = true;
     }
 
+    /**
+     * Name of the state
+     * @returns {string} name of the state
+     */
     get name(){
         return "WalkBackward";
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
         this.manager.setState("Idle");
     }
 }
 
+/**
+ * Minion Attack State
+ */
 export class MinionDefaultAttackState extends MinionState{
     constructor(fsm) {
         super(fsm);
         this.movementPossible = false;
     }
 
+    /**
+     * Name of the state
+     * @returns {string} name of the state
+     */
     get name(){
         return "DefaultAttack";
     }

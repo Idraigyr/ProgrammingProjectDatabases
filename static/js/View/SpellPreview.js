@@ -2,6 +2,9 @@ import {IView} from "./View.js";
 import * as THREE from "three";
 import {convertWorldToGridPosition} from "../helpers.js";
 
+/**
+ * Spell preview object
+ */
 export class SpellPreview extends IView{
     #gridCellSize;
     #cutoff;
@@ -30,11 +33,19 @@ export class SpellPreview extends IView{
         this.types[key] = type;
     }
 
+    /**
+     * Update position of the preview object
+     * @param event event with position
+     */
     updateRotation(event) {
         if(!this.rotate) return;
         return super.updateRotation(event);
     }
 
+    /**
+     * Render the preview object
+     * @param event event with position and rotation
+     */
     render(event){
         if(event.detail.name !== this.currentType) this.setModel(event.detail.name);
         this.charModel.visible = true;
@@ -46,10 +57,18 @@ export class SpellPreview extends IView{
         this.charModel.translateY(1.5);
     }
 
+    /**
+     * Make the preview object (in)visible
+     * @param event event with visibility
+     */
     makeVisible(event){
         this.charModel.visible = event.detail.visible;
     }
 
+    /**
+     * Set model of the preview object
+     * @param key key of the model
+     */
     setModel(key){
         this.charModel.geometry = new this.types[key].ctor(...this.types[key].params);
         this.charModel.material.uniforms.primaryColor.value.set(this.types[key].primaryColor);
@@ -61,10 +80,21 @@ export class SpellPreview extends IView{
         this.currentType = key;
     }
 
+    /**
+     * Update position of the preview object
+     * @param deltaTime
+     */
     update(deltaTime) {
         this.charModel.material.uniforms.time.value += deltaTime*2;
     }
 
+    /**
+     * Create material for the preview object
+     * @param primaryColor primary color
+     * @param secondaryColor secondary color
+     * @param cutoff cutoff value
+     * @returns {ShaderMaterial} material for the preview object
+     */
     createMaterial(primaryColor, secondaryColor, cutoff){
         const uniforms = {
             time: {value : 0},

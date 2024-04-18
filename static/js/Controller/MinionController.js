@@ -13,7 +13,14 @@ import {
 } from "../configs/ControllerConfigs.js";
 
 //TODO: put this directly in grid of foundation?
+/**
+ * Class for a node in a path
+ */
 class PathNode{
+    /**
+     * PathNode constructor
+     * @param {{index: number, value: *, position: THREE.Vector3, worldMap: Foundation}} params
+     */
     constructor(params) {
         this.index = params.index;
         this.value = params.value;
@@ -21,8 +28,13 @@ class PathNode{
         this.gCost = 0;
         this.hCost = 0;
         this.worldMap = params.worldMap;
+        this.parent = null;
     }
 
+    /**
+     * get neighbours of this node in the grid both direct and diagonally
+     * @return {*[]}
+     */
     get neighbours(){
         let neighbors = [];
         if(this.index % this.worldMap.width > 0 &&
@@ -68,10 +80,19 @@ class PathNode{
         return neighbors;
     }
 
+    /**
+     * get fCost of this node
+     * @return {number}
+     */
     get fCost(){
         return this.gCost + this.hCost;
     }
 
+    /**
+     * get distance to another node in the grid
+     * @param node
+     * @return {number}
+     */
     getDistance(node){
         let x1 = this.index % this.worldMap.width;
         let z1 = Math.floor(this.index/this.worldMap.width);
@@ -85,14 +106,21 @@ class PathNode{
 
 }
 
+/**
+ * Class for a minion controller
+ */
 export class MinionController{
     #worldMap;
+
+    /**
+     * MinionController constructor
+     * @param {{collisionDetector: CollisionDetector}} params
+     */
     constructor(params) {
         this.minions = [];
         this.collisionDetector = params.collisionDetector;
         this.#worldMap = new Foundation({});
         this.worldCenter = this.#worldMap.grid.length - 1 /2;
-        this.parent = null;
 
         //TODO: use heap for open
         this.open = [];
@@ -102,9 +130,19 @@ export class MinionController{
 
     }
 
+    /**
+     * add a minion to the controller
+     * @param {Minion} minion
+     */
     addMinion(minion){
         this.minions.push(minion);
     }
+
+    /**
+     * update the physics of a minion
+     * @param {Minion} minion
+     * @param  {number} deltaTime
+     */
     updateMinionPhysics(minion, deltaTime) {
         minion.velocity.y += deltaTime * gravity;
 
@@ -132,13 +170,17 @@ export class MinionController{
             minion.tempPosition.copy(minion.spawnPoint);
 
             minion.input.currentNode = this.paths[this.paths.length-1][0];
-            console.log(minion.input.currentNode);
             minion.input.currentNodeIndex = 0;
         } else {
             minion.position = minion.tempPosition;
         }
     }
 
+    /**
+     * update the state of a minion
+     * @param {Minion} minion
+     * @param {number} deltaTime
+     */
     updateMinion(minion, deltaTime){
         if (!minion.fsm.currentState || minion.input.blockedInput) {
             minion.fsm.setState("Idle");
@@ -162,9 +204,7 @@ export class MinionController{
             //walk towards altar:
             // set current target node that minion is moving towards
             if(!minion.input.currentNode) {
-                console.log("paths:", this.paths)
                 minion.input.currentNode = this.paths[this.paths.length-1][0];
-                console.log(minion.input.currentNode);
                 minion.input.currentNodeIndex = 0;
             } //TODO: change indeces depending on starting position and team
             // if current target node is reached, set next target node
@@ -172,7 +212,6 @@ export class MinionController{
                 minion.input.currentNodeIndex++;
                 if(minion.input.currentNodeIndex < this.paths[this.paths.length-1].length){
                     minion.input.currentNode = this.paths[this.paths.length-1][minion.input.currentNodeIndex];
-                    console.log(minion.input.currentNode);
                 }
             }
             // rotate towards current node
@@ -195,10 +234,18 @@ export class MinionController{
     }
 
 
+    /**
+     * update the physics of all minions
+     * @param {number} deltaTime
+     */
     updatePhysics(deltaTime){
         this.minions.forEach((minion) => this.updateMinionPhysics(minion, deltaTime));
     }
 
+    /**
+     * update the state of all minions
+     * @param {number} deltaTime
+     */
     update(deltaTime){
         this.minions.forEach((minion) => this.updateMinion(minion, deltaTime));
     }
@@ -250,6 +297,11 @@ export class MinionController{
     }
 
     //TODO: move this?
+    /**
+     * calculate the position of a node in the grid from it's index
+     * @param index
+     * @return {THREE.Vector3}
+     */
     calculateNodePosition(index){
         const position = new THREE.Vector3(index % this.#worldMap.width, 0, Math.floor(index/this.#worldMap.width));
         const {x,z} = convertGridIndexToWorldPosition(position);
@@ -258,6 +310,11 @@ export class MinionController{
         return position;
     }
     //TODO: move this?
+    /**
+     * calculate the index of a node in the grid from it's position
+     * @param {THREE.Vector3} position
+     * @return {*}
+     */
     calculateIndexFromPosition(position){
         let {x,z} = returnWorldToGridIndex(position.sub(this.#worldMap.position));
         x += (this.#worldMap.width - 1)/2;
@@ -265,6 +322,10 @@ export class MinionController{
         return z*this.#worldMap.width + x;
     }
 
+    /**
+     * set the worldMap of the controller from a list of Foundations nad calculate the paths (path is currently hardcoded to go from (-90,0,-80) to the center of the map)
+     * @param {Foundation} islands
+     */
     set worldMap(islands){
         this.#worldMap.setFromFoundations(islands);
         const centerIndex = islands[0].grid.length - 1 /2;
@@ -285,10 +346,20 @@ export class MinionController{
         }
     }
 
+    /**
+     * return a shallow copy of the worldMap
+     * @return {*}
+     */
     get worldMap(){
         return this.#worldMap.slice();
     }
 
+    /**
+     * retrace the path from end to start
+     * @param {PathNode} start
+     * @param {PathNode} end
+     * @return {PathNode[]}
+     */
     retracePath(start, end) {
         let path = [];
         let current = end;

@@ -11,10 +11,14 @@ export class IView {
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
-        this.boxHelper.visible = true;
+        this.boxHelper.visible = false; // TODO: set in env
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
     }
+
+    /**
+     * First update of the view
+     */
     firstUpdate() {
         try {
             this.updatePosition({detail: {position: params.position}});
@@ -24,6 +28,16 @@ export class IView {
         }
     }
 
+    /**
+     * Update bounding box
+     */
+    updateBoundingBox(){
+        this.boundingBox.setFromObject(this.charModel, true);
+    }
+
+    /**
+     * Clean up the view
+     */
     cleanUp() {
         try {
             this.boxHelper.parent.remove(this.boxHelper);
@@ -32,8 +46,17 @@ export class IView {
         }
         this.charModel.parent.remove(this.charModel);
     }
+
+    /**
+     * Update the view
+     * @param deltaTime - time since last update
+     */
     update(deltaTime) {}
 
+    /**
+     * Update position of the view
+     * @param event - event with position
+     */
     updatePosition(event){
         if(!this.charModel) return;
         const delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
@@ -42,11 +65,37 @@ export class IView {
         this.boundingBox.translate(delta);
     }
 
+    /**
+     * Update rotation of the view
+     * @param event - event with rotation
+     */
     updateRotation(event){
         if(!this.charModel) return;
         this.charModel.setRotationFromQuaternion(event.detail.rotation);
         this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
         //this.boundingBox.setFromObject(this.charModel, true);
+    }
+
+    /**
+     * Update minimum y value
+     * @param event - event with minimum y value
+     * @returns {*} new y value
+     */
+    updateMinimumY(event){
+        let y = event.detail.minY;
+        if(y === undefined) return y;
+        // Create bounding box
+        let box = new THREE.Box3().setFromObject(this.charModel);
+        // Get current minimum y
+        let minY = box.min.y;
+        // Calculate the difference
+        let diff = y - minY;
+        // Move the model
+        this.charModel.position.y += diff;
+        // Update the bounding box
+        this.boundingBox.translate(new THREE.Vector3(0, diff, 0));
+        // Return current y value
+        return this.charModel.position.y;
     }
 }
 

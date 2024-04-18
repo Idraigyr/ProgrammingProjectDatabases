@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import {Subject} from "../Patterns/Subject.js";
 
+/**
+ * Class for a minion spawner
+ */
 export class MinionSpawner extends Subject{
     constructor(params) {
         super(params);
@@ -12,6 +15,10 @@ export class MinionSpawner extends Subject{
         this.types = ["SkeletonMinion", "SkeletonWarrior", "SkeletonMage", "SkeletonRogue"];
     }
 
+    /**
+     * Update the spawner
+     * @param deltaTime {number} Time since last update
+     */
     update(deltaTime) {
         this.timer += deltaTime;
         if(this.timer >= this.interval && this.counter < this.maxSpawn){

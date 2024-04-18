@@ -23,31 +23,32 @@ export class AssetLoader{
 
     /**
      * Load asset
-     * @param path path to the asset
+     * @param {string} path path to the asset
      * @returns {*} the model and its animations
      */
     loadAsset(path){
-        let extension = getFileExtension(path);
+        //let extension = getFileExtension(path);
+        let extension = path[1].slice(1);
         if(extension === "glb" || extension === "gltf"){
             try{
-                return this.loadGLTF(path);
+                return this.loadGLTF(path[0]);
             }catch (e) {
-                return this.loadDRACOGLTF(path);
+                return this.loadDRACOGLTF(path[0]);
             }
         } else if(extension === "fbx"){
-            return this.loadFBX(path);
+            return this.loadFBX(path[0]);
         } else if(extension === "png" || extension === "jpg") {
-            return this.loadTexture(path);
+            return this.loadTexture(path[0]);
         }   // TODO: json can be used for fonts, but also for other things...
           else if (extension === "json"){
-            return this.loadFont(path);
+            return this.loadFont(path[0]);
         } else {
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
     /**
      * Load a gltf model
-     * @param path path to the model
+     * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
     loadGLTF(path){
@@ -75,7 +76,7 @@ export class AssetLoader{
     //TODO:: add timeout error handler
     /**
      * Load a gltf model
-     * @param path path to the model
+     * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
     loadDRACOGLTF(path){
@@ -105,7 +106,7 @@ export class AssetLoader{
 
     /**
      * Load a fbx model
-     * @param path path to the model
+     * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
     loadFBX(path){
@@ -133,6 +134,11 @@ export class AssetLoader{
         });
     }
 
+    /**
+     * Load a texture
+     * @param {string} path
+     * @return {*}
+     */
     loadTexture(path){
         let loader = new TextureLoader();
         return loader.loadAsync(path, function (xhr) {
@@ -143,6 +149,12 @@ export class AssetLoader{
             throw new Error(err);
         });
     }
+
+    /**
+     * Load a font
+     * @param {string} path
+     * @return {*}
+     */
     loadFont(path){
         let loader = new FontLoader();
         return loader.loadAsync(path, function (xhr) {

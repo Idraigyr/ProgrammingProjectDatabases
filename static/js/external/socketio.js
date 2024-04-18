@@ -14,17 +14,16 @@ $(document).ready(function(){
 });
 
 let regex = {
-    "mana": /\\mana\((0*[1-9]\d*)\)/,
-    "level": /\\level\((0*[1-9]\d*)\)/,
-    "xp": /\\xp\((0*[1-9]\d*)\)/,
-    "position": /\\position\((0*[1-9]\d*),(0*[1-9]\d*),(0*[1-9]\d*)\)/,
+    "mana": /\\mana\((0*[0-9]\d*)\)/,
+    "level": /\\level\((0*[0-9]\d*)\)/,
+    "xp": /\\xp\((0*[0-9]\d*)\)/,
+    "position": /\\position\((0*[0-9]\d*),(0*[0-9]\d*),(0*[0-9]\d*)\)/,
     "crystal": /\\crystal\((0*[1-9]\d*)\)/,
-    "shieldCooldown": /\\shieldCooldown\((0*[1-9]\d*)\)/,
-    "fireCooldown": /\\fireCooldown\((0*[1-9]\d*)\)/,
-    "thunderCloudCooldown": /\\thunderCloudCooldown\((0*[1-9]\d*)\)/,
-    "buildCooldown": /\\buildCooldown\((0*[1-9]\d*)\)/,
-    "health": /\\health\((0*[1-9]\d*)\)/,
-    "setSpell" : /\\setSpell/,
+    "shieldCooldown": /\\shieldCooldown\((0*[0-9]\d*)\)/,
+    "fireCooldown": /\\fireCooldown\((0*[0-9]\d*)\)/,
+    "thunderCloudCooldown": /\\thunderCloudCooldown\((0*[0-9]\d*)\)/,
+    "buildCooldown": /\\buildCooldown\((0*[0-9]\d*)\)/,
+    "health": /\\health\((0*[0-9]\d*)\)/,
     "forceSpells": /\\forceSpells/
 }
 
@@ -104,15 +103,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
                         break;
                     }
                 }
-            }
-            else if (message.match(regex["setSpell"])){
-                if ( app.playerInfo.spells.length > 0){
-                    app.playerInfo.spells.clear();
-                }
-                app.playerInfo.spells.push(new Fireball());
-                app.playerInfo.spells.push(new Shield());
-                app.playerInfo.spells.push(new ThunderCloud());
-                app.playerInfo.spells.push(new BuildSpell());
             }
             else if (message.match(regex["buildCooldown"])){
                 for (let i = 0; i < app.playerInfo.spells.length; i++){

@@ -4,6 +4,9 @@ import {gridCellSize} from "../configs/ViewConfigs.js";
 import { TextGeometry } from 'three-TextGeometry';
 import { setPositionOfCentre} from "../helpers.js";
 
+/**
+ * Class representing a watch
+ */
 export class Watch extends IView{
     currentTime;
     constructor(params) {
@@ -13,10 +16,11 @@ export class Watch extends IView{
         this.font = params.font;
         this.setTimeView(this.currentTime);
     }
-    // update current time
-    updateCurrentTime(time){
-        this.currentTime = time;
-    }
+
+    /**
+     * Set time view
+     * @param time {number} - time in seconds
+     */
     setTimeView(time){
         // Quick fix to update only per second
         if( Math.floor(this.currentTime % 60) === Math.floor(time % 60)) {

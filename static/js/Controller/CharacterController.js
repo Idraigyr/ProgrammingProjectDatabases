@@ -40,7 +40,7 @@ export class CharacterController extends Subject{
 
     /**
      * Update the rotation of the character
-     * @param event event
+     * @param {{detail: {MovementX: number, MovementY: number}}} event
      */
     updateRotation(event){
         const {movementX, movementY} = event;
@@ -71,7 +71,7 @@ export class CharacterController extends Subject{
     }
 
     /**
-     * Handle the click event
+     * Handle the rightClick event
      * @param event event
      */
     onRightClickEvent(event){ //TODO: move to SpellCaster class
@@ -89,6 +89,10 @@ export class CharacterController extends Subject{
     }
 
 
+    /**
+     * Update the physics of the character (position) based on current state
+     * @param {number} deltaTime
+     */
     updatePhysics(deltaTime){
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
         //const correctedDeltaTime = min(deltaTime, 0.1);
@@ -129,9 +133,22 @@ export class CharacterController extends Subject{
         return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 50}}});
     }
 
+    /**
+     * dispatches an eating event after checking if the player is in the eating state
+     * @fires {CustomEvent<{}>} eatingEvent
+     */
+    eat()
+    {
+        console.log(!(this._character.fsm.currentState instanceof EatingState))
+       if (!(this._character.fsm.currentState instanceof EatingState)) {
+            this.dispatchEvent(this.createEatingEvent());
+            console.log("dispacthing eating")
+        }
+    }
+
 
     /**
-     * Update the character (e.g. state, position, spells, etc.)
+     * Update the character state based on input
      * @param deltaTime
      */
     update(deltaTime) {
@@ -140,9 +157,7 @@ export class CharacterController extends Subject{
             return;
         }
 
-        if (this.#inputManager.keys.eating && !(this._character.fsm.currentState instanceof EatingState)) {
-            this.dispatchEvent(this.createEatingEvent());
-        }
+
 
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);

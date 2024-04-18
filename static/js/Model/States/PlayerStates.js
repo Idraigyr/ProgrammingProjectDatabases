@@ -8,12 +8,25 @@ class BaseCharState extends State{
         super(fsm);
         this.movementPossible = false;
     }
+
+    /**
+     * Get the name of the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
 
     }
 
+    /**
+     * Enter the state
+     * @param prevState previous state
+     */
     enter(prevState){}
 
+    /**
+     * Exit the state
+     */
     exit(){}
 }
 
@@ -407,9 +420,19 @@ export class TakeDamageState extends BaseCharState{
         super(fsm);
         this.movementPossible = false;
     }
+
+    /**
+     * Get the name of the state
+     * @returns {string} name of the state
+     */
     get name(){
         return "TakeDamage"
     }
+
+    /**
+     * Update the state
+     * @param prevState previous state
+     */
     enter(prevState){
         const curAction = this.manager.animations["ReceiveHit"];
         if(prevState){

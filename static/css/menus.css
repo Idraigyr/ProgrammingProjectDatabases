@@ -19,7 +19,7 @@ body {
 }
 
 .mineMenu {
-    background-image: url('/static/images/menu/mineBackground.png');
+    background-image: url('/static/assets/images/menu/mineBackground.png');
 }
 
 .towerMenu {
@@ -92,7 +92,7 @@ h3 {
   margin-bottom: 20px;
   background-color: #f9f3d2;
   border-radius: 10px;
-  background-image: url('/static/images/menu/listBackground.png');
+  background-image: url('/static/assets/images/menu/listBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -109,7 +109,7 @@ h3 {
   display: inline-block; /* Change display to inline-block */
   width: 100px; /* Set a fixed width */
   height: 100px; /* Set a fixed height */
-  background-image: url('/static/images/menu/playButton.png'); /* Set background image */
+  background-image: url('/static/assets/images/menu/playButton.png'); /* Set background image */
   background-size: cover; /* Cover the entire button with the image */
   background-position: center; /* Center the background image */
   background-repeat: no-repeat; /* Prevent the background image from repeating */
@@ -132,7 +132,7 @@ h3 {
   display: inline-block; /* Change display to inline-block */
   width: 100px; /* Set a fixed width */
   height: 100px; /* Set a fixed height */
-  background-image: url('/static/images/menu/fuseButton.png'); /* Set background image */
+  background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
   background-size: cover; /* Cover the entire button with the image */
   background-position: center; /* Center the background image */
   background-repeat: no-repeat; /* Prevent the background image from repeating */
@@ -162,7 +162,7 @@ h3 {
     height: 200px;
     padding: 20px;
     border-radius: 10px;
-    background-image: url('/static/images/menu/pickaxe.png');
+    background-image: url('/static/assets/images/menu/pickaxe.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -189,7 +189,7 @@ h3 {
     right: 7%;
     padding: 10px;
     border-radius: 10px;
-    background-image: url('/static/images/menu/arrow.png');
+    background-image: url('/static/assets/images/menu/arrow.png');
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
@@ -215,7 +215,7 @@ h3 {
   padding: 20px;
   background-color: #f9f3d2;
   border-radius: 10px;
-  background-image: url('/static/images/menu/listBackground.png');
+  background-image: url('/static/assets/images/menu/listBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -252,7 +252,7 @@ h3 {
   margin-bottom: 20px;
   background-color: #f9f3d2;
   border-radius: 10px;
-  background-image: url('/static/images/menu/listBackground.png');
+  background-image: url('/static/assets/images/menu/listBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -269,7 +269,7 @@ h3 {
   border-radius: 10px;
   transition: background-color 0.2s ease;
   position: relative;
-  background-image: url('/static/images/menu/itemBackground.png');
+  background-image: url('/static/assets/images/menu/itemBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -297,7 +297,7 @@ h3 {
   border-radius: 10px;
   transition: background-color 0.2s ease;
   position: relative; /* Set position to relative */
-  background-image: url('/static/images/menu/itemBackground.png');
+  background-image: url('/static/assets/images/menu/itemBackground.png');
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -342,7 +342,7 @@ h3 {
   border: none;
   width: 40px; /* Set a fixed width */
   height: 40px; /* Set a fixed height */
-  background-image: url('/static/images/menu/exit.png'); /* Set background image */
+  background-image: url('/static/assets/images/menu/exit.png'); /* Set background image */
   background-size: cover; /* Cover the entire button with the image */
   background-position: center; /* Center the background image */
   background-repeat: no-repeat; /* Prevent the background image from repeating */

@@ -1,3 +1,6 @@
+/**
+ * Base class for workers.
+ */
 export class WorkerBase {
 
 	constructor( worker ) {
@@ -22,8 +25,16 @@ export class WorkerBase {
 
 	}
 
+	/**
+	 * Run a task on the worker.
+	 */
 	runTask() {}
 
+	/**
+	 * Generate a mesh BVH.
+	 * @param args - Arguments for the worker.
+	 * @returns {*} - Promise.
+	 */
 	generate( ...args ) {
 
 		if ( this.running ) {
@@ -51,6 +62,9 @@ export class WorkerBase {
 
 	}
 
+	/**
+	 * dispose the worker.
+	 */
 	dispose() {
 
 		this.worker.terminate();
