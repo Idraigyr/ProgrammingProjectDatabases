@@ -29,10 +29,10 @@ let regex = {
 }
 
 document.addEventListener('DOMContentLoaded', ()=>{
-    let socket = io();
+    const chatIo = io('/chat');
 
-    //get message from the server
-    socket.on('message', function(data) {
+    //get message from the server, under the '/chat' namespace
+    chatIo.on('message', function(data) {
         const messageContainer = document.createElement('div');
         const messageText = document.createElement('div');
         const span_time = document.createElement('div');
@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
                 if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0){
                     app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
                 } else{
-                    socket.emit('message', messageData);
+                    chatIo.emit('message', messageData);
                 }
             }
             else if (message.match(regex["xp"])){
@@ -135,10 +135,10 @@ document.addEventListener('DOMContentLoaded', ()=>{
                     }
                 }
             } else{
-                socket.emit('message', messageData);
+                chatIo.emit('message', messageData);
             }
         } else{
-            socket.emit('message', messageData);
+            chatIo.emit('message', messageData);
         }
     }
 })

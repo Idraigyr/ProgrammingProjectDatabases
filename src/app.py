@@ -9,6 +9,7 @@ from flask_migrate import Migrate
 from flask_migrate import check as check_db_schema
 from flask_migrate import upgrade as upgrade_db_schema
 from flask_restful_swagger_3 import get_swagger_blueprint
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from oauthlib.oauth2 import WebApplicationClient
 from sqlalchemy.orm import DeclarativeBase
@@ -166,9 +167,6 @@ def setup(app: Flask):
 
     # Lock the app context
     with app.app_context():
-        # import socket INSIDE the app context
-        from src.chatBox import socketio
-
         # import routes INSIDE the app context
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
@@ -206,12 +204,15 @@ def setup(app: Flask):
                                              swagger_url=swagger_url, swagger_prefix_url=api_url,
                                              title=app.config['APP_NAME'])
             app.register_blueprint(resource, url_prefix=swagger_url)
-        socketio.init_app(app)
+
+        app.socketio = SocketIO(cors_allowed_origins='*')
+        app.socketio.init_app(app)
+        import src.socketio # Leave this import here, it registers the socketio events
 
         # Generate documentation
         from documentation import generate_pdoc
         generate_pdoc(generate=app.config.get('APP_GENERATE_DOCS', 'false') == 'true')  # to generate documentation set parameter to true: generate_pdoc(True)
-    return app, socketio
+    return app, app.socketio
 
 
 # RUN DEV SERVER
