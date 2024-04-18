@@ -15,6 +15,8 @@ import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes} from "./configs/Enums.js";
+import {ChatNamespace} from "./external/socketio.js";
+import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -264,6 +266,13 @@ class App {
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
 
+        // Setup chat SocketIO namespace
+        this.chatNameSpace = new ChatNamespace(this);
+        this.chatNameSpace.registerHandlers();
+
+        this.forwardingNameSpace = new ForwardingNameSpace();
+        this.forwardingNameSpace.registerHandlers();
+
         //visualise camera line -- DEBUG STATEMENTS --
         // this.inputManager.addKeyDownEventListener("KeyN",() => {
         //     console.log("N");
@@ -392,6 +401,9 @@ class App {
             });
             //TODO: remove this is test //
 
+            // Setup SocketIO
+
+
 
             document.querySelector('.loading-animation').style.display = 'none';
             //init();
@@ -437,6 +449,7 @@ class App {
         // this.BuildManager.makePreviewObjectInvisible();
     }
 }
-export let app = new App({});
+
+const app = new App({});
 await app.loadAssets();
 app.start();
