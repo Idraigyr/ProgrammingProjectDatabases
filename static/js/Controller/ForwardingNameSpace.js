@@ -6,16 +6,29 @@ export class ForwardingNameSpace {
     }
 
     registerHandlers() {
-
         // Get message from the server, under the '/forward' namespace
-        this.socket.on('positionUpdate', (data) => this.handlePositionUpdate(data));
-        // Etc, etc 
+        this.socket.on('forwarded', (data) => this.handleForwardedMessage(data));
 
     }
 
-    handlePositionUpdate(data) {
+    handleForwardedMessage(data) {
         // TODO - @Flynn - Implement this method
-        console.log(data);
+        const sender = data.sender // sender user id
+        const target = data.target // target user id
+        if (sender === target) {
+            // Another session of our player emitted this message, probably should update our internal state as well
+        }
+
+        console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
+    }
+
+    sendTo(targetId, data) {
+        /**
+         * Send data (JSON) to the server, under the '/forward' namespace
+         * @param {string} targetId - The target userId
+         */
+        // Cursed way to merge two JSON objects
+        this.socket.emit('forward', {...{'target': targetId}, ...data});
     }
 
 }

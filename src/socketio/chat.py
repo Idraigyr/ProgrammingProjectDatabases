@@ -1,13 +1,12 @@
 from flask import current_app
-from flask_socketio import SocketIO, send, Namespace
+from flask_socketio import send, Namespace
 from time import localtime, strftime
-
-
 from src.model.chat_message import ChatMessage
 
-socketio: SocketIO = current_app.socketio  # it is set
-
 class ChatNamespace(Namespace):
+
+    def __init__(self, namespace):
+        super().__init__(namespace)
 
     def on_message(self, data):
         """
@@ -27,6 +26,3 @@ class ChatNamespace(Namespace):
         username = data['username']
         time_stamp = strftime("%b-%d %I:%M%p", localtime())
         send({"username": username, "message": msg, "time_stamp": time_stamp}, broadcast=True)
-
-
-socketio.on_namespace(ChatNamespace('/chat'))
