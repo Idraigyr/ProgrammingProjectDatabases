@@ -81,3 +81,33 @@ class ForwardingNamespace(Namespace):
         except Exception:
             self._log.error(f"Could not forward message: {data}", exc_info=True)
 
+    def on_match_found(self, data):
+        """
+        forwards the message to all the clients
+        :param data: message from the client
+        """
+        try:
+            # send opponentId to both players, players will fetch opponent details from server via REST API
+            target_ids = [int(data['player1']), int(data['player2'])]
+            for target_id in target_ids:
+                if target_id not in self.clients:
+                    self._log.error(f"Client not found: {target_id}. Dropping message.")
+                    return
+                target_sids = self.clients[target_id]
+                sender_id = self.get_user_from_sid(request.sid)
+
+                if BROADCAST_TO_SELF:
+                    # also send the message to the other sender sessions
+                    self_sessions = self.clients.get(sender_id, [])
+                    target_sids = target_sids + [sid for sid in self_sessions if sid not in self_sessions]
+
+                self._log.debug(f"Forwarding message to user_id = {target_id}: {data}")
+                data['sender'] = sender_id
+                data['opponent'] = target_ids[1] if target_id == target_ids[0] else target_ids[0]
+
+                for sid in target_sids:
+                    self.emit('match_found', data, room=sid)
+
+        except Exception:
+            self._log.error(f"Could not send match found message: {data}", exc_info=True)
+

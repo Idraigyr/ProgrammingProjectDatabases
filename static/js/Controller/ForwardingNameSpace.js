@@ -7,8 +7,14 @@ export class ForwardingNameSpace {
 
     registerHandlers() {
         // Get message from the server, under the '/forward' namespace
+        this.socket.on('matchFound', (data) => this.handleMatchFound(data));
         this.socket.on('forwarded', (data) => this.handleForwardedMessage(data));
 
+    }
+
+    handleMatchFound(data) {
+        // TODO - @Flynn - Implement this method
+        console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
     }
 
     handleForwardedMessage(data) {

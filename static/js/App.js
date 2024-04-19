@@ -39,6 +39,9 @@ class App {
      * @param {object} params
      */
     constructor(params) {
+        //for remembering the interval for sending state updates
+        this.updateInterval = null;
+
         this.simulatePhysics = false;
         this.clock = new THREE.Clock();
 
@@ -392,6 +395,29 @@ class App {
      * Starts the game loop
      */
     start(){
+        this.inputManager.addKeyDownEventListener("KeyP", async () => {
+            try {
+            $.ajax({
+                url: `${API_URL}/api/matchmaking`,
+                type: "PUT",
+                // data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
+                // dataType: "json",
+                // contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                console.log(textStatus, errorThrown);
+            });
+        } catch (err){
+            console.error(err);
+        }
+        });
+
         if ( WebGL.isWebGLAvailable()) {
             //TODO: remove this is test //
             this.worldManager.addSpawningIsland();
@@ -414,6 +440,33 @@ class App {
             const warning = WebGL.getWebGLErrorMessage();
             document.getElementById( 'container' ).appendChild( warning );
         }
+    }
+
+    async startMatchMaking(){
+        //join matchmaking queue on server
+        //wait for match to start
+        //when opponent found, get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
+        //start the match
+    }
+
+    startMatch(peerInfo){
+        //construct 2nd player object and island object and add to world
+        //start sending state updates to server
+        //start receiving state updates from server
+
+    }
+
+    endMatch(){
+        //stop sending state updates to server
+        //stop receiving state updates from server
+    }
+
+    async startSendingStateUpdates(){
+        this.updateInterval = setInterval(() => {
+            // Send state update to server
+            //player state (position, rotation, health)
+            //created objects (minions, spells)
+        }, 1000);
     }
 
     /**
