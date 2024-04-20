@@ -15,6 +15,7 @@ import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes} from "./configs/Enums.js";
+import {settings} from "./Menus/settings.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -39,7 +40,6 @@ class App {
     constructor(params) {
         this.simulatePhysics = false;
         this.clock = new THREE.Clock();
-
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
@@ -120,6 +120,7 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
+        this.settings = new settings(this.inputManager)
         this.menuManager = new Controller.MenuManager({container: document.querySelector("#menuContainer"), blockInputCallback: {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)

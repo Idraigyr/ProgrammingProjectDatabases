@@ -287,4 +287,14 @@ export class InputManager extends Subject{
         const settingsButton = document.querySelector('.settings-button');
         settingsButton.addEventListener('click', callback);
     }
+
+    addSettingsCloseButtonListener(callback) {
+        const settingsCloseButton = document.querySelector('.close-button');
+        settingsCloseButton.addEventListener('click', callback);
+    }
+
+    addLogoutButtonListener(callback) {
+        const logoutButton = document.querySelector('.logOutButton');
+        logoutButton.addEventListener('click', callback);
+    }
 }
