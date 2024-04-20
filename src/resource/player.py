@@ -53,6 +53,10 @@ class PlayerSchema(Schema):
             'type': 'integer',
             'description': 'The unique identifier of the user profile'
         },
+        'username': {
+            'type': 'string',
+            'description': 'The username of the player'
+        },
         'crystals': {
             'type': 'integer',
             'description': 'The amount crystals the player has'
@@ -96,6 +100,7 @@ class PlayerSchema(Schema):
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
                              blueprints=[blueprint.id for blueprint in player.blueprints],
+                             username=player.user_profile.username,
                              **kwargs)
         else:  # schema -> player
             super().__init__(**kwargs)
@@ -137,7 +142,7 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
-    @summary('Update the player profile by id. All fields (except id and gems) are updatable. Including entity (and its modifiable fields),'
+    @summary('Update the player profile by id. All fields (except id, gems and username) are updatable. Including entity (and its modifiable fields),'
              ' spells (by ids), blueprints (by ids), last_login, last_logout, xp, mana and crystals')
     @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
