@@ -139,10 +139,8 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-        console.log(!(this._character.fsm.currentState instanceof EatingState))
-       if (!(this._character.fsm.currentState instanceof EatingState)) {
+       if (!(this._character.fsm.currentState instanceof EatingState) || (this.#inputManager.blockedInput)) {
             this.dispatchEvent(this.createEatingEvent());
-            console.log("dispacthing eating")
         }
     }
 
@@ -152,6 +150,7 @@ export class CharacterController extends Subject{
      * @param deltaTime
      */
     update(deltaTime) {
+
         if (!this._character.fsm.currentState || this.#inputManager.blockedInput) {
             this._character.fsm.setState("Idle");
             return;
@@ -164,7 +163,6 @@ export class CharacterController extends Subject{
 
 
         if (this._character.fsm.currentState.movementPossible) {
-
             if (this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;
