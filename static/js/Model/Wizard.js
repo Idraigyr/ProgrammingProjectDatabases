@@ -1,4 +1,5 @@
 import {Character} from "./Character.js";
+import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
 
 /**
  * @class Wizard - class for the player character
@@ -106,7 +107,6 @@ export class Wizard extends Character{
      * Notify observers of the current condition of the player
      */
     advertiseCurrentCondition(){
-        this.health = 20;
         this.dispatchEvent(this.#createUpdateManaEvent());
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }

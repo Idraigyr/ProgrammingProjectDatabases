@@ -351,6 +351,8 @@ class App {
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+        // Connect info from player entity to playerInfo about mana
+        this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
 
 

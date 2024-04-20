@@ -64,8 +64,8 @@ export class UserInfo extends Subject{
 
             this.level = response?.entity?.level;
             this.experience = response.xp
-            // this.mana = response?.mana // TODO @Flynn ?
-            this.mana += this.calculateManaBonus();
+            this.mana = response?.mana
+            // this.mana += this.calculateManaBonus();
             this.health += this.calculateHealthBonus();
 
             this.playerPosition.x = response?.entity?.x ?? playerSpawn.x;
@@ -142,6 +142,13 @@ export class UserInfo extends Subject{
         return true;
     }
 
+    updateMana(event){
+        this.mana = event.detail.current;
+        this.maxMana = event.detail.total;
+        this.dispatchEvent(this.createUpdateManaEvent());
+        this.updateUserInfoBackend();
+    }
+
     /**
      * Updates the user information on the server
      */
@@ -215,6 +222,7 @@ export class UserInfo extends Subject{
         return true;
     }
 
+    // TODO: rewrite this to have a map of levels and their respective values
     /**
      * Increases the level of the player
      * @param amount - Level to set

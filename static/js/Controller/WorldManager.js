@@ -46,9 +46,10 @@ export class WorldManager{
                 y: playerSpawn.y,
                 z: playerSpawn.z
             },
-            health: 100,
-            mana: 1000,
-            maxMana: 1000
+            health: this.userInfo.health,
+            maxHealth: this.userInfo.maxHealth,
+            mana: this.userInfo.mana,
+            maxMana: this.userInfo.maxMana,
         };
         let characters = [];
 
