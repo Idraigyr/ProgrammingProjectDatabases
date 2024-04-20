@@ -377,6 +377,8 @@ class App {
             }
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
+        this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
+        this.playerInfo.setLevelStats();
         this.worldManager.world.player.advertiseCurrentCondition();
         this.minionController.worldMap = this.worldManager.world.islands;
     }

@@ -20,13 +20,12 @@ export class UserInfo extends Subject{
 
         this.maxMana = 50;
         this.maxHealth = 50;
+        this.mana = 50;
+        this.health = 100;
 
         this.maxGemAttribute = 2;
 
         this.maxBuildings = 2;
-
-        this.mana = 50;
-        this.health = 100;
 
         this.level = 0;
         this.experience = 0;
@@ -221,32 +220,8 @@ export class UserInfo extends Subject{
         this.updateUserInfoBackend();
         return true;
     }
-
     // TODO: rewrite this to have a map of levels and their respective values
-    /**
-     * Increases the level of the player
-     * @param amount - Level to set
-     * @param increase - True if the level should be increased, false if it should be set to 0
-     * @returns {boolean} - True if the level was changed, false otherwise
-     */
-    changeLevel(amount=0, increase=false){
-        if(amount === 0){
-            if(increase){
-                let old = this.level;
-                this.level = this.level + 1;
-                if (this.level < 0 || this.level > 4){
-                    this.level = old;
-                    return false;
-                }
-            } else{
-                this.level = 0;
-            }
-        } else{
-            if(amount < 0 && Math.abs(amount) > this.level) return false;
-            if(amount < 0 || amount > 4) return false;
-            this.level = amount;
-        }
-        this.dispatchEvent(this.createUpdateLevelEvent());
+    setLevelStats(){
         if(this.level === 0){
             this.maxMana = 50;
             this.dispatchEvent(this.createUpdateManaEvent());
@@ -269,7 +244,6 @@ export class UserInfo extends Subject{
             this.xpThreshold = 100;
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
-
         }
         else if(this.level === 2){
             this.maxMana = 200;
@@ -305,6 +279,33 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
         }
+        this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
+    }
+    /**
+     * Increases the level of the player
+     * @param amount - Level to set
+     * @param increase - True if the level should be increased, false if it should be set to 0
+     * @returns {boolean} - True if the level was changed, false otherwise
+     */
+    changeLevel(amount=0, increase=false){
+        if(amount === 0){
+            if(increase){
+                let old = this.level;
+                this.level = this.level + 1;
+                if (this.level < 0 || this.level > 4){
+                    this.level = old;
+                    return false;
+                }
+            } else{
+                this.level = 0;
+            }
+        } else{
+            if(amount < 0 && Math.abs(amount) > this.level) return false;
+            if(amount < 0 || amount > 4) return false;
+            this.level = amount;
+        }
+        this.dispatchEvent(this.createUpdateLevelEvent());
+        this.setLevelStats();
         popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute, this.maxBuildings, this.unlockedBuildings);
         this.updateUserInfoBackend();
         return true;

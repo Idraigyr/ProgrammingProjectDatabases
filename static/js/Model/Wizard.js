@@ -85,6 +85,12 @@ export class Wizard extends Character{
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }
 
+    updateMaxManaAndHealth(event){
+        this.maxMana = event.detail.maxMana;
+        this.maxHealth = event.detail.maxHealth;
+        this.advertiseCurrentCondition();
+    }
+
     /**
      * Increase the maximum mana of the player
      * @param {Number} amount - amount to increase the maximum mana by, needs to be bigger than 0
