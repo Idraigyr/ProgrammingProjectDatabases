@@ -10,7 +10,7 @@ import {
 } from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
-import {BaseCharAttackState, EatingState} from "../Model/States/PlayerStates.js";
+import {BaseCharAttackState, DefaultAttackState, EatingState} from "../Model/States/PlayerStates.js";
 
 
 
@@ -139,7 +139,8 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-       if (!(this._character.fsm.currentState instanceof EatingState) || (this.#inputManager.blockedInput)) {
+        console.log((this.#inputManager.keys.eating))
+       if (!(this._character.fsm.currentState instanceof EatingState) && this.#inputManager.keys.eating && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
             this.dispatchEvent(this.createEatingEvent());
         }
     }

@@ -348,10 +348,10 @@ class App {
         this.spellCaster.wizard = this.worldManager.world.player;
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
+        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
-        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
 
 
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
