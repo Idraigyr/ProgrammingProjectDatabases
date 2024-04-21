@@ -444,7 +444,7 @@ export class AltarMenu extends BaseMenu{
         const playButton = document.createElement("button");
         playButtonDiv.classList.add("play-button-container");
         playButton.classList.add("play-button");
-        playButton.innerText = "Play";
+        //playButton.innerText = "Play";
         playButtonDiv.appendChild(playButton);
         const headerDiv = element.querySelector(".menu-header");
         headerDiv.insertAdjacentElement("afterend", playButtonDiv);
@@ -497,7 +497,20 @@ export class FusionTableMenu extends BaseMenu{
     constructor(params) {
         params.classes = ["fusion-table-menu"];
         super(params);
-        this.allows = [];
+        this.allows = ["CollectMenu", "GemsMenu", "GemInsertMenu", "StatsMenu"];
+    }
+
+    createElement(params){
+        const element = super.createElement(params);
+        const fuseButtonDiv = document.createElement("div");
+        const fuseButton = document.createElement("button");
+        fuseButtonDiv.classList.add("fuse-button-container");
+        fuseButton.classList.add("fuse-button");
+        //fuseButton.innerText = "Fuse";
+        fuseButtonDiv.appendChild(fuseButton);
+        const headerDiv = element.querySelector(".menu-header");
+        headerDiv.insertAdjacentElement("afterend", fuseButtonDiv);
+        return element;
     }
 
     get name(){

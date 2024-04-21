@@ -147,6 +147,39 @@
 
 }
 
+.fuse-button-container {
+    position: relative;
+    width: 100%;
+    background-image: url('/static/assets/images/menu/headerBackground.png');
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fuse-button {
+  margin-left: 1.5%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background-color: transparent; /* Remove background color */
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: inline-block; /* Change display to inline-block */
+  width: 80px; /* Set a fixed width */
+  height: 80px; /* Set a fixed height */
+  background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
+  background-size: cover; /* Cover the entire button with the image */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Prevent the background image from repeating */
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    z-index: 1;
+}
+
+.fuse-button:hover {
+  transform: scale(1.10); /* Scale up the button on hover */
+}
+
 .sub-menu-container {
     display: flex;
     flex-direction: row;

@@ -88,6 +88,9 @@ export class MenuManager extends Subject{
         if(menu instanceof AltarMenu){
             menu.element.querySelector(".play-button").addEventListener("click", () => console.log("play button clicked"));
         }
+        if(menu instanceof FusionTableMenu){
+            menu.element.querySelector(".fuse-button").addEventListener("click", () => console.log("fuse button clicked"));
+        }
         if(menu instanceof ListMenu){
             menu.element.addEventListener("drop", this.drop.bind(this));
             menu.element.addEventListener("dragover", this.dragover.bind(this));
@@ -106,8 +109,8 @@ export class MenuManager extends Subject{
         if(menu instanceof CollectMenu){
             menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
         }
-        //if(menu instanceof FusionTableMenu){
-        //    menu.element.querySelector(".fuse-button").addEventListener("click", () => console.log("fuse button clicked"));
+        //if(menu instanceof CrystalFuseMenu){
+        //    menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
         //}
     }
 
@@ -645,7 +648,10 @@ export class MenuManager extends Subject{
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
             case "FusionTableMenu":
-                //this.#moveMenu("InputMenu", "FuseTableMenu", "afterbegin");
+                this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
+                this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
+                this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
+                this.#moveMenu("CollectMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");

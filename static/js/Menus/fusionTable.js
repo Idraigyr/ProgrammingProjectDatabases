@@ -34,6 +34,8 @@ calculateOdds();
 /**
  * Function to start the fusion process
  */
+
+
 function startFusion(){
     if(!fusion && inputCrystals !== 0) {
         fusion = true;
@@ -49,7 +51,7 @@ function startFusion(){
  */
 function endFusion(){
     toggleAnimation(false);
-    progress = 0;
+    //progress = 0;
     for(let gem in gemsOdds) {
         let a = getRandomInt(1, 100);
         if(a <= gemsOdds[gem][oddIndex]){
