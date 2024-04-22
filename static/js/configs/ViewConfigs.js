@@ -5,7 +5,7 @@
 /**
  * Shows default paths to the 3d models
  */
-export let assetPaths = {
+export let assetPaths = Object.freeze({
     Altar: ["./static/assets/3d-models/altar.glb",".glb"],
     Mine: ["./static/assets/3d-models/mine.glb",".glb"],
     Player: ["./static/assets/3d-models/Wizard.glb",".glb"],
@@ -32,10 +32,14 @@ export let assetPaths = {
     WarriorHut: ["./static/assets/3d-models/warrior-hut.glb",".glb"],
     WarriorHut2: ["./static/assets/3d-models/warrior-hut-2.glb",".glb"],
     SurabanglusFont: ["./static/fonts/Surabanglus_Regular.json",".json"]
-};
+});
 
 export const menuPaths = Object.freeze({
 
 });
 
 export const gridCellSize = 10;
+
+export const islandWidth = 15;
+
+export const islandLength = 15;

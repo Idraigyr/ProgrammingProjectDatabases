@@ -14,6 +14,8 @@ import {BuildManager} from "./BuildManager.js";
 import {MenuManager} from "./MenuManager.js";
 import {ItemManager} from "./ItemManager.js";
 import {MinionController} from "./MinionController.js";
+import {PeerController} from "./PeerController.js";
+import {MultiplayerController} from "./MultiplayerController.js";
 
 /**
  * Controller namespace
@@ -36,5 +38,7 @@ export const Controller = Object.freeze({
     RaycastController: RaycastController,
     CollisionDetector: CollisionDetector,
     UserInfo: UserInfo,
-    SpellCaster: SpellCaster
+    SpellCaster: SpellCaster,
+    PeerController: PeerController,
+    MultiplayerController: MultiplayerController
 });

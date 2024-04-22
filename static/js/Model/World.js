@@ -1,5 +1,4 @@
-import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "./Spell.js";
-import {convertGridIndexToWorldPosition, convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
+import {returnWorldToGridIndex} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 import {Bridge} from "./Bridge.js";
 import * as THREE from "three";
@@ -14,20 +13,23 @@ export class World{
         this.spellFactory = params.SpellFactory;
         this.collisionDetector = params.collisionDetector;
         this.islands = [];
-        params.islands.forEach((island) => {
-            this.islands.push(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
-        });
-        this.player = this.factory.createPlayer(params.player);
-        // Set default values for the inventory slots
-        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
-        this.player.changeEquippedSpell(0,new BuildSpell({}));
-        this.player.changeEquippedSpell(1,new Fireball({}));
-        this.player.changeEquippedSpell(2,new ThunderCloud({}));
-        this.player.changeEquippedSpell(3,new Shield({}));
-        this.player.changeEquippedSpell(4,new IceWall({}));
+        this.player = null;
         this.entities = [];
-        params.characters.forEach((character) => {});
         this.spawners = [];
+    }
+
+    addIsland(island){
+        //TODO: if this.islands is not empty, place the new island in a way that it doesn't overlap with the existing islands
+        //+ add a bridge already?
+        this.islands.push(island);
+    }
+
+    addEntity(entity){
+        this.entities.push(entity);
+    }
+
+    addPlayer(player){
+        this.player = player;
     }
 
     /**
@@ -36,6 +38,7 @@ export class World{
      * @returns {*|null} - the island at the position or null if there is no island at the position
      */
     getIslandByPosition(position){
+        console.log("getIslandByPosition: position", position);
         for(const island of this.islands){
             //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2 (depends on implementation of Foundation class)
             if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
@@ -52,6 +55,7 @@ export class World{
      */
     getBuildingByPosition(position){
         const island = this.getIslandByPosition(position);
+        console.log("getIslandByPosition result:", island);
         if(island){
             return island.getBuildingByPosition(position);
         }
@@ -83,7 +87,7 @@ export class World{
         const island = this.getIslandByPosition(position);
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
-            const {x,z} = returnWorldToGridIndex(position);
+            const {x,z} = returnWorldToGridIndex(position.sub(island.position));
             const building = this.factory.createBuilding({
                 buildingName: buildingName,
                 position: {x: x, y: 0, z: z},
@@ -103,14 +107,6 @@ export class World{
      * @param json - the json object to export to
      */
     exportWorld(json){
-
-    }
-
-    /**
-     * Import a world from a json object
-     * @param json - the json object to import
-     */
-    importWorld(json){
 
     }
 

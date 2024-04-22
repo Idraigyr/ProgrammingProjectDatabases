@@ -4,6 +4,7 @@ import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
 import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
+import * as THREE from "three";
 
 /**
  * Class to manage the views of the game
@@ -31,9 +32,10 @@ export class ViewManager extends Subject{
             this.spellPreview.charModel.visible = false;
             return;
         }
-        const newEvent = {detail: {name: "", position: event.detail.params.position}};
+        const newEvent = {detail: {name: "", position: event.detail.params.position.clone()}};
+        const island = this.getIslandByPosition(newEvent.detail.position);
         if(event.detail.type.name === "build"){
-            if(this.getIslandByPosition(newEvent.detail.position)?.checkCell(newEvent.detail.position) !== buildTypes.getNumber("empty")){
+            if(island?.checkCell(newEvent.detail.position) !== buildTypes.getNumber("empty")){
                 newEvent.detail.name = "augmentBuild";
             } else {
                 newEvent.detail.name = "build";
@@ -70,7 +72,8 @@ export class ViewManager extends Subject{
      */
     addPair(model, view){
         if(model.type === "player" && this.pairs.player.length > 0){
-            throw new Error("player already exists");
+            this.pairs.character.push({model, view});
+            // throw new Error("player already exists");
         }
         this.pairs[model.type].push({model, view});
     }

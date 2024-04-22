@@ -5,16 +5,11 @@ export class ForwardingNameSpace {
         this.socket = io('/forward');
     }
 
-    registerHandlers() {
+    registerHandlers(params) {
         // Get message from the server, under the '/forward' namespace
-        this.socket.on('matchFound', (data) => this.handleMatchFound(data));
-        this.socket.on('forwarded', (data) => this.handleForwardedMessage(data));
+        this.socket.on('match_found', (data) => params.handleMatchFound(data));
+        this.socket.on('forwarded', (data) =>params.processReceivedState(data));
 
-    }
-
-    handleMatchFound(data) {
-        // TODO - @Flynn - Implement this method
-        console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
     }
 
     handleForwardedMessage(data) {

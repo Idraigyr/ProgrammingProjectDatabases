@@ -28,11 +28,13 @@ export class Placeable extends Entity{
     /**
      * Formats the data for a POST request
      * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPOSTData(userInfo){
+    formatPOSTData(userInfo, islandPosition){
         const gridPos = new THREE.Vector3().copy(this.position);
-        convertWorldToGridPosition(this.position);
+        gridPos.add(islandPosition);
+        convertWorldToGridPosition(gridPos);
         const obj = {
             island_id: userInfo.islandID,
             x: gridPos.x/gridCellSize,

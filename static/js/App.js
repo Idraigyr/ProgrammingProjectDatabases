@@ -9,7 +9,15 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import {OrbitControls} from "three-orbitControls";
-import {API_URL, islandURI, playerURI, placeableURI, postRetries} from "./configs/EndpointConfigs.js";
+import {
+    API_URL,
+    islandURI,
+    playerURI,
+    placeableURI,
+    postRetries,
+    playerProfileURI,
+    matchMakingURI
+} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
@@ -17,6 +25,7 @@ import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
+import {UserInfo} from "./Controller/UserInfo.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -39,9 +48,6 @@ class App {
      * @param {object} params
      */
     constructor(params) {
-        //for remembering the interval for sending state updates
-        this.updateInterval = null;
-
         this.simulatePhysics = false;
         this.clock = new THREE.Clock();
 
@@ -119,17 +125,22 @@ class App {
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
 
+        this.multiplayerController = new Controller.MultiplayerController({});
+
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.menuManager = new Controller.MenuManager({container: document.querySelector("#menuContainer"), blockInputCallback: {
+        this.menuManager = new Controller.MenuManager({
+            container: document.querySelector("#menuContainer"),
+            blockInputCallback: {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
-        }});
-
+            },
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
+        });
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
@@ -274,7 +285,7 @@ class App {
         this.chatNameSpace.registerHandlers();
 
         this.forwardingNameSpace = new ForwardingNameSpace();
-        this.forwardingNameSpace.registerHandlers();
+        this.forwardingNameSpace.registerHandlers({handleMatchFound: this.multiplayerController.startMatch.bind(this.multiplayerController), processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController)});
 
         //visualise camera line -- DEBUG STATEMENTS --
         // this.inputManager.addKeyDownEventListener("KeyN",() => {
@@ -306,22 +317,6 @@ class App {
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
-    }
-
-    /**
-     * Adds a new minionController to the list of minionControllers
-     * @param controller - the controller to add
-     */
-    addMinionController(controller){
-        this.minionControllers.push(controller);
-    }
-
-    /**
-     * Removes a minionController from the list of minionControllers
-     * @param controller - the controller to remove
-     */
-    removeMinionController(controller){
-        this.minionControllers.filter((c) => controller !== c);
     }
 
     /**
@@ -369,7 +364,7 @@ class App {
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
 
         this.menuManager.addEventListener("build", (event) => {
-            this.menuManager.hideMenu();
+            this.menuManager.exitMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
             // TODO: move things from menuManager, because otherwise you have to use the following code:
@@ -389,42 +384,28 @@ class App {
         }); //build building with event.detail.id on selected Position;
         this.worldManager.world.player.advertiseCurrentCondition();
         this.minionController.worldMap = this.worldManager.world.islands;
+        this.multiplayerController.setUpProperties({
+            playerInfo: this.playerInfo,
+            menuManager: this.menuManager,
+            worldManager: this.worldManager,
+            spellCaster: this.spellCaster,
+            minionController: this.minionController,
+            forwardingNameSpace: this.forwardingNameSpace,
+            collisionDetector: this.collisionDetector,
+        });
     }
 
     /**
      * Starts the game loop
      */
     start(){
-        this.inputManager.addKeyDownEventListener("KeyP", async () => {
-            try {
-            $.ajax({
-                url: `${API_URL}/api/matchmaking`,
-                type: "PUT",
-                // data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
-                // dataType: "json",
-                // contentType: "application/json",
-                error: (e) => {
-                    console.error(e);
-                }
-            }).done((data, textStatus, jqXHR) => {
-                console.log("PUT success");
-                console.log(textStatus, data);
-            }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("PUT fail");
-                console.log(textStatus, errorThrown);
-            });
-        } catch (err){
-            console.error(err);
-        }
-        });
-
         if ( WebGL.isWebGLAvailable()) {
             //TODO: remove this is test //
-            this.worldManager.addSpawningIsland();
-            this.minionController.worldMap = this.worldManager.world.islands;
-            this.worldManager.world.spawners[0].addEventListener("createMinion", (event) => {
-               this.minionController.addMinion(this.factory.createMinion(event.detail));
-            });
+            // this.worldManager.addSpawningIsland();
+            // this.minionController.worldMap = this.worldManager.world.islands;
+            // this.worldManager.world.spawners[0].addEventListener("createMinion", (event) => {
+            //    this.minionController.addMinion(this.factory.createMinion(event.detail));
+            // });
             //TODO: remove this is test //
 
             // Setup SocketIO
@@ -442,33 +423,6 @@ class App {
         }
     }
 
-    async startMatchMaking(){
-        //join matchmaking queue on server
-        //wait for match to start
-        //when opponent found, get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
-        //start the match
-    }
-
-    startMatch(peerInfo){
-        //construct 2nd player object and island object and add to world
-        //start sending state updates to server
-        //start receiving state updates from server
-
-    }
-
-    endMatch(){
-        //stop sending state updates to server
-        //stop receiving state updates from server
-    }
-
-    async startSendingStateUpdates(){
-        this.updateInterval = setInterval(() => {
-            // Send state update to server
-            //player state (position, rotation, health)
-            //created objects (minions, spells)
-        }, 1000);
-    }
-
     /**
      * Updates the game loop
      */
@@ -479,7 +433,7 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        this.spellCaster.update(this.deltaTime);
+        if(!this.multiplayerController.inMatch) this.spellCaster.update(this.deltaTime);
 
         this.minionController.update(this.deltaTime);
         this.playerController.update(this.deltaTime);

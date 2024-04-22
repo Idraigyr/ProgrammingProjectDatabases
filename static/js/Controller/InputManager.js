@@ -205,7 +205,6 @@ export class InputManager extends Subject{
 
     //TODO: remove all keys that need not be checked within an update function
     #onKey(KeyBoardEvent, bool){
-        if(this.blockedInput) return;
         switch (KeyBoardEvent.code){
             case upKey:
                 this.keys.up = bool;
@@ -259,8 +258,6 @@ export class InputManager extends Subject{
                 this.keys.eating = bool;
                 break;
         }
-
-        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
     /**
@@ -268,7 +265,9 @@ export class InputManager extends Subject{
      * @param {event} KeyBoardEvent event
      */
     #onKeyDown(KeyBoardEvent){
+        if(this.blockedInput) return;
         this.#onKey(KeyBoardEvent,true);
+        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
     /**
@@ -276,6 +275,7 @@ export class InputManager extends Subject{
      * @param {event} KeyBoardEvent event
      */
     #onKeyUp(KeyBoardEvent){
+        if(this.blockedInput) return;
         this.#onKey(KeyBoardEvent, false);
     }
 

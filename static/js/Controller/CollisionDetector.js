@@ -47,7 +47,7 @@ export class CollisionDetector extends Subject{
             }
         }
         if(params.bvh){
-            this.visualizer = new MeshBVHHelper( this.collider, params.bvhDepth );
+            this.visualizer = new MeshBVHHelper( this.collider, params?.bvhDepth ?? 10);
             this.visualizer.visible = true;
             this.scene.add( this.visualizer );
         } else {

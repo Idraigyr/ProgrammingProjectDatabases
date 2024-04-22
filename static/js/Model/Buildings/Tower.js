@@ -22,10 +22,11 @@ export class Tower extends Placeable{
     /**
      * Formats the data for a POST request
      * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPOSTData(userInfo){
-        const obj = super.formatPOSTData(userInfo);
+    formatPOSTData(userInfo, islandPosition){
+        const obj = super.formatPOSTData(userInfo, islandPosition);
         obj.tower_type = "magic";
         return obj;
     }

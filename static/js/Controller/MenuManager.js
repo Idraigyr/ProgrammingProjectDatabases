@@ -32,12 +32,13 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
      */
     constructor(params) {
         super();
         this.container = params.container;
         this.blockInputCallback = params.blockInputCallback;
+        this.matchMakeCallback = params.matchMakeCallback;
         this.items = {};
         this.menus = {};
 
@@ -86,7 +87,7 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
         }
         if(menu instanceof AltarMenu){
-            menu.element.querySelector(".play-button").addEventListener("click", () => console.log("play button clicked"));
+            menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
         }
         if(menu instanceof ListMenu){
             menu.element.addEventListener("drop", this.drop.bind(this));

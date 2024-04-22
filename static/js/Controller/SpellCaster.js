@@ -145,10 +145,14 @@ export class SpellCaster extends Subject{
      * @param event
      */
     onSpellSwitch(event){
-        this.dispatchEvent(this.createVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false));
+        this.dispatchVisibleSpellPreviewEvent(this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview ?? false);
         // TODO: add sound
         // TODO: drop current object if it exists
         this.currentObject = null;
+    }
+
+    dispatchVisibleSpellPreviewEvent(bool){
+        this.dispatchEvent(this.createVisibleSpellPreviewEvent(bool));
     }
 
     /**
@@ -166,7 +170,7 @@ export class SpellCaster extends Subject{
                 let pos = this.checkRaycaster();
                 if(pos){
                     // Correct the position of the object
-                    convertWorldToGridPosition(pos);
+                    convertWorldToGridPosition(pos); //TODO @Daria: move somewhere else (buildManager?) and add island position
                     // Set the position of the object
                     this.currentObject.position = pos;
                     // Set minimum y value

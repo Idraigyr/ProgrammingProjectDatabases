@@ -1,6 +1,5 @@
 import {IView} from "./View.js";
 import * as THREE from "three";
-import {convertWorldToGridPosition} from "../helpers.js";
 
 /**
  * Spell preview object

@@ -20,10 +20,11 @@ export class Bush extends Placeable{
     /**
      * Formats the data for a POST request
      * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {JSON} the building type
      */
-    formatPOSTData(userInfo){
-        const obj = super.formatPOSTData(userInfo);
+    formatPOSTData(userInfo , islandPosition){
+        const obj = super.formatPOSTData(userInfo, islandPosition);
         delete obj.level;
         obj.prop_type = "Bush";
         return obj;

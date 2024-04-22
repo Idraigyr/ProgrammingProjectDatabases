@@ -115,31 +115,6 @@ export class Factory{
     }
 
     /**
-     * Creates tower model and view
-     * @deprecated - use createBuilding instead
-     * @param {{position: THREE.Vector3}} params
-     * @return {Tower}
-     */
-    createTower(params){
-        const asset = this.assetManager.getAsset("Tower");
-        correctRitualScale(asset);
-        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
-        convertWorldToGridPosition(currentPos);
-        let tower = new Model.Tower({position: currentPos, spellSpawner: new SpellSpawner({})});
-        let view = new View.Tower({charModel: asset, position: currentPos});
-        this.scene.add(view.charModel);
-
-        view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
-
-        tower.addEventListener("updatePosition",view.updatePosition.bind(view));
-        tower.addEventListener("updateRotation",view.updateRotation.bind(view));
-
-        this.viewManager.addPair(tower, view);
-        return tower;
-    }
-
-    /**
      * Creates bridge model and view
      * @param {{position: THREE.Vector3, rotation: number, width: number, length: number}} params
      * @return {Bridge}
@@ -178,6 +153,9 @@ export class Factory{
         // islandModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
 
+        islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));
+        islandModel.addEventListener("updateRotation",view.updateRotation.bind(view));
+
         this.#addBuildings(islandModel, params.buildingsList);
 
         this.viewManager.addPair(islandModel, view);
@@ -194,9 +172,6 @@ export class Factory{
         correctRitualScale(asset);
         setMinimumY(asset, 0); // TODO: is it always 0?
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
-        // Correct position to place the asset in the center of the cell
-        convertGridIndexToWorldPosition(pos);
-        // Convert position
         const modelParams = {position: pos, id: params.id};
 
         //TODO: refactor this! not dynamic enough
@@ -271,9 +246,13 @@ export class Factory{
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
+        let position = new THREE.Vector3();
         buildingsList.forEach((building) => {
             try {
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: building.position, withTimer: false, id: building.id}));
+                position.set(building.position.x, building.position.y, building.position.z);
+                convertGridIndexToWorldPosition(position);
+                position.add(islandModel.position);
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, withTimer: false, id: building.id}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

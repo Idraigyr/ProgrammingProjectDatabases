@@ -96,11 +96,6 @@ class ForwardingNamespace(Namespace):
                 target_sids = self.clients[target_id]
                 sender_id = self.get_user_from_sid(request.sid)
 
-                if BROADCAST_TO_SELF:
-                    # also send the message to the other sender sessions
-                    self_sessions = self.clients.get(sender_id, [])
-                    target_sids = target_sids + [sid for sid in self_sessions if sid not in self_sessions]
-
                 self._log.debug(f"Forwarding message to user_id = {target_id}: {data}")
                 data['sender'] = sender_id
                 data['opponent'] = target_ids[1] if target_id == target_ids[0] else target_ids[0]

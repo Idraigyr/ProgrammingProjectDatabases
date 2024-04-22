@@ -27,9 +27,10 @@ export class Entity extends Subject{
     /**
      * Set the id of the entity
      * @param {UserInfo} userInfo - all the information about the user
+     * @param {THREE.Vector3} islandPosition - world position of the island
      * @return {JSON} data - entire stringified JSON object which db can accept
      */
-    formatPOSTData(userInfo){
+    formatPOSTData(userInfo, islandPosition){
         throw new Error("Cannot set id of abstract class Entity");
     }
 

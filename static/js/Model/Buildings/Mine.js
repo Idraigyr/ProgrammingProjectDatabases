@@ -68,11 +68,12 @@ export class Mine extends Placeable{
 
     /**
      * return a json object with the data of the mine formatted for a POST request
-     * @param userInfo
+     * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @return {JSON}
      */
-    formatPOSTData(userInfo){
-        const obj = super.formatPOSTData(userInfo);
+    formatPOSTData(userInfo , islandPosition){
+        const obj = super.formatPOSTData(userInfo, islandPosition);
         obj.mine_type = "crystal";
         return obj;
     }

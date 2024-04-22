@@ -192,7 +192,7 @@ export class Foundation extends Entity{
      * @returns {any} - type of the cell
      */
     checkCell(worldPosition){
-        let {x, z} = returnWorldToGridIndex(worldPosition);
+        let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
         return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
     }
@@ -229,10 +229,10 @@ export class Foundation extends Entity{
     set rotation(value){
         if([0,180,-0,-180].includes(value%360)) return;
         if([90,270,-90,-270].includes(value%360)){
-            this.#rotation = value;
-            const temp = this.width;
-            this.width = this.length;
-            this.length = temp;
+            // this.#rotation = value;
+            // const temp = this.width;
+            // this.width = this.length;
+            // this.length = temp;
             //TODO: rotate min & max;
             //TODO: rotate grid
         }

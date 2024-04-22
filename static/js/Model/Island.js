@@ -24,6 +24,9 @@ export class Island extends Foundation{
      * @returns {number} - the index of the cell
      */
     occupyCell(worldPosition, dbType){
+        if(dbType === "altar_building"){
+            console.log("altar_building");
+        }
         //check if parameter of returnWorldToGridIndex is correct
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         const index = (x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2);
@@ -48,7 +51,8 @@ export class Island extends Foundation{
      * @returns {*} - the type of the cell
      */
     checkCell(worldPosition){
-        let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
+        const pos = worldPosition.clone();
+        const {x, z} = returnWorldToGridIndex(pos.sub(this.position));
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
         return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
     }
@@ -97,10 +101,9 @@ export class Island extends Foundation{
      */
     getBuildingByPosition(position){
         let pos = position.clone();
-        pos = returnWorldToGridIndex(pos);
+        pos = returnWorldToGridIndex(pos.sub(this.position));
         // Transform position to cell index
-        pos = (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
-        return this.getBuildingByIndex(pos);
+        return this.getBuildingByIndex((pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2));
     }
 
     /**
@@ -110,7 +113,7 @@ export class Island extends Foundation{
      */
     getCellIndex(position){
         let pos = position.clone();
-        pos = returnWorldToGridIndex(pos);
+        pos = returnWorldToGridIndex(pos.sub(this.position));
         // Transform position to cell index
         return (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
     }

@@ -42,16 +42,16 @@ export class UserInfo extends Subject{
 
     /**
      * Retrieves the user information from the server
+     * @param {number | null} playerId - optional, The id of the player to retrieve the information from
      * @returns {Promise<void>} - Promise that resolves when the user information is retrieved
      */
-    async retrieveInfo(){
+    async retrieveInfo(playerId=null){
         try {
             // GET request to server
-            const response = await $.getJSON(`${API_URL}/${playerURI}`);
-            const response2 = await $.getJSON(`${API_URL}/${playerProfileURI}`);
+            const response = await $.getJSON(`${API_URL}/${playerURI}${playerId ? `?id=${playerId}` : ''}`);
 
             this.userID = response.entity.player_id;
-            this.username = response2.username;
+            this.username = response.username;
 
 
             this.islandID = response.entity.island_id;
