@@ -66,9 +66,9 @@ export class SpellCaster extends Subject{
 
     /**
      * creates a custom event notifying a spell being cast
-     * @param {ConcreteSpell} type
-     * @param {object} params
-     * @returns {CustomEvent<{index: ConcreteSpell, params: {object}}>}
+     * @param {number} spellCooldown
+     * @param {number} spellSlotIndex
+     * @returns {CustomEvent<{detail : {spellCooldown: number,spellSlotIndex: number}>
      */
     createSpellCastEvent(spellCooldown, spellSlotIndex){
         return new CustomEvent("castSpell", {detail: {spellCooldown: spellCooldown, spellSlotIndex: spellSlotIndex}});
@@ -208,7 +208,9 @@ export class SpellCaster extends Subject{
      */
     onLeftClickDown(){
         if (this.#wizard.canCast()) {
+            //notify hud to update the cooldown
             this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell().spell.cooldown, this.#wizard.currentSpell + 1));
+
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 
             if(this.#wizard.getCurrentSpell().worldHitScan){

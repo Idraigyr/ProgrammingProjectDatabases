@@ -121,9 +121,8 @@ export class HUD {
     }
 
     /**
-     * Function to update the spell cooldown in HUD - currently unused
-     * @param spellCooldown
-     * @param spellSlotIndex
+     * Function to put a used on cooldown in the inventory hot-bar
+     * @param event {{detail: {spellCooldown: number, spellSlotIndex: number}}
      */
     useSpell(event, ) {
         console.log("cooldown: " , event.detail.spellCooldown, "index: " , event.detail.spellSlotIndex);
@@ -144,8 +143,6 @@ export class HUD {
          const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex}Cooldown`);
 
         let countdown = setInterval(() => {
-                spellCooldown -= 0.01; // Decrement cooldown by 0.01 seconds
-
                 if (spellCooldown <= 0) {
                     clearInterval(countdown); // Stop the countdown when cooldown reaches 0
                     cooldownElement.textContent = ""; // Clear the cooldown display
