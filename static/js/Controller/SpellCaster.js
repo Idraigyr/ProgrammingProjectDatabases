@@ -65,13 +65,13 @@ export class SpellCaster extends Subject{
     }
 
     /**
-     * creates a custom event notifying a BuildSpell being cast
+     * creates a custom event notifying a spell being cast
      * @param {ConcreteSpell} type
      * @param {object} params
-     * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
+     * @returns {CustomEvent<{index: ConcreteSpell, params: {object}}>}
      */
-    createSpellCastEvent(type, params){
-        return new CustomEvent("castSpell", {detail: {type: type, params: params}});
+    createSpellCastEvent(spellCooldown, spellSlotIndex){
+        return new CustomEvent("castSpell", {detail: {spellCooldown: spellCooldown, spellSlotIndex: spellSlotIndex}});
     }
 
     /**
@@ -128,6 +128,8 @@ export class SpellCaster extends Subject{
     createCastBuildSpellEvent(type, params){
         return new CustomEvent("castBuildSpell", {detail: {type: type, params: params}});
     }
+
+
 
     //return correct cast position based on spelltype (is almost always position of wizard wand);
     /**
@@ -206,6 +208,7 @@ export class SpellCaster extends Subject{
      */
     onLeftClickDown(){
         if (this.#wizard.canCast()) {
+            this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell().spell.cooldown, this.#wizard.currentSpell + 1));
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 
             if(this.#wizard.getCurrentSpell().worldHitScan){

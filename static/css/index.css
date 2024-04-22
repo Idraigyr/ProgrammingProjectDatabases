@@ -1654,6 +1654,23 @@ body {
     z-index: 5;
 }
 
+.HotBarCooldown {
+    position: absolute;
+    width: 34%;
+    height: 12%;
+    margin: 0 auto;
+    bottom: 0;
+    left: 33%;
+    font-family: Surabasa, sans-serif;
+
+}
+
+.HotBarCooldown{
+    display: flex;
+    justify-content: center;
+    z-index: 5;
+}
+
 .buildimage {
     position: absolute;
     top: 50%;
@@ -1716,6 +1733,75 @@ body {
     width: 10%;
     height: auto;
 }
+
+.Spell1Cooldown {
+    position: absolute;
+    top: 50%;
+    left: 10%;
+    transform: translate(-50%, -50%);
+    font-size: 250%;
+}
+
+
+.Spell1Cooldown {
+    width: 10%;
+    height: auto;
+}
+
+.Spell2Cooldown {
+    position: absolute;
+    top: 50%;
+    left: 30%;
+    transform: translate(-50%, -50%);
+    font-size: 250%;
+}
+
+
+.Spell2Cooldown {
+    width: 10%;
+    height: auto;
+}
+
+.Spell3Cooldown {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 250%;
+}
+
+
+.Spell3Cooldown {
+    width: 10%;
+    height: auto;
+}
+
+.Spell4Cooldown {
+    position: absolute;
+    top: 50%;
+    left: 70%;
+    transform: translate(-50%, -50%);
+    font-size: 250%;
+}
+
+.Spell4Cooldown {
+    width: 10%;
+    height: auto;
+}
+
+.Spell5Cooldown {
+    position: absolute;
+    top: 50%;
+    left: 90%;
+    transform: translate(-50%, -50%);
+    font-size: 250%;
+}
+
+.Spell5Cooldown {
+    width: 10%;
+    height: auto;
+}
+
 
 
 .settings-button:hover .button {
@@ -1827,4 +1913,6 @@ a[data-tooltip][data-placement="right"]::after {
   margin-top: -6px;
   margin-left: 4px;
 }
+
+
 

@@ -260,6 +260,7 @@ class App {
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
+        this.spellCaster.addEventListener("castSpell", this.hud.useSpell.bind(this.hud));
 
 
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
