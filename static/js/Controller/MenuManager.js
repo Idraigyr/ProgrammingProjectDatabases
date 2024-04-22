@@ -59,6 +59,7 @@ export class MenuManager extends Subject{
 
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
+        this.gemId = 0;
     }
 
     // TODO: remove this
@@ -89,7 +90,7 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".play-button").addEventListener("click", () => console.log("play button clicked"));
         }
         if(menu instanceof FusionTableMenu){
-            menu.element.querySelector(".fuse-button").addEventListener("click", () => console.log("fuse button clicked"));
+            menu.element.querySelector(".fuse-button").addEventListener("click", () => this.#createRandomGemItem());
         }
         if(menu instanceof ListMenu){
             menu.element.addEventListener("drop", this.drop.bind(this));
@@ -109,9 +110,6 @@ export class MenuManager extends Subject{
         if(menu instanceof CollectMenu){
             menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
         }
-        //if(menu instanceof CrystalFuseMenu){
-        //    menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
-        //}
     }
 
     // loading bar
@@ -185,6 +183,14 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * creates a custom collect event
+     * @return {CustomEvent<>}
+     */
+    createFuseEvent() {
+        return new CustomEvent("fuse");
+    }
+
+    /**
      * creates a custom build event
      * @param {number} buildingId
      * @return {CustomEvent<{id: number}>}
@@ -217,6 +223,18 @@ export class MenuManager extends Subject{
         this.collectParams.current = 0;
         this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
         this.dispatchEvent(this.createCollectEvent());
+    }
+
+    /**
+     * dispatches a collect event
+     * @param event
+     */
+    dispatchFuseEvent(event){
+        console.log("Fusing resources");
+        this.menus["CrystalFuseMenu"].element.querySelector(".crystal-meter").style.width = "0%";
+        this.collectParams.current = 0;
+        this.menus["CrystalFuseMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.dispatchEvent(this.createFuseEvent());
     }
 
     /**
@@ -508,6 +526,92 @@ export class MenuManager extends Subject{
         this.addItems(items);
     }
 
+    #createRandomGemItem(){
+        const power = this.#generateRandomNumber();
+        let gemItem;
+        if(power < 20){
+            gemItem = {
+                item: { name: "amberGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "amberGem" + power, getDisplayName: () => "Amber" },
+                icon: { src: '/static/assets/images/gems/amberGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 40){
+            gemItem = {
+                item: { name: "rubyGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "rubyGem" + power, getDisplayName: () => "Ruby" },
+                icon: { src: '/static/assets/images/gems/rubyGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 55){
+            gemItem = {
+                item: { name: "sapphireGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "sapphireGem" + power, getDisplayName: () => "Sapphire" },
+                icon: { src: '/static/assets/images/gems/sapphireGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 70){
+            gemItem = {
+                item: { name: "diamondGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "diamondGem" + power, getDisplayName: () => "Diamond" },
+                icon: { src: '/static/assets/images/gems/diamondGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 85){
+            gemItem = {
+                item: { name: "emeraldGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "emeraldGem" + power, getDisplayName: () => "Emerald" },
+                icon: { src: '/static/assets/images/gems/emeraldGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else{
+            gemItem = {
+                item: { name: "amethystGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "amethystGem" + power, getDisplayName: () => "Amethyst" },
+                icon: { src: '/static/assets/images/gems/amethystGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+
+        this.gemId++;
+        this.addItem(gemItem);
+    }
+
+    #createSpellItems(){
+        let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell"];
+        let names = ["Fire", "Freeze", "Shield", "Heal", "Thunder"];
+        let items = [];
+        for (let i = 0; i < spells.length; i++){
+            items.push({
+                item: {name: spells[i], id: i, belongsIn: "SpellsMenu", getItemId: () => spells[i], getDisplayName: () => names[i]},
+                icon: {src: '/static/assets/images/spells/' + spells[i] + '.png', width: 50, height: 50},
+                description: ""
+            });
+        }
+        this.addItems(items);
+    }
+
+    #createHotbarItem(){
+        let buildSpell = {
+            //TODO: SpellsMenu should be HotbarMenu but that gives an error
+            item: {name: "buildSpell", id: 0, belongsIn: "SpellsMenu", getItemId: () => "buildSpell", getDisplayName: () => " Build"},
+            icon: {src: '/static/assets/images/spells/buildSpell.png', width: 50, height: 50},
+            description: ""
+        };
+        this.addItem(buildSpell);
+    }
+
+    #generateRandomNumber() {
+    // lambda parameter for the exponential distribution
+    const lambda = 0.03;
+
+    const randomNumber = -Math.log(Math.random()) / lambda;
+
+    // set random number to the range [1, 100]
+    const scaledNumber = Math.floor(randomNumber) % 100 + 1;
+
+    return scaledNumber;
+}
+
     /**
      * create a menu
      * @param {string} ctor - corresponds to the name of a ctor which is a subclass of IMenu
@@ -541,6 +645,8 @@ export class MenuManager extends Subject{
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
+        this.#createSpellItems();
+        this.#createHotbarItem();
     }
 
     /**
