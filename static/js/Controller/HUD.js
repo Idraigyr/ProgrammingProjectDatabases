@@ -121,36 +121,27 @@ export class HUD {
     }
 
     /**
-     * Function to put a used on cooldown in the inventory hot-bar
-     * @param event {{detail: {spellCooldown: number, spellSlotIndex: number}}
+     * Function to update the cooldowns in the HUD
+     * @param event {{detail: {spellCooldowns: list}}
      */
-    useSpell(event) {
-        console.log("cooldown: " , event.detail.spellCooldown, "index: " , event.detail.spellSlotIndex);
-        let spellSlotIndex = event.detail.spellSlotIndex;
-        let spellCooldown = event.detail.spellCooldown;
-        let interval = 10;
-        const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
-        usedSpel.parentElement.classList.add('onCooldown');
-
-        const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex}Icon`);
-        usedSpelIcon.classList.add('onCooldown');
-
-        setTimeout(function() {
-        usedSpel.parentElement.classList.remove('onCooldown');
-        usedSpelIcon.classList.remove('onCooldown');
-        }, spellCooldown * 1000);
-
-         const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex}Cooldown`);
-
-        let countdown = setInterval(() => {
-                spellCooldown -= 0.01; // Decrement cooldown by 0.01 seconds
-
-                if (spellCooldown <= 0) {
-                    clearInterval(countdown); // Stop the countdown when cooldown reaches 0
-                    cooldownElement.textContent = ""; // Clear the cooldown display
-                } else {
-                    cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
-                }
-            }, interval);
+    updateCooldowns(event) {
+        let cooldowns = event.detail.cooldowns;
+        for (let i = 0; i < cooldowns.length; i++) {
+            let spellSlotIndex = i;
+            let spellCooldown = cooldowns[i];
+            const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex + 1}Cooldown`);
+            const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
+            const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
+            usedSpelIcon.classList.add('onCooldown');
+            if (spellCooldown <= 0) {
+                cooldownElement.textContent = ""; // Clear the cooldown display
+                usedSpel.parentElement.classList.remove('onCooldown');
+                usedSpelIcon.classList.remove('onCooldown');
+            } else {
+                cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
+                usedSpel.parentElement.classList.add('onCooldown');
+                usedSpelIcon.classList.add('onCooldown');
+            }
+        }
     }
 }

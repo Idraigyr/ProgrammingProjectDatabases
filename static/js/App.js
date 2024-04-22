@@ -260,8 +260,6 @@ class App {
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
-        this.spellCaster.addEventListener("castSpell", this.hud.useSpell.bind(this.hud));
-
 
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
@@ -354,6 +352,8 @@ class App {
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+        this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
+
 
 
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));

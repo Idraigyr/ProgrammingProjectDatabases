@@ -208,8 +208,6 @@ export class SpellCaster extends Subject{
      */
     onLeftClickDown(){
         if (this.#wizard.canCast()) {
-            //notify hud to update the cooldown
-            this.dispatchEvent(this.createSpellCastEvent(this.#wizard.getCurrentSpell().spell.cooldown, this.#wizard.currentSpell + 1));
 
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 

@@ -31,6 +31,8 @@ export class Wizard extends Character{
         this.spellCooldowns.forEach((cooldown, index, array) => {
             array[index] = Math.max(0,cooldown -= deltaTime);
         });
+        //notify the hud to update the cooldowns of the spells
+        this.dispatchEvent(this.#createUpdateCooldownsEvent());
     }
 
     /**
@@ -135,4 +137,16 @@ export class Wizard extends Character{
     #createUpdateHealthEvent() {
         return new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}});
     }
+
+    /**
+     * Create a custom event to update the cooldowns of the players spells
+     * @returns {CustomEvent<{detail: cooldown: list}>} - the custom event
+     */
+    #createUpdateCooldownsEvent() {
+        return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
+    }
+
+
+
+
 }
