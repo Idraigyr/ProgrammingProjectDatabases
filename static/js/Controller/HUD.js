@@ -75,6 +75,7 @@ export class HUD {
         $('#xp-bar-status').html(event.detail.xp + '/' + event.detail.threshold);
     }
 
+
     /**
      * Function to update the username in HUD
      * @param {{detail: {username: string}}} event
@@ -124,7 +125,11 @@ export class HUD {
      * @param spellCooldown
      * @param spellSlotIndex
      */
-    useSpell(spellCooldown, spellSlotIndex) {
+    useSpell(event, ) {
+        console.log("cooldown: " , event.detail.spellCooldown, "index: " , event.detail.spellSlotIndex);
+        let spellSlotIndex = event.detail.spellSlotIndex;
+        let spellCooldown = event.detail.spellCooldown;
+        let interval = 10;
         const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
         usedSpel.parentElement.classList.add('onCooldown');
 
@@ -135,5 +140,18 @@ export class HUD {
         usedSpel.parentElement.classList.remove('onCooldown');
         usedSpelIcon.classList.remove('onCooldown');
         }, spellCooldown * 1000);
+
+         const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex}Cooldown`);
+
+        let countdown = setInterval(() => {
+                spellCooldown -= 0.01; // Decrement cooldown by 0.01 seconds
+
+                if (spellCooldown <= 0) {
+                    clearInterval(countdown); // Stop the countdown when cooldown reaches 0
+                    cooldownElement.textContent = ""; // Clear the cooldown display
+                } else {
+                    cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
+                }
+            }, interval);
     }
 }
