@@ -118,6 +118,55 @@ export class CollectMenu extends ButtonsMenu{
 
 }
 
+export class FuseInputMenu extends ButtonsMenu{
+    constructor(params) {
+        super(params);
+    }
+
+    createElement(params) {
+        const element = super.createElement(params);
+        const buttonDiv = element.querySelector(".buttons-container");
+        const addButton = document.createElement("button");
+        const removeButton = document.createElement("button");
+        const arrowDiv = document.createElement("div");
+        const loadingBarContainer = document.createElement("div");
+        const loadingBarDiv = document.createElement("div");
+        const crystalAmountContainer = document.createElement("div");
+        const crystalAmountDiv = document.createElement("div");
+        const crystalAmountText = document.createElement("div");
+        crystalAmountContainer.classList.add("crystal-meter-container");
+        crystalAmountText.classList.add("crystal-meter-text");
+        crystalAmountDiv.classList.add("crystal-meter"); //TODO: change css styling for this div so that it looks like a meter for the amount of crystals collected so far (+number in the middle of the meter), with this is loading-bar necessary?
+        arrowDiv.classList.add("arrow");
+        loadingBarContainer.classList.add("loading-bar-container");
+        loadingBarDiv.classList.add("loading-bar");
+        addButton.innerText = "Add crystals";
+        removeButton.innerText = "Remove crystals";
+        crystalAmountText.innerText = "0";
+        addButton.classList.add("add-button");
+        removeButton.classList.add("remove-button");
+        buttonDiv.appendChild(addButton);
+        buttonDiv.appendChild(removeButton);
+        buttonDiv.appendChild(arrowDiv);
+        buttonDiv.appendChild(loadingBarContainer);
+        loadingBarContainer.appendChild(loadingBarDiv);
+        crystalAmountContainer.appendChild(crystalAmountDiv);
+        crystalAmountContainer.appendChild(crystalAmountText);
+        buttonDiv.appendChild(crystalAmountContainer);
+
+        return element;
+    }
+
+    get name(){
+        return "FuseInputMenu";
+    }
+
+    get title(){
+        return "Crystals";
+    }
+
+}
+
 export class SlotMenu extends IMenu{
     constructor(params) {
         params.classes = ["slot-menu"];
@@ -497,7 +546,7 @@ export class FusionTableMenu extends BaseMenu{
     constructor(params) {
         params.classes = ["fusion-table-menu"];
         super(params);
-        this.allows = ["CollectMenu", "GemsMenu", "GemInsertMenu", "StatsMenu"];
+        this.allows = ["FuseInputMenu", "GemsMenu", "GemInsertMenu", "StatsMenu"];
     }
 
     createElement(params){

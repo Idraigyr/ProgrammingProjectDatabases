@@ -1,7 +1,7 @@
 import {
     AltarMenu,
     BaseMenu,
-    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu,
+    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu, FuseInputMenu,
     HotbarMenu,
     ListMenu, MineMenu,
     PageMenu, ResourceBuildingsMenu,
@@ -57,6 +57,13 @@ export class MenuManager extends Subject{
         };
         this.collectInterval = null;
 
+        this.inputCrystalParams = {
+            meter: null,
+            current: 0,
+            max: 100
+        };
+        this.loadingprogress = 0;
+
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
         this.gemId = 0;
@@ -90,7 +97,7 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".play-button").addEventListener("click", () => console.log("play button clicked"));
         }
         if(menu instanceof FusionTableMenu){
-            menu.element.querySelector(".fuse-button").addEventListener("click", () => this.#createRandomGemItem());
+            menu.element.querySelector(".fuse-button").addEventListener("click", () => this.simulateLoading());
         }
         if(menu instanceof ListMenu){
             menu.element.addEventListener("drop", this.drop.bind(this));
@@ -110,23 +117,44 @@ export class MenuManager extends Subject{
         if(menu instanceof CollectMenu){
             menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
         }
+        if(menu instanceof FuseInputMenu){
+            menu.element.querySelector(".add-button").addEventListener("click", this.dispatchAddEvent.bind(this));
+            menu.element.querySelector(".remove-button").addEventListener("click", this.dispatchRemoveEvent.bind(this));
+        }
     }
 
     // loading bar
     simulateLoading() {
-      let progress = 0;
-      const progressBar = document.querySelector('.loading-bar');
+      if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
+          this.toggleAnimation(true);
+          const progressBar = document.querySelector('.loading-bar');
 
-      const intervalId = setInterval(() => {
-        progress += 1; // Increase bar progress
-        progressBar.style.width = `${progress}%`;
+          const intervalId = setInterval(() => {
+              this.loadingprogress += 1; // Increase bar progress
+              progressBar.style.width = `${this.loadingprogress}%`;
 
-        if (progress >= 100) {
-          clearInterval(intervalId);
-          // Loading complete -> restart
-          simulateLoading();
+              if (this.loadingprogress >= 100) {
+                  clearInterval(intervalId);
+                  // Loading complete -> add gem and reset bars
+                  this.#createRandomGemItem();
+                  this.loadingprogress = 0;
+                  progressBar.style.width = `${this.loadingprogress}%`;
+                  this.inputCrystalParams.current = 0;
+                  this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+                  this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+                  this.toggleAnimation(false);
+              }
+          }, 100); // Total time to load bar
+      }
+    }
+
+    // Function to start or stop the fusing arrow animation based on condition
+    toggleAnimation(condition) {
+        if (condition) {
+            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.add('move-right');
+        } else {
+            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.remove('move-right');
         }
-      }, 100); // Total time to load bar
     }
 
     /**
@@ -183,11 +211,19 @@ export class MenuManager extends Subject{
     }
 
     /**
-     * creates a custom collect event
+     * creates a custom add event
      * @return {CustomEvent<>}
      */
-    createFuseEvent() {
-        return new CustomEvent("fuse");
+    createAddEvent() {
+        return new CustomEvent("add");
+    }
+
+    /**
+     * creates a custom remove event
+     * @return {CustomEvent<>}
+     */
+    createRemoveEvent() {
+        return new CustomEvent("remove");
     }
 
     /**
@@ -226,15 +262,31 @@ export class MenuManager extends Subject{
     }
 
     /**
-     * dispatches a collect event
+     * dispatches a add event
      * @param event
      */
-    dispatchFuseEvent(event){
-        console.log("Fusing resources");
-        this.menus["CrystalFuseMenu"].element.querySelector(".crystal-meter").style.width = "0%";
-        this.collectParams.current = 0;
-        this.menus["CrystalFuseMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
-        this.dispatchEvent(this.createFuseEvent());
+    dispatchAddEvent(event){
+        console.log("Adding crystals to fuse stakes");
+        if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
+            this.inputCrystalParams.current += 10;
+        }
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+        this.dispatchEvent(this.createAddEvent());
+    }
+
+    /**
+     * dispatches a remove event
+     * @param event
+     */
+    dispatchRemoveEvent(event){
+        console.log("Removing crystals to fuse stakes");
+        if(this.inputCrystalParams.current-10 >= 0 && this.loadingprogress === 0){
+            this.inputCrystalParams.current -= 10;
+        }
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+        this.dispatchEvent(this.createRemoveEvent());
     }
 
     /**
@@ -641,7 +693,7 @@ export class MenuManager extends Subject{
      * create menus and menu items
      */
     createMenus(){
-        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu]);
+        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
@@ -757,7 +809,7 @@ export class MenuManager extends Subject{
                 this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
-                this.#moveMenu("CollectMenu", "FusionTableMenu", "afterbegin");
+                this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");
