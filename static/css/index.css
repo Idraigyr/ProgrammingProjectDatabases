@@ -1827,4 +1827,75 @@ a[data-tooltip][data-placement="right"]::after {
   margin-top: -6px;
   margin-left: 4px;
 }
+#sendMessage {
+    background-color: white;
+    color: black;
+}
 
+.Levelpopup{
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+}
+
+
+.Levelpopup-content{
+    background-color: #fefefe;
+    margin: 0% auto; /* 15% from the top and centered */
+    padding: 5px;
+    border: 1px solid #888;
+    width: 10%; /* Could be more or less, depending on screen size */
+    border-radius: 10px; /* This will give the modal rounded corners */
+    height: auto; /* Or set a specific height like 100px if necessary */
+    box-sizing: border-box; /* Make sure padding doesn't affect total size */
+
+    /* Flexbox for centering content */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    text-align: center; /* Ensure text inside is centered if it wraps */
+    font-size: medium;
+
+}
+
+.details-button {
+    display: block;
+    margin: 5% auto;
+}
+
+/* Details Info - The Modal (background) */
+.detailsInfo {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+
+}
+
+/* Details Content - Modal Content */
+.Details-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* Increased to 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%; /* Adjusted to a wider width to accommodate the button */
+    border-radius: 10px; /* Rounded corners */
+    box-sizing: border-box; /* Padding doesn't affect total size */
+
+    /* Flexbox for centering content */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center items vertically */
+    align-items: center; /* Center items horizontally */
+    text-align: center; /* Text inside is centered */
+}
