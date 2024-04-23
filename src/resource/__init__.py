@@ -74,6 +74,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.placeable.fuse_table_building as fuse_table_building_module
     import src.resource.placeable.warrior_hut_building as warrior_hut_building_module
     import src.resource.placeable.tower_building as tower_building_module
+    import src.resource.placeable.wall_building as wall_building_module
     import src.resource.gems as gems_module
     import src.resource.blueprint as blueprint_module
     import src.resource.task as task_module
@@ -95,6 +96,7 @@ def attach_resources(app: Flask) -> None:
     altar_building_module.attach_resource(app)
     fuse_table_building_module.attach_resource(app)
     warrior_hut_building_module.attach_resource(app)
+    wall_building_module.attach_resource(app)
     tower_building_module.attach_resource(app)
     gems_module.attach_resource(app)
     blueprint_module.attach_resource(app)

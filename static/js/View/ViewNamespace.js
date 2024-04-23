@@ -14,6 +14,7 @@ import {BuildingPreview} from "./BuildingPreview.js";
 import {Minion} from "./Characters/Minion.js";
 import {Watch} from "./Watch.js";
 import {Bridge} from "../Model/Bridge.js";
+import {Wall} from "./Buildings/Wall.js";
 
 /**
  * View namespace
@@ -29,6 +30,7 @@ export const View = Object.freeze({
     Altar: Altar,
     Bush: Bush,
     FusionTable: FusionTable,
+    Wall: Wall,
     WarriorHut: WarriorHut,
     Mine: Mine,
     Tower: Tower,

@@ -2,6 +2,7 @@ import {API_URL, matchMakingURI} from "../configs/EndpointConfigs.js";
 import {UserInfo} from "./UserInfo.js";
 import * as THREE from "three";
 import {Controller} from "./Controller.js";
+import {spellTypes} from "../Model/Spell.js";
 
 /**
  * MultiplayerController class
@@ -19,6 +20,7 @@ export class MultiplayerController{
         //for remembering the interval for sending state updates
         this.matchmaking = false;
         this.inMatch = false;
+        this.opponentInfo = new UserInfo();
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -51,6 +53,7 @@ export class MultiplayerController{
         this.spellCaster = params.spellCaster;
         this.minionController = params.minionController;
         this.forwardingNameSpace = params.forwardingNameSpace;
+        this.spellFactory = params.spellFactory;
     }
 
     async toggleMatchMaking(){
@@ -78,10 +81,13 @@ export class MultiplayerController{
         console.log(response);
     }
 
+
+
     async startMatch(playerIds){
         this.menuManager.exitMenu();
         this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
         this.inMatch = true;
+        this.spellCaster.multiplayer = true;
         //TODO: totally block input and don't allow recapture of pointerlock for the duration of this method
 
         // document.querySelector('.loading-animation').style.display = 'block';
@@ -90,9 +96,7 @@ export class MultiplayerController{
         progressBar.labels[0].innerText = "retrieving Opponent info...";
 
         //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
-        let opponentInfo = new UserInfo();
-        await opponentInfo.retrieveInfo(playerIds['player1'] === this.playerInfo.userID ? playerIds['player2'] : playerIds['player1']);
-        console.log(opponentInfo);
+        await this.opponentInfo.retrieveInfo(playerIds['player1'] === this.playerInfo.userID ? playerIds['player2'] : playerIds['player1']);
 
         progressBar.labels[0].innerText = "importing Opponent's island...";
 
@@ -100,8 +104,8 @@ export class MultiplayerController{
         // the other island is rotated 180 degrees around the y-axis and translated from center of main island
 
         //construct 2nd player object and island object and add to world
-        await this.worldManager.addImportedIslandToWorld(opponentInfo.islandID, this.playerInfo.userID > opponentInfo.userID);
-        console.log(this.playerInfo.userID < opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
+        await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID > this.opponentInfo.userID);
+        console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
         console.log(this.worldManager.world.islands);
         const opponent = this.worldManager.addOpponent({position: new THREE.Vector3(0,0,0), mana: 100, maxMana: 100, team: 1});
         this.peerController = new Controller.PeerController({peer: opponent});
@@ -110,16 +114,16 @@ export class MultiplayerController{
         this.minionController.worldMap = this.worldManager.world.islands;
 
         //start sending state updates to server
-        this.startSendingStateUpdates(opponentInfo.userID);
+        this.startSendingStateUpdates(this.opponentInfo.userID);
         //start receiving state updates from server
         // document.querySelector('.loading-animation').style.display = 'none';
 
     }
 
     endMatch(){
+        this.spellCaster.multiplayer = false;
         //stop sending state updates to server
-        clearInterval(this.updateInterval);
-        this.updateInterval = null;
+        this.stopSendingStateUpdates();
         //stop receiving state updates from server
         //remove island from world
     }
@@ -134,25 +138,39 @@ export class MultiplayerController{
         const spellData = data.spellEvent;
         const minionData = data.minions;
         if(playerData) this.peerController.update(playerData);
-        // if(spellData) this.spellFactory.createSpell(spellData);
+        if(spellData) {
+            spellData.type = spellTypes[spellData.type];
+            for (const property in spellData.params) {
+                //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
+                if(spellData.params[property]?.x) spellData.params[property] = new THREE.Vector3(
+                    spellData.params[property].x,
+                    spellData.params[property].y,
+                    spellData.params[property].z
+                );
+            }
+            this.spellFactory.createSpell({detail: spellData});
+        }
 
         // console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
     }
 
+    sendCreateSpellEntityEvent(event){
+        event.detail.type = event.detail.type.name;
+        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+            spellEvent: event.detail
+        });
+    }
+
 
     startSendingStateUpdates(opponentId){
-        this.updateInterval = setInterval(() => {
-            // Send state update to server
-            //player state (position, rotation, health) => just check playerModel
-            //created objects (minions, spells)
+        //send created objects (minions, spells)
             // => how to do this? do we
             // A) just send state of all objects,
             // B) send a list of all objects created since the last update so that opponent can create them as well
-            this.spellCaster.addEventListener("createSpellEntity", (event) => {
-                this.forwardingNameSpace.sendTo(opponentId, {
-                    spellEvent: event
-                });
-            });
+        this.spellCaster.addEventListener("createSpellEntity", this.sendCreateSpellEntityEvent.bind(this));
+        this.updateInterval = setInterval(() => {
+            // Send state update to server
+            //player state (position, rotation, health) => just check playerModel
             this.forwardingNameSpace.sendTo(opponentId, {
                 player: {
                     position: this.worldManager.world.player.position,
@@ -161,6 +179,12 @@ export class MultiplayerController{
                     health: this.worldManager.world.player.health
                 }
             });
-        }, 10);
+        }, 16); //TODO: change this value to sync with fps (maybe sync it with other player?)
+    }
+
+    stopSendingStateUpdates(){
+        clearInterval(this.updateInterval);
+        this.updateInterval = null;
+        this.spellCaster.removeEventListener("createSpellEntity", this.sendCreateSpellEntityEvent.bind(this));
     }
 }

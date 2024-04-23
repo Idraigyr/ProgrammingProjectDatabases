@@ -31,7 +31,10 @@ export let assetPaths = Object.freeze({
     SkeletonTexture1: ["./static/assets/textures/skeleton_texture.png",".png"],
     WarriorHut: ["./static/assets/3d-models/warrior-hut.glb",".glb"],
     WarriorHut2: ["./static/assets/3d-models/warrior-hut-2.glb",".glb"],
-    SurabanglusFont: ["./static/fonts/Surabanglus_Regular.json",".json"]
+    SurabanglusFont: ["./static/fonts/Surabanglus_Regular.json",".json"],
+    Wall1: ["./static/assets/3d-models/wall/Wall_lvl1.glb",".glb"],
+    Wall2: ["./static/assets/3d-models/wall/Wall_lvl2.glb",".glb"],
+    Wall: ["./static/assets/3d-models/wall/Wall_lvl3.glb",".glb"],
 });
 
 export const menuPaths = Object.freeze({

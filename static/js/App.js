@@ -141,6 +141,7 @@ class App {
             },
             matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
         });
+        this.itemManager.menuManager = this.menuManager;
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
@@ -169,13 +170,11 @@ class App {
             this.itemManager.removeGem(event);
         });
 
-        this.itemManager.menuManager = this.menuManager;
-
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         // Onclick event
         //TODO: change nameless callbacks to methods of a class?
-        this.spellCaster.addEventListener("castBuildSpell", (event) => {
+        this.spellCaster.addEventListener("castBuildSpell", (event) => { //TODO: rename this to MoveBuilding or something
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
             if(buildingNumber === buildTypes.getNumber("void")) return;
             // Skip altar
@@ -188,7 +187,7 @@ class App {
                     // Get selected building
                     const building = this.spellCaster.currentObject;
                     // Update bounding box of the building
-                    building.dispatchEvent(new CustomEvent("updateBoundingBox"));
+                    building.dispatchEvent(new CustomEvent("updateBoundingBox")); //TODO: put this in a method of the building class
                     // Update occupied cells
                     const pos = event.detail.params.position;
                     const island = this.worldManager.world.getIslandByPosition(pos);
@@ -247,7 +246,6 @@ class App {
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
-            // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
@@ -339,6 +337,7 @@ class App {
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
         await this.worldManager.importWorld(this.playerInfo.islandID);
+        this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
         this.collisionDetector.generateColliderOnWorker();
@@ -371,6 +370,7 @@ class App {
             // Get the price of the building
             let nameInDB = this.menuManager.ctorToDBName(ctorName);
             const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            console.log(this.menuManager.infoFromDatabase);
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
                 console.log("Not enough crystals");
@@ -384,6 +384,7 @@ class App {
         }); //build building with event.detail.id on selected Position;
         this.worldManager.world.player.advertiseCurrentCondition();
         this.minionController.worldMap = this.worldManager.world.islands;
+        //TODO: is there a better way to do this?
         this.multiplayerController.setUpProperties({
             playerInfo: this.playerInfo,
             menuManager: this.menuManager,
@@ -392,6 +393,7 @@ class App {
             minionController: this.minionController,
             forwardingNameSpace: this.forwardingNameSpace,
             collisionDetector: this.collisionDetector,
+            spellFactory: this.spellFactory,
         });
     }
 
@@ -433,7 +435,7 @@ class App {
 
         this.deltaTime = this.clock.getDelta();
 
-        if(!this.multiplayerController.inMatch) this.spellCaster.update(this.deltaTime);
+        this.spellCaster.update(this.deltaTime);
 
         this.minionController.update(this.deltaTime);
         this.playerController.update(this.deltaTime);

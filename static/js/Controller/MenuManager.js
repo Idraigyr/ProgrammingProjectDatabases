@@ -70,7 +70,8 @@ export class MenuManager extends Subject{
             Bush: "Bush",
             Mine: "Mine",
             FusionTable: "FusionTable",
-            WarriorHut: "WarriorHut"
+            WarriorHut: "WarriorHut",
+            Wall: "Wall"
         }
     }
 
@@ -463,6 +464,7 @@ export class MenuManager extends Subject{
         const mineName = "Mine";
         const fusionTableName = "FusionTable";
         const warriorHutName = "WarriorHut";
+        const wallName = "Wall";
 
         const items = [
             {
@@ -470,6 +472,12 @@ export class MenuManager extends Subject{
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime}
+            },
+            {
+                item: {name: "wall", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Wall", getDisplayName: () => "Wall"},
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime}
             },
             {
                 item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},

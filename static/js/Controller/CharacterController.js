@@ -139,10 +139,8 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-        console.log(!(this._character.fsm.currentState instanceof EatingState))
        if (!(this._character.fsm.currentState instanceof EatingState)) {
             this.dispatchEvent(this.createEatingEvent());
-            console.log("dispacthing eating")
         }
     }
 

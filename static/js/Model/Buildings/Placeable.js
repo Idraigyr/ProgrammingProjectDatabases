@@ -54,10 +54,11 @@ export class Placeable extends Entity{
     /**
      * Formats the data for a PUT request
      * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPUTData(userInfo){
-       const obj = this.formatPOSTData(userInfo);
+    formatPUTData(userInfo, islandPosition){
+       const obj = this.formatPOSTData(userInfo, islandPosition);
        obj.placeable_id = this.id;
        return obj;
     }

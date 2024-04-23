@@ -12,7 +12,7 @@ export class UserInfo extends Subject{
         super();
         this.userID = null;
         this.islandID = null;
-        this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree"];
+        this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall"];
         this.gems = [];
         this.spells = [];
 
@@ -55,7 +55,7 @@ export class UserInfo extends Subject{
 
 
             this.islandID = response.entity.island_id;
-            this.unclockedBuildings = response.blueprints;
+            this.unclockedBuildings = response.blueprints; //TODO: this.unlockedBuildings = response.blueprints; ??
             this.gems = response.gems;
 
             this.crystals = response.crystals;
@@ -134,6 +134,7 @@ export class UserInfo extends Subject{
      * @returns {boolean} - True if the crystals were changed, false otherwise
      */
     changeCrystals(amount){
+        if(!amount) throw new Error("userInfo.changeCrystals: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());
@@ -202,6 +203,7 @@ export class UserInfo extends Subject{
      * @returns {boolean} - True if the experience was changed, false otherwise
      */
     changeXP(amount){
+        if(!amount) throw new Error("userInfo.changeXP: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.experience) return false;
         if(amount + this.experience >= this.xpTreshold){
             var oldThreshold = this.xpTreshold
@@ -246,7 +248,7 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 1;
             this.maxBuildings = 2;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree"];
+            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall"];
             this.xpTreshold = 50;
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpTresholdEvent());
@@ -257,7 +259,8 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 2;
             this.maxBuildings = 4;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
+            this.unlockedBuildings.push("Bush");
+            this.unlockedBuildings.push("Tower");
             this.xpTreshold = 100;
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpTresholdEvent());
@@ -270,7 +273,6 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 4;
             this.maxBuildings = 6;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
             this.xpTreshold = 200;
             this.dispatchEvent(this.createUpdateXpTresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -281,7 +283,6 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 6;
             this.maxBuildings = 8;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
             this.xpTreshold = 350;
             this.dispatchEvent(this.createUpdateXpTresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -292,7 +293,6 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 8;
             this.maxBuildings = 10;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Bush", "Tower"];
             this.xpTreshold = 100000;
             this.dispatchEvent(this.createUpdateXpTresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());

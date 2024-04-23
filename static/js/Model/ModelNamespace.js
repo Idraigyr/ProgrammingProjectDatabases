@@ -12,6 +12,7 @@ import {Watch} from "./Watch.js";
 import {FollowPlayer, Immobile, MobileCollidable, Projectile, RitualSpell} from "./SpellEntities.js";
 import {Minion} from "./Minions/Minion.js";
 import {Bridge} from "./Bridge.js";
+import {Wall} from "./Buildings/Wall.js";
 
 /**
  * Model namespace
@@ -35,5 +36,6 @@ export const Model = Object.freeze({
     FollowPlayer: FollowPlayer,
     RitualSpell: RitualSpell,
     Watch: Watch,
-    Bridge: Bridge
+    Bridge: Bridge,
+    Wall: Wall,
 });

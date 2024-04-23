@@ -19,7 +19,8 @@ export class SpellCaster extends Subject{
         super(params);
         this.#wizard = null;
         this.raycaster = params.raycaster;
-        this.renderingPreview = true;
+        this.renderPreview = true;
+        this.multiplayer = false;
         //TODO: make sure that every equipped spell that needs a preview Object has its preview created on equip.
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
@@ -61,7 +62,7 @@ export class SpellCaster extends Subject{
      * @returns {CustomEvent<{type: ConcreteSpell, params: {object}}>}
      */
     createSpellEntityEvent(type, params){
-        return new CustomEvent("createSpellEntity", {detail: {type: type, params: params}});
+        return new CustomEvent("createSpellEntity", {detail: {type: type.constructor, params: params}});
     }
 
     /**
@@ -152,6 +153,7 @@ export class SpellCaster extends Subject{
     }
 
     dispatchVisibleSpellPreviewEvent(bool){
+        if(this.multiplayer) return;
         this.dispatchEvent(this.createVisibleSpellPreviewEvent(bool));
     }
 
@@ -160,7 +162,7 @@ export class SpellCaster extends Subject{
      * @param deltaTime
      */
     update(deltaTime) {
-        if (this.#wizard?.getCurrentSpell()?.hasPreview) {
+        if (this.#wizard?.getCurrentSpell()?.hasPreview && !this.multiplayer) {
             //send to worldManager or viewManager
             this.dispatchEvent(this.createRenderSpellPreviewEvent(this.#wizard.getCurrentSpell(), {
                 position: this.checkRaycaster(),
@@ -186,6 +188,7 @@ export class SpellCaster extends Subject{
      * @param event
      */
     interact(event){
+        if(this.multiplayer) return;
         const hit = this.checkRaycaster();
         if(hit){
             this.dispatchEvent(new CustomEvent("interact", {detail: {position: hit}}));
@@ -226,7 +229,7 @@ export class SpellCaster extends Subject{
                 }));
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
-            }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell) {
+            }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell && !this.multiplayer) {
                 this.dispatchEvent(this.createCastBuildSpellEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
@@ -248,7 +251,7 @@ export class SpellCaster extends Subject{
      * rotate object on right click down if build spell is equipped
      */
     onRightClickDown(){
-        if(this.#wizard.getCurrentSpell() instanceof BuildSpell){
+        if(this.#wizard.getCurrentSpell() instanceof BuildSpell && !this.multiplayer){
             // If there is currentObject, rotate it
             if(this.currentObject){
                 this.currentObject.rotate();

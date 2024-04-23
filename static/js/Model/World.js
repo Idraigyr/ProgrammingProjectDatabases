@@ -1,4 +1,4 @@
-import {returnWorldToGridIndex} from "../helpers.js";
+import {convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 import {Bridge} from "./Bridge.js";
 import * as THREE from "three";
@@ -38,7 +38,6 @@ export class World{
      * @returns {*|null} - the island at the position or null if there is no island at the position
      */
     getIslandByPosition(position){
-        console.log("getIslandByPosition: position", position);
         for(const island of this.islands){
             //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2 (depends on implementation of Foundation class)
             if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
@@ -55,7 +54,6 @@ export class World{
      */
     getBuildingByPosition(position){
         const island = this.getIslandByPosition(position);
-        console.log("getIslandByPosition result:", island);
         if(island){
             return island.getBuildingByPosition(position);
         }
@@ -87,10 +85,10 @@ export class World{
         const island = this.getIslandByPosition(position);
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
-            const {x,z} = returnWorldToGridIndex(position.sub(island.position));
+            convertWorldToGridPosition(position.sub(island.position));
             const building = this.factory.createBuilding({
                 buildingName: buildingName,
-                position: {x: x, y: 0, z: z},
+                position: position,
                 withTimer: withTimer,
             });
             island.addBuilding(building);

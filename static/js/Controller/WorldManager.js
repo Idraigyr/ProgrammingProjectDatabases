@@ -139,7 +139,11 @@ export class WorldManager{
      * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
      */
     placeBuilding(event){
+        console.log("placeBuilding", event);
         const buildingName = event.detail.buildingName;
+        if(!this.userInfo.unlockedBuildings.includes(buildingName) || this.userInfo.buildingsPlaced > this.userInfo.maxBuildings){
+            console.log("cant place building you have not unlocked or you have reached the max number of buildings");
+        }
         if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
             const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
             if(placeable){
@@ -320,11 +324,15 @@ export class WorldManager{
      * @param retries - the number of retries to resend the PUT request
      */
     sendPUT(uri, entity, retries){
+        const island = this.world.getIslandByPosition(entity.position);
+        if(!island){
+            throw new Error("No island found at position");
+        }
         try {
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "PUT",
-                data: JSON.stringify(entity.formatPUTData(this.userInfo)),
+                data: JSON.stringify(entity.formatPUTData(this.userInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
