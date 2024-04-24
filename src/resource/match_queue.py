@@ -30,7 +30,7 @@ class MatchQueueSchema(Schema):
 
     properties = {
         'matchmake': {
-            'type': 'bool',
+            'type': 'boolean',
             'description': 'whether wants to start matchmaking or stop it'
         }
     }
@@ -45,8 +45,7 @@ class MatchQueueSchema(Schema):
 class MatchQueueResource(Resource):
 
     @swagger.tags('match queue')
-    @summary(
-        'join the matchmaking queue for multiplayer')
+    @summary('join the matchmaking queue for multiplayer')
     @swagger.expected(schema=MatchQueueSchema, required=True)
     @swagger.response(200, 'Success', schema=MatchQueueSchema)
     @swagger.response(404, 'player not found', schema=ErrorSchema)
