@@ -297,4 +297,9 @@ export class InputManager extends Subject{
         const logoutButton = document.querySelector('.logOutButton');
         logoutButton.addEventListener('click', callback);
     }
+
+    addDeleteAccountButtonListener(callback) {
+        const deleteAccountButton = document.querySelector('.deleteAccountButton');
+        deleteAccountButton.addEventListener('click', callback);
+    }
 }

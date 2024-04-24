@@ -1,4 +1,6 @@
 // all variables for game settings
+import { API_URL } from "../configs/EndpointConfigs.js";
+import { } from "../Controller/UserInfo.js";
 
 let volume = 50;
 let soundEffects = true;
@@ -47,11 +49,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-export class settings {
-    constructor(inputManager) {
+export class Settings {
+    constructor(inputManager, userinfo) {
         this.inputManager = inputManager;
+        this.userinfo = userinfo;
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
+        inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
     }
     /**
      * Function to log out the user
@@ -72,6 +76,35 @@ export class settings {
     exitSettingsMenu() {
         const settingsMenu = document.querySelector(`.settings-container`);
         settingsMenu.classList.toggle('hide');
+    }
+
+    /**
+     * Function to delete your account
+     */
+    deleteAccountCallback() {
+        if (confirm("Are you sure you want to PERMANENTLY remove your account?\nThis cannot be undone!")) {
+            console.log("Account deletion confirmed")
+            $.ajax({
+                url: `${API_URL}/api/user_profile?id=${this.userinfo.userID}`,
+                type: "DELETE",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("DELETE success");
+                alert("Account deletion successful. You will now be logged out.");
+                window.location.href = "/logout"; // Redirect to the logout page, which will redirect to the landing page
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("DELETE fail");
+                alert("Account deletion failed. Please try again later.");
+                throw new Error(`Could not send DELETE request for account deletion: ${textStatus} ${errorThrown}`);
+            });
+
+        } else {
+            console.log("Account deletion cancelled")
+        }
+
     }
 
 }

@@ -26,7 +26,7 @@ import {buildTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {UserInfo} from "./Controller/UserInfo.js";
-import {settings} from "./Menus/settings.js";
+import {Settings} from "./Menus/settings.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -134,7 +134,7 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.settings = new settings(this.inputManager)
+        this.settings = new Settings(this.inputManager, this.playerInfo)
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
