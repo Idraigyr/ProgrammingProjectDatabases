@@ -1,4 +1,4 @@
-import {Subject} from "../Patterns/Subject.js";
+import {Subject} from "../../Patterns/Subject.js";
 import * as THREE from "three";
 
 /**
@@ -52,11 +52,19 @@ export class Entity extends Subject{
 
     }
 
+    /**
+     * Set the position of the entity and dispatch an updatePosition event
+     * @param vector
+     */
     set position(vector){
         this._position.copy(vector);
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
 
+    /**
+     * return a copy of the position
+     * @return {*}
+     */
     get position(){
         return this._position.clone();
     }

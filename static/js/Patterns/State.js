@@ -28,5 +28,11 @@ export class State{
      * @param deltaTime The time since the last frame
      * @param input The input
      */
-    update(deltaTime, input){}
+    updateState(deltaTime, input){}
+
+    /**
+     * same as updateState but event based
+     * @param event
+     */
+    processEvent(event){}
 }

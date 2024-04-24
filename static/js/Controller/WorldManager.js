@@ -2,7 +2,7 @@ import {Model} from "../Model/ModelNamespace.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
-import {MinionSpawner} from "../Model/MinionSpawner.js";
+import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
@@ -171,15 +171,18 @@ export class WorldManager{
     }
 
     /**
-     * Adds a new island to the world to spawn minions
+     * Adds a new island to the world to spawn minions (single player only)
      */
     addSpawningIsland(){
+        console.log("adding spawning island");
         //TODO: get a random position for the island which lies outside of the main island
         let position = {x: -9, y: 0, z: -8};
+        convertGridIndexToWorldPosition(position)
         //TODO: if the new island is not connected to the main island, add a bridge that connects the two islands
 
         //create an island
-        let island = this.factory.createIsland({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), rotation: 0, buildingsList: [], width: 3, length: 3});
+        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 3, length: 3, team: 1});
+        console.log("position", island.position);
         // //create a bridge
         // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
 
@@ -188,10 +191,10 @@ export class WorldManager{
         // this.world.islands.push(bridge);
 
         //add a enemy warrior hut to the island
-        // let hut = this.factory.createBuilding({buildingName: "Tower", position: position, withTimer: false});
-        // island.addBuilding(hut);
+        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: position, withTimer: false, id: 999});
+        island.addBuilding(hut);
         // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
-        this.world.spawners.push(new MinionSpawner({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z))}));
+        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(position.x, 15, position.z), buildingID: hut.id, interval: 4}));
         this.collisionDetector.generateColliderOnWorker();
     }
 

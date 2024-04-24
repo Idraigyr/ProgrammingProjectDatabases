@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import {Entity} from "./Entity.js";
-import {pushCollidedObjects} from "../helpers.js";
+import {Entity} from "../Entity.js";
+import {pushCollidedObjects} from "../../../helpers.js";
 //abstract class
 /**
  * Abstract class for all characters in the game

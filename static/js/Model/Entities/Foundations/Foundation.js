@@ -1,8 +1,8 @@
 import * as THREE from "three";
-import {Entity} from "./Entity.js";
-import {buildTypes} from "../configs/Enums.js";
-import {gridCellSize} from "../configs/ViewConfigs.js";
-import {assert, printFoundationGrid, returnWorldToGridIndex} from "../helpers.js";
+import {Entity} from "../Entity.js";
+import {buildTypes} from "../../../configs/Enums.js";
+import {gridCellSize} from "../../../configs/ViewConfigs.js";
+import {assert, printFoundationGrid, returnWorldToGridIndex} from "../../../helpers.js";
 
 /**
  * model of foundation which is a grid based plane with a center-square, meaning both width and length are uneven

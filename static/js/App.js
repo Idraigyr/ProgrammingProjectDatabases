@@ -271,7 +271,7 @@ class App {
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
         });
-        this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
+        this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
 
 
@@ -403,11 +403,11 @@ class App {
     start(){
         if ( WebGL.isWebGLAvailable()) {
             //TODO: remove this is test //
-            // this.worldManager.addSpawningIsland();
-            // this.minionController.worldMap = this.worldManager.world.islands;
-            // this.worldManager.world.spawners[0].addEventListener("createMinion", (event) => {
-            //    this.minionController.addMinion(this.factory.createMinion(event.detail));
-            // });
+            this.worldManager.addSpawningIsland();
+            this.minionController.worldMap = this.worldManager.world.islands;
+            this.worldManager.world.spawners["minions"][0].addEventListener("spawn", (event) => {
+               this.minionController.addMinion(this.factory.createMinion(event.detail));
+            });
             //TODO: remove this is test //
 
             // Setup SocketIO

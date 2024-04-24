@@ -4,7 +4,7 @@ import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {SpellSpawner} from "../Model/SpellSpawner.js";
+import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -47,13 +47,13 @@ export class Factory{
 
     /**
      * Creates minion model and view
-     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}} params
+     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}, buildingID: number} params, spawn needs to be in world coords, buildingID is the id of the building that spawned the minion
      * @return {Minion}
      */
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 1});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 1, buildingID: params.buildingID});
         let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135});
         //add weapon to hand
         view.charModel.traverse((child) => {
@@ -136,11 +136,11 @@ export class Factory{
 
     /**
      * Creates island model and view
-     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, buildingsList: Object[]}} params
+     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, buildingsList: Object[], team: number | null}} params
      * @returns {Island} model of the island
      */
     createIsland(params){
-        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length});
+        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length, team: params.team});
 
         let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1}); //TODO: remove magic numbers
         //TODO: island asset?

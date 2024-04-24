@@ -1,8 +1,8 @@
 import {Entity} from "../Entity.js"
 import * as THREE from "three";
-import {convertWorldToGridPosition} from "../../helpers.js";
-import {gridCellSize} from "../../configs/ViewConfigs.js";
-import {popUp} from "../../external/LevelUp.js";
+import {convertWorldToGridPosition} from "../../../helpers.js";
+import {gridCellSize} from "../../../configs/ViewConfigs.js";
+import {popUp} from "../../../external/LevelUp.js";
 
 /**
  * Base class for the placeable model

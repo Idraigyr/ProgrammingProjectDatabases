@@ -10,6 +10,7 @@ export class SpellPreview extends IView{
     constructor(params) {
         super(params);
         this.types = {};
+        this.visible = true; //TODO: set to false and change to true when buildspell is equipped in current spellslot (always spellslot 1 in hud/itemManager === index 0 in wizard.spells)
 
         for(let i = 0; i < params.length; i++){
             this.types[params[i].key] = params[i].details;
@@ -47,7 +48,7 @@ export class SpellPreview extends IView{
      */
     render(event){
         if(event.detail.name !== this.currentType) this.setModel(event.detail.name);
-        this.charModel.visible = true;
+        this.charModel.visible = this.visible;
 
         this.updatePosition(event);
         event.detail.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), event.detail.rotation ?? 0);
@@ -60,8 +61,8 @@ export class SpellPreview extends IView{
      * Make the preview object (in)visible
      * @param event event with visibility
      */
-    makeVisible(event){
-        this.charModel.visible = event.detail.visible;
+    toggleVisibility(event){
+        this.visible = event.detail.visible;
     }
 
     /**

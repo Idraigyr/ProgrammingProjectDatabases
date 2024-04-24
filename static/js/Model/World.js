@@ -1,8 +1,8 @@
 import {convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
-import {Bridge} from "./Bridge.js";
+import {Bridge} from "./Entities/Foundations/Bridge.js";
 import * as THREE from "three";
-import {MinionSpawner} from "./MinionSpawner.js";
+import {MinionSpawner} from "./Spawners/MinionSpawner.js";
 
 /**
  * World class that contains all the islands and the player
@@ -15,7 +15,7 @@ export class World{
         this.islands = [];
         this.player = null;
         this.entities = [];
-        this.spawners = [];
+        this.spawners = {minions: [], spells: []};
     }
 
     addIsland(island){
@@ -30,6 +30,14 @@ export class World{
 
     addPlayer(player){
         this.player = player;
+    }
+
+    addMinionSpawner(spawner){
+        this.spawners.minions.push(spawner);
+    }
+
+    addSpellSpawner(spawner){
+        this.spawners.spells.push(spawner);
     }
 
     /**
@@ -83,6 +91,10 @@ export class World{
      */
     addBuilding(buildingName, position, withTimer = false){
         const island = this.getIslandByPosition(position);
+        if(island.team !== this.player.team){
+            console.error("cannot add building to enemy island");
+            return null;
+        }
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
             convertWorldToGridPosition(position.sub(island.position));
@@ -114,7 +126,11 @@ export class World{
      */
     update(deltaTime){
         //update whole model
-        this.spawners.forEach((spawner) => spawner.update(deltaTime));
+        for(const spawnerType in this.spawners){
+            this.spawners[spawnerType].forEach((spawner) => {
+                spawner.update(deltaTime);
+            });
+        }
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.collisionDetector.checkCharacterCollisions(deltaTime);
         this.spellFactory.models.forEach((model) => model.update(deltaTime));

@@ -497,38 +497,40 @@
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #0f172a;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #0f172a;
 }
 
 .settings {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: hidden;
 }
 
 .slider, .checkbox, .radio-group, .dropdown {
-  margin-bottom: 20px;
+    margin-bottom: 20px;
 }
 
 .slider label, .checkbox label, .radio-group label, .dropdown label {
-  color: #0f172a;
-  margin-bottom: 5px;
-  display: block;
+    color: #0f172a;
+    margin-bottom: 5px;
+    display: block;
 }
 
 .slider input[type="range"] {
-  width: 100%;
-  margin-top: 5px;
+    width: 100%;
+    margin-top: 5px;
 }
 
 .checkbox input[type="checkbox"], .radio-group input[type="radio"], .dropdown select {
-  margin-right: 10px;
+    margin-right: 10px;
 }
 
 .radio-group .radio {
-  display: inline-block;
-  margin-right: 20px;
+    display: inline-block;
+    margin-right: 20px;
 }
 
 .dropdown select {

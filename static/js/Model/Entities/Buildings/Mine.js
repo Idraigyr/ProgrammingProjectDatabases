@@ -1,5 +1,5 @@
 import {Placeable} from "./Placeable.js";
-import {timeDifferenceInSeconds} from "../../helpers.js";
+import {timeDifferenceInSeconds} from "../../../helpers.js";
 
 /**
  * Class for the mine model

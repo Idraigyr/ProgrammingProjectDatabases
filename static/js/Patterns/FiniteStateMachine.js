@@ -16,7 +16,7 @@ export class FiniteStateMachine{
     }
 
     /**
-     * @function updateState - updates the current state
+     * @method updateState - updates the current state
      * @param deltaTime - time between frames
      * @param input - input from the user
      */
@@ -26,7 +26,16 @@ export class FiniteStateMachine{
     }
 
     /**
-     * @function setState - sets the current state
+     * same as updateState but event based
+     * @param event
+     */
+    processEvent(event){
+        if(!this.currentState) return;
+        this.currentState.processEvent(event);
+    }
+
+    /**
+     * @method setState - sets the current state
      * @param name - name of the state
      */
     setState(name){
@@ -41,7 +50,7 @@ export class FiniteStateMachine{
     }
 
     /**
-     * @function addState - adds a state to the state machine
+     * @method addState - adds a state to the state machine
      * @param name - name of the state
      * @param type - type of the state
      */

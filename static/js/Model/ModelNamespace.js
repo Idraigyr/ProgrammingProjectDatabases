@@ -1,18 +1,18 @@
 import {World} from "./World.js";
-import {Wizard} from "./Wizard.js";
-import {Island} from "./Island.js";
-import {Tree} from "./Buildings/Tree.js";
-import {Altar} from "./Buildings/Altar.js";
-import {Mine} from "./Buildings/Mine.js";
-import {Tower} from "./Buildings/Tower.js";
-import {FusionTable} from "./Buildings/FusionTable.js";
-import {WarriorHut} from "./Buildings/WarriorHut.js";
-import {Bush} from "./Buildings/Bush.js";
+import {Wizard} from "./Entities/Characters/Wizard.js";
+import {Island} from "./Entities/Foundations/Island.js";
+import {Tree} from "./Entities/Buildings/Tree.js";
+import {Altar} from "./Entities/Buildings/Altar.js";
+import {Mine} from "./Entities/Buildings/Mine.js";
+import {Tower} from "./Entities/Buildings/Tower.js";
+import {FusionTable} from "./Entities/Buildings/FusionTable.js";
+import {WarriorHut} from "./Entities/Buildings/WarriorHut.js";
+import {Bush} from "./Entities/Buildings/Bush.js";
 import {Watch} from "./Watch.js";
-import {FollowPlayer, Immobile, MobileCollidable, Projectile, RitualSpell} from "./SpellEntities.js";
-import {Minion} from "./Minions/Minion.js";
-import {Bridge} from "./Bridge.js";
-import {Wall} from "./Buildings/Wall.js";
+import {FollowPlayer, Immobile, MobileCollidable, Projectile, RitualSpell} from "./Entities/SpellEntities.js";
+import {Minion} from "./Entities/Characters/Minion.js";
+import {Bridge} from "./Entities/Foundations/Bridge.js";
+import {Wall} from "./Entities/Buildings/Wall.js";
 
 /**
  * Model namespace

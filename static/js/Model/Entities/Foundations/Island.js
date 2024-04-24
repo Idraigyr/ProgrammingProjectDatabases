@@ -1,5 +1,5 @@
-import {printFoundationGrid, returnWorldToGridIndex} from "../helpers.js";
-import {buildTypes} from "../configs/Enums.js";
+import {printFoundationGrid, returnWorldToGridIndex} from "../../../helpers.js";
+import {buildTypes} from "../../../configs/Enums.js";
 import {Foundation} from "./Foundation.js";
 
 /**
@@ -13,8 +13,6 @@ export class Island extends Foundation{
     constructor(params) {
         super(params);
         this.buildings = [];
-        // is 1d array more optimal than 2d array?
-        // this.grid = new Array(params.width).fill(buildTypes.getNumber("empty")).map(() => new Array(params.length).fill(buildTypes.getNumber("empty")));
     }
 
     /**
@@ -93,6 +91,14 @@ export class Island extends Foundation{
     addBuilding(building){
         this.buildings.push(building);
         building.cellIndex = this.occupyCell(building.position, building.dbType);
+    }
+
+    /**
+     * returns all buildings on the island that are of the given type
+     * @return {Placeable[]}
+     */
+    getBuildingsByType(type){
+        return this.buildings.filter(building => building.dbType === type);
     }
 
     /**

@@ -11,8 +11,6 @@ export class Wizard extends Character{
         this.currentSpell = 0;
         this.mana = params?.mana ?? 100;
         this.maxMana = params?.maxMana ?? 100;
-        this.health = params?.health ?? 100;
-        this.maxHealth = params?.maxHealth ?? 100;
         this.id = params?.id ?? null;
     }
 

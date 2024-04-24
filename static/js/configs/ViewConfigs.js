@@ -34,7 +34,8 @@ export let assetPaths = Object.freeze({
     SurabanglusFont: ["./static/fonts/Surabanglus_Regular.json",".json"],
     Wall1: ["./static/assets/3d-models/wall/Wall_lvl1.glb",".glb"],
     Wall2: ["./static/assets/3d-models/wall/Wall_lvl2.glb",".glb"],
-    Wall: ["./static/assets/3d-models/wall/Wall_lvl3.glb",".glb"],
+    Wall3: ["./static/assets/3d-models/wall/Wall_lvl3.glb",".glb"],
+    Wall: ["./static/assets/3d-models/wall/Wall_Alt.glb",".glb"],
 });
 
 export const menuPaths = Object.freeze({
