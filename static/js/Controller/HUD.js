@@ -75,6 +75,7 @@ export class HUD {
         $('#xp-bar-status').html(event.detail.xp + '/' + event.detail.threshold);
     }
 
+
     /**
      * Function to update the username in HUD
      * @param {{detail: {username: string}}} event
@@ -120,20 +121,27 @@ export class HUD {
     }
 
     /**
-     * Function to update the spell cooldown in HUD - currently unused
-     * @param spellCooldown
-     * @param spellSlotIndex
+     * Function to update the cooldowns in the HUD
+     * @param event {{detail: {spellCooldowns: list}}
      */
-    useSpell(spellCooldown, spellSlotIndex) {
-        const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
-        usedSpel.parentElement.classList.add('onCooldown');
-
-        const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex}Icon`);
-        usedSpelIcon.classList.add('onCooldown');
-
-        setTimeout(function() {
-        usedSpel.parentElement.classList.remove('onCooldown');
-        usedSpelIcon.classList.remove('onCooldown');
-        }, spellCooldown * 1000);
+    updateCooldowns(event) {
+        let cooldowns = event.detail.cooldowns;
+        for (let i = 0; i < cooldowns.length; i++) {
+            let spellSlotIndex = i;
+            let spellCooldown = cooldowns[i];
+            const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex + 1}Cooldown`);
+            const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
+            const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
+            usedSpelIcon.classList.add('onCooldown');
+            if (spellCooldown <= 0) {
+                cooldownElement.textContent = ""; // Clear the cooldown display
+                usedSpel.parentElement.classList.remove('onCooldown');
+                usedSpelIcon.classList.remove('onCooldown');
+            } else {
+                cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
+                usedSpel.parentElement.classList.add('onCooldown');
+                usedSpelIcon.classList.add('onCooldown');
+            }
+        }
     }
 }

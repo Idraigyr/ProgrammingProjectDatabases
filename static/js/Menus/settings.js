@@ -44,20 +44,34 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 
-// exit button
-/**
- * Exit the settings menu
- */
-document.addEventListener("DOMContentLoaded", function() {
-    const button = document.getElementById('exit');
-    button.addEventListener('click', function() {
-        // exit menu
-    });
-});
 
-function exitSettingsMenu() {
-    // Your code to handle closing the menu goes here
-    // Send message to parent
-    window.parent.postMessage("toggleSettingsMenu", "*");
+
+
+export class settings {
+    constructor(inputManager) {
+        this.inputManager = inputManager;
+        inputManager.addLogoutButtonListener(this.logOut.bind(this))
+        inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
+    }
+    /**
+     * Function to log out the user
+     */
+    logOut() {
+        console.log("Log out button clicked")
+        var currentUrl = window.location.href;
+
+        // Append '/logout' to the current URL
+        var logoutUrl = currentUrl + '/logout';
+
+        // Redirect the user to the logout URL
+        window.location.href = logoutUrl;
+    }
+    /**
+     * Function to exit the settings menu
+     */
+    exitSettingsMenu() {
+        const settingsMenu = document.querySelector(`.container`);
+        settingsMenu.classList.toggle('hide');
+    }
+
 }
-

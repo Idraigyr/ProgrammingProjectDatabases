@@ -26,6 +26,7 @@ import {buildTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {UserInfo} from "./Controller/UserInfo.js";
+import {settings} from "./Menus/settings.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -133,6 +134,7 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
+        this.settings = new settings(this.inputManager)
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -142,6 +144,7 @@ class App {
             matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
         });
         this.itemManager.menuManager = this.menuManager;
+
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
@@ -274,7 +277,6 @@ class App {
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
 
-
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
 
@@ -354,10 +356,12 @@ class App {
         this.spellCaster.wizard = this.worldManager.world.player;
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
+        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
-        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
+        this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
+
 
 
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
