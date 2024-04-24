@@ -1,4 +1,5 @@
 import {Character} from "./Character.js";
+import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
 
 /**
  * @class Wizard - class for the player character
@@ -91,6 +92,12 @@ export class Wizard extends Character{
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }
 
+    updateMaxManaAndHealth(event){
+        this.maxMana = event.detail.maxMana;
+        this.maxHealth = event.detail.maxHealth;
+        this.advertiseCurrentCondition();
+    }
+
     /**
      * Increase the maximum mana of the player
      * @param {Number} amount - amount to increase the maximum mana by, needs to be bigger than 0
@@ -113,7 +120,6 @@ export class Wizard extends Character{
      * Notify observers of the current condition of the player
      */
     advertiseCurrentCondition(){
-        this.health = 20;
         this.dispatchEvent(this.#createUpdateManaEvent());
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }

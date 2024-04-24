@@ -113,9 +113,10 @@ export class WorldManager{
                 y: playerSpawn.y,
                 z: playerSpawn.z
             },
-            health: 100,
-            mana: 1000,
-            maxMana: 1000
+            health: this.userInfo.health,
+            maxHealth: this.userInfo.maxHealth,
+            mana: this.userInfo.mana,
+            maxMana: this.userInfo.maxMana,
         };
 
         this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
@@ -289,7 +290,7 @@ export class WorldManager{
         this.insertPendingPostRequest(entity);
         try {
             const island = this.world.getIslandByPosition(entity.position);
-            if(!island){
+            if(!island){ //TODO: add team check/ check if island is player's
                 throw new Error("No island found at position");
             }
             $.ajax({
@@ -328,7 +329,7 @@ export class WorldManager{
      */
     sendPUT(uri, entity, retries){
         const island = this.world.getIslandByPosition(entity.position);
-        if(!island){
+        if(!island){ //TODO: add team check / check if island = player's
             throw new Error("No island found at position");
         }
         try {

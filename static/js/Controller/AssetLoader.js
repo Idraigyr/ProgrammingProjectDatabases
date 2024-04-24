@@ -31,11 +31,7 @@ export class AssetLoader{
         //let extension = getFileExtension(path);
         let extension = path[1].slice(1);
         if(extension === "glb" || extension === "gltf"){
-            try{
-                return this.loadGLTF(path[0]);
-            }catch (e) {
-                return this.loadDRACOGLTF(path[0]);
-            }
+            return this.loadGLTF(path[0]);
         } else if(extension === "fbx"){
             return this.loadFBX(path[0]);
         } else if(extension === "png" || extension === "jpg") {
@@ -47,32 +43,6 @@ export class AssetLoader{
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
-    /**
-     * Load a gltf model
-     * @param {string} path path to the model
-     * @returns {*} the model and its animations
-     */
-    loadGLTF(path){
-        let loader = new GLTFLoader(this.loadingManager);
-        return loader.loadAsync(path, function (xhr) {
-            if(this.logLoading) console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-        }).then((gltf) => {
-            let charModel;
-            let animations = null;
-
-            charModel = gltf.scene;
-            charModel.traverse(c => {
-                c.castShadow = true;
-            });
-            if(gltf.animations.length > 0){
-                animations = gltf.animations;
-                return {charModel, animations};
-            }
-            return {charModel};
-        },(err) => {
-            return this.loadDRACOGLTF(path);
-        });
-    }
 
     //TODO:: add timeout error handler
     /**
@@ -80,7 +50,7 @@ export class AssetLoader{
      * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
-    loadDRACOGLTF(path){
+    loadGLTF(path){
         let loader = new GLTFLoader();
         let draco = new DRACOLoader();
         draco.setDecoderPath( './static/decoders/dracoloader/' );

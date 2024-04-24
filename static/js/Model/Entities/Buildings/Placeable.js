@@ -93,7 +93,7 @@ export class Placeable extends Entity{
             return false;
         }
         this.dispatchEvent(this.createUpdateLevelEvent());
-        this.xpTreshold = this.increaseXpTreshold();
+        this.xpThreshold = this.increaseXpThreshold();
         if(this.level === 0){
             this.levelUpTime = 0;
             this.gemSlots = 1;
@@ -112,6 +112,7 @@ export class Placeable extends Entity{
             this.gemSlots = 8;
         }
         popUp(this.level, this.maxMana, this.maxHealth);
+        this.updateUserInfoBackend();
         return true;
     }
 

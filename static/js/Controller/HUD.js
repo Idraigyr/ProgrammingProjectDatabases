@@ -71,7 +71,7 @@ export class HUD {
         $('#account-bar-level').html('Level: ' + event.detail.level);
 
     }
-    updateXPTreshold(event){
+    updateXPThreshold(event){
         $('#xp-bar-status').html(event.detail.xp + '/' + event.detail.threshold);
     }
 
@@ -86,7 +86,7 @@ export class HUD {
 
     /**
      * Function to update the xp bar in HUD
-     * @param {{detail: {xp: number, treshold: number}}} event
+     * @param {{detail: {xp: number, threshold: number}}} event
      */
     updateXP(event){
         var percentage = ((event.detail.xp / event.detail.threshold) * 100);
