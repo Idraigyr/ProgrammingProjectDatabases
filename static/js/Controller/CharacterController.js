@@ -139,10 +139,14 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-        console.log((this.#inputManager.keys.eating))
-       if (!(this._character.fsm.currentState instanceof EatingState) && this.#inputManager.keys.eating && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
+       if (!(this._character.fsm.currentState instanceof EatingState) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
             this.dispatchEvent(this.createEatingEvent());
+            this.#inputManager.keys.eating = true;
         }
+       else
+         {
+              this.#inputManager.keys.eating = false;
+         }
     }
 
 
