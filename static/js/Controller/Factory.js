@@ -1,7 +1,7 @@
 import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
-import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY} from "../helpers.js";
+import {convertGridIndexToWorldPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
@@ -169,8 +169,6 @@ export class Factory{
      */
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
-        correctRitualScale(asset);
-        setMinimumY(asset, 0); // TODO: is it always 0?
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
         const modelParams = {position: pos, id: params.id};
 
@@ -190,7 +188,6 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
-        model.addEventListener("updateMinY", view.updateMinimumY.bind(view));
         this.viewManager.addPair(model, view);
 
         //TODO: withTimer: (DONE?)

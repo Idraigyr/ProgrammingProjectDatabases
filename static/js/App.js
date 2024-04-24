@@ -183,44 +183,46 @@ class App {
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
             // If the selected cell is empty
-            if (buildingNumber === buildTypes.getNumber("empty")) {
+            if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
-                if(this.spellCaster.currentObject){
-                    // Get selected building
-                    const building = this.spellCaster.currentObject;
-                    // Update bounding box of the building
-                    building.dispatchEvent(new CustomEvent("updateBoundingBox")); //TODO: put this in a method of the building class
-                    // Update occupied cells
-                    const pos = event.detail.params.position;
-                    const island = this.worldManager.world.getIslandByPosition(pos);
-                    // // Get if the cell is occupied
-                    // let buildOnCell = island.getCellIndex(pos);
-                    // if (buildOnCell !== building.cellIndex){// TODO!!!!
-                    //     let cell = island.checkCell(pos);
-                    //     // Check if the cell is occupied
-                    //     if(cell !== buildTypes.getNumber("empty")) return;
-                    // }
-                    island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
-                    // Occupy cell
-                    building.cellIndex = island.occupyCell(pos, building.dbType);
-                    // Remove the object from spellCaster
-                    this.spellCaster.currentObject.ready = true;
-                    this.spellCaster.currentObject = null;
-                    // Update static mesh
-                    this.collisionDetector.generateColliderOnWorker();
-                    // Send put request to the server if persistence = true
-                    if(this.worldManager.persistent){
-                        this.worldManager.sendPUT(placeableURI, building, postRetries);
-                    }
-                    return;
+                // Get selected building
+                const building = this.spellCaster.currentObject;
+                // Update bounding box of the building
+                building.dispatchEvent(new CustomEvent("updateBoundingBox")); //TODO: put this in a method of the building's class
+                // Update occupied cells
+                const pos = event.detail.params.position;
+                const island = this.worldManager.world.getIslandByPosition(pos);
+                // // Get if the cell is occupied
+                // let buildOnCell = island.getCellIndex(pos);
+                // if (buildOnCell !== building.cellIndex){// TODO!!!!
+                //     let cell = island.checkCell(pos);
+                //     // Check if the cell is occupied
+                //     if(cell !== buildTypes.getNumber("empty")) return;
+                // }
+                island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
+                // Occupy cell
+                building.cellIndex = island.occupyCell(pos, building.dbType);
+                // Remove the object from spellCaster
+                this.spellCaster.currentObject.ready = true;
+                this.spellCaster.currentObject = null;
+                //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
+                // Update static mesh
+                this.collisionDetector.generateColliderOnWorker();
+                // Send put request to the server if persistence = true
+                if(this.worldManager.persistent){
+                    this.worldManager.sendPUT(placeableURI, building, postRetries);
                 }
-                //temp solution:
+
+                //allow menus to be opened again
+                this.menuManager.menusEnabled = true;
+
+            } else if(buildingNumber === buildTypes.getNumber("empty")){ //open buildmenu
                 this.worldManager.currentPos = event.detail.params.position;
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
                 this.inputManager.exitPointerLock();
-            }
-            else if (this.spellCaster.currentObject) {
+
+            } else if (this.spellCaster.currentObject) { //What is this block used for??? placing back in same spot after rotating?
                 // Get selected building
                 const building = this.spellCaster.currentObject;
                 // Update bounding box of the building
@@ -237,8 +239,11 @@ class App {
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
                 this.spellCaster.previousSelectedPosition = null;
-            }
-            else {
+
+                //allow menus to be opened again
+                this.menuManager.menusEnabled = true;
+
+            } else { //select object
                 /* Logic for selecting a building */
                 // There is already object
                 if(this.spellCaster.currentObject) return;
@@ -248,6 +253,9 @@ class App {
                 // Select current object
                 this.spellCaster.currentObject = selectedObject;
                 this.spellCaster.currentObject.ready = false;
+
+                //disable opening menus while building is selected
+                this.menuManager.menusEnabled = false;
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {

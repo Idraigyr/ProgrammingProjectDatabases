@@ -151,8 +151,11 @@ export class SpellCaster extends Subject{
         this.dispatchVisibleSpellPreviewEvent((!(this.multiplayer && event.detail.spellSlot-1 === 0) && this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview) ?? false);
         // TODO: add sound
         // TODO: drop current object if it exists
-        this.currentObject.position = this.previousSelectedPosition;
-        this.currentObject.ready = true;
+        if(this.currentObject){
+            this.currentObject.position = this.previousSelectedPosition;
+            this.currentObject.ready = true;
+            console.log("Dropped current object: ", this.currentObject);
+        }
         this.previousSelectedPosition = null;
         this.currentObject = null;
     }
@@ -177,10 +180,9 @@ export class SpellCaster extends Subject{
                 if(pos){
                     // Correct the position of the object
                     convertWorldToGridPosition(pos); //TODO @Daria: move somewhere else (buildManager?) and add island position
+                    pos.y = 0;
                     // Set the position of the object
                     this.currentObject.position = pos;
-                    // Set minimum y value
-                    this.currentObject.setMinimumY(0);
                 }
             }
         }
@@ -232,15 +234,19 @@ export class SpellCaster extends Subject{
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
                     team: this.#wizard.team
                 }));
+                this.#wizard.cooldownSpell();
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){
                 this.dispatchEvent(this.createInstantSpellEvent(this.#wizard.getCurrentSpell(), {}));
+                this.#wizard.cooldownSpell();
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell && !this.multiplayer) {
                 this.dispatchEvent(this.createCastBuildSpellEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
+                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation) //TODO: why do we give rotation with this event???
                 }));
+                if(!this.currentObject){
+                    this.#wizard.cooldownSpell();
+                }
             }
-            this.#wizard.cooldownSpell();
         } else {
             //play a sad sound;
         }

@@ -42,6 +42,7 @@ export class MenuManager extends Subject{
         this.items = {};
         this.menus = {};
 
+        this.menusEnabled = true;
         this.currentMenu = null;
         this.dragElement = null;
         this.isSlotItem = false;
@@ -555,7 +556,7 @@ export class MenuManager extends Subject{
      */
     renderMenu(params){
         console.log(params)
-        if(!params.name) return;
+        if(!params.name || !this.menusEnabled) return;
         if(this.currentMenu) this.hideMenu(this.currentMenu);
         this.blockInputCallback.block();
         this.container.style.display = "block";
@@ -572,7 +573,7 @@ export class MenuManager extends Subject{
      * @param {string} name
      */
     hideMenu(name = this.currentMenu){
-        if(!name) return;
+        if(!name || !this.menusEnabled) return;
         this.container.style.display = "none";
         if(name === "AltarMenu"){
             this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {

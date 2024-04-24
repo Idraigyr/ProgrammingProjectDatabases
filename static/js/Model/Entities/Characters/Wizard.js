@@ -1,5 +1,4 @@
 import {Character} from "./Character.js";
-import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
 
 /**
  * @class Wizard - class for the player character
@@ -93,7 +92,9 @@ export class Wizard extends Character{
     }
 
     updateMaxManaAndHealth(event){
+        this.mana = event.detail.maxMana;
         this.maxMana = event.detail.maxMana;
+        this.health = event.detail.maxHealth;
         this.maxHealth = event.detail.maxHealth;
         this.advertiseCurrentCondition();
     }

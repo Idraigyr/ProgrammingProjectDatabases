@@ -352,16 +352,6 @@ export function getOccupiedCells(building){
 }
 
 /**
- * Set the minimum y position of the object
- * @param object - the object to set the minimum y position of
- * @param y - the y position to set the minimum y position to
- */
-export function setMinimumY(object, y){
-    const boundingBox = new THREE.Box3().setFromObject(object);
-    object.position.y += y - boundingBox.min.y;
-}
-
-/**
  * Correct the scale of the object to fit the grid cell size
  * @param object - the object to correct the scale of
  */

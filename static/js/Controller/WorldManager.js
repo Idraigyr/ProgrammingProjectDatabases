@@ -144,6 +144,10 @@ export class WorldManager{
         const buildingName = event.detail.buildingName;
         if(!this.userInfo.unlockedBuildings.includes(buildingName) || this.userInfo.buildingsPlaced > this.userInfo.maxBuildings){
             console.log("cant place building you have not unlocked or you have reached the max number of buildings");
+            console.log("unlocked buildings", this.userInfo.unlockedBuildings);
+            console.log("building name", buildingName);
+            console.log("buildings placed", this.userInfo.buildingsPlaced);
+            console.log("max buildings", this.userInfo.maxBuildings);
         }
         if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
             const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);

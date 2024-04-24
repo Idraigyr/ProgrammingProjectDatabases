@@ -18,9 +18,9 @@ export class UserInfo extends Subject{
 
         this.crystals = 100;
 
-        this.maxMana = 50;
-        this.maxHealth = 50;
         this.mana = 50;
+        this.maxMana = 50;
+        this.maxHealth = 100;
         this.health = 100;
 
         this.maxGemAttribute = 2;
@@ -242,19 +242,18 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 2;
             this.maxBuildings = 4;
-            this.unlockedBuildings.push("Bush");
-            this.unlockedBuildings.push("Tower");
+            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
             this.xpThreshold = 100;
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
-        }
-        else if(this.level === 2){
+        } else if(this.level === 2){
             this.maxMana = 200;
             this.dispatchEvent(this.createUpdateManaEvent());
             this.maxHealth = 200;
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 4;
             this.maxBuildings = 6;
+            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
             this.xpThreshold = 200;
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -265,6 +264,7 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 6;
             this.maxBuildings = 8;
+            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
             this.xpThreshold = 350;
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -275,6 +275,7 @@ export class UserInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.maxGemAttribute = 8;
             this.maxBuildings = 10;
+            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
             this.xpThreshold = 100000;
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
             this.dispatchEvent(this.createUpdateXpEvent());

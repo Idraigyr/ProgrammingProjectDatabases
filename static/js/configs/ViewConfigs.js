@@ -38,6 +38,21 @@ export let assetPaths = Object.freeze({
     Wall: ["./static/assets/3d-models/wall/Wall_Alt.glb",".glb"],
 });
 
+export const buildingAssetsKeys = Object.freeze([
+    "Altar",
+    "Mine",
+    "FusionTable",
+    "WarriorHut",
+    "WarriorHut2",
+    "Wall",
+    "Wall1",
+    "Wall2",
+    "Wall3",
+    "Tower",
+    "Bush",
+    "Tree",
+]);
+
 export const menuPaths = Object.freeze({
 
 });

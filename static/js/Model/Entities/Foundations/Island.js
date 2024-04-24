@@ -30,7 +30,6 @@ export class Island extends Foundation{
         const index = (x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2);
         // this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
         this.grid[index] = buildTypes.getNumber(dbType);
-        printFoundationGrid(this.grid, this.width, this.length);
         return index;
     }
 
