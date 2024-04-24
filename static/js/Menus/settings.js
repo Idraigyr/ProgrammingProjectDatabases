@@ -70,7 +70,7 @@ export class settings {
      * Function to exit the settings menu
      */
     exitSettingsMenu() {
-        const settingsMenu = document.querySelector(`.container`);
+        const settingsMenu = document.querySelector(`.settings-container`);
         settingsMenu.classList.toggle('hide');
     }
 

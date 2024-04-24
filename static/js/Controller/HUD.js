@@ -116,7 +116,7 @@ export class HUD {
      * Function to toggle visibility of the settings menu
      */
     toggleSettingsMenu() {
-        const settingsMenu = document.querySelector(`.container`);
+        const settingsMenu = document.querySelector(`.settings-container`);
         settingsMenu.classList.toggle('hide');
     }
 
