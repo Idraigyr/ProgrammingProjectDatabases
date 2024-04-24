@@ -82,7 +82,6 @@ export class MultiplayerController{
     }
 
 
-
     async startMatch(playerIds){
         this.menuManager.exitMenu();
         this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
@@ -104,7 +103,7 @@ export class MultiplayerController{
         // the other island is rotated 180 degrees around the y-axis and translated from center of main island
 
         //construct 2nd player object and island object and add to world
-        await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID > this.opponentInfo.userID);
+        await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID < this.opponentInfo.userID);
         console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
         console.log(this.worldManager.world.islands);
         const opponent = this.worldManager.addOpponent({position: new THREE.Vector3(0,0,0), mana: 100, maxMana: 100, team: 1});

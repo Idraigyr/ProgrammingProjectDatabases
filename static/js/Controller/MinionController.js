@@ -216,7 +216,7 @@ export class MinionController{
         let targetPosition = new THREE.Vector3().copy(minion.position);
         //TODO: update movement based on state
         //if altar is close enough, attack altar
-        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) < gridCellSize*2){ //TODO: find out why this is gridCellSize is too close
+        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*2){ //TODO: find out why this is gridCellSize is too close
             //attack altar
             //set attack state & at the end of the attack animation, deal damage
             minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
