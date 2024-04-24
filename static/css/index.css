@@ -1899,3 +1899,196 @@ a[data-tooltip][data-placement="right"]::after {
     align-items: center; /* Center items horizontally */
     text-align: center; /* Text inside is centered */
 }
+
+.Friends-Button{
+    display: block;
+    position: fixed; /* Use fixed or absolute positioning */
+    top: 80%; /* Align vertically at the middle */
+    right: 0; /* Align to the right edge of the viewport */
+    transform: translateY(-50%); /* Adjust the position to be truly centered vertically */
+    width: 3%; /* Optional: Set a specific width */
+    height: 3%; /* Optional: Set a specific height */
+    background-color: lightblue; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    border-radius: 10px;
+    background-image: url('../assets/images/friend.png'); /* Replace with the path to your image */
+    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
+    text-align: center;
+}
+
+.Friends-Content{
+    display: none;
+    position: fixed; /* Use fixed or absolute positioning */
+    top: 50%; /* Align vertically at the middle */
+    right: 30%; /* Align to the right edge of the viewport */
+    transform: translateY(-50%); /* Adjust the position to be truly centered vertically */
+    width: 40%; /* Optional: Set a specific width */
+    height: 40%; /* Optional: Set a specific height */
+    background-color: #f9f3d2; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    border: solid black;
+    border-radius: 10px;
+}
+
+.Friend-List-Button{
+    display: none;
+    position: fixed; /* Use fixed or absolute positioning */
+    top: 6.5%; /* Align vertically at the middle */
+    right: 65%; /* Align to the right edge of the viewport */
+    transform: translateY(-50%); /* Adjust the position to be truly centered vertically */
+    width: 35%; /* Optional: Set a specific width */
+    height: 15%; /* Optional: Set a specific height */
+    background-color: #f9f3d2; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    background-image: url('../assets/images/list.png'); /* Replace with the path to your image */
+    background-size: 20%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
+    border: solid black;
+    border-radius: 10px 0px 0px 0px;
+    cursor: pointer;
+
+
+}
+
+.Friend-Add-Button{
+    display: none;
+    position: fixed; /* Use fixed or absolute positioning */
+    top: 6.5%; /* Align vertically at the middle */
+    right: 32.5%; /* Align to the right edge of the viewport */
+    transform: translateY(-50%); /* Adjust the position to be truly centered vertically */
+    width: 33%; /* Optional: Set a specific width */
+    height: 15%; /* Optional: Set a specific height */
+    background-color: #f9f3d2; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    background-image: url('../assets/images/addfriend.png'); /* Replace with the path to your image */
+    background-size: 20%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
+    border: solid black;
+    border-radius: 0px 0px 0px 0px;
+    cursor: pointer;
+}
+
+.Friend-Request-Button{
+    display: none;
+    position: fixed; /* Use fixed or absolute positioning */
+    top: 6.5%; /* Align vertically at the middle */
+    right: 0; /* Align to the right edge of the viewport */
+    transform: translateY(-50%); /* Adjust the position to be truly centered vertically */
+    width: 33%; /* Optional: Set a specific width */
+    height: 15%; /* Optional: Set a specific height */
+    background-color: #f9f3d2; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    background-image: url('../assets/images/message-friend-request.png'); /* Replace with the path to your image */
+    background-size: 20%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
+    border: solid black;
+    border-radius: 0px 10px 0px 0px;
+    cursor: pointer;
+}
+
+.Add-Friend{
+    display: none;
+    position: fixed;
+    top: 20%;
+    text-decoration-color: black;
+
+}
+
+.Request-Submit{
+    background-image: url('../assets/images/submit.png');
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: 70%;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+}
+
+.Friend-List{
+    display: block;
+    position: relative;
+    top: 20%;
+}
+
+.friend {
+    background-color: #f0f0f0; /* Light grey background */
+    padding: 10px; /* Padding around the text */
+    margin-bottom: 8px; /* Space between each friend div */
+    text-align: left; /* Center-align the text */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    color: #333; /* Dark grey text color */
+    box-sizing: border-box;
+    width: 100%;
+    height: 1%;
+
+}
+
+.View-Island{
+    transform: translateY(-45%); /* Center it vertically */
+    transform: translateX(300%);
+    width: 20%; /* Set a specific width */
+    height: 5%; /* Set a specific height */
+    background-color: white; /* Visibility */
+    padding: 10px;
+    text-align: center;
+    border-color: black;
+}
+
+.Request-List{
+    display: none;
+    position: relative;
+    top: 20%;
+}
+
+.request{
+    background-color: #f0f0f0; /* Light grey background */
+    padding: 10px; /* Padding around the text */
+    margin-bottom: 8px; /* Space between each friend div */
+    text-align: left; /* Center-align the text */
+    border-radius: 5px; /* Rounded corners */
+    font-size: 16px; /* Font size */
+    color: #333; /* Dark grey text color */
+    box-sizing: border-box;
+    width: 100%;
+    height: 1%;
+}
+
+.Accept-Request{
+    transform: translateY(-45%); /* Center it vertically */
+    transform: translateX(700%);
+    width: 10%; /* Set a specific width */
+    height: 10%; /* Set a specific height */
+    background-color: white; /* Visibility */
+    padding: 10px;
+    text-align: center;
+    border-color: black;
+    background-image: url('../assets/images/accept.png'); /* Replace with the path to your image */
+    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
+}
+.Reject-Request{
+    transform: translateY(-45%); /* Center it vertically */
+    transform: translateX(700%);
+    width: 10%; /* Set a specific width */
+    height: 10%; /* Set a specific height */
+    background-color: white; /* Visibility */
+    padding: 10px;
+    text-align: center;
+    border-color: black;
+    background-image: url('../assets/images/reject.png'); /* Replace with the path to your image */
+    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
+}

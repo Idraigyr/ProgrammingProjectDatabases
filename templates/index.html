@@ -101,6 +101,23 @@
       </div>
     </div>
 
+    <!-- Friends -->
+    <button id="FriendsButton" class="Friends-Button"></button>
+
+    <div id="Friends" class="Friends-Content">
+        <button id="friendListButton" class="Friend-List-Button"></button>
+        <button id="friendAddButton" class="Friend-Add-Button"></button>
+        <button id="friendRequestButton" class="Friend-Request-Button"></button>
+        <div id="addFriend" class="Add-Friend">
+            <form>
+                <label for="usernameFriend" style="color:black;">Username:</label>
+                <input type="text" id="usernameFriend" name="usernameFriend">
+                <input type="submit" id="requestSubmit" class="Request-Submit" value="">
+            </form>
+        </div>
+        <div id="listFriend" class="Friend-List"></div>
+        <div id="listRequests" class="Request-List"></div>
+    </div>
 
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"

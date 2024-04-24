@@ -9,6 +9,7 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import "./external/LevelUp.js"
+import "./Menus/friends.js"
 import {OrbitControls} from "three-orbitControls";
 import {API_URL, islandURI, playerURI, placeableURI, postRetries} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
