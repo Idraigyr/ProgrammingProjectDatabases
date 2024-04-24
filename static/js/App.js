@@ -210,6 +210,8 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
+                // Update static mesh
+                this.collisionDetector.generateColliderOnWorker();
                 // Get if the cell is occupied
                 let buildOnCell = island.getCellIndex(pos);
                 if (buildOnCell !== building.cellIndex) return;
