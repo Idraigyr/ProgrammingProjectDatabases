@@ -2,6 +2,7 @@ import logging
 
 from flask import request, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
+from flask_jwt_extended.exceptions import NoAuthorizationError
 from flask_socketio import Namespace
 from jwt import ExpiredSignatureError
 
@@ -34,6 +35,9 @@ class ForwardingNamespace(Namespace):
             verify_jwt_in_request()
         except ExpiredSignatureError:
             self._log.error(f"JWT token expired. Refusing to connect")
+            return
+        except NoAuthorizationError:
+            self._log.error(f"JWT token missing. Refusing to connect")
             return
         except Exception:
             self._log.error(f"Could not verify JWT token. Refusing to connect", exc_info=True)

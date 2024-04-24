@@ -41,25 +41,25 @@ class Player(current_app.db.Model):
 
     # entity_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player_entity.entity_id'))
     # entity: Mapped["PlayerEntity"] = relationship("PlayerEntity", foreign_keys=[entity_id], back_populates="player")
-    entity: Mapped['PlayerEntity'] = relationship(back_populates="player")
+    entity: Mapped['PlayerEntity'] = relationship(back_populates="player", cascade="all, delete-orphan", uselist=False)
 
     # lazy=False means that the spells are loaded when the player is loaded
     spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
 
     # The island of the player
-    island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True)
+    island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True, cascade="all, delete-orphan")
 
     # User settings
-    user_settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="player", single_parent=True)
+    user_settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="player", single_parent=True, cascade="all, delete-orphan")
 
     # The gem inventory of the player
-    gems: Mapped[List["Gem"]] = relationship("Gem")
+    gems: Mapped[List["Gem"]] = relationship("Gem", cascade="all, delete-orphan")
 
     # The unlocked blueprints of the player
     blueprints: Mapped[List["Blueprint"]] = relationship("Blueprint", secondary=blueprint_association_table)
 
     # The player chat messages
-    chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user")
+    chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user", cascade="save-update")
 
     def __init__(self, user_profile=None, crystals: int = 0, mana: int = 0, xp: int = None, last_logout: DateTime = None, last_login: DateTime = None):
         """

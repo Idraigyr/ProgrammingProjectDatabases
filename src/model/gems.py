@@ -25,7 +25,7 @@ class Gem(current_app.db.Model):
     player_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player.user_profile_id'), nullable=True)
 
     # attributes: Mapped[list] = relationship('GemAttribute', secondary=association_table)
-    attributes_association = relationship("GemAttributeAssociation")
+    attributes_association = relationship("GemAttributeAssociation", cascade="all, delete-orphan")
 
     # Using association proxy to access multiplier value
     # Ignore the type warning, it's wrong

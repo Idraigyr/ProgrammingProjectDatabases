@@ -13,13 +13,13 @@ class UserProfile(current_app.db.Model):
     """
     __tablename__ = "user_profile"
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
-    player: Mapped["Player"] = relationship("Player", back_populates="user_profile")
+    player: Mapped["Player"] = relationship("Player", back_populates="user_profile", cascade="all, delete-orphan")
     firstname: Mapped[str] = Column(String(255), nullable=False)
     lastname: Mapped[str] = Column(String(255), nullable=False)
     username: Mapped[str] = Column(String(255), unique=True)
     admin: Mapped[bool] = Column(Boolean(), default=False, server_default="false", nullable=False)
 
-    credentials: Mapped[Credentials] = relationship(back_populates="user_profile", uselist=False)
+    credentials: Mapped[Credentials] = relationship(back_populates="user_profile", uselist=False, cascade="all, delete-orphan")
 
     def __init__(self, username: str, firstname: str, lastname: str, credentials: Credentials, admin: bool = False):
         """
