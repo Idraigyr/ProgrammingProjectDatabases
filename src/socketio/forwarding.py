@@ -3,6 +3,7 @@ import logging
 from flask import request, current_app
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity
 from flask_socketio import Namespace
+from jwt import ExpiredSignatureError
 
 # Set this to True if you want to broadcast forwarded the message to the sender as well
 # It will ignore the original sender session, but will broadcast to all other sessions
@@ -29,7 +30,15 @@ class ForwardingNamespace(Namespace):
         """
         sid = request.sid
 
-        verify_jwt_in_request()
+        try:
+            verify_jwt_in_request()
+        except ExpiredSignatureError:
+            self._log.error(f"JWT token expired. Refusing to connect")
+            return
+        except Exception:
+            self._log.error(f"Could not verify JWT token. Refusing to connect", exc_info=True)
+            return
+
         user_id = get_jwt_identity()
         self._log.info(f"Client connected: user_id={user_id}, sid={sid}")
 
