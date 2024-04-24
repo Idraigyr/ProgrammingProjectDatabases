@@ -7,6 +7,13 @@ import {pushCollidedObjects} from "../../../helpers.js";
  */
 export class Character extends Entity{
     #rotation;
+
+    /**
+     * Constructor for the Character
+     * @param {Object} params
+     * @property {number} phi - the current horizontal rotation in radians
+     * @param params
+     */
     constructor(params) {
         super(params);
         if(this.constructor === Character){

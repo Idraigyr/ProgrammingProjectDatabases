@@ -1,8 +1,7 @@
 import * as THREE from "three";
 import {BuildSpell, EntitySpell, HitScanSpell, InstantSpell} from "../Model/Spell.js";
 import {Subject} from "../Patterns/Subject.js";
-import {slot1Key, slot2Key, slot3Key, slot4Key, slot5Key} from "../configs/Keybinds.js";
-import {convertWorldToGridPosition} from "../helpers.js";
+import {convertWorldToGridPosition, mapDegreesToNearestQuarter} from "../helpers.js";
 
 /**
  * Class for the SpellCaster
@@ -154,7 +153,6 @@ export class SpellCaster extends Subject{
         if(this.currentObject){
             this.currentObject.position = this.previousSelectedPosition;
             this.currentObject.ready = true;
-            console.log("Dropped current object: ", this.currentObject);
         }
         this.previousSelectedPosition = null;
         this.currentObject = null;
@@ -189,6 +187,15 @@ export class SpellCaster extends Subject{
         this.#wizard.updateCooldowns(deltaTime);
     }
 
+    createInteractEvent(position){
+        return new CustomEvent("interact", {
+            detail: {
+                position: position,
+                rotation: mapDegreesToNearestQuarter(this.#wizard.phi*180/Math.PI)
+            }}
+        );
+    }
+
     /**
      * dispatch event for interacting with the world
      * @param event
@@ -197,7 +204,7 @@ export class SpellCaster extends Subject{
         if(this.multiplayer) return;
         const hit = this.checkRaycaster();
         if(hit){
-            this.dispatchEvent(new CustomEvent("interact", {detail: {position: hit}}));
+            this.dispatchEvent(this.createInteractEvent(hit));
         }
     }
 
@@ -224,6 +231,7 @@ export class SpellCaster extends Subject{
 
             if(this.#wizard.getCurrentSpell().worldHitScan){
                 castPosition = this.checkRaycaster();
+                if(!castPosition) return;
             }
 
             if(this.#wizard.getCurrentSpell().spell instanceof EntitySpell){
@@ -241,7 +249,7 @@ export class SpellCaster extends Subject{
             }  else if (this.#wizard.getCurrentSpell() instanceof BuildSpell && !this.multiplayer) {
                 this.dispatchEvent(this.createCastBuildSpellEvent(this.#wizard.getCurrentSpell(), {
                     position: castPosition,
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation) //TODO: why do we give rotation with this event???
+                    rotation: mapDegreesToNearestQuarter(this.#wizard.phi*180/Math.PI)
                 }));
                 if(!this.currentObject){
                     this.#wizard.cooldownSpell();

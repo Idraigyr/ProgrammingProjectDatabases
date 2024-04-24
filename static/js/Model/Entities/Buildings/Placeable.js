@@ -45,6 +45,7 @@ export class Placeable extends Entity{
             // gems: []
 
         };
+        console.log(this.rotation/90);
         for(const gem of this.gems){
             //obj.gems.push(gem.formatPOSTData(userInfo));
         }
@@ -118,10 +119,12 @@ export class Placeable extends Entity{
 
     /**
      * Create an event for updating the rotation
+     * @param {number} degrees the rotation to update to
+     * @fires {CustomEvent<{rotation: THREE.Quaternion}>} the event
      */
-    // TODO: move it entity class and add degrees as parameter (default 90)
-    rotate(){
-        this.rotation += 90;
+    rotate(degrees = 90){
+        this.rotation += degrees;
+        this.rotation = Math.round(this.rotation/90)*90;
         this.rotation %= 360;
         // Create quaternion from rotation
         let quaternion = new THREE.Quaternion();

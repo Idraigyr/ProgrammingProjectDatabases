@@ -4,7 +4,6 @@ import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -164,7 +163,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -180,14 +179,17 @@ export class Factory{
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
+        model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
+        model.addEventListener("updateRotation",view.updateRotation.bind(view));
+
+        model.rotate(params.rotation);
+
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);
         this.scene.add(view.boxHelper);
 
-        model.addEventListener("updatePosition",view.updatePosition.bind(view));
-        model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
-        model.addEventListener("updateRotation",view.updateRotation.bind(view));
         this.viewManager.addPair(model, view);
 
         //TODO: withTimer: (DONE?)
@@ -249,7 +251,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, withTimer: false, id: building.id}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type, position: position, rotation: building.rotation, withTimer: false, id: building.id}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

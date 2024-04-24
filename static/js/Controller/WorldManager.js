@@ -19,6 +19,7 @@ export class WorldManager{
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
         this.currentPos = null;
+        this.currentRotation = 0;
 
         this.postRequests = [];
 
@@ -47,7 +48,7 @@ export class WorldManager{
                 island.buildings.push({
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
-                    rotation: 0,
+                    rotation: building.rotation*90,
                     id: building.placeable_id
                 });
             }
@@ -82,7 +83,6 @@ export class WorldManager{
     }
 
     async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
-        console.log("importing island");
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
         if(currentIslandIsCenter){
@@ -140,7 +140,6 @@ export class WorldManager{
      * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
      */
     placeBuilding(event){
-        console.log("placeBuilding", event);
         const buildingName = event.detail.buildingName;
         if(!this.userInfo.unlockedBuildings.includes(buildingName) || this.userInfo.buildingsPlaced > this.userInfo.maxBuildings){
             console.log("cant place building you have not unlocked or you have reached the max number of buildings");
@@ -150,7 +149,7 @@ export class WorldManager{
             console.log("max buildings", this.userInfo.maxBuildings);
         }
         if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
-            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
+            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
             if(placeable){
                 const requestIndex = this.postRequests.length;
                 if(this.persistent){
@@ -179,7 +178,6 @@ export class WorldManager{
      * Adds a new island to the world to spawn minions (single player only)
      */
     addSpawningIsland(){
-        console.log("adding spawning island");
         //TODO: get a random position for the island which lies outside of the main island
         let position = {x: -9, y: 0, z: -8};
         convertGridIndexToWorldPosition(position)
@@ -187,7 +185,6 @@ export class WorldManager{
 
         //create an island
         let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 3, length: 3, team: 1});
-        console.log("position", island.position);
         // //create a bridge
         // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
 
@@ -209,7 +206,7 @@ export class WorldManager{
      */
     async collectCrystals(){
         const building = this.world.getBuildingByPosition(this.currentPos);
-        console.log("collect from min - worldManager", building);
+        console.log("collect from mine - worldManager", building);
         if(building){
             this.userInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.userInfo.getCurrentTime())));
         } else {
@@ -293,6 +290,7 @@ export class WorldManager{
     sendPOST(uri, entity, retries, requestIndex){
         this.insertPendingPostRequest(entity);
         try {
+            console.log("sending POST request: ", entity);
             const island = this.world.getIslandByPosition(entity.position);
             if(!island){ //TODO: add team check/ check if island is player's
                 throw new Error("No island found at position");

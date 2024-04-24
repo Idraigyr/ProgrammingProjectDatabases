@@ -34,7 +34,6 @@ export class AssetManager{
                 if(charModel){
                     //TODO: move out of manager and into loader
                     if(this.buildingKeys.includes(key)){
-                        console.log("correcting scale for", key);
                         correctRitualScale(charModel);
                         const box = new THREE.Box3().setFromObject(charModel);
                         box.setFromObject(charModel,true);

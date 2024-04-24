@@ -61,6 +61,7 @@ export class MultiplayerController{
             this.matchmaking = false;
             await this.endMatchMaking();
         } else {
+            //only start matchmaking if player has a warrior hut? and has enough stakes?
             this.matchmaking = true;
             await this.startMatchMaking();
         }
@@ -104,8 +105,7 @@ export class MultiplayerController{
 
         //construct 2nd player object and island object and add to world
         await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID < this.opponentInfo.userID);
-        console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
-        console.log(this.worldManager.world.islands);
+        // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
         const opponent = this.worldManager.addOpponent({position: new THREE.Vector3(0,0,0), mana: 100, maxMana: 100, team: 1});
         this.peerController = new Controller.PeerController({peer: opponent});
 

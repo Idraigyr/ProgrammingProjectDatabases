@@ -1,8 +1,6 @@
-import {convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
-import {Bridge} from "./Entities/Foundations/Bridge.js";
-import * as THREE from "three";
-import {MinionSpawner} from "./Spawners/MinionSpawner.js";
+import {gridCellSize} from "../configs/ViewConfigs.js";
 
 /**
  * World class that contains all the islands and the player
@@ -47,8 +45,10 @@ export class World{
      */
     getIslandByPosition(position){
         for(const island of this.islands){
-            //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2 (depends on implementation of Foundation class)
-            if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
+            if(position.x > island.min.x - gridCellSize/2 &&
+                position.x < island.max.x + gridCellSize/2 &&
+                position.z > island.min.z - gridCellSize/2 &&
+                position.z < island.max.z + gridCellSize/2){
                 return island;
             }
         }
@@ -86,10 +86,11 @@ export class World{
      *
      * @param buildingName
      * @param {THREE.Vector3} position - needs to be in world/grid coordinates
+     * @param {Number} rotation - 0, 90, 180, 270
      * @param {Boolean} withTimer
      * @return {Building || null} - the building that was added to the world
      */
-    addBuilding(buildingName, position, withTimer = false){
+    addBuilding(buildingName, position, rotation = 0, withTimer = false){
         const island = this.getIslandByPosition(position);
         if(island.team !== this.player.team){
             console.error("cannot add building to enemy island");
@@ -101,6 +102,7 @@ export class World{
             const building = this.factory.createBuilding({
                 buildingName: buildingName,
                 position: position,
+                rotation: rotation,
                 withTimer: withTimer,
             });
             island.addBuilding(building);

@@ -4,8 +4,8 @@
  */
 export const TIMEOUT_SEC = 5;
 
-export let horizontalSensitivity = 0.5;
-export let verticalSensitivity = 0.3;
+export let horizontalSensitivity = 0.25;
+export let verticalSensitivity = 0.15;
 export let zoomSensitivity = 1;
 
 export const movementSpeed = 9;

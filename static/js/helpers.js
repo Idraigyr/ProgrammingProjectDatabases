@@ -351,6 +351,11 @@ export function getOccupiedCells(building){
     return cells;
 }
 
+
+export const mapDegreesToNearestQuarter = function(degrees){
+    return Math.round((degrees < 0 ? 360 + degrees%360 : degrees%360)/90)*90;
+}
+
 /**
  * Correct the scale of the object to fit the grid cell size
  * @param object - the object to correct the scale of

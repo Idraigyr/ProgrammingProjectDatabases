@@ -219,10 +219,11 @@ class App {
 
             } else if(buildingNumber === buildTypes.getNumber("empty")){ //open buildmenu
                 this.worldManager.currentPos = event.detail.params.position;
+                this.worldManager.currentRotation = event.detail.params.rotation;
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
                 this.inputManager.exitPointerLock();
 
-            } else if (this.spellCaster.currentObject) { //What is this block used for??? placing back in same spot after rotating?
+            } else if (this.spellCaster.currentObject) { //What is this code block used for??? placing back in same spot after rotating?
                 // Get selected building
                 const building = this.spellCaster.currentObject;
                 // Update bounding box of the building
@@ -235,6 +236,10 @@ class App {
                 // Get if the cell is occupied
                 let buildOnCell = island.getCellIndex(pos);
                 if (buildOnCell !== building.cellIndex) return;
+                // Send put request to the server if persistence = true
+                if(this.worldManager.persistent){
+                    this.worldManager.sendPUT(placeableURI, building, postRetries);
+                }
                 // You have placed the same building on the same cell, so remove info from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
@@ -283,6 +288,7 @@ class App {
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
+            this.worldManager.currentRotation = event.detail.rotation;
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
@@ -385,7 +391,6 @@ class App {
             // Get the price of the building
             let nameInDB = this.menuManager.ctorToDBName(ctorName);
             const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
-            console.log(this.menuManager.infoFromDatabase);
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
                 console.log("Not enough crystals");
@@ -395,7 +400,7 @@ class App {
                 // Subtract the price from the player's crystals
                 this.playerInfo.changeCrystals(-price);
             }
-            this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
+            this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
         this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
         this.playerInfo.setLevelStats();

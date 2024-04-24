@@ -23,6 +23,13 @@
     --play-button-width: 120px;
     --menu-header-height: 10%;
     --menu-title-width: 50%; /* get width of .menu-title class */
+    -webkit-user-select: none; /* Safari */
+    user-select: none; /* Standard syntax */
+}
+
+.prevent-select {
+  -webkit-user-select: none; /* Safari */
+  user-select: none; /* Standard syntax */
 }
 
 #menuContainer{

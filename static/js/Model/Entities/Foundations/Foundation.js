@@ -104,7 +104,6 @@ export class Foundation extends Entity{
         this.min = min;
         this.max = max;
         this.position = this.#getCenterPosition();
-        console.log("foundation center:", this.position);
         this.grid = this.#calculateGridFromFoundations(foundations);
     }
 
