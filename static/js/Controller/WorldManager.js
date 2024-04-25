@@ -158,6 +158,16 @@ export class WorldManager{
         }
     }
 
+    async addCrystals(){
+        console.log("added 10 crystals");
+        this.userInfo.changeCrystals(10);
+    }
+
+    async removeCrystals(){
+        console.log("removed 10 crystals");
+        this.userInfo.changeCrystals(-10);
+    }
+
     /**
      * Exports the world to the server
      * @returns {Promise<void>} - a promise that resolves when the world has been exported

@@ -11,6 +11,7 @@ export class ItemManager {
     constructor() {
         this.items = []; // map building -> items or property in item
         this.menuManager = null;
+        this.gemId = 0;
     }
 
     // Equip a gem into a building
@@ -27,6 +28,70 @@ export class ItemManager {
         let item = this.#getItemById(gemId);
         // Add the gem to the building
         item.equippedIn = buildingId;
+    }
+
+    // Generate a random number for gem power
+    #generateRandomNumber() {
+        // lambda parameter for the exponential distribution
+        const lambda = 0.03;
+
+        const randomNumber = -Math.log(Math.random()) / lambda;
+
+        // set random number to the range [1, 100]
+        const scaledNumber = Math.floor(randomNumber) % 100 + 1;
+
+        return scaledNumber;
+    }
+
+    createRandomGemItem(){
+        let gemItem;
+        let power = this.#generateRandomNumber();
+        if(power < 20){
+            gemItem = {
+                item: { name: "amberGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "amberGem" + power, getDisplayName: () => "Amber" },
+                icon: { src: '/static/assets/images/gems/amberGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 40){
+            gemItem = {
+                item: { name: "rubyGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "rubyGem" + power, getDisplayName: () => "Ruby" },
+                icon: { src: '/static/assets/images/gems/rubyGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 55){
+            gemItem = {
+                item: { name: "sapphireGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "sapphireGem" + power, getDisplayName: () => "Sapphire" },
+                icon: { src: '/static/assets/images/gems/sapphireGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 70){
+            gemItem = {
+                item: { name: "diamondGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "diamondGem" + power, getDisplayName: () => "Diamond" },
+                icon: { src: '/static/assets/images/gems/diamondGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else if(power < 85){
+            gemItem = {
+                item: { name: "emeraldGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "emeraldGem" + power, getDisplayName: () => "Emerald" },
+                icon: { src: '/static/assets/images/gems/emeraldGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+        else{
+            gemItem = {
+                item: { name: "amethystGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "amethystGem" + power, getDisplayName: () => "Amethyst" },
+                icon: { src: '/static/assets/images/gems/amethystGem.png', width: 50, height: 50 },
+                description: "Power: " + power
+            }
+        }
+
+        this.gemId++;
+        this.menuManager.addItem(gemItem);
+        this.createGem({detail: gemItem});
     }
 
     /**

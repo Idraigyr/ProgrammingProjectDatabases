@@ -97,7 +97,7 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".play-button").addEventListener("click", () => console.log("play button clicked"));
         }
         if(menu instanceof FusionTableMenu){
-            menu.element.querySelector(".fuse-button").addEventListener("click", () => this.simulateLoading());
+            menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
         }
         if(menu instanceof ListMenu){
             menu.element.addEventListener("drop", this.drop.bind(this));
@@ -124,9 +124,18 @@ export class MenuManager extends Subject{
     }
 
     // loading bar
-    simulateLoading() {
+    FusionClicked() {
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
+          this.dispatchEvent(this.createFuseEvent());
+          // TODO: add timer
+          progressBar.style.width = `${this.loadingprogress}%`;
+          this.inputCrystalParams.current = 0;
+          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+
+          /*
+          // loading bar + reset features to be removed
           const progressBar = document.querySelector('.loading-bar');
 
           const intervalId = setInterval(() => {
@@ -145,7 +154,12 @@ export class MenuManager extends Subject{
                   this.toggleAnimation(false);
               }
           }, 100); // Total time to load bar
+          */
       }
+    }
+
+    createFuseEvent() {
+        return new CustomEvent("startFusion");
     }
 
     // Function to start or stop the fusing arrow animation based on condition
@@ -266,13 +280,13 @@ export class MenuManager extends Subject{
      * @param event
      */
     dispatchAddEvent(event){
-        console.log("Adding crystals to fuse stakes");
         if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
+            console.log("Adding 10 crystals to fuse stakes");
             this.inputCrystalParams.current += 10;
+            this.dispatchEvent(this.createRemoveEvent());
         }
         this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
         this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
-        this.dispatchEvent(this.createAddEvent());
     }
 
     /**
@@ -280,13 +294,13 @@ export class MenuManager extends Subject{
      * @param event
      */
     dispatchRemoveEvent(event){
-        console.log("Removing crystals to fuse stakes");
         if(this.inputCrystalParams.current-10 >= 0 && this.loadingprogress === 0){
+            console.log("Removing 10 crystals of fuse stakes");
             this.inputCrystalParams.current -= 10;
+            this.dispatchEvent(this.createAddEvent());
         }
         this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
         this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
-        this.dispatchEvent(this.createRemoveEvent());
     }
 
     /**
@@ -576,56 +590,6 @@ export class MenuManager extends Subject{
         ];
 
         this.addItems(items);
-    }
-
-    #createRandomGemItem(){
-        const power = this.#generateRandomNumber();
-        let gemItem;
-        if(power < 20){
-            gemItem = {
-                item: { name: "amberGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "amberGem" + power, getDisplayName: () => "Amber" },
-                icon: { src: '/static/assets/images/gems/amberGem.png', width: 50, height: 50 },
-                description: "Power: " + power
-            }
-        }
-        else if(power < 40){
-            gemItem = {
-                item: { name: "rubyGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "rubyGem" + power, getDisplayName: () => "Ruby" },
-                icon: { src: '/static/assets/images/gems/rubyGem.png', width: 50, height: 50 },
-                description: "Power: " + power
-            }
-        }
-        else if(power < 55){
-            gemItem = {
-                item: { name: "sapphireGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "sapphireGem" + power, getDisplayName: () => "Sapphire" },
-                icon: { src: '/static/assets/images/gems/sapphireGem.png', width: 50, height: 50 },
-                description: "Power: " + power
-            }
-        }
-        else if(power < 70){
-            gemItem = {
-                item: { name: "diamondGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "diamondGem" + power, getDisplayName: () => "Diamond" },
-                icon: { src: '/static/assets/images/gems/diamondGem.png', width: 50, height: 50 },
-                description: "Power: " + power
-            }
-        }
-        else if(power < 85){
-            gemItem = {
-                item: { name: "emeraldGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "emeraldGem" + power, getDisplayName: () => "Emerald" },
-                icon: { src: '/static/assets/images/gems/emeraldGem.png', width: 50, height: 50 },
-                description: "Power: " + power
-            }
-        }
-        else{
-            gemItem = {
-                item: { name: "amethystGem", id: this.gemId, belongsIn: "GemsMenu", getItemId: () => "amethystGem" + power, getDisplayName: () => "Amethyst" },
-                icon: { src: '/static/assets/images/gems/amethystGem.png', width: 50, height: 50 },
-                description: "Power: " + power
-            }
-        }
-
-        this.gemId++;
-        this.addItem(gemItem);
     }
 
     #createSpellItems(){

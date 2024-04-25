@@ -272,6 +272,10 @@ class App {
         //visualise camera line -- DEBUG STATEMENTS --
     }
 
+    createRandomGem(){
+
+    }
+
     /**
      * Updates the camera aspect ratio and the renderer size when the window is resized
      */
@@ -355,6 +359,10 @@ class App {
 
 
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
+        this.menuManager.addEventListener("add", this.worldManager.addCrystals.bind(this.worldManager));
+        this.menuManager.addEventListener("remove", this.worldManager.removeCrystals.bind(this.worldManager));
+
+        this.menuManager.addEventListener("startFusion", this.itemManager.createRandomGemItem.bind(this.itemManager));
 
         this.menuManager.addEventListener("build", (event) => {
             this.menuManager.hideMenu();
