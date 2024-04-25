@@ -240,7 +240,8 @@ export class SpellCaster extends Subject{
                     horizontalRotation: this.#wizard.phi*180/Math.PI + 90,
                     //TODO: base direction on camera not on player direction
                     direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
-                    team: this.#wizard.team
+                    team: this.#wizard.team,
+                    playerID: this.#wizard.id
                 }));
                 this.#wizard.cooldownSpell();
             } else if(this.#wizard.getCurrentSpell().spell instanceof InstantSpell){

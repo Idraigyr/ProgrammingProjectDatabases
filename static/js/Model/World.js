@@ -10,30 +10,55 @@ export class World{
         this.factory = params.factory;
         this.spellFactory = params.SpellFactory;
         this.collisionDetector = params.collisionDetector;
-        this.islands = [];
+        this.islands = []; //TODO: rename to this.islands to this.foundations and all related properties/methods
         this.player = null;
         this.entities = [];
         this.spawners = {minions: [], spells: []};
     }
 
+    /**
+     * add a foundation to the world
+     * @param {Foundation} island
+     */
     addIsland(island){
-        //TODO: if this.islands is not empty, place the new island in a way that it doesn't overlap with the existing islands
-        //+ add a bridge already?
         this.islands.push(island);
     }
 
+    /**
+     * Add an entity to the world
+     * @param {Entity} entity
+     */
     addEntity(entity){
         this.entities.push(entity);
     }
 
-    addPlayer(player){
+    /**
+     * set the player of the world
+     * @param player
+     */
+    setPlayer(player){
         this.player = player;
     }
 
+    /**
+     * Add a minion spawner to the world
+     * @param {MinionSpawner} spawner
+     */
     addMinionSpawner(spawner){
         this.spawners.minions.push(spawner);
     }
 
+    /**
+     * Clear all minion spawners
+     */
+    clearMinionSpawners(){
+        this.spawners.minions = [];
+    }
+
+    /**
+     * Add a spell spawner to the world
+     * @param {SpellSpawner} spawner
+     */
     addSpellSpawner(spawner){
         this.spawners.spells.push(spawner);
     }

@@ -10,13 +10,8 @@ import "./external/socketio.js"
 import "./external/chatBox.js"
 import {OrbitControls} from "three-orbitControls";
 import {
-    API_URL,
-    islandURI,
-    playerURI,
     placeableURI,
     postRetries,
-    playerProfileURI,
-    matchMakingURI
 } from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
@@ -25,7 +20,6 @@ import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
-import {UserInfo} from "./Controller/UserInfo.js";
 import {settings} from "./Menus/settings.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -126,7 +120,7 @@ class App {
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
 
-        this.multiplayerController = new Controller.MultiplayerController({});
+        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
 
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
@@ -333,6 +327,10 @@ class App {
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
+    }
+
+    togglePhysicsUpdates(){
+        this.simulatePhysics = !this.simulatePhysics;
     }
 
     /**

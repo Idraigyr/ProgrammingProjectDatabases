@@ -52,7 +52,7 @@ export class Factory{
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 1, buildingID: params.buildingID});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 0, buildingID: params.buildingID});
         let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135});
         //add weapon to hand
         view.charModel.traverse((child) => {
@@ -85,7 +85,7 @@ export class Factory{
 
     /**
      * Creates player model and view
-     * @param {{position: THREE.Vector3, maxMana: number, mana: number}} params
+     * @param {{position: THREE.Vector3, maxMana: number, mana: number, team: 0 | 1} | {position: THREE.Vector3, maxMana: number, mana: number}} params
      * @returns {Wizard}
      */
     createPlayer(params){
@@ -94,7 +94,7 @@ export class Factory{
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana});
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
 
         this.scene.add(view.charModel);
@@ -124,11 +124,10 @@ export class Factory{
 
         this.scene.add(view.initScene());
         view.boundingBox.setFromObject(view.charModel);
-        //check Foundation class for new min and max specification
-        // bridgeModel.min = view.boundingBox.min.clone();
-        // bridgeModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
 
+        console.log("bridgeModel", bridgeModel);
+        console.log("view", view);
         this.viewManager.addPair(bridgeModel, view);
         return bridgeModel;
     }
@@ -147,9 +146,6 @@ export class Factory{
         this.scene.add(view.initScene());
 
         view.boundingBox.setFromObject(view.charModel);
-        //check Foundation class for new min and max specification
-        // islandModel.min = view.boundingBox.min.clone();
-        // islandModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
 
         islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));

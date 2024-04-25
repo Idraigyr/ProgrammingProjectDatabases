@@ -59,7 +59,7 @@ export class Foundation extends Entity{
     }
 
     /**
-     * calculates the center position of the foundation based on the min and length of the foundation - min and length need ti be initialized
+     * calculates the center position of the foundation based on the min and length of the foundation - min and length need to be initialized
      * @return {THREE.Vector3}
      */
     #getCenterPosition(){
@@ -100,7 +100,6 @@ export class Foundation extends Entity{
         const {width, length, min, max} = this.#calculateWidthAndLength(foundations);
         this.width = width;
         this.length = length;
-        //TODO: augment getCenterPosition so that position is based on position of the foundations
         this.min = min;
         this.max = max;
         this.position = this.#getCenterPosition();
@@ -194,6 +193,17 @@ export class Foundation extends Entity{
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
         return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
+    }
+
+
+    //TODO: is temp for helping with testing
+    occupyCell(worldPosition, char){
+        //check if parameter of returnWorldToGridIndex is correct
+        let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
+        const index = (x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2);
+        // this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
+        this.grid[index] = char;
+        return index;
     }
 
 

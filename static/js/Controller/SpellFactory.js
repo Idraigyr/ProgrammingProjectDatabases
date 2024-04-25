@@ -129,8 +129,9 @@ export class SpellFactory{
      */
     #createShield(details){
         const spell = new details.type();
+        const target = this.viewManager.getPlayerModelByID(details.params.playerID);
         let model = new Model.FollowPlayer({
-            target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
+            target: target, //TODO: change this implementation, don't keep player as a property
             spellType: spell,
             position: details.params.position,
             duration: spell.spell.duration,

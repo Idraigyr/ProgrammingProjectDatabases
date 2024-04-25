@@ -22,9 +22,6 @@ export class Island extends Foundation{
      * @returns {number} - the index of the cell
      */
     occupyCell(worldPosition, dbType){
-        if(dbType === "altar_building"){
-            console.log("altar_building");
-        }
         //check if parameter of returnWorldToGridIndex is correct
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         const index = (x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2);

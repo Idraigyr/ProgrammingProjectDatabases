@@ -13,8 +13,8 @@ import {WarriorHut} from "./Buildings/WarriorHut.js";
 import {BuildingPreview} from "./BuildingPreview.js";
 import {Minion} from "./Characters/Minion.js";
 import {Watch} from "./Watch.js";
-import {Bridge} from "../Model/Entities/Foundations/Bridge.js";
 import {Wall} from "./Buildings/Wall.js";
+import {Bridge} from "./Bridge.js";
 
 /**
  * View namespace

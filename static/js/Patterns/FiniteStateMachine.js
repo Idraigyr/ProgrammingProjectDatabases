@@ -1,17 +1,12 @@
-import {
-    DefaultAttackState,
-    IdleState,
-    RunForwardState, TakeDamageState,
-    WalkBackWardState,
-    WalkForwardState
-} from "../Model/States/PlayerStates.js";
+import {Subject} from "./Subject.js";
 
 /**
  * @class FiniteStateMachine - A class that represents a finite state machine
  */
-export class FiniteStateMachine{
+export class FiniteStateMachine extends Subject{
     #states = {};
-    constructor() {
+    constructor(params) {
+        super(params);
         this.currentState = null;
     }
 
@@ -40,13 +35,18 @@ export class FiniteStateMachine{
      */
     setState(name){
         const prevState = this.currentState
-        if(prevState && prevState.name === name){
+        if(prevState){
             if(prevState.name === name) return;
             prevState.exit();
         }
 
         this.currentState = new this.#states[name](this);
         this.currentState.enter(prevState);
+        this.dispatchEvent(this.createUpdatedStateEvent());
+    }
+
+    createUpdatedStateEvent(){
+        return new CustomEvent("updatedState", {detail: {state: this.currentState.name}});
     }
 
     /**

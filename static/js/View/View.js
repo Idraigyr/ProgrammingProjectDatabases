@@ -14,7 +14,7 @@ export class IView {
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
 
-        this.boxHelper.visible = true; // TODO: set in env
+        this.boxHelper.visible = false; // TODO: set in env
     }
 
     /**
@@ -84,7 +84,6 @@ export class IView {
 export class IAnimatedView extends IView{
     constructor(params) {
         super(params);
-        this.animated = true;
         this.mixer = new THREE.AnimationMixer(params.charModel);
         this.animations = {};
     }

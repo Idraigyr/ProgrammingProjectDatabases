@@ -373,7 +373,6 @@ export class MinionController{
      */
     set worldMap(islands){
         this.#worldMap.setFromFoundations(islands);
-        const centerIndex = islands[0].grid.length - 1 /2;
         printFoundationGrid(this.#worldMap.grid, this.#worldMap.width, this.#worldMap.length);
 
         //TODO: move this somewhere else? if placed in foundation you wouldn't need to calculate the position of the nodes more than once
@@ -382,13 +381,13 @@ export class MinionController{
         }
 
         for(const island of islands){
-            if(island instanceof Island){
-                const altar = island.getBuildingsByType("altar_building")[0];
-                this.altars[island.team] = altar?.position ?? null;
-            }
+            if(!(island instanceof Island)) continue;
+            const altar = island.getBuildingsByType("altar_building")[0];
+            this.altars[island.team] = altar?.position ?? null;
         }
 
         for(const island of islands){
+            if(!(island instanceof Island)) continue;
             for(const WarriorHut of island.getBuildingsByType("warrior_hut")){
                 if(!this.altars[island.team === 0 ? 1 : 0]) break; //This is for singleplayer where the other team might not have an altar
                 this.paths[island.team][WarriorHut.id] = this.calculatePath(

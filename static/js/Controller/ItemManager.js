@@ -10,6 +10,9 @@ export class ItemManager {
      */
     constructor() {
         this.items = []; // map building -> items or property in item
+        this.spells = [];
+        this.gems = [];
+        this.stakes = [];
         this.menuManager = null;
     }
 

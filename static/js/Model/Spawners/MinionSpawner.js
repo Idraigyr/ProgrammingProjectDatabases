@@ -22,7 +22,7 @@ export class MinionSpawner extends Spawner{
             this.dispatchEvent(this._createSpawnEvent({
                 type: this.types[Math.floor(Math.random()*4)],
                 spawn: this.position,
-                buildingID: this.buildingID
+                buildingID: this.buildingID,
             }));
             this.timer = 0;
             this.counter++;

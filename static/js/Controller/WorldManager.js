@@ -1,7 +1,7 @@
 import {Model} from "../Model/ModelNamespace.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {convertGridIndexToWorldPosition} from "../helpers.js";
+import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
@@ -72,8 +72,110 @@ export class WorldManager{
         return {island: island, characters: characters};
     }
 
+    /**
+     * Calculates a random offset for the next island to be placed (currently only works for adding 1 island around 0,0,0)
+     * DO NOT USE FOR MULTIPLAYER! there is currently no information exchange between players about the position of the islands
+     * will almost always be used together with calculateBridgeMetrics so check that method for more information
+     * will always return an even number for x and z
+     * @param {number} maxDistance
+     * @param {number} minDistance
+     * @return {THREE.Vector3}
+     */
+    calculateRandomIslandOffset(minDistance = 15, maxDistance = 20){
+        let x = Math.floor(Math.random() * (maxDistance - minDistance) + minDistance);
+        let z = Math.floor(Math.random() * (maxDistance - minDistance) + minDistance);
+        if(x % 2 !== 0) {
+            if(x <= minDistance) x++;
+            else x--;
+        }
+        if(z % 2 !== 0) {
+            if(z <= minDistance) z++;
+            else z--;
+        }
+        return new THREE.Vector3(x*gridCellSize, 0, z*gridCellSize);
+    }
+
+    /**
+     * Calculates an offset for the next island to be placed (currently only works for adding 1 island around 0,0,0)
+     * @return {THREE.Vector3}
+     */
     calculateIslandOffset(){
-        return new THREE.Vector3(gridCellSize*(15+1), 0, 0); //TODO: replace 15 with island width and length (+3 for gap between islands)
+        return new THREE.Vector3((15+3)*gridCellSize, 0, 0);
+    }
+
+    /**
+     * calculates the position, width, and length of a bridge between two islands, positions of islands must be even, width and length of islands must be odd
+     * @param {Foundation} island1
+     * @param {Foundation} island2
+     * @param {number} padding - the number of grid cells to add to the bridge (only on the sides of the bridge, not the ends)
+     * @return {{width: number, length: number, position: THREE.Vector3}}
+     */
+    calculateBridgeMetrics(island1, island2, padding= 1){ //TODO: refactor/optimise this harrowing method
+        assert(island1.width % 2 === 1 && island1.length % 2 === 1, "island1 width and length must be odd");
+        assert(island2.width % 2 === 1 && island2.length % 2 === 1, "island2 width and length must be odd");
+        assert(island1.position.x%2 === 0 && island1.position.z%2 === 0, "island1 position must be even");
+        assert(island2.position.x%2 === 0 && island2.position.z%2 === 0, "island2 position must be even");
+
+        const bridgePosition = convertWorldToGridPosition(island1.position.clone().add(island2.position).divideScalar(2));
+
+        const xEdgeDiff = island1.position.x > island2.position.x ? island1.min.x - island2.max.x : island2.min.x - island1.max.x;
+        const zEdgeDiff = island1.position.z > island2.position.z ? island1.min.z - island2.max.z : island2.min.z - island1.max.z;
+
+        console.log("xEdgeDiff", xEdgeDiff);
+        console.log("zEdgeDiff", zEdgeDiff);
+        if(xEdgeDiff <= gridCellSize && zEdgeDiff <= gridCellSize){
+           throw new Error("islands are too close to each other");
+        }
+
+        const xDiff = island1.position.x - island2.position.x;
+        const zDiff = island1.position.z - island2.position.z;
+
+        let bridgeMinX, bridgeMaxX, bridgeMinZ, bridgeMaxZ;
+        if(zDiff >= 0 && zEdgeDiff > 0 && (xEdgeDiff <= 0 || xEdgeDiff >= zEdgeDiff)){ //island2 is north of island1 + edge cases
+            if(xDiff >= 0){ // island2 is north of island1 and west/center of island1
+                bridgeMinX = island2.position.x - padding*gridCellSize;
+                bridgeMaxX = island1.position.x + padding*gridCellSize;
+            } else { // island2 is north of island1 and east of island1
+                bridgeMinX = island1.position.x - padding*gridCellSize;
+                bridgeMaxX = island2.position.x + padding*gridCellSize;
+            }
+            bridgeMinZ = island2.max.z + gridCellSize;
+            bridgeMaxZ = island1.min.z - gridCellSize;
+        } else if(xDiff < 0 && xEdgeDiff > 0 && (zEdgeDiff <= 0 || zEdgeDiff >= xEdgeDiff)){ //island2 is east of island1 + edge cases
+            bridgeMinX = island1.max.x + gridCellSize;
+            bridgeMaxX = island2.min.x - gridCellSize;
+            if(zDiff >= 0){ // island2 is east of island1 and north/center of island1
+                bridgeMinZ = island2.position.z - padding*gridCellSize;
+                bridgeMaxZ = island1.position.z + padding*gridCellSize;
+            } else { // island2 is east of island1 and south of island1
+                bridgeMinZ = island1.position.z - padding*gridCellSize;
+                bridgeMaxZ = island2.position.z + padding*gridCellSize;
+            }
+        } else if(zDiff < 0 && zEdgeDiff > 0 && (xEdgeDiff <= 0 || xEdgeDiff >= zEdgeDiff)){ //island2 is south of island1 + edge cases
+            if(xDiff >= 0){ // island2 is south of island1 and west/center of island1
+                bridgeMinX = island2.position.x - padding*gridCellSize;
+                bridgeMaxX = island1.position.x + padding*gridCellSize;
+            } else { // island2 is south of island1 and east of island1
+                bridgeMinX = island1.position.x - padding*gridCellSize;
+                bridgeMaxX = island2.position.x + padding*gridCellSize;
+            }
+            bridgeMinZ = island1.max.z + gridCellSize;
+            bridgeMaxZ = island2.min.z - gridCellSize;
+        } else if(xDiff > 0){ //island2 is west of island1 + edge cases
+            bridgeMinX = island2.max.x + gridCellSize;
+            bridgeMaxX = island1.min.x - gridCellSize;
+            if(zDiff >= 0){ // island2 is west of island1 and north/center of island1
+                bridgeMinZ = island2.position.z - padding*gridCellSize;
+                bridgeMaxZ = island1.position.z + padding*gridCellSize;
+            } else { // island2 is west of island1 and south of island1
+                bridgeMinZ = island1.position.z - padding*gridCellSize;
+                bridgeMaxZ = island2.position.z + padding*gridCellSize;
+            }
+        } else {
+            throw new Error("no known bridge formation for current island positions");
+        }
+
+        return {position: bridgePosition, width: (bridgeMaxX - bridgeMinX)/gridCellSize + 1, length: (bridgeMaxZ - bridgeMinZ)/gridCellSize + 1};
     }
 
     addOpponent(params){
@@ -85,18 +187,28 @@ export class WorldManager{
     async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
+        const offset = this.calculateIslandOffset();
+        console.log("offset", offset);
         if(currentIslandIsCenter){
-            islandPosition.add(this.calculateIslandOffset());
+            islandPosition.add(offset);
             //TODO: implement rotation in factory createIsland
-            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: 180, buildingsList: island.buildings, width: 15, length: 15}));
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: 180, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
         } else {
+            const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
             //TODO: make sure these 2 lines work correctly
-            this.world.islands[0].position = this.world.islands[0].position.add(this.calculateIslandOffset());
+            this.world.islands[0].position = this.world.islands[0].position.add(offset);
+            this.world.player.position = this.world.player.position.add(offset);
+            this.world.player.spawnPoint = this.world.player.spawnPoint.add(offset);
+            console.log("I moved myself with the island", this.world.player.position);
             this.world.islands[0].rotation = 180;
-            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
         }
+        const {position, width, length} = this.calculateBridgeMetrics(this.world.islands[0], this.world.islands[1]);
+        //add a bridge between the 2 islands
+        this.world.addIsland(this.factory.createBridge({position: position, rotation: 0, width: width, length: length}));
+
         this.collisionDetector.generateColliderOnWorker();
-        this.collisionDetector.visualize({bvh: true});
+        // this.collisionDetector.visualize({bvh: true});
     }
 
 
@@ -122,7 +234,7 @@ export class WorldManager{
         this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
         this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
         this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
-        this.world.addPlayer(this.factory.createPlayer(player));
+        this.world.setPlayer(this.factory.createPlayer(player));
         // Set default values for the inventory slots
         // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
         this.world.player.changeEquippedSpell(0,new BuildSpell({}));
@@ -172,6 +284,29 @@ export class WorldManager{
      */
     checkPosForBuilding(worldPosition){
         return this.world.checkPosForBuilding(worldPosition);
+    }
+
+    /**
+     * places minionSpawners on warrior huts and attaches event listeners to them. The event listeners add the minions to the world and attach their controller
+     * @param {MinionController} controller
+     */
+    generateMinionSpawners(controller){ //TODO: refactor this method: try to remove arrow function
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
+            const warriorHuts = island.getBuildingsByType("warrior_hut");
+            warriorHuts.forEach((hut) => {
+                const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: 4, maxSpawn: 6});
+                spawner.addEventListener("spawn", (event) => {
+                   controller.addMinion(this.factory.createMinion(event.detail));
+                });
+                this.world.addMinionSpawner(spawner);
+
+            });
+        });
+    }
+
+    clearMinionSpawners(){
+        this.world.clearMinionSpawners();
     }
 
     /**

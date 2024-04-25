@@ -8,7 +8,6 @@ import {gridCellSize} from "../configs/ViewConfigs.js";
  * Island view
  */
 export class Island extends IView{
-    #gridCellSize;
     #width;
     #length;
     #islandThickness;
@@ -23,16 +22,11 @@ export class Island extends IView{
     constructor(params) {
         super(params);
         this.#grassField = null;
-        this.#gridCellSize = gridCellSize;
         this.#width = params?.width ?? 15;
         this.#length = params?.length ?? 15;
         this.#islandThickness = params?.islandThickness ?? 0.1;
         this.#yOffset = 0;
     }
-    createIsland(){
-
-    }
-
     /**
      * Create lights for the scene
      * @returns {Group} group of lights
@@ -56,10 +50,9 @@ export class Island extends IView{
      * @returns {THREE.Mesh} group of plane object
      */
     createPlane(){
-        const group = new THREE.Group();
         this.#yOffset = -this.#islandThickness/2;
         let pos = {x: this.position.x, y: -this.#islandThickness/2, z: this.position.z};
-        let scale = {x: this.#width*this.#gridCellSize, y: this.#islandThickness, z: this.#length*this.#gridCellSize};
+        let scale = {x: this.#width*gridCellSize, y: this.#islandThickness, z: this.#length*gridCellSize};
 
         //threeJS Section
         let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
@@ -120,7 +113,7 @@ export class Island extends IView{
     }
 
     /**
-     * Initialize the scene
+     * Initialize the island model
      * @returns {THREE.Group} group of scene objects
      */
     initScene(){

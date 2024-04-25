@@ -7,6 +7,7 @@ import {pushCollidedObjects} from "../../../helpers.js";
  */
 export class Character extends Entity{
     #rotation;
+    #fsm;
 
     /**
      * Constructor for the Character
@@ -26,13 +27,45 @@ export class Character extends Entity{
         this.onGround = true;
         this.onCollidable = false;
         this.hit = false;
-        this.fsm = null;
+        this.#fsm = null;
         this.health = params?.health ?? 100;
         this.maxHealth = params?.health ?? 100;
         this.height = params.height;
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
+    }
+
+    /**
+     * Set the finite state machine of the character and add an event listener for state updates
+     * @param {FiniteStateMachine} fsm
+     */
+    set fsm(fsm){
+        if(this.#fsm){
+            this.#fsm.removeEventListener("updatedState", this.forwardStateUpdate.bind(this));
+        }
+        this.#fsm = fsm;
+        this.#fsm.addEventListener("updatedState", this.forwardStateUpdate.bind(this));
+    }
+
+    /**
+     * Get the finite state machine of the character
+     * @return {FiniteStateMachine}
+     */
+    get fsm(){
+        return this.#fsm;
+    }
+
+    createUpdatedStateEvent(event){
+        return new CustomEvent("updatedState", {detail: event.detail});
+    }
+
+    /**
+     *
+     * @param event
+     */
+    forwardStateUpdate(event){
+        this.dispatchEvent(this.createUpdatedStateEvent(event));
     }
 
     /**

@@ -214,7 +214,7 @@ export class FollowPlayer extends SpellEntity{
     }
     update(deltaTime){
         super.update(deltaTime);
-        this._position.copy(this.target._position);
+        this._position.copy(this.target.position);
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
 }

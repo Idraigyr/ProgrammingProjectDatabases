@@ -9,6 +9,6 @@ export class Bridge extends Foundation{
     }
 
     get type(){
-        return "bridge";
+        return "island";
     }
 }

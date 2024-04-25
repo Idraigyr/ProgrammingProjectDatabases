@@ -4,7 +4,7 @@ import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
 import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
-import * as THREE from "three";
+import {Model} from "../Model/ModelNamespace.js";
 
 /**
  * Class to manage the views of the game
@@ -73,6 +73,7 @@ export class ViewManager extends Subject{
     addPair(model, view){
         if(model.type === "player" && this.pairs.player.length > 0){
             this.pairs.character.push({model, view});
+            return;
             // throw new Error("player already exists");
         }
         this.pairs[model.type].push({model, view});
@@ -95,6 +96,32 @@ export class ViewManager extends Subject{
             });
             return found;
         }
+    }
+
+    /**
+     * retrieve the player model by id
+     * @param {number} id
+     * @return {Wizard|*}
+     */
+    getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager
+        console.log("getPlayerModelByID: ", id);
+        if(this.pairs.player[0].model.id === id){
+            console.log("returning own player");
+            return this.pairs.player[0].model;
+        } else {
+            const char = this.pairs.character.find((pair) => {
+                if(pair.model instanceof Model.Wizard && pair.model.id === id){
+                    console.log("returning other player");
+                    return true;
+                }
+                return false;
+            });
+            if(char){
+                return char.model;
+            }
+        }
+        console.log("returning null");
+        return null;
     }
 
     /**

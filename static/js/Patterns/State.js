@@ -10,7 +10,7 @@ export class State{
      * @returns {string} The name of the state
      */
     get name(){
-
+        throw new Error("Cannot get name of abstract class State");
     }
 
     /**
