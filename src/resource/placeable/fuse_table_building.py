@@ -125,6 +125,12 @@ class FuseTableBuildingResource(BuildingResource):
             if 'placeable_id' in data:
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
 
+            if 'island_id' in data:
+                # Check if the island exists
+                from src.model.island import Island
+                if not Island.query.get(data['island_id']):
+                    raise ValueError('Invalid island_id')
+
             # Create the new fuse table building
             fuse_table_building = FuseTableBuilding(**data)
             current_app.db.session.add(fuse_table_building)
