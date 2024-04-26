@@ -1,8 +1,8 @@
 import {Entity} from "../Entity.js"
 import * as THREE from "three";
-import {convertWorldToGridPosition} from "../../helpers.js";
-import {gridCellSize} from "../../configs/ViewConfigs.js";
-import {popUp} from "../../external/LevelUp.js";
+import {convertWorldToGridPosition} from "../../../helpers.js";
+import {gridCellSize} from "../../../configs/ViewConfigs.js";
+import {popUp} from "../../../external/LevelUp.js";
 
 /**
  * Base class for the placeable model
@@ -28,11 +28,13 @@ export class Placeable extends Entity{
     /**
      * Formats the data for a POST request
      * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPOSTData(userInfo){
+    formatPOSTData(userInfo, islandPosition){
         const gridPos = new THREE.Vector3().copy(this.position);
-        convertWorldToGridPosition(this.position);
+        gridPos.add(islandPosition);
+        convertWorldToGridPosition(gridPos);
         const obj = {
             island_id: userInfo.islandID,
             x: gridPos.x/gridCellSize,
@@ -52,10 +54,11 @@ export class Placeable extends Entity{
     /**
      * Formats the data for a PUT request
      * @param userInfo {JSON} the user information
+     * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPUTData(userInfo){
-       const obj = this.formatPOSTData(userInfo);
+    formatPUTData(userInfo, islandPosition){
+       const obj = this.formatPOSTData(userInfo, islandPosition);
        obj.placeable_id = this.id;
        return obj;
     }
@@ -90,7 +93,7 @@ export class Placeable extends Entity{
             return false;
         }
         this.dispatchEvent(this.createUpdateLevelEvent());
-        this.xpTreshold = this.increaseXpTreshold();
+        this.xpThreshold = this.increaseXpThreshold();
         if(this.level === 0){
             this.levelUpTime = 0;
             this.gemSlots = 1;
@@ -109,6 +112,7 @@ export class Placeable extends Entity{
             this.gemSlots = 8;
         }
         popUp(this.level, this.maxMana, this.maxHealth);
+        this.updateUserInfoBackend();
         return true;
     }
 

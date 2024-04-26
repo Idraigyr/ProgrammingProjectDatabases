@@ -21,7 +21,7 @@ class Building(Placeable):
     gems: Mapped[List[Gem]] = relationship('Gem')
 
     task_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id'), nullable=True)
-    task: Mapped[Task] = relationship("Task", back_populates="working_building")
+    task: Mapped[Task] = relationship("Task", back_populates="working_building", passive_deletes=True)
 
     def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0, blueprint_id: int = 0, rotation: int = 0) -> None:
         """

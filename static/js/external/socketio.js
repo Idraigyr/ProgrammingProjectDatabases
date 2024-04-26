@@ -1,9 +1,8 @@
-import {app} from "../App.js"
-import {BuildSpell, Fireball, Shield, ThunderCloud} from "../Model/Spell.js";
 let username = "Unknown user";
 let admin = false;
 let userId = 0;
 
+// TODO - @Flynn - This is a hacky way to get the username and admin status, link it to the UserInfo class
 $(document).ready(function(){
    $.ajax({url: '/api/user_profile', type: 'GET'}).done(function(data){
        username = data.username;
@@ -26,12 +25,24 @@ let regex = {
     "health": /\\health\((0*[0-9]\d*)\)/,
     "forceSpells": /\\forceSpells/
 }
+export class ChatNamespace {
 
-document.addEventListener('DOMContentLoaded', ()=>{
-    let socket = io();
 
-    //get message from the server
-    socket.on('message', function(data) {
+    constructor(app) {
+        this.socket = io('/chat');
+        this.app = app;
+    }
+
+    registerHandlers() {
+
+        //get message from the server, under the '/chat' namespace
+        this.socket.on('message', (data) => this.handleMessage(data));
+        //Sends message to the server
+        document.querySelector('#sendMessage').onclick = () => this.handleSendMessage()
+    }
+
+
+    handleMessage(data) {
         const messageContainer = document.createElement('div');
         const messageText = document.createElement('div');
         const span_time = document.createElement('div');
@@ -39,13 +50,13 @@ document.addEventListener('DOMContentLoaded', ()=>{
         messageText.textContent = data.message;
         span_time.textContent = data.time_stamp;
 
-            // Add classes for styling
+        // Add classes for styling
         messageText.classList.add('message');
         span_time.classList.add('time');
-           // Conditionally set the alignment based on the username
+        // Conditionally set the alignment based on the username
         if (data.username === username) {
             messageContainer.classList.add('MyMsg');
-        } else{
+        } else {
             messageContainer.classList.add('OtherMsg');
             const span_username = document.createElement('div');
             span_username.textContent = data.username;
@@ -56,79 +67,68 @@ document.addEventListener('DOMContentLoaded', ()=>{
         messageContainer.appendChild(span_time);
         document.querySelector('#chatMessages').appendChild(messageContainer);
         document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-    });
+    }
 
-    //Sends message to the server
-    document.querySelector('#sendMessage').onclick = () =>{
+    handleSendMessage() {
         const message = document.querySelector('#chatInput').value;
         const messageData = {'message': message, 'username': username, 'user_id': userId};
         //add cheats
-        if (admin){
-            if (message.match(regex["mana"])){
-                app.playerInfo.mana = Number(message.match(regex["mana"])[1]);
-            }
-            else if (message.match(regex["level"])){
-                if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0){
-                    app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
-                } else{
-                    socket.emit('message', messageData);
+        if (admin) {
+            if (message.match(regex["mana"])) {
+                this.app.playerInfo.mana = Number(message.match(regex["mana"])[1]);
+            } else if (message.match(regex["level"])) {
+                if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0) {
+                    this.app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
+                } else {
+                    this.socket.emit('message', messageData);
                 }
-            }
-            else if (message.match(regex["xp"])){
-                app.playerInfo.changeXP(Number(message.match(regex["xp"])[1]));
-            }
-            else if (message.match(regex["crystal"])){
-                app.playerInfo.changeCrystals(Number(message.match(regex["crystal"])[1]));
-            }
-            else if (message.match(regex["health"])){
-                app.playerInfo.health = Number(message.match(regex["health"])[1]);
-            }
-            else if (message.match(regex["position"])){
-                app.playerInfo.playerPosition.x = Number(message.match(regex["position"])[1]);
-                app.playerInfo.playerPosition.y = Number(message.match(regex["position"])[2]);
-                app.playerInfo.playerPosition.z = Number(message.match(regex["position"])[3]);
-            }
-            else if (message.match(regex["shieldCooldown"])){
-                for (let i = 0; i < app.playerInfo.spells.length; i++){
-                    if(app.playerInfo.spells[i].name === "shield"){
-                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["shieldCooldown"])[1]);
+            } else if (message.match(regex["xp"])) {
+                this.app.playerInfo.changeXP(Number(message.match(regex["xp"])[1]));
+            } else if (message.match(regex["crystal"])) {
+                this.app.playerInfo.changeCrystals(Number(message.match(regex["crystal"])[1]));
+            } else if (message.match(regex["health"])) {
+                this.app.playerInfo.health = Number(message.match(regex["health"])[1]);
+            } else if (message.match(regex["position"])) {
+                this.app.playerInfo.playerPosition.x = Number(message.match(regex["position"])[1]);
+                this.app.playerInfo.playerPosition.y = Number(message.match(regex["position"])[2]);
+                this.app.playerInfo.playerPosition.z = Number(message.match(regex["position"])[3]);
+            } else if (message.match(regex["shieldCooldown"])) {
+                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
+                    if (this.app.playerInfo.spells[i].name === "shield") {
+                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["shieldCooldown"])[1]);
                         break;
                     }
                 }
-            }
-            else if (message.match(regex["fireCooldown"])){
-                for (let i = 0; i < app.playerInfo.spells.length; i++){
-                    if(app.playerInfo.spells[i].name === "fire"){
-                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["fireCooldown"])[1]);
+            } else if (message.match(regex["fireCooldown"])) {
+                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
+                    if (this.app.playerInfo.spells[i].name === "fire") {
+                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["fireCooldown"])[1]);
                         break;
                     }
                 }
-            }
-            else if (message.match(regex["buildCooldown"])){
-                for (let i = 0; i < app.playerInfo.spells.length; i++){
-                    if(app.playerInfo.spells[i].name === "build"){
-                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["buildCooldown"])[1]);
+            } else if (message.match(regex["buildCooldown"])) {
+                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
+                    if (this.app.playerInfo.spells[i].name === "build") {
+                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["buildCooldown"])[1]);
                         break;
                     }
                 }
-            }
-            else if (message.match(regex["forceSpells"])) {
-                for (let i = 0; i < app.playerInfo.spells.length; i++) {
-                    app.playerInfo.spells[i].cost = 0;
+            } else if (message.match(regex["forceSpells"])) {
+                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
+                    this.app.playerInfo.spells[i].cost = 0;
                 }
-            }
-            else if (message.match(regex["thunderCloudCooldown"])){
-                for (let i = 0; i < app.playerInfo.spells.length; i++){
-                    if(app.playerInfo.spells[i].name === "thundercloud"){
-                        app.playerInfo.spells[i].cooldown = Number(message.match(regex["thunderCloudCooldown"])[1]);
+            } else if (message.match(regex["thunderCloudCooldown"])) {
+                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
+                    if (this.app.playerInfo.spells[i].name === "thundercloud") {
+                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["thunderCloudCooldown"])[1]);
                         break;
                     }
                 }
-            } else{
-                socket.emit('message', messageData);
+            } else {
+                this.socket.emit('message', messageData);
             }
-        } else{
-            socket.emit('message', messageData);
+        } else if (!message.startsWith("\\")) { // Don't send the message if it starts with a backslash (cheat)
+            this.socket.emit('message', messageData);
         }
     }
-})
+}

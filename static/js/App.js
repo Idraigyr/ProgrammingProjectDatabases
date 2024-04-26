@@ -9,12 +9,24 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import {OrbitControls} from "three-orbitControls";
-import {API_URL, islandURI, playerURI, placeableURI, postRetries} from "./configs/EndpointConfigs.js";
+import {
+    API_URL,
+    islandURI,
+    playerURI,
+    placeableURI,
+    postRetries,
+    playerProfileURI,
+    matchMakingURI
+} from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes} from "./configs/Enums.js";
+import {ChatNamespace} from "./external/socketio.js";
+import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
+import {UserInfo} from "./Controller/UserInfo.js";
+import {Settings} from "./Menus/settings.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -114,16 +126,24 @@ class App {
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
 
+        this.multiplayerController = new Controller.MultiplayerController({});
+
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.menuManager = new Controller.MenuManager({container: document.querySelector("#menuContainer"), blockInputCallback: {
+        this.settings = new Settings(this.inputManager, this.playerInfo)
+        this.menuManager = new Controller.MenuManager({
+            container: document.querySelector("#menuContainer"),
+            blockInputCallback: {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
-        }});
+            },
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
+        });
+        this.itemManager.menuManager = this.menuManager;
 
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
@@ -132,7 +152,7 @@ class App {
 
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
-        this.playerInfo.addEventListener("updateXpTreshold", this.hud.updateXPTreshold.bind(this.hud));
+        this.playerInfo.addEventListener("updateXpThreshold", this.hud.updateXPThreshold.bind(this.hud));
         this.playerInfo.addEventListener("updateLevel", this.hud.updateLevel.bind(this.hud));
         this.playerInfo.addEventListener("updateUsername", this.hud.updateUsername.bind(this.hud));
 
@@ -153,56 +173,56 @@ class App {
             this.itemManager.removeGem(event);
         });
 
-        this.itemManager.menuManager = this.menuManager;
-
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
         // Onclick event
         //TODO: change nameless callbacks to methods of a class?
-        this.spellCaster.addEventListener("castBuildSpell", (event) => {
+        this.spellCaster.addEventListener("castBuildSpell", (event) => { //TODO: rename this to MoveBuilding or something and put this in worldManager
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
             if(buildingNumber === buildTypes.getNumber("void")) return;
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
             // If the selected cell is empty
-            if (buildingNumber === buildTypes.getNumber("empty")) {
+            if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
-                if(this.spellCaster.currentObject){
-                    // Get selected building
-                    const building = this.spellCaster.currentObject;
-                    // Update bounding box of the building
-                    building.dispatchEvent(new CustomEvent("updateBoundingBox"));
-                    // Update occupied cells
-                    const pos = event.detail.params.position;
-                    const island = this.worldManager.world.getIslandByPosition(pos);
-                    // // Get if the cell is occupied
-                    // let buildOnCell = island.getCellIndex(pos);
-                    // if (buildOnCell !== building.cellIndex){// TODO!!!!
-                    //     let cell = island.checkCell(pos);
-                    //     // Check if the cell is occupied
-                    //     if(cell !== buildTypes.getNumber("empty")) return;
-                    // }
-                    island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
-                    // Occupy cell
-                    building.cellIndex = island.occupyCell(pos, building.dbType);
-                    // Remove the object from spellCaster
-                    this.spellCaster.currentObject.ready = true;
-                    this.spellCaster.currentObject = null;
-                    // Update static mesh
-                    this.collisionDetector.generateColliderOnWorker();
-                    // Send put request to the server if persistence = true
-                    if(this.worldManager.persistent){
-                        this.worldManager.sendPUT(placeableURI, building, postRetries);
-                    }
-                    return;
+                // Get selected building
+                const building = this.spellCaster.currentObject;
+                // Update bounding box of the building
+                building.dispatchEvent(new CustomEvent("updateBoundingBox")); //TODO: put this in a method of the building's class
+                // Update occupied cells
+                const pos = event.detail.params.position;
+                const island = this.worldManager.world.getIslandByPosition(pos);
+                // // Get if the cell is occupied
+                // let buildOnCell = island.getCellIndex(pos);
+                // if (buildOnCell !== building.cellIndex){// TODO!!!!
+                //     let cell = island.checkCell(pos);
+                //     // Check if the cell is occupied
+                //     if(cell !== buildTypes.getNumber("empty")) return;
+                // }
+                island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
+                // Occupy cell
+                building.cellIndex = island.occupyCell(pos, building.dbType);
+                // Remove the object from spellCaster
+                this.spellCaster.currentObject.ready = true;
+                this.spellCaster.currentObject = null;
+                //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
+                // Update static mesh
+                this.collisionDetector.generateColliderOnWorker();
+                // Send put request to the server if persistence = true
+                if(this.worldManager.persistent){
+                    this.worldManager.sendPUT(placeableURI, building, postRetries);
                 }
-                //temp solution:
+
+                //allow menus to be opened again
+                this.menuManager.menusEnabled = true;
+
+            } else if(buildingNumber === buildTypes.getNumber("empty")){ //open buildmenu
                 this.worldManager.currentPos = event.detail.params.position;
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
                 this.inputManager.exitPointerLock();
-            }
-            else if (this.spellCaster.currentObject) {
+
+            } else if (this.spellCaster.currentObject) { //What is this block used for??? placing back in same spot after rotating?
                 // Get selected building
                 const building = this.spellCaster.currentObject;
                 // Update bounding box of the building
@@ -210,6 +230,8 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
+                // Update static mesh
+                this.collisionDetector.generateColliderOnWorker();
                 // Get if the cell is occupied
                 let buildOnCell = island.getCellIndex(pos);
                 if (buildOnCell !== building.cellIndex) return;
@@ -217,8 +239,11 @@ class App {
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
                 this.spellCaster.previousSelectedPosition = null;
-            }
-            else {
+
+                //allow menus to be opened again
+                this.menuManager.menusEnabled = true;
+
+            } else { //select object
                 /* Logic for selecting a building */
                 // There is already object
                 if(this.spellCaster.currentObject) return;
@@ -228,10 +253,12 @@ class App {
                 // Select current object
                 this.spellCaster.currentObject = selectedObject;
                 this.spellCaster.currentObject.ready = false;
+
+                //disable opening menus while building is selected
+                this.menuManager.menusEnabled = false;
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
-            // this.hud.openMenu(this.worldManager.checkPosForBuilding(event.detail.position));
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
@@ -257,12 +284,18 @@ class App {
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
         });
-        this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.makeVisible.bind(this.viewManager.spellPreview));
+        this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
-
 
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
+
+        // Setup chat SocketIO namespace
+        this.chatNameSpace = new ChatNamespace(this);
+        this.chatNameSpace.registerHandlers();
+
+        this.forwardingNameSpace = new ForwardingNameSpace();
+        this.forwardingNameSpace.registerHandlers({handleMatchFound: this.multiplayerController.startMatch.bind(this.multiplayerController), processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController)});
 
         //visualise camera line -- DEBUG STATEMENTS --
         // this.inputManager.addKeyDownEventListener("KeyN",() => {
@@ -301,22 +334,6 @@ class App {
     }
 
     /**
-     * Adds a new minionController to the list of minionControllers
-     * @param controller - the controller to add
-     */
-    addMinionController(controller){
-        this.minionControllers.push(controller);
-    }
-
-    /**
-     * Removes a minionController from the list of minionControllers
-     * @param controller - the controller to remove
-     */
-    removeMinionController(controller){
-        this.minionControllers.filter((c) => controller !== c);
-    }
-
-    /**
      * Loads the assets, creates the worldManager, the playerController and sets the cameraManager target to the player
      * @returns {Promise<void>} - a promise that resolves when the assets are loaded
      */
@@ -336,6 +353,7 @@ class App {
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
         await this.worldManager.importWorld(this.playerInfo.islandID);
+        this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
         this.collisionDetector.generateColliderOnWorker();
@@ -352,9 +370,12 @@ class App {
         this.spellCaster.wizard = this.worldManager.world.player;
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
+        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
+        this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
+        this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
 
 
@@ -365,13 +386,14 @@ class App {
         this.menuManager.addEventListener("startFusion", this.itemManager.createRandomGemItem.bind(this.itemManager));
 
         this.menuManager.addEventListener("build", (event) => {
-            this.menuManager.hideMenu();
+            this.menuManager.exitMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
             // TODO: move things from menuManager, because otherwise you have to use the following code:
             // Get the price of the building
             let nameInDB = this.menuManager.ctorToDBName(ctorName);
             const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            console.log(this.menuManager.infoFromDatabase);
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
                 console.log("Not enough crystals");
@@ -383,8 +405,21 @@ class App {
             }
             this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, withTimer: true}});
         }); //build building with event.detail.id on selected Position;
+        this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
+        this.playerInfo.setLevelStats();
         this.worldManager.world.player.advertiseCurrentCondition();
         this.minionController.worldMap = this.worldManager.world.islands;
+        //TODO: is there a better way to do this?
+        this.multiplayerController.setUpProperties({
+            playerInfo: this.playerInfo,
+            menuManager: this.menuManager,
+            worldManager: this.worldManager,
+            spellCaster: this.spellCaster,
+            minionController: this.minionController,
+            forwardingNameSpace: this.forwardingNameSpace,
+            collisionDetector: this.collisionDetector,
+            spellFactory: this.spellFactory,
+        });
     }
 
     /**
@@ -393,12 +428,15 @@ class App {
     start(){
         if ( WebGL.isWebGLAvailable()) {
             //TODO: remove this is test //
-            this.worldManager.addSpawningIsland();
-            this.minionController.worldMap = this.worldManager.world.islands;
-            this.worldManager.world.spawners[0].addEventListener("createMinion", (event) => {
-               this.minionController.addMinion(this.factory.createMinion(event.detail));
-            });
+            // this.worldManager.addSpawningIsland();
+            // this.minionController.worldMap = this.worldManager.world.islands;
+            // this.worldManager.world.spawners["minions"][0].addEventListener("spawn", (event) => {
+            //    this.minionController.addMinion(this.factory.createMinion(event.detail));
+            // });
             //TODO: remove this is test //
+
+            // Setup SocketIO
+
 
 
             document.querySelector('.loading-animation').style.display = 'none';
@@ -445,6 +483,7 @@ class App {
         // this.BuildManager.makePreviewObjectInvisible();
     }
 }
-export let app = new App({});
+
+const app = new App({});
 await app.loadAssets();
 app.start();

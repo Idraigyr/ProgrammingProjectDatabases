@@ -28,7 +28,7 @@ export class SpellFactory{
      */
     createSpell(event){
         let entityModel = null;
-        switch (event.detail.type.constructor){
+        switch (event.detail.type){
             case Fireball:
                 entityModel = this.#createFireball(event.detail);
                 break;
@@ -58,12 +58,13 @@ export class SpellFactory{
      * @private private method
      */
     #createFireball(details){
+        const spell = new details.type();
         let model = new Model.Projectile({
-            spellType: details.type,
+            spellType: spell,
             direction: details.params.direction,
-            duration: details.type.spell.duration,
-            velocity: details.type.spell.velocity,
-            fallOf: details.type.fallOf,
+            duration: spell.spell.duration,
+            velocity: spell.spell.velocity,
+            fallOf: spell.fallOf,
             position: details.params.position,
             team: details.params.team
         });
@@ -96,10 +97,11 @@ export class SpellFactory{
      * @return {*}
      */
     #createThunderCloud(details){
+        const spell = new details.type();
         let model = new Model.Immobile({
-            spellType: details.type,
+            spellType: spell,
             position: details.params.position,
-            duration: details.type.spell.duration,
+            duration: spell.spell.duration,
             team: details.params.team
         });
         let position = new THREE.Vector3().copy(details.params.position);
@@ -126,11 +128,12 @@ export class SpellFactory{
      * @return {*}
      */
     #createShield(details){
+        const spell = new details.type();
         let model = new Model.FollowPlayer({
             target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
-            spellType: details.type,
+            spellType: spell,
             position: details.params.position,
-            duration: details.type.spell.duration,
+            duration: spell.spell.duration,
             team: details.params.team
         });
 
@@ -177,14 +180,15 @@ export class SpellFactory{
      * @return {*}
      */
     #createIceWall(details) {
+        const spell = new details.type();
         let position = new THREE.Vector3().copy(details.params.position);
         position.y -= 7;
         let model = new Model.MobileCollidable({
-            spellType: details.type,
+            spellType: spell,
             position: position,
-            moveFunction: details.type.spell.moveFunction,
-            moveFunctionParams: details.type.spell.moveFunctionParams,
-            duration: details.type.spell.duration
+            moveFunction: spell.spell.moveFunction,
+            moveFunctionParams: spell.spell.moveFunctionParams,
+            duration: spell.spell.duration
         });
         let views = View.IceWall({
             charModel: this.assetManager.getAsset("iceBlock"),

@@ -1,9 +1,8 @@
-import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "./Spell.js";
-import {convertGridIndexToWorldPosition, convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
+import {convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
-import {Bridge} from "./Bridge.js";
+import {Bridge} from "./Entities/Foundations/Bridge.js";
 import * as THREE from "three";
-import {MinionSpawner} from "./MinionSpawner.js";
+import {MinionSpawner} from "./Spawners/MinionSpawner.js";
 
 /**
  * World class that contains all the islands and the player
@@ -14,20 +13,31 @@ export class World{
         this.spellFactory = params.SpellFactory;
         this.collisionDetector = params.collisionDetector;
         this.islands = [];
-        params.islands.forEach((island) => {
-            this.islands.push(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
-        });
-        this.player = this.factory.createPlayer(params.player);
-        // Set default values for the inventory slots
-        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
-        this.player.changeEquippedSpell(0,new BuildSpell({}));
-        this.player.changeEquippedSpell(1,new Fireball({}));
-        this.player.changeEquippedSpell(2,new ThunderCloud({}));
-        this.player.changeEquippedSpell(3,new Shield({}));
-        this.player.changeEquippedSpell(4,new IceWall({}));
+        this.player = null;
         this.entities = [];
-        params.characters.forEach((character) => {});
-        this.spawners = [];
+        this.spawners = {minions: [], spells: []};
+    }
+
+    addIsland(island){
+        //TODO: if this.islands is not empty, place the new island in a way that it doesn't overlap with the existing islands
+        //+ add a bridge already?
+        this.islands.push(island);
+    }
+
+    addEntity(entity){
+        this.entities.push(entity);
+    }
+
+    addPlayer(player){
+        this.player = player;
+    }
+
+    addMinionSpawner(spawner){
+        this.spawners.minions.push(spawner);
+    }
+
+    addSpellSpawner(spawner){
+        this.spawners.spells.push(spawner);
     }
 
     /**
@@ -81,12 +91,16 @@ export class World{
      */
     addBuilding(buildingName, position, withTimer = false){
         const island = this.getIslandByPosition(position);
+        if(island.team !== this.player.team){
+            console.error("cannot add building to enemy island");
+            return null;
+        }
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
-            const {x,z} = returnWorldToGridIndex(position);
+            convertWorldToGridPosition(position.sub(island.position));
             const building = this.factory.createBuilding({
                 buildingName: buildingName,
-                position: {x: x, y: 0, z: z},
+                position: position,
                 withTimer: withTimer,
             });
             island.addBuilding(building);
@@ -107,20 +121,16 @@ export class World{
     }
 
     /**
-     * Import a world from a json object
-     * @param json - the json object to import
-     */
-    importWorld(json){
-
-    }
-
-    /**
      * Update the world and all its components
      * @param deltaTime
      */
     update(deltaTime){
         //update whole model
-        this.spawners.forEach((spawner) => spawner.update(deltaTime));
+        for(const spawnerType in this.spawners){
+            this.spawners[spawnerType].forEach((spawner) => {
+                spawner.update(deltaTime);
+            });
+        }
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.collisionDetector.checkCharacterCollisions(deltaTime);
         this.spellFactory.models.forEach((model) => model.update(deltaTime));

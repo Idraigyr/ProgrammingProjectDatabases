@@ -11,8 +11,8 @@ class ChatMessage(current_app.db.Model):
 
     created_at = Column(DateTime)
 
-    user_id = Column(Integer, ForeignKey('player.user_profile_id'))
-    user = relationship('Player', back_populates='chat_messages')
+    user_id = Column(Integer, ForeignKey('player.user_profile_id', ondelete="set null"))
+    user = relationship('Player', back_populates='chat_messages', passive_deletes=True)
     
     def __init__(self, message: str, user_id: int):
         self.created_at = datetime.datetime.now()

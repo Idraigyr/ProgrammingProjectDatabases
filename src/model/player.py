@@ -2,7 +2,7 @@ import datetime
 from typing import List
 
 from flask import current_app
-from sqlalchemy import BigInteger, ForeignKey, Column, Integer, CheckConstraint, DateTime, func
+from sqlalchemy import BigInteger, ForeignKey, Column, Integer, CheckConstraint, DateTime, func, PrimaryKeyConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from src.model.chat_message import ChatMessage
@@ -14,7 +14,16 @@ from src.model.user_profile import UserProfile
 blueprint_association_table = current_app.db.Table(
     'blueprint_association', current_app.db.Model.metadata,
     Column('player_id', BigInteger, ForeignKey('player.user_profile_id')),
-    Column('blueprint_id', BigInteger, ForeignKey('blueprint.id'))
+    Column('blueprint_id', BigInteger, ForeignKey('blueprint.id')),
+    PrimaryKeyConstraint('player_id', 'blueprint_id')
+)
+
+friends_association_table = current_app.db.Table(
+    'friends_association', current_app.db.Model.metadata,
+    Column('player_id', BigInteger, ForeignKey('player.user_profile_id', ondelete='CASCADE')),
+    Column('friend_id', BigInteger, ForeignKey('player.user_profile_id', ondelete='CASCADE')),
+    PrimaryKeyConstraint('player_id', 'friend_id'),
+    CheckConstraint('player_id != friend_id')
 )
 
 
@@ -41,25 +50,28 @@ class Player(current_app.db.Model):
 
     # entity_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player_entity.entity_id'))
     # entity: Mapped["PlayerEntity"] = relationship("PlayerEntity", foreign_keys=[entity_id], back_populates="player")
-    entity: Mapped['PlayerEntity'] = relationship(back_populates="player")
+    entity: Mapped['PlayerEntity'] = relationship(back_populates="player", cascade="all, delete-orphan", uselist=False)
 
     # lazy=False means that the spells are loaded when the player is loaded
     spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
 
     # The island of the player
-    island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True)
+    island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True, cascade="all, delete-orphan")
 
     # User settings
-    user_settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="player", single_parent=True)
+    user_settings: Mapped["UserSettings"] = relationship("UserSettings", back_populates="player", single_parent=True, cascade="all, delete-orphan")
 
     # The gem inventory of the player
-    gems: Mapped[List["Gem"]] = relationship("Gem")
+    gems: Mapped[List["Gem"]] = relationship("Gem", cascade="all, delete-orphan")
 
     # The unlocked blueprints of the player
     blueprints: Mapped[List["Blueprint"]] = relationship("Blueprint", secondary=blueprint_association_table)
 
     # The player chat messages
-    chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user")
+    chat_messages: Mapped[List[ChatMessage]] = relationship("ChatMessage", back_populates="user", cascade="save-update")
+
+    # The player friends
+    friends: Mapped[List["Player"]] = relationship("Player", secondary=friends_association_table, uselist=True, primaryjoin=user_profile_id == friends_association_table.c.player_id, secondaryjoin=user_profile_id == friends_association_table.c.friend_id)
 
     def __init__(self, user_profile=None, crystals: int = 0, mana: int = 0, xp: int = None, last_logout: DateTime = None, last_login: DateTime = None):
         """
@@ -92,6 +104,7 @@ class Player(current_app.db.Model):
     def update(self, data: dict):
         """
         Update the player profile with new data
+        Friends, blueprints and spells have to be integer arrays whose elements are the id's of the respective objects
         :param data: The new data
         :return:
         """
@@ -134,3 +147,22 @@ class Player(current_app.db.Model):
 
         if 'entity' in data:
             self.entity.update(data['entity'])
+
+        if 'friends' in data:
+            new_friendset = []
+            for friend_id in data.get('friends'):
+                if friend_id == self.user_profile_id:
+                    raise ValueError("Feeling lonely? (You can't be friends with yourself)")
+                friend = Player.query.get(friend_id)
+                if friend is None:
+                    raise ValueError(f"Friend {friend_id} not found")
+                new_friendset.append(friend)
+                friend.friends.append(self)  # add the player to the friend's friend list
+
+            # Update the friends their relation to us as well, as the friends relation is a bidirectional many-to-many relationship
+            diff = set(self.friends) - set(new_friendset)
+            if diff:
+                for friend in diff:
+                    friend.friends.remove(self)  # remove the player from the friend's friend list
+
+            self.friends = new_friendset

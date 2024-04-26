@@ -1,5 +1,5 @@
-import {returnWorldToGridIndex} from "../helpers.js";
-import {buildTypes} from "../configs/Enums.js";
+import {printFoundationGrid, returnWorldToGridIndex} from "../../../helpers.js";
+import {buildTypes} from "../../../configs/Enums.js";
 import {Foundation} from "./Foundation.js";
 
 /**
@@ -13,8 +13,6 @@ export class Island extends Foundation{
     constructor(params) {
         super(params);
         this.buildings = [];
-        // is 1d array more optimal than 2d array?
-        // this.grid = new Array(params.width).fill(buildTypes.getNumber("empty")).map(() => new Array(params.length).fill(buildTypes.getNumber("empty")));
     }
 
     /**
@@ -24,6 +22,9 @@ export class Island extends Foundation{
      * @returns {number} - the index of the cell
      */
     occupyCell(worldPosition, dbType){
+        if(dbType === "altar_building"){
+            console.log("altar_building");
+        }
         //check if parameter of returnWorldToGridIndex is correct
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         const index = (x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2);
@@ -48,7 +49,8 @@ export class Island extends Foundation{
      * @returns {*} - the type of the cell
      */
     checkCell(worldPosition){
-        let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
+        const pos = worldPosition.clone();
+        const {x, z} = returnWorldToGridIndex(pos.sub(this.position));
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
         return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
     }
@@ -91,16 +93,23 @@ export class Island extends Foundation{
     }
 
     /**
+     * returns all buildings on the island that are of the given type
+     * @return {Placeable[]}
+     */
+    getBuildingsByType(type){
+        return this.buildings.filter(building => building.dbType === type);
+    }
+
+    /**
      * Get a building by its world position
      * @param position - world position of the building
      * @returns {*} - the building
      */
     getBuildingByPosition(position){
         let pos = position.clone();
-        pos = returnWorldToGridIndex(pos);
+        pos = returnWorldToGridIndex(pos.sub(this.position));
         // Transform position to cell index
-        pos = (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
-        return this.getBuildingByIndex(pos);
+        return this.getBuildingByIndex((pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2));
     }
 
     /**
@@ -110,7 +119,7 @@ export class Island extends Foundation{
      */
     getCellIndex(position){
         let pos = position.clone();
-        pos = returnWorldToGridIndex(pos);
+        pos = returnWorldToGridIndex(pos.sub(this.position));
         // Transform position to cell index
         return (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
     }

@@ -163,8 +163,11 @@ class UserProfileResource(Resource):
         current_user = get_jwt_identity()
         target_user_id = int(escape(request.args.get('id', current_user)))
         invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
+        if not invoker_user:
+            logging.getLogger(__name__).warning(f'User {current_user} does not exist, but this id comes from his JWT token. Is the token invalid or did his account just got deleted?')
+            return ErrorSchema(f"Current user {current_user} does not exist. Is your JWT token invalid? Or did your account just got deleted?"), 400
 
-        if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
+        if current_user != target_user_id and not invoker_user.admin:
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
             return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
 
@@ -179,6 +182,7 @@ class UserProfileResource(Resource):
         if target_user is None:
             return ErrorSchema(f"User {target_user_id} not found"), 404
         else:
+            logging.getLogger(__name__).info(f'Annihilating user {target_user_id} from existence... (deleting user profile)')
             current_app.db.session.delete(target_user)
             current_app.db.session.commit()
             return SuccessSchema(f"User {target_user_id} has been deleted"), 200

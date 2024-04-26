@@ -41,3 +41,7 @@ export const cameraPosition = {
 export const maxZoomIn = 15;
 
 export const minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));
+
+export const minionAttackRadius = 3;
+export const minionFollowRadius = 10;
+export const minionSpeedMultiplier = 200;

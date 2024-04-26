@@ -11,9 +11,10 @@ export class IView {
         this.boundingBox = new THREE.Box3();
         //only for visualisation
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
-        this.boxHelper.visible = false; // TODO: set in env
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
+
+        this.boxHelper.visible = true; // TODO: set in env
     }
 
     /**
@@ -74,28 +75,6 @@ export class IView {
         this.charModel.setRotationFromQuaternion(event.detail.rotation);
         this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
         //this.boundingBox.setFromObject(this.charModel, true);
-    }
-
-    /**
-     * Update minimum y value
-     * @param event - event with minimum y value
-     * @returns {*} new y value
-     */
-    updateMinimumY(event){
-        let y = event.detail.minY;
-        if(y === undefined) return y;
-        // Create bounding box
-        let box = new THREE.Box3().setFromObject(this.charModel);
-        // Get current minimum y
-        let minY = box.min.y;
-        // Calculate the difference
-        let diff = y - minY;
-        // Move the model
-        this.charModel.position.y += diff;
-        // Update the bounding box
-        this.boundingBox.translate(new THREE.Vector3(0, diff, 0));
-        // Return current y value
-        return this.charModel.position.y;
     }
 }
 

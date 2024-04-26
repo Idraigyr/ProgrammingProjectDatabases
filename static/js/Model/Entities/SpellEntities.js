@@ -1,7 +1,7 @@
 import {Entity} from "./Entity.js";
 import * as THREE from "three";
-import {adjustVelocity, adjustVelocity2, adjustVelocity3, launchCollidedObject} from "../helpers.js";
-import {Minion} from "./Minions/Minion.js";
+import {adjustVelocity, adjustVelocity2, adjustVelocity3, launchCollidedObject} from "../../helpers.js";
+import {Minion} from "./Characters/Minion.js";
 
 /**
  * @class SpellEntity - represents a spell entity

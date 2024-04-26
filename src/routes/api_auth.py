@@ -144,8 +144,12 @@ def refresh_expiring_jwts(response):
         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
         if target_timestamp > exp_timestamp:
             _log.debug(f"Refreshing JWT token of {get_jwt_identity()}")
-            access_token = AUTH_SERVICE.create_jwt(AUTH_SERVICE.get_user(user_id=get_jwt_identity()))
-            set_access_cookies(response, access_token)
+            user = AUTH_SERVICE.get_user(user_id=get_jwt_identity())
+            if not user:
+                _log.error(f"Unable to refresh token of unknown user with id {get_jwt_identity()}")
+            else:
+                access_token = AUTH_SERVICE.create_jwt(user)
+                set_access_cookies(response, access_token)
         return response
     except (RuntimeError, KeyError, PyJWTError):
         # Case where there is not a valid JWT. Just return the original response

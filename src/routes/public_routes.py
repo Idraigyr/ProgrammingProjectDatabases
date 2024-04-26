@@ -1,6 +1,8 @@
 from flask.templating import render_template
 from flask import Blueprint, current_app, redirect
-from flask_jwt_extended import get_jwt_identity, jwt_required, unset_jwt_cookies
+from flask_jwt_extended import get_jwt_identity, jwt_required, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from jwt import ExpiredSignatureError, InvalidTokenError
 
 from src.service.auth_service import AUTH_SERVICE
 
@@ -19,9 +21,12 @@ if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
 
 
 @blueprint.route("/")
-@jwt_required(optional=True)
 def index():
-    user = get_jwt_identity()
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
 
     if user is None:  # not logged in, redirect to landing page
         return redirect("/landing", code=302)
@@ -39,27 +44,39 @@ def send_favicon():
     return current_app.send_static_file("favicon.ico")
 
 @blueprint.route("/login")
-@jwt_required(optional=True)
 def login():
-    user = get_jwt_identity()
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
+
     if user is not None:  # already logged in
         return redirect("/", 302)
     else:
         return render_template('login.html', app_name=current_app.config['APP_NAME'])
 
 @blueprint.route("/register")
-@jwt_required(optional=True)
 def register():
-    user = get_jwt_identity()
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
+
     if user is not None:  # user already logged in
         return redirect("/", 302)
     else:
         return render_template('register.html', app_name=current_app.config['APP_NAME'])
 
 @blueprint.route("/password-reset")
-@jwt_required(optional=True)
 def password_reset():
-    user = get_jwt_identity()
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
+
     if user is not None:
         return redirect("/", 302)
     else:

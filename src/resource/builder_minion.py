@@ -2,6 +2,7 @@ from flask import request, current_app, Flask, Blueprint
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
+from src.model.island import Island
 from src.model.builder_minion import BuilderMinion
 from src.resource import clean_dict_input, add_swagger
 from src.resource.entity import EntitySchema, EntityResource
@@ -69,7 +70,7 @@ class BuilderMinionResource(EntityResource):
     @summary('Create a new builder minion')
     @swagger.expected(schema=BuilderMinionSchema, required=True)
     @swagger.response(response_code=200, description='Builder minion created', schema=BuilderMinionSchema)
-    @swagger.response(response_code=400, description='builds_on building id not found (when provided), or invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=400, description='builds_on building id not found (when provided), island_id not found, or invalid input', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -108,6 +109,10 @@ class BuilderMinionResource(EntityResource):
 
 
         builder_minion = BuilderMinion(**data)
+        island = Island.query.get(builder_minion.island_id)
+        if island is None:
+            return ErrorSchema(f"Island with id {builder_minion.island_id} not found"), 400
+
 
         current_app.db.session.add(builder_minion)
         current_app.db.session.commit()
@@ -149,6 +154,11 @@ class BuilderMinionResource(EntityResource):
                     return ErrorSchema(f"Building with id {data['builds_on']} is not being upgraded"), 400
 
                 data['builds_on'] = building.task  # set the task
+
+            if 'island_id' in data:
+                island = Island.query.get(int(data['island_id']))
+                if island is None:
+                    return ErrorSchema(f"Island with id {data['island_id']} not found"), 400
 
             minion.update(data)
 

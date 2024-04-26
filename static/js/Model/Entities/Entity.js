@@ -1,4 +1,4 @@
-import {Subject} from "../Patterns/Subject.js";
+import {Subject} from "../../Patterns/Subject.js";
 import * as THREE from "three";
 
 /**
@@ -27,9 +27,10 @@ export class Entity extends Subject{
     /**
      * Set the id of the entity
      * @param {UserInfo} userInfo - all the information about the user
+     * @param {THREE.Vector3} islandPosition - world position of the island
      * @return {JSON} data - entire stringified JSON object which db can accept
      */
-    formatPOSTData(userInfo){
+    formatPOSTData(userInfo, islandPosition){
         throw new Error("Cannot set id of abstract class Entity");
     }
 
@@ -41,9 +42,7 @@ export class Entity extends Subject{
     _createUpdatePositionEvent(){
         return new CustomEvent("updatePosition", {detail: {position: new THREE.Vector3().copy(this._position)}});
     }
-    _createUpdateMinYEvent(y){
-        return new CustomEvent("updateMinY", {detail: {minY: y}});
-    }
+
     /**
      * NYI
      */
@@ -51,11 +50,19 @@ export class Entity extends Subject{
 
     }
 
+    /**
+     * Set the position of the entity and dispatch an updatePosition event
+     * @param vector
+     */
     set position(vector){
         this._position.copy(vector);
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
 
+    /**
+     * return a copy of the position
+     * @return {*}
+     */
     get position(){
         return this._position.clone();
     }
@@ -80,14 +87,5 @@ export class Entity extends Subject{
      */
     get dbType(){
         throw new Error("cannot get type of abstract class Entity");
-    }
-
-    /**
-     * Set minimum y value of the entity bounding box
-     * @param y - new minimum y value
-     */
-    setMinimumY(y){
-        this._position.y = y;
-        this.dispatchEvent(this._createUpdateMinYEvent(y));
     }
 }

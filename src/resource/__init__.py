@@ -74,6 +74,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.placeable.fuse_table_building as fuse_table_building_module
     import src.resource.placeable.warrior_hut_building as warrior_hut_building_module
     import src.resource.placeable.tower_building as tower_building_module
+    import src.resource.placeable.wall_building as wall_building_module
     import src.resource.gems as gems_module
     import src.resource.blueprint as blueprint_module
     import src.resource.task as task_module
@@ -84,6 +85,8 @@ def attach_resources(app: Flask) -> None:
     import src.resource.placeable.placeable as placeable_module
     import src.resource.entity as entity_module
     import src.resource.time as time_module
+    import src.resource.match_queue as match_queue_module
+    import src.resource.friend_request as friend_request_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -94,6 +97,7 @@ def attach_resources(app: Flask) -> None:
     altar_building_module.attach_resource(app)
     fuse_table_building_module.attach_resource(app)
     warrior_hut_building_module.attach_resource(app)
+    wall_building_module.attach_resource(app)
     tower_building_module.attach_resource(app)
     gems_module.attach_resource(app)
     blueprint_module.attach_resource(app)
@@ -105,6 +109,8 @@ def attach_resources(app: Flask) -> None:
     placeable_module.attach_resource(app)
     entity_module.attach_resource(app)
     time_module.attach_resource(app)
+    match_queue_module.attach_resource(app)
+    friend_request_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:

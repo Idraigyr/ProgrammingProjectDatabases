@@ -43,6 +43,7 @@ class BlueprintType(Enum):
     TOWER = 3
     FUSE_TABLE = 4
     WARRIOR_HUT = 5
+    WALL = 8
 
     # Props
     BUSH = 6

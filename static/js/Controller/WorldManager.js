@@ -2,8 +2,10 @@ import {Model} from "../Model/ModelNamespace.js";
 import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
-import {MinionSpawner} from "../Model/MinionSpawner.js";
+import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
+import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
+import {gridCellSize} from "../configs/ViewConfigs.js";
 
 
 /**
@@ -25,49 +27,32 @@ export class WorldManager{
         this.persistent = true;
     }
 
-    /**
-     * Imports a world from the server
-     * @param islandID - the id of the island to import
-     * @returns {Promise<void>} - a promise that resolves when the world has been imported
-     */
-    async importWorld(islandID){
-        let islands = [
-            {buildings: [],
+    async importIsland(islandID){
+        let island = {
+            buildings: [],
                 position: {
                     x: 0,
                     y: 0,
                     z: 0
                 },
                 rotation: 0
-            }
-        ];
-        let player = {position: {
-                x: playerSpawn.x,
-                y: playerSpawn.y,
-                z: playerSpawn.z
-            },
-            health: 100,
-            mana: 1000,
-            maxMana: 1000
         };
+
         let characters = [];
 
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
-                islands[0].buildings.push({
+                island.buildings.push({
                     type: building.blueprint.name,
-                    position: {
-                        x: building.x,
-                        y: 0,
-                        z: building.z
-                    },
+                    position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: 0,
                     id: building.placeable_id
                 });
             }
 
+            //Remove?
             for(const entity in response.entities){
                 characters.push({
                     type: entity.type,
@@ -83,8 +68,71 @@ export class WorldManager{
             console.error(e);
         }
 
+        return {island: island, characters: characters};
+    }
+
+    calculateIslandOffset(){
+        return new THREE.Vector3(gridCellSize*(15+1), 0, 0); //TODO: replace 15 with island width and length (+3 for gap between islands)
+    }
+
+    addOpponent(params){
+        const opponent = this.factory.createPlayer(params);
+        this.world.addEntity(opponent);
+        return opponent;
+    }
+
+    async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
+        console.log("importing island");
+        const {island, characters} = await this.importIsland(islandID);
+        let islandPosition = new THREE.Vector3(0,0,0);
+        if(currentIslandIsCenter){
+            islandPosition.add(this.calculateIslandOffset());
+            //TODO: implement rotation in factory createIsland
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: 180, buildingsList: island.buildings, width: 15, length: 15}));
+        } else {
+            //TODO: make sure these 2 lines work correctly
+            this.world.islands[0].position = this.world.islands[0].position.add(this.calculateIslandOffset());
+            this.world.islands[0].rotation = 180;
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+        }
+        this.collisionDetector.generateColliderOnWorker();
+        this.collisionDetector.visualize({bvh: true});
+    }
+
+
+    /**
+     * Imports an island from the server and generates a player
+     * @param islandID - the id of the island to import
+     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     */
+    async importWorld(islandID){
+        const {island, characters} = await this.importIsland(islandID);
+
+        const player = {position: {
+                x: playerSpawn.x,
+                y: playerSpawn.y,
+                z: playerSpawn.z
+            },
+            health: this.userInfo.health,
+            maxHealth: this.userInfo.maxHealth,
+            mana: this.userInfo.mana,
+            maxMana: this.userInfo.maxMana,
+        };
+
         this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
-        this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
+        this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
+        this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+        this.world.addPlayer(this.factory.createPlayer(player));
+        // Set default values for the inventory slots
+        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
+        this.world.player.changeEquippedSpell(0,new BuildSpell({}));
+        this.world.player.changeEquippedSpell(1,new Fireball({}));
+        this.world.player.changeEquippedSpell(2,new ThunderCloud({}));
+        this.world.player.changeEquippedSpell(3,new Shield({}));
+        this.world.player.changeEquippedSpell(4,new IceWall({}));
+        characters.forEach((characters) => {
+
+        });
     }
 
     /**
@@ -92,7 +140,15 @@ export class WorldManager{
      * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
      */
     placeBuilding(event){
+        console.log("placeBuilding", event);
         const buildingName = event.detail.buildingName;
+        if(!this.userInfo.unlockedBuildings.includes(buildingName) || this.userInfo.buildingsPlaced > this.userInfo.maxBuildings){
+            console.log("cant place building you have not unlocked or you have reached the max number of buildings");
+            console.log("unlocked buildings", this.userInfo.unlockedBuildings);
+            console.log("building name", buildingName);
+            console.log("buildings placed", this.userInfo.buildingsPlaced);
+            console.log("max buildings", this.userInfo.maxBuildings);
+        }
         if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
             const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
             if(placeable){
@@ -120,15 +176,18 @@ export class WorldManager{
     }
 
     /**
-     * Adds a new island to the world to spawn minions
+     * Adds a new island to the world to spawn minions (single player only)
      */
     addSpawningIsland(){
+        console.log("adding spawning island");
         //TODO: get a random position for the island which lies outside of the main island
         let position = {x: -9, y: 0, z: -8};
+        convertGridIndexToWorldPosition(position)
         //TODO: if the new island is not connected to the main island, add a bridge that connects the two islands
 
         //create an island
-        let island = this.factory.createIsland({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), rotation: 0, buildingsList: [], width: 3, length: 3});
+        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 3, length: 3, team: 1});
+        console.log("position", island.position);
         // //create a bridge
         // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
 
@@ -137,10 +196,10 @@ export class WorldManager{
         // this.world.islands.push(bridge);
 
         //add a enemy warrior hut to the island
-        // let hut = this.factory.createBuilding({buildingName: "Tower", position: position, withTimer: false});
-        // island.addBuilding(hut);
+        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: position, withTimer: false, id: 999});
+        island.addBuilding(hut);
         // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
-        this.world.spawners.push(new MinionSpawner({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z))}));
+        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(position.x, 15, position.z), buildingID: hut.id, interval: 4}));
         this.collisionDetector.generateColliderOnWorker();
     }
 
@@ -244,10 +303,14 @@ export class WorldManager{
     sendPOST(uri, entity, retries, requestIndex){
         this.insertPendingPostRequest(entity);
         try {
+            const island = this.world.getIslandByPosition(entity.position);
+            if(!island){ //TODO: add team check/ check if island is player's
+                throw new Error("No island found at position");
+            }
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "POST",
-                data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
+                data: JSON.stringify(entity.formatPOSTData(this.userInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -279,11 +342,15 @@ export class WorldManager{
      * @param retries - the number of retries to resend the PUT request
      */
     sendPUT(uri, entity, retries){
+        const island = this.world.getIslandByPosition(entity.position);
+        if(!island){ //TODO: add team check / check if island = player's
+            throw new Error("No island found at position");
+        }
         try {
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "PUT",
-                data: JSON.stringify(entity.formatPUTData(this.userInfo)),
+                data: JSON.stringify(entity.formatPUTData(this.userInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {

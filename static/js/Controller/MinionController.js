@@ -7,10 +7,11 @@ import {
     printGridPath,
     returnWorldToGridIndex
 } from "../helpers.js";
-import {Foundation} from "../Model/Foundation.js";
+import {Foundation} from "../Model/Entities/Foundations/Foundation.js";
 import {
-    gravity
+    gravity, minionAttackRadius, minionFollowRadius, minionSpeedMultiplier
 } from "../configs/ControllerConfigs.js";
+import {Island} from "../Model/Entities/Foundations/Island.js";
 
 //TODO: put this directly in grid of foundation?
 /**
@@ -24,7 +25,7 @@ class PathNode{
     constructor(params) {
         this.index = params.index;
         this.value = params.value;
-        this.position = params?.position ?? new THREE.Vector3(); //TODO: set position (calculate from index and grid size and index of 0,0,0)
+        this.position = params?.position ?? new THREE.Vector3();
         this.gCost = 0;
         this.hCost = 0;
         this.worldMap = params.worldMap;
@@ -126,8 +127,9 @@ export class MinionController{
         this.open = [];
         this.closed = [];
 
-        this.paths = [];
-
+        //paths per team per warrior hut
+        this.paths = {0: {}, 1: {}};
+        this.altars = {0: null, 1: null};
     }
 
     /**
@@ -169,11 +171,31 @@ export class MinionController{
             minion.position = minion.spawnPoint;
             minion.tempPosition.copy(minion.spawnPoint);
 
-            minion.input.currentNode = this.paths[this.paths.length-1][0];
+            minion.input.currentNode = this.paths[minion.team][0];
             minion.input.currentNodeIndex = 0;
         } else {
             minion.position = minion.tempPosition;
         }
+    }
+
+    /**
+     * get the closest node on the minion's path to that minion
+     * @param {Minion} minion
+     * @return {{closestNode: PathNode, index: number}}
+     */
+    getClosestNodeOnPath(minion){
+        let closestNode = this.paths[minion.team][minion.buildingID][0];
+        let closestDistance = closestNode.position.distanceTo(minion.position);
+        let index = 0;
+        for(let i = 1; i < this.paths[minion.team][minion.buildingID].length; i++){
+            let distance = this.paths[minion.team][minion.buildingID][i].position.distanceTo(minion.position);
+            if(distance < closestDistance){
+                closestDistance = distance;
+                closestNode = this.paths[minion.team][minion.buildingID][i];
+                index = i;
+            }
+        }
+        return {closestNode, index};
     }
 
     /**
@@ -187,49 +209,72 @@ export class MinionController{
             return;
         }
 
-        minion.fsm.updateState(deltaTime, minion.input);
-        //TODO: behaviour:
-        // moves towards altar on path
-        //what if collision with other minions? => test boxToBoxCollision (hold into account both velocities (and masses))
-        //what if collision with player? => test boxToBoxCollision (hold into account both velocities (and masses))
-        //what if collision with static geometry? => updateMinionPhysics
-        // attacks player if close enough?
-        //attacks tower if close enough? only if not more than 3 minions are already attacking it?
-        //attacks altar if close enough
+        // minion.fsm.updateState(deltaTime, minion.input);
+
+        //TODO: attacks tower if close enough? only if not more than 3 minions are already attacking it?
+        let movement = new THREE.Vector3(1, 0, 0);
+        let targetPosition = new THREE.Vector3().copy(minion.position);
+        //TODO: update movement based on state
+        //if altar is close enough, attack altar
+        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*2){ //TODO: find out why this is gridCellSize is too close
+            //attack altar
+            //set attack state & at the end of the attack animation, deal damage
+            minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
+            minion.lastAction = "AttackEnemy";
+        } else {
+            const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion);
+            if(closestDistance < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
+                //attack character
+                //set attack state & at the end of the attack animation, deal damage
+                minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
+                minion.lastAction = "AttackEnemy";
+            } else if(closestDistance < minionFollowRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
+                //follow character
+                targetPosition.copy(closestEnemy.position);
+                minion.fsm.processEvent({detail: {newState: "WalkForward"}});
+                minion.lastAction = "FollowEnemy";
+            } else {
+                //walk towards altar
+                minion.fsm.processEvent({detail: {newState: "WalkForward"}});
+                // set current target node that minion is moving towards
+
+                if(!minion.input.currentNode || minion.lastAction !== "MovingToAltar") {
+                    const {closestNode, index} = this.getClosestNodeOnPath(minion);
+                    minion.input.currentNode = closestNode;
+                    minion.input.currentNodeIndex = index;
+                } //TODO: change indeces depending on starting position and team
+                // if current target node is reached, set next target node
+                if(minion.position.distanceTo(minion.input.currentNode.position) < 0.1){
+                    minion.input.currentNodeIndex++;
+                    if(minion.input.currentNodeIndex < this.paths[minion.team][minion.buildingID].length){
+                        minion.input.currentNode = this.paths[minion.team][minion.buildingID][minion.input.currentNodeIndex];
+                    } else {
+                        minion.input.currentNode = null; //should never happen => minion should attack altar
+                    }
+                }
+                targetPosition.copy(minion.input.currentNode.position);
+                targetPosition.y = minion.position.y;
+                minion.lastAction = "MovingToAltar";
+            }
+        }
 
         if (minion.fsm.currentState.movementPossible) {
-
-            //TODO: update movement based on state
-
-            //walk towards altar:
-            // set current target node that minion is moving towards
-            if(!minion.input.currentNode) {
-                minion.input.currentNode = this.paths[this.paths.length-1][0];
-                minion.input.currentNodeIndex = 0;
-            } //TODO: change indeces depending on starting position and team
-            // if current target node is reached, set next target node
-            if(minion.position.distanceTo(minion.input.currentNode.position) < 0.1){
-                minion.input.currentNodeIndex++;
-                if(minion.input.currentNodeIndex < this.paths[this.paths.length-1].length){
-                    minion.input.currentNode = this.paths[this.paths.length-1][minion.input.currentNodeIndex];
-                }
-            }
-            // rotate towards current node
-            minion.phi = -new THREE.Vector3(1,0,0).angleTo(minion.input.currentNode.position.clone().sub(minion.position))*180/Math.PI;
-            minion.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), minion.phi*Math.PI/180);
-            // move towards current node
-            let movement = new THREE.Vector3(1, 0, 0);
-
-            movement.subVectors(minion.input.currentNode.position, minion.position);
-
+            // move towards current target
+            movement.subVectors(targetPosition, minion.position);
             movement.normalize();
 
-            //if altar is close enough, attack altar
-            //else if tower is close enough, attack tower
-            //else if player is close enough, attack player
-            const minionSpeedMultiplier = 800;
+            // rotate towards current target
+            if(movement.length() > 0){
+                //TODO: fix rotation
+                minion.phi = new THREE.Vector3(1,0,0).angleTo(movement)*180/Math.PI;
+                minion.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), minion.phi*Math.PI/180);
+            }
+
             minion.lastMovementVelocity.copy(movement).multiplyScalar(deltaTime*minionSpeedMultiplier);
             minion.velocity.copy(minion.verticalVelocity).add( minion.lastMovementVelocity);
+        } else {
+            minion.lastMovementVelocity.set(0,0,0);
+            minion.velocity.set(0,0,0);
         }
     }
 
@@ -335,14 +380,22 @@ export class MinionController{
         for(let i = 0; i < this.#worldMap.grid.length; i++){
             this.#worldMap.grid[i] = new PathNode({index: i, position: this.calculateNodePosition(i), value: this.#worldMap.grid[i], worldMap: this.#worldMap});
         }
-        //TODO: temp solution
-        if(islands.length > 1){
-            this.paths.push(
-                this.calculatePath( //TODO: change indeces depending on starting position and team
-                    this.#worldMap.grid[this.calculateIndexFromPosition(new THREE.Vector3(-90,0,-80))],
-                    this.#worldMap.grid[Math.floor((this.#worldMap.grid.length-1)/2)] // this.#worldMap.grid.find((node) => node.value === buildTypes.getNumber("altar_building")) -> not used temporarily since broken db
-                )
-            );
+
+        for(const island of islands){
+            if(island instanceof Island){
+                const altar = island.getBuildingsByType("altar_building")[0];
+                this.altars[island.team] = altar?.position ?? null;
+            }
+        }
+
+        for(const island of islands){
+            for(const WarriorHut of island.getBuildingsByType("warrior_hut")){
+                if(!this.altars[island.team === 0 ? 1 : 0]) break; //This is for singleplayer where the other team might not have an altar
+                this.paths[island.team][WarriorHut.id] = this.calculatePath(
+                    this.#worldMap.grid[this.calculateIndexFromPosition(WarriorHut.position)],
+                    this.#worldMap.grid[this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0])]
+                );
+            }
         }
     }
 

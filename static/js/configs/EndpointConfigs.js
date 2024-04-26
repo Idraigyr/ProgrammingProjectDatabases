@@ -11,6 +11,8 @@ export const placeableURI = 'api/placeable';
 
 export const timeURI = 'api/time';
 
+export const matchMakingURI = 'api/matchmaking';
+
 export const islandURI = 'api/island';
 
 export const blueprintURI = 'api/blueprint';

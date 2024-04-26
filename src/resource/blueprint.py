@@ -53,6 +53,7 @@ class BlueprintSchema(Schema):
 class BlueprintResource(Resource):
     """
     A resource / api endpoint that allows for the retrieval and modification of blueprints
+    TODO - check if the invoking user is an admin, otherwise restrict access to the GET endpoint
     """
 
     @swagger.tags('blueprint')

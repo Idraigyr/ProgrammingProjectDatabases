@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import {Character} from "../Character.js";
+import {Character} from "./Character.js";
 
 /**
  * Class representing a Minion
@@ -10,6 +10,8 @@ export class Minion extends Character{
         super(params);
         this.tempPosition = this.spawnPoint.clone();
         this.lastMovementVelocity = new THREE.Vector3();
-        this.input = {blockedInput: false, closestPlayer: null, closestTower: null, currentNode: null, currentNodeIndex: 0};
+        this.input = {blockedInput: false, currentTarget: null, currentNode: null, currentNodeIndex: 0};
+        this.buildingID = params?.buildingID ?? null;
+        this.lastAction = "Idle"; // Idle, WalkToAltar, FollowEnemy, AttackEnemy
     }
 }

@@ -12,7 +12,8 @@ export const buildTypes = (function (){
         tower_building: 5,
         prop: 6,
         fuse_table: 7,
-        warrior_hut: 8
+        warrior_hut: 8,
+        wall_building: 9
     };
     const name = {
         0: "void",
@@ -24,6 +25,7 @@ export const buildTypes = (function (){
         6: "prop",
         7: "fuse_table",
         8: "warrior_hut",
+        9: "wall_building"
     }
 
     const menuName = {
@@ -31,7 +33,7 @@ export const buildTypes = (function (){
         3: "AltarMenu",
         7: "FusionTableMenu",
         5: "TowerMenu",
-        4: "MineMenu"
+        4: "MineMenu",
     }
 
     return {

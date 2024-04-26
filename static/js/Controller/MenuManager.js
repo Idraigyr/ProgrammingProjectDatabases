@@ -32,15 +32,17 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
      */
     constructor(params) {
         super();
         this.container = params.container;
         this.blockInputCallback = params.blockInputCallback;
+        this.matchMakeCallback = params.matchMakeCallback;
         this.items = {};
         this.menus = {};
 
+        this.menusEnabled = true;
         this.currentMenu = null;
         this.dragElement = null;
         this.isSlotItem = false;
@@ -77,7 +79,8 @@ export class MenuManager extends Subject{
             Bush: "Bush",
             Mine: "Mine",
             FusionTable: "FusionTable",
-            WarriorHut: "WarriorHut"
+            WarriorHut: "WarriorHut",
+            Wall: "Wall"
         }
     }
 
@@ -94,7 +97,7 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
         }
         if(menu instanceof AltarMenu){
-            menu.element.querySelector(".play-button").addEventListener("click", () => console.log("play button clicked"));
+            menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
         }
         if(menu instanceof FusionTableMenu){
             menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
@@ -549,6 +552,7 @@ export class MenuManager extends Subject{
         const mineName = "Mine";
         const fusionTableName = "FusionTable";
         const warriorHutName = "WarriorHut";
+        const wallName = "Wall";
 
         const items = [
             {
@@ -556,6 +560,12 @@ export class MenuManager extends Subject{
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime}
+            },
+            {
+                item: {name: "wall", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Wall", getDisplayName: () => "Wall"},
+                icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
+                description: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.description,
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime}
             },
             {
                 item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
@@ -671,7 +681,7 @@ export class MenuManager extends Subject{
      */
     renderMenu(params){
         console.log(params)
-        if(!params.name) return;
+        if(!params.name || !this.menusEnabled) return;
         if(this.currentMenu) this.hideMenu(this.currentMenu);
         this.blockInputCallback.block();
         this.container.style.display = "block";
@@ -688,7 +698,7 @@ export class MenuManager extends Subject{
      * @param {string} name
      */
     hideMenu(name = this.currentMenu){
-        if(!name) return;
+        if(!name || !this.menusEnabled) return;
         this.container.style.display = "none";
         if(name === "AltarMenu"){
             this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {

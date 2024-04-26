@@ -11,6 +11,11 @@ export class Wizard extends Character{
         this.currentSpell = 0;
         this.mana = params?.mana ?? 100;
         this.maxMana = params?.maxMana ?? 100;
+        this.id = params?.id ?? null;
+    }
+
+    setId(data) {
+        this.id = data.entity.player_id;
     }
 
     /**
@@ -31,6 +36,8 @@ export class Wizard extends Character{
         this.spellCooldowns.forEach((cooldown, index, array) => {
             array[index] = Math.max(0,cooldown -= deltaTime);
         });
+        //notify the hud to update the cooldowns of the spells
+        this.dispatchEvent(this.#createUpdateCooldownsEvent());
     }
 
     /**
@@ -84,6 +91,14 @@ export class Wizard extends Character{
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }
 
+    updateMaxManaAndHealth(event){
+        this.mana = event.detail.maxMana;
+        this.maxMana = event.detail.maxMana;
+        this.health = event.detail.maxHealth;
+        this.maxHealth = event.detail.maxHealth;
+        this.advertiseCurrentCondition();
+    }
+
     /**
      * Increase the maximum mana of the player
      * @param {Number} amount - amount to increase the maximum mana by, needs to be bigger than 0
@@ -106,7 +121,6 @@ export class Wizard extends Character{
      * Notify observers of the current condition of the player
      */
     advertiseCurrentCondition(){
-        this.health = 20;
         this.dispatchEvent(this.#createUpdateManaEvent());
         this.dispatchEvent(this.#createUpdateHealthEvent());
     }
@@ -135,4 +149,16 @@ export class Wizard extends Character{
     #createUpdateHealthEvent() {
         return new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}});
     }
+
+    /**
+     * Create a custom event to update the cooldowns of the players spells
+     * @returns {CustomEvent<{detail: cooldown: list}>} - the custom event
+     */
+    #createUpdateCooldownsEvent() {
+        return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
+    }
+
+
+
+
 }

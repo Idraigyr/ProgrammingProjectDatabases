@@ -44,7 +44,7 @@ class TimeResource(Resource):
 
 def attach_resource(app: Flask) -> None:
     """
-    Attach the PlayerResource (API endpoint + Swagger docs) to the given Flask app
+    Attach the TimeResource (API endpoint + Swagger docs) to the given Flask app
     :param app: The app to create the endpoint for
     :return: None
     """

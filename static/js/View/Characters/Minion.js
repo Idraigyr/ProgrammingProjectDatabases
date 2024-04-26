@@ -14,7 +14,7 @@ export class Minion extends IAnimatedView{
         this._getAnimation(clips, 'Walking_A',"WalkForward");
         this._getAnimation(clips, 'Walking_Backwards',"WalkBackward");
         this._getAnimation(clips, 'Running_A',"Run");
-        this._getAnimation(clips, 'Hit_A',"DefaultAttack");
+        this._getAnimation(clips, '1H_Melee_Attack_Slice_Diagonal',"DefaultAttack");
         this._getAnimation(clips, 'Jump_Full_Short',"Jump");
     }
 }
