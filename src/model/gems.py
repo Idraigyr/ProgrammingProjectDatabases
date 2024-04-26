@@ -80,6 +80,8 @@ class Gem(current_app.db.Model):
 
         if 'attributes' in data:
             copy = data['attributes'].copy()
+            seen_ids = [assoc.attribute.id for assoc in self.attributes_association]
+            added_ids = []
             for obj in copy:
                 if 'gem_attribute_id' not in obj or 'multiplier' not in obj:
                     raise ValueError('Invalid attribute object. Either gem_attribute_id and/or multiplier is missing')
@@ -103,7 +105,10 @@ class Gem(current_app.db.Model):
                        found = True
 
                 if not found: # If the for loop didn't run
+                    if obj['gem_attribute_id'] in seen_ids:
+                        raise ValueError('Duplicate gem_attribute_id in attributes list')
                     # Create new entries
+                    added_ids.append(obj['gem_attribute_id'])
                     self.attributes_association.append(GemAttributeAssociation(**obj))
                 else:
                     # Remove the entry from the data object if it was found in our own attributes
@@ -111,6 +116,10 @@ class Gem(current_app.db.Model):
 
             # Remove any remaining entries in our own attributes that were not found in the data object
             for assoc in self.attributes_association:
+                if assoc.gem_attribute_id in added_ids:
+                    # Don't remove the entry if it was added in this update - these are also not fully initialized yet
+                    continue
+
                 found = False
                 for obj in copy:
                     if assoc.attribute.id == obj['gem_attribute_id']:
