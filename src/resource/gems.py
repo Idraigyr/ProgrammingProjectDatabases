@@ -198,29 +198,43 @@ class GemResource(Resource):
             # Thus, we first create the gem without the attributes, then add the attributes with the gem id
             gem_attributes = []
             if 'attributes' in data:
-                gem_attributes = data['attributes']
-                data['attributes'] = [] # We need to remove the attributes before passing data to the Gem constructor
+                gem_attributes = data.pop('attributes')
 
-                # We need to add the gem id to each attribute association
-                for assoc in data['attributes']:
-                    assoc['gem_id'] = data['id']
+            player_id = None
+            if 'player_id' in data:
+                player_id = data.pop('player_id')
+
+            building_id = None
+            if 'building_id' in data:
+                building_id = data.pop('building_id')
 
             gem = Gem(**data)
 
             current_app.db.session.add(gem)
+            current_app.db.session.commit() # This is necessary to get the gem id
+
+            # if gem_attributes: # not empty
+            #     for assoc in gem_attributes:
+            #         assoc['gem_id'] = gem.id
+            #         del assoc['gem_attribute_type'] # We don't need this, it's only (syntactically) required for the schema
+            #         gem_assoc = GemAttributeAssociation(**assoc)
+            #         gem.attributes_association.append(gem_assoc)
+            #
+
+            update_dict = {'attributes': gem_attributes}
+            if player_id:
+                update_dict['player_id'] = player_id
+
+            if building_id:
+                update_dict['building_id'] = building_id
+
+            # We reuse the update method to add the attributes
+            gem.update(update_dict)
+
             current_app.db.session.commit()
 
-            if gem_attributes: # not empty
-                for assoc in gem_attributes:
-                    assoc['gem_id'] = gem.id
-                    del assoc['gem_attribute_type'] # We don't need this, it's only (syntactically) required for the schema
-                    gem_assoc = GemAttributeAssociation(**assoc)
-                    gem.attributes_association.append(gem_assoc)
-
-                current_app.db.session.commit()
-
             return GemSchema(gem), 200
-        except Exception as e:
+        except (KeyError, ValueError) as e:
             return ErrorSchema(str(e)), 400
 
 
