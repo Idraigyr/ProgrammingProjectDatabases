@@ -9,15 +9,16 @@ import {gemTypes} from "../configs/Enums.js";
 export class ItemManager {
     /**
      * Constructor for the ItemManager
-     * @param {{playerInfo: PlayerInfo}} params - parameters for the ItemManager
+     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager}} params - parameters for the ItemManager
      */
     constructor(params) {
         this.gems = [];
         this.gemAttributes = [];
         this.playerInfo = params.playerInfo;
+        this.menuManager = params.menuManager;
         this.dbRequests = [];
 
-        this.persistent = false;
+        this.persistent = true;
     }
 
     /**
@@ -31,6 +32,44 @@ export class ItemManager {
         } else {
             throw new Error("Could not retrieve gem attributes");
         }
+    }
+
+    /**
+     * creates gem models based on gem data from the database,
+     * currenly gems that are equipped in a building are added chronologicaly to the building so slot positions are not preserved between sessions
+     * (db currently does not store slot positions)
+     * @param gems
+     */
+    createGemModels(gems){
+        const buildingSlots = {};
+        for (let i = 0; i < gems.length; i++){
+            const params = gems[i];
+            if(buildingSlots[params.building_id]){
+                buildingSlots[params.id]++;
+            } else {
+                buildingSlots[params.id] = 0;
+            }
+            const gem = new Gem({
+                id: params.id,
+                equippedIn: params.building_id,
+                slot: buildingSlots[params.building_id],
+                name: params.type
+            });
+            //add attributes and total power to the gem
+            let power = 0;
+            for(let j = 0; j < gems[i].attributes.length; j++){
+                const params = gems[i].attributes[j];
+                gem.addAttribute(new Attribute({
+                    id: params.gem_attribute_id,
+                    name: params.gem_attribute_type,
+                    multiplier: params.multiplier
+                }));
+                power += params.multiplier; //TODO: change this if power calculation changes
+            }
+            gem.power = power;
+            this.gems.push(gem);
+        }
+
     }
 
     /**
@@ -71,6 +110,7 @@ export class ItemManager {
             gem.equippedIn = event.detail.building.id;
             gem.slot = event.slot;
             event.detail.building.addGem(gem.id);
+            this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["equippedIn"]);
         }
         else throw new Error("Gem with id " + event.detail.id + " doesn't exist.");
     }
@@ -210,6 +250,8 @@ export class ItemManager {
                 console.log("POST success");
                 console.log(textStatus, data);
                 gem.setId(data);
+                this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
+                console.log(gem);
                 this.removePendingRequest(requestIndex);
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");
@@ -217,6 +259,46 @@ export class ItemManager {
                     this.sendPOST(uri, gem, retries - 1, requestIndex);
                 } else {
                     throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
+                    //TODO: popup message to user that gem could not be created, bad connection? should POST acknowledgment be before or after model update?
+                }
+            });
+        } catch (err){
+            console.error(err);
+        }
+    }
+
+    /**
+     * Send a PUT request to the server
+     * @param {String} uri - the URI to send the POST request to
+     * @param {Gem} gem - the gem that we want to update
+     * @param {Number} retries - the number of retries to resend the POST request
+     * @param {Number} requestIndex - the index of the gem in the dbRequests array (used to remove the request from the array) use insertPendingRequest to get the index
+     * @param {string[]} changes - the changes that we want to update in the db
+     * @returns {Promise<void>}
+     */
+    sendPUT(uri, gem, retries, requestIndex, changes = []){
+        console.log("Sending PUT request: ", gem.formatPUTData(changes));
+        try {
+            $.ajax({
+                url: `${API_URL}/${uri}`,
+                type: "PUT",
+                data: JSON.stringify(gem.formatPUTData(changes)),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+                gem.setId(data);
+                this.removePendingRequest(requestIndex);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                if (retries > 0){
+                    this.sendPUT(uri, gem, retries - 1, requestIndex);
+                } else {
+                    throw new Error(`Could not send PUT request for building: Error: ${textStatus} ${errorThrown}`);
                     //TODO: popup message to user that gem could not be created, bad connection? should POST acknowledgment be before or after model update?
                 }
             });
@@ -236,9 +318,7 @@ export class ItemManager {
         let power = this.#generatePowerNumber(this.playerInfo.level, fusionLevel);
         const viewType = Math.floor(Math.random() * gemTypes.getSize);
         const params = {
-            fusionLevel: fusionLevel,
             power: power,
-            viewType: viewType,
             name: gemTypes.getName(viewType),
         };
         const gem = new Gem(params);
@@ -263,8 +343,6 @@ export class ItemManager {
 
         if(this.persistent){
             this.sendPOST(gemURI, gem, postRetries, this.insertPendingRequest(gem));
-        } else { //TODO: remove, this is for testing purposes
-            gem.setId({id: counter()});
         }
         this.gems.push(gem);
         return gem;

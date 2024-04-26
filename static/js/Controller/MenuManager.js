@@ -461,7 +461,6 @@ export class MenuManager extends Subject{
             description: params.description,
             extra: params.extra
         });
-
         if(menuItem instanceof BuildingItem){
             menuItem.element.addEventListener("click", () => this.dispatchEvent(this.createBuildEvent(menuItem.id)));
         }

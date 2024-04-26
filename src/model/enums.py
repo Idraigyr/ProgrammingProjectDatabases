@@ -28,6 +28,13 @@ class GemType(Enum):
     An enum for the different types of gems
     """
     JUMMY = 'jummy'
+    RUBY = 'ruby'
+    SAPPHIRE = 'sapphire'
+    DIAMOND = 'diamond'
+    EMERALD = 'emerald'
+    AMETHYST = 'amethyst'
+    AMBER = 'amber'
+
 
     @classmethod
     def has_value(cls, value):

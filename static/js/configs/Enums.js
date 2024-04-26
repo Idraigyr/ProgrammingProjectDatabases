@@ -52,21 +52,21 @@ export const buildTypes = (function (){
 
 export const gemTypes = (function (){
     const number = {
-        Amber: 0,
-        Amethyst: 1,
-        Diamond: 2,
-        Emerald: 3,
-        Ruby: 4,
-        Sapphire: 5,
+        amber: 0,
+        amethyst: 1,
+        diamond: 2,
+        emerald: 3,
+        ruby: 4,
+        sapphire: 5,
     }
 
     const name = {
-        0: "Amber",
-        1: "Amethyst",
-        2: "Diamond",
-        3: "Emerald",
-        4: "Ruby",
-        5: "Sapphire",
+        0: "amber",
+        1: "amethyst",
+        2: "diamond",
+        3: "emerald",
+        4: "ruby",
+        5: "sapphire",
     }
 
     const icons = {

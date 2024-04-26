@@ -142,7 +142,7 @@ class App {
             },
             matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
         });
-        this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo});
+        this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
 
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
@@ -172,7 +172,8 @@ class App {
             const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
             this.timerManager.createTimer(fusionTime, [() => {
                 const gem = this.itemManager.createGem(fusionLevel);
-                this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gem.viewType), width: 50, height: 50}, description: gem.getDescription()});
+                // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
+                //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);
         });
         this.menuManager.addEventListener("addGem", (event) => {
@@ -278,7 +279,7 @@ class App {
             let params = {name: buildTypes.getMenuName(buildingNumber)}
 
             //TODO: move if statements into their own method of the placeable class' subclasses
-            if(building.gemSlots > 0){
+            if(building && building.gemSlots > 0){
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
                 console.log(params.gemIds);
             }
@@ -356,7 +357,11 @@ class App {
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
         await this.itemManager.retrieveGemAttributes();
+        this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
+        for(const gem of this.itemManager.gems){
+            this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
+        }
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});

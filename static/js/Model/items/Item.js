@@ -12,6 +12,7 @@ export class Item{
      * @return {string}
      */
     getItemId(){
+        console.log("getItemId: ", `${this.type}-${this.id}`);
         return `${this.type}-${this.id}`;
     }
 
@@ -45,6 +46,17 @@ export class Item{
             type: this.name
         }
     }
+
+    /**
+     * Formats the data for a PUT request
+     * @param {Array} changes - fields that have changed
+     * @return {{id: *}}
+     */
+    formatPUTData(changes){
+        return {
+            id: this.id
+        }
+    }
 }
 
 export class Attribute extends Item{
@@ -75,7 +87,6 @@ export class Gem extends Item{
         this.equippedIn = params?.equippedIn ?? null; // Building id
         this.slot = null;
         this.belongsIn = "GemsMenu";
-        this.viewType = params?.viewType ?? 0;
     }
     get type(){
         return "Gem";
@@ -100,6 +111,7 @@ export class Gem extends Item{
      */
     setId(data) {
         this.id = data.id;
+        console.log("Gem id set to: ", this.id);
     }
 
     /**
@@ -116,6 +128,19 @@ export class Gem extends Item{
             obj.attributes.push(attribute.formatPOSTData());
         });
         console.log(obj);
+        return obj;
+    }
+
+    /**
+     * Formats the data for a PUT request
+     * @param {Array} changes - fields that have changed
+     * @return {{id: *, type}}
+     */
+    formatPUTData(changes) {
+        let obj = super.formatPUTData();
+        if(changes.includes("equippedIn")){
+            obj.building_id = this.equippedIn;
+        }
         return obj;
     }
 }

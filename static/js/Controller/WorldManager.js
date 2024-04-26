@@ -48,7 +48,8 @@ export class WorldManager{
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: 0,
-                    id: building.placeable_id
+                    id: building.placeable_id,
+                    gems: building.gems
                 });
             }
 
