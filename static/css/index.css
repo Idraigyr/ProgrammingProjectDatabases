@@ -477,20 +477,19 @@
 /*MenuManager CSS END*/
 
 .settings-container {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-    width: 100%;
-  height: 95%;
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: #f9f3d2;
-  border: 2px solid #0f172a;
-  border-radius: 10px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);width: 100%;
+    height: fit-content;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f9f3d2;
+    border: 2px solid #0f172a;
+    border-radius: 10px;
     z-index: 8;
-  overflow: hidden;
+    overflow: hidden;
 }
 .borderless{
     border: none;
@@ -566,10 +565,27 @@ h1 {
   margin-bottom: 5px;
 }
 
-.applyButton{
-  background: #ccc5ab;
-  margin-left: 94%;
+.settings-container .button {
+    background: #129af2;
+    font-size:15px;
+    width:140px;
+    height:50px;
+    border-width:1px;
+    color:#fff;
+    border-color: #0c5c93;
+    font-weight:bold;
+    border-radius: 28px;
 }
+
+.button.alert {
+    background: #ff0000;
+    border-color: #ff0000;
+}
+
+.button.right-align {
+    float: right !important;
+}
+
 
 /* end */
 body {
