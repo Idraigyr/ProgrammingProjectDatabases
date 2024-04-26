@@ -1,6 +1,6 @@
 // all variables for game settings
 import { API_URL } from "../configs/EndpointConfigs.js";
-import { } from "../Controller/UserInfo.js";
+import { } from "../Controller/PlayerInfo.js";
 
 let volume = 50;
 let soundEffects = true;
@@ -50,9 +50,9 @@ document.addEventListener("DOMContentLoaded", function() {
 
 
 export class Settings {
-    constructor(inputManager, userinfo) {
+    constructor(inputManager, playerInfo) {
         this.inputManager = inputManager;
-        this.userinfo = userinfo;
+        this.playerInfo = playerInfo;
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
@@ -85,7 +85,7 @@ export class Settings {
         if (confirm("Are you sure you want to PERMANENTLY remove your account?\nThis cannot be undone!")) {
             console.log("Account deletion confirmed")
             $.ajax({
-                url: `${API_URL}/api/user_profile?id=${this.userinfo.userID}`,
+                url: `${API_URL}/api/user_profile?id=${this.playerInfo.userID}`,
                 type: "DELETE",
                 contentType: "application/json",
                 error: (e) => {

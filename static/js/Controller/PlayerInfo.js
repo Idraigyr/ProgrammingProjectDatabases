@@ -7,7 +7,7 @@ import {popUp} from "../external/LevelUp.js";
 /**
  * Class that holds the user information
  */
-export class UserInfo extends Subject{
+export class PlayerInfo extends Subject{
     constructor() {
         super();
         this.userID = null;
@@ -108,7 +108,7 @@ export class UserInfo extends Subject{
         this.dispatchEvent(this.createUpdateManaEvent());
         this.dispatchEvent(this.createUpdateHealthEvent());
         this.dispatchEvent(this.createUpdateUsernameEvent());
-        this.updateUserInfoBackend();
+        this.updatePlayerInfoBackend();
     }
 
     /**
@@ -133,12 +133,12 @@ export class UserInfo extends Subject{
      * @returns {boolean} - True if the crystals were changed, false otherwise
      */
     changeCrystals(amount){
-        if(!amount) throw new Error("userInfo.changeCrystals: amount is not defined");
+        if(!amount) throw new Error("playerInfo.changeCrystals: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());
         // Send put request to server to update the crystals
-        this.updateUserInfoBackend();
+        this.updatePlayerInfoBackend();
         return true;
     }
 
@@ -146,13 +146,13 @@ export class UserInfo extends Subject{
         this.mana = event.detail.current;
         this.maxMana = event.detail.total;
         this.dispatchEvent(this.createUpdateManaEvent());
-        this.updateUserInfoBackend();
+        this.updatePlayerInfoBackend();
     }
 
     /**
-     * Updates the user information on the server
+     * Updates the player information on the server
      */
-    updateUserInfoBackend(){
+    updatePlayerInfoBackend(){
         try {
             // PUT request to server
             // TODO: add info about gems
@@ -208,7 +208,7 @@ export class UserInfo extends Subject{
      * @returns {boolean} - True if the experience was changed, false otherwise
      */
     changeXP(amount){
-        if(!amount) throw new Error("userInfo.changeXP: amount is not defined");
+        if(!amount) throw new Error("playerInfo.changeXP: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.experience) return false;
         if(amount + this.experience >= this.xpThreshold){
             var oldThreshold = this.xpThreshold
@@ -219,7 +219,7 @@ export class UserInfo extends Subject{
         }
         this.dispatchEvent(this.createUpdateXpEvent());
         this.dispatchEvent(this.createUpdateXpThresholdEvent());
-        this.updateUserInfoBackend();
+        this.updatePlayerInfoBackend();
         return true;
     }
     // TODO: rewrite this to have a map of levels and their respective values
@@ -308,7 +308,7 @@ export class UserInfo extends Subject{
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.setLevelStats();
         popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute, this.maxBuildings, this.unlockedBuildings);
-        this.updateUserInfoBackend();
+        this.updatePlayerInfoBackend();
         return true;
     }
 
@@ -334,7 +334,7 @@ export class UserInfo extends Subject{
      * @returns {CustomEvent<{level: number}>} - Event that contains the new level
      */
     createUpdateLevelEvent() {
-        // this.updateUserInfoBackend(); // TODO: why do this line is not working properly?
+        // this.updatePlayerInfoBackend(); // TODO: why do this line is not working properly?
         return new CustomEvent("updateLevel", {detail: {level: this.level}});
     }
 

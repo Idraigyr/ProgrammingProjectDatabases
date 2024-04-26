@@ -18,6 +18,7 @@ export class Mine extends Placeable{
         this.lastCollected = params.lastCollected;
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
         this.#maxCrystals = this.#calculateMaxCrystals();
+        this.gemSlots = 3;
     }
 
     /**
@@ -68,24 +69,24 @@ export class Mine extends Placeable{
 
     /**
      * return a json object with the data of the mine formatted for a POST request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @return {JSON}
      */
-    formatPOSTData(userInfo , islandPosition){
-        const obj = super.formatPOSTData(userInfo, islandPosition);
+    formatPOSTData(playerInfo , islandPosition){
+        const obj = super.formatPOSTData(playerInfo, islandPosition);
         obj.mine_type = "crystal";
         return obj;
     }
 
     /**
      * return a json object with the data of the mine formatted for a PUT request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {*} the building type
      */
-    formatPUTData(userInfo, islandPosition) {
-        const obj = super.formatPUTData(userInfo, islandPosition);
+    formatPUTData(playerInfo, islandPosition) {
+        const obj = super.formatPUTData(playerInfo, islandPosition);
         obj.mine_type = "crystal";
         return obj;
     }

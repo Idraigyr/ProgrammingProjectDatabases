@@ -62,3 +62,5 @@ export const gridCellSize = 10;
 export const islandWidth = 15;
 
 export const islandLength = 15;
+
+export const amountOfGemIcons = 10;

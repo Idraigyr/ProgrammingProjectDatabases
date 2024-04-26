@@ -18,6 +18,8 @@
 
 /*MenuManager CSS START*/
 :root{
+    --fuse-button-height: 80px;
+    --fuse-button-width: 80px;
     --close-button-size: 50px;
     --play-button-height: 60px;
     --play-button-width: 120px;
@@ -33,7 +35,6 @@
     top: 20vh;
     left: 30vw;
     display: none;
-    background-image: url('/static/assets/images/menu/listBackground.png');
 }
 
 .close-button {
@@ -63,6 +64,7 @@
     z-index: 9;
     width: 100%;
     height: 100%;
+    border-radius: 10px;
     background-color: #49173a;
     display: flex;
     flex-direction: column;
@@ -84,6 +86,8 @@
     position: relative;
     width: 100%;
     height: var(--menu-header-height);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     background-color: #f9f3d2;
     background-image: url('/static/assets/images/menu/listBackground.png');
     background-size: cover;
@@ -143,8 +147,7 @@
 }
 
 .play-button:hover {
-  transform: scale(1.10);
-
+    transform: scale(1.10);
 }
 
 .fuse-button-container {
@@ -158,26 +161,24 @@
 }
 
 .fuse-button {
-  margin-left: 1.5%;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  background-color: transparent; /* Remove background color */
-  color: white;
-  border: none;
-  cursor: pointer;
-  display: inline-block; /* Change display to inline-block */
-  width: 80px; /* Set a fixed width */
-  height: 80px; /* Set a fixed height */
-  background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
-  background-size: cover; /* Cover the entire button with the image */
-  background-position: center; /* Center the background image */
-  background-repeat: no-repeat; /* Prevent the background image from repeating */
-  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    background-color: transparent; /* Remove background color */
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: inline-block; /* Change display to inline-block */
+    margin: 5px;
+    height: var(--fuse-button-height); /* Set height */
+    width: var(--fuse-button-width); /* Set width */
+    background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
+    background-size: cover; /* Cover the entire button with the image */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent the background image from repeating */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
     z-index: 1;
 }
 
 .fuse-button:hover {
-  transform: scale(1.10); /* Scale up the button on hover */
+    transform: scale(1.10); /* Scale up the button on hover */
 }
 
 .sub-menu-container {
@@ -197,31 +198,27 @@
     height: calc(100% - var(--play-button-height) - var(--close-button-size));
 }
 
-#AltarMenu .list-menu{
-    width: 20%
-}
-
 #TowerMenu > .sub-menu-container, #MineMenu > .sub-menu-container {
     height: calc(100% - var(--close-button-size));
 }
 
-#MineMenu .list-menu{
+#FusionTableMenu > .sub-menu-container {
+    height: calc(100% - var(--fuse-button-height) - var(--close-button-size));
+}
+
+#FusionTableMenu .list-menu, #FusionTableMenu .slot-menu, #FusionTableMenu .buttons-menu{
     width: 25%
 }
 
-#MineMenu .slot-menu{
+#AltarMenu .list-menu{
+    width: 20%
+}
+
+#MineMenu .list-menu, #MineMenu .slot-menu, #MineMenu .buttons-menu{
     width: 25%
 }
 
-#MineMenu .buttons-menu{
-    width: 25%
-}
-
-#TowerMenu .list-menu{
-    width: 33%
-}
-
-#TowerMenu .slot-menu{
+#TowerMenu .list-menu, #TowerMenu .slot-menu{
     width: 33%
 }
 

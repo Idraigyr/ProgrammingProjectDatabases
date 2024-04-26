@@ -33,6 +33,7 @@ export class MenuManager extends Subject{
     /**
      * ctor for the MenuManager
      * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
+     * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
         super();
@@ -131,8 +132,6 @@ export class MenuManager extends Subject{
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
-          // TODO: add timer
-          progressBar.style.width = `${this.loadingprogress}%`;
           this.inputCrystalParams.current = 0;
           this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
           this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
@@ -200,9 +199,11 @@ export class MenuManager extends Subject{
      * @return {CustomEvent<{id: number | null}>}
      */
     createAddGemEvent(){
+        console.log("Adding gem to building: ", this.dragElement);
         return new CustomEvent("addGem", {
             detail: {
-                id: this.dragElement
+                id: this.dragElement,
+                slot: this.slot
             }
         });
     }
@@ -626,18 +627,6 @@ export class MenuManager extends Subject{
         this.addItem(buildSpell);
     }
 
-    #generateRandomNumber() {
-    // lambda parameter for the exponential distribution
-    const lambda = 0.03;
-
-    const randomNumber = -Math.log(Math.random()) / lambda;
-
-    // set random number to the range [1, 100]
-    const scaledNumber = Math.floor(randomNumber) % 100 + 1;
-
-    return scaledNumber;
-}
-
     /**
      * create a menu
      * @param {string} ctor - corresponds to the name of a ctor which is a subclass of IMenu
@@ -727,8 +716,31 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * creates slot icons for the GemInsertMenu (basically just takes the icon of the gem and puts it in a slot)
+     * @param items
+     * @return {*}
+     */
+    createSlotIcons(items){
+        return items.map(item => this.createSlotIcon({
+            id: `slot-icon-${item.slot}`,
+            itemId: item.id,
+            src: item.icon.src
+        }));
+    }
+
+    /**
+     * maps ids to menu items, always succeeds even if some ids are not found
+     * so it is possible to have undefined values in the returned array
+     * @param {string[]} ids
+     * @return {MenuItem[]}
+     */
+    #getMenuItemsById(ids){
+        return ids.map(id => this.items[id]);
+    }
+
+    /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu" | "BuildMenu" | "FusionTableMenu"} | {name: "TowerMenu", items: Item[]} | {name: "MineMenu", items: Item[], crystals: number, maxCrystals: number, rate: number}} params
+     * @param {{name: "AltarMenu" | "BuildMenu"} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[]} | {name: "MineMenu", gemIds: String[], crystals: number, maxCrystals: number, rate: number}} params
      */
     #arrangeMenus(params){
         // arrange the menus in the container
@@ -744,14 +756,7 @@ export class MenuManager extends Subject{
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "TowerMenu", "afterbegin");
                 // show correct Gems based on received params
-                for(let i = 0; i < params.items.length; i++){
-                    icons.push(this.createSlotIcon({
-                        id: `slot-icon-${this.items[params.items[i]].slot}`,
-                        itemId: params.items[i],
-                        src: this.items[params.items[i]].icon.src
-                    }));
-                }
-                this.menus["GemInsertMenu"].addSlotIcons(icons);
+                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "TowerMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "TowerMenu", "afterbegin");
                 break;
@@ -768,19 +773,14 @@ export class MenuManager extends Subject{
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
-                for(let i = 0; i < params.items.length; i++){
-                    icons.push(this.createSlotIcon({
-                        id: `slot-icon-${params.items[i].slot}`,
-                        itemId: params.items[i].id,
-                        src: params.items[i].icon.src
-                    }));
-                }
-                this.menus["GemInsertMenu"].addSlotIcons(icons);
+                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
             case "FusionTableMenu":
                 this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
+                // show correct Gems based on received params
+                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");

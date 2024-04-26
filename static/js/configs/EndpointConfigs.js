@@ -17,4 +17,8 @@ export const islandURI = 'api/island';
 
 export const blueprintURI = 'api/blueprint';
 
+export const gemURI = 'api/gem';
+
+export const gemAttributesURI = 'api/gem/attributes/list';
+
 export const postRetries = 3;

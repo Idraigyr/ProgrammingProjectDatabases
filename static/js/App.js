@@ -1,7 +1,7 @@
 import WebGL from "three-WebGL";
 import * as THREE from "three";
 import {Controller} from "./Controller/Controller.js";
-import {cameraPosition, physicsSteps} from "./configs/ControllerConfigs.js";
+import {cameraPosition, fusionTime, physicsSteps} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
@@ -22,10 +22,10 @@ import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
-import {buildTypes} from "./configs/Enums.js";
+import {buildTypes, gemTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
-import {UserInfo} from "./Controller/UserInfo.js";
+import {PlayerInfo} from "./Controller/PlayerInfo.js";
 import {Settings} from "./Menus/settings.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -73,9 +73,8 @@ class App {
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
 
-        this.playerInfo = new Controller.UserInfo();
+        this.playerInfo = new Controller.PlayerInfo();
 
-        this.itemManager = new Controller.ItemManager();
         this.viewManager = new Controller.ViewManager({spellPreview: new View.SpellPreview([{key: "build", details: {
             ctor: THREE.BoxGeometry,
             params: [gridCellSize,10,gridCellSize],
@@ -130,7 +129,7 @@ class App {
 
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
-        this.spellCaster = new Controller.SpellCaster({userInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
+        this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
@@ -143,12 +142,16 @@ class App {
             },
             matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
         });
-        this.itemManager.menuManager = this.menuManager;
+        this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo});
 
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new Controller.BuildManager(this.raycastController, this.scene);
+
+        // Setup chat SocketIO namespace
+        this.chatNameSpace = new ChatNamespace(this);
+        this.forwardingNameSpace = new ForwardingNameSpace();
 
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
@@ -164,12 +167,20 @@ class App {
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
 
+        this.menuManager.addEventListener("startFusion", (event) => {
+            console.log("Fusion started");
+            const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
+            this.timerManager.createTimer(fusionTime, [() => {
+                const gem = this.itemManager.createGem(fusionLevel);
+                this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gem.viewType), width: 50, height: 50}, description: gem.getDescription()});
+            }]);
+        });
         this.menuManager.addEventListener("addGem", (event) => {
-            event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
+            event.detail.building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             this.itemManager.addGem(event);
         });
         this.menuManager.addEventListener("removeGem", (event) => {
-            event.detail.building = this.worldManager.checkPosForBuilding(this.worldManager.currentPos);
+            event.detail.building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             this.itemManager.removeGem(event);
         });
 
@@ -267,9 +278,9 @@ class App {
             let params = {name: buildTypes.getMenuName(buildingNumber)}
 
             //TODO: move if statements into their own method of the placeable class' subclasses
-            if(buildingNumber === buildTypes.getNumber("tower_building") || buildingNumber === buildTypes.getNumber("mine_building")){
-                params.items = []; //TODO: fill with equipped gems of selected building if applicable
-
+            if(building.gemSlots > 0){
+                params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
+                console.log(params.gemIds);
             }
 
             //if the building is a mine, forward stored crystal information
@@ -290,11 +301,7 @@ class App {
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
 
-        // Setup chat SocketIO namespace
-        this.chatNameSpace = new ChatNamespace(this);
         this.chatNameSpace.registerHandlers();
-
-        this.forwardingNameSpace = new ForwardingNameSpace();
         this.forwardingNameSpace.registerHandlers({handleMatchFound: this.multiplayerController.startMatch.bind(this.multiplayerController), processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController)});
 
         //visualise camera line -- DEBUG STATEMENTS --
@@ -348,10 +355,11 @@ class App {
         await this.assetManager.loadViews();
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
+        await this.itemManager.retrieveGemAttributes();
         this.menuManager.createMenus();
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, userInfo: this.playerInfo});
+        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
@@ -382,8 +390,6 @@ class App {
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
         this.menuManager.addEventListener("add", this.worldManager.addCrystals.bind(this.worldManager));
         this.menuManager.addEventListener("remove", this.worldManager.removeCrystals.bind(this.worldManager));
-
-        this.menuManager.addEventListener("startFusion", this.itemManager.createRandomGemItem.bind(this.itemManager));
 
         this.menuManager.addEventListener("build", (event) => {
             this.menuManager.exitMenu();
@@ -436,7 +442,6 @@ class App {
             //TODO: remove this is test //
 
             // Setup SocketIO
-
 
 
             document.querySelector('.loading-animation').style.display = 'none';
