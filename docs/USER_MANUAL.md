@@ -79,6 +79,7 @@ The index page is the main page of the game. It contains the following elements:
 
 By clicking the top left icon, the player can open the settings menu. Here, the player can change
 some basic settings about the game, such as audio, graphics and controls.
+He can also log out from the game and delete his account from here.
 
 ### Chat
 
@@ -230,6 +231,10 @@ If you want to move the building, you have to select the build spell in the inve
 The general currency in the game are the crystals. These can be mined by the player and are used
 for most actions in the game. There are also different gems with attributes that can be used to
 upgrade buildings.
+
+## Friends
+
+TODO - @Aaditya
 
 # Optimizations
 ___
