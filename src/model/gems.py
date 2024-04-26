@@ -1,3 +1,5 @@
+import logging
+
 from flask import current_app
 from sqlalchemy import BigInteger, Enum, Column, Table, ForeignKey, SmallInteger, String, Float
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -40,7 +42,7 @@ class Gem(current_app.db.Model):
                                        multiplier=map['multiplier']
                                    ))
 
-    def __init__(self, type: str = None, attributes=None):
+    def __init__(self, type: str = None, attributes=None, player_id: int = None, building_id: int = None):
         if attributes is None:
             attributes = []
 
@@ -49,6 +51,8 @@ class Gem(current_app.db.Model):
 
         self.type = GemType[type.upper()]
         self.attributes = attributes
+        self.player_id = player_id
+        self.building_id = building_id
 
 
     def update(self, data: dict):
@@ -75,9 +79,19 @@ class Gem(current_app.db.Model):
             self.type = GemType[data['type'].upper()]
 
         if 'attributes' in data:
-            for obj in data['attributes']:
+            copy = data['attributes'].copy()
+            for obj in copy:
                 if 'gem_attribute_id' not in obj or 'multiplier' not in obj:
-                    raise ValueError('Invalid attribute object')
+                    raise ValueError('Invalid attribute object. Either gem_attribute_id and/or multiplier is missing')
+
+                if 'gem_attribute_id' in obj:
+                    if not GemAttribute.query.get(obj['gem_attribute_id']):
+                        raise ValueError('Invalid gem_attribute_id')
+
+                if 'multiplier' in obj:
+                    if obj['multiplier'] < 0:
+                        raise ValueError('Multiplier must be >= 0')
+
                 # Cannot simply clear the map as this would mess with SQLAlchemys internal state of the entity
                 # We need therefore to update the existing map with the new values
 
@@ -91,6 +105,21 @@ class Gem(current_app.db.Model):
                 if not found: # If the for loop didn't run
                     # Create new entries
                     self.attributes_association.append(GemAttributeAssociation(**obj))
+                else:
+                    # Remove the entry from the data object if it was found in our own attributes
+                    copy.remove(obj)
+
+            # Remove any remaining entries in our own attributes that were not found in the data object
+            for assoc in self.attributes_association:
+                found = False
+                for obj in copy:
+                    if assoc.attribute.id == obj['gem_attribute_id']:
+                        found = True
+                        break
+
+                if not found:
+                    self.attributes_association.remove(assoc)
+
 
         if 'building_id' in data:
             from src.model.placeable.building import Building
@@ -113,6 +142,9 @@ class Gem(current_app.db.Model):
             # If the player_id is not in the data, set it to None (NULL), therefore unlinking its relation with
             # (in this case) the player
             self.player_id = None
+
+        if self.building_id is None and self.player_id is None:
+            logging.error(f"Gem {self.id} is orphaned. This is not supposed to happen. Please investigate")
 
 class GemAttribute(current_app.db.Model):
     """
