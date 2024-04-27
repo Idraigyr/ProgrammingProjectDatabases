@@ -83,14 +83,14 @@ class TaskResource(Resource):
 
         if 'building_id' in data:
             building_id = int(data.pop('building_id'))
-            from src.model.placeable.building import Building
-            building = current_app.db.session.query(Building).get(building_id)
+            from src.model.placeable.placeable import Placeable
+            building = current_app.db.session.query(Placeable).get(building_id)
             if building is None:
-                return ErrorSchema(message='Building id not found'), 400
+                return ErrorSchema(message='Placeable id not found'), 400
             if building.island_id != data['island_id']:
-                return ErrorSchema(message='Building does not belong to this island_id'), 400
+                return ErrorSchema(message='Placeable does not belong to this island_id'), 400
             if new_task and building.task is not None and building.task.is_running():
-                return ErrorSchema(message='Building is already being worked on'), 409
+                return ErrorSchema(message='Placeable is already being worked on'), 409
 
             data['working_building'] = building
 
@@ -121,7 +121,7 @@ class TaskResource(Resource):
     @summary('Create a new task object')
     @swagger.response(response_code=200, description='Task object', schema=TaskSchema)
     @swagger.response(response_code=400, description='Unknown building id (when provided) or invalid task data', schema=ErrorSchema)
-    @swagger.response(response_code=409, description='Building is already being worked on', schema=ErrorSchema)
+    @swagger.response(response_code=409, description='Placeable is already being worked on', schema=ErrorSchema)
     @swagger.expected(TaskSchema, required=True)
     @jwt_required()
     def post(self):
@@ -152,6 +152,7 @@ class TaskResource(Resource):
     @swagger.response(response_code=200, description='Task object', schema=TaskSchema)
     @swagger.response(response_code=400, description='Unknown building id (when provided) or invalid task data', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Task not found', schema=ErrorSchema)
+    @swagger.response(response_code=409, description='Placeable is already being worked on', schema=ErrorSchema)
     @swagger.expected(TaskSchema, required=True)
     @jwt_required()
     def put(self):

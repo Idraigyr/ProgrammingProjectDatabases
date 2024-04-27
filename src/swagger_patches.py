@@ -33,7 +33,10 @@ def check_type(self, type_, key, value):
                         for v in value:
                             self.check_type(cls.type,  key, v)
             if value is None:
-                if not self.properties[key].get('nullable', True):
+                b = self.properties[key]
+                if hasattr(b, 'properties'):
+                    b = b.properties
+                if not b.get('nullable', True):
                     raise ValueError(f'The attribute "{key}" must not be null')
                 else:
                     return # no need to check further
@@ -62,7 +65,7 @@ def __init__(self, **kwargs):
                     'The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
             if type(self.properties[k]) == type:
                 if self.properties[k].type == 'object':
-                    self.properties[k](**v)
+                    self.properties[k](**v if v else {})
                 self.prop = self.properties[k].definitions()
             else:
                 self.prop = self.properties[k]

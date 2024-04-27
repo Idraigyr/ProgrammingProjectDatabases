@@ -28,7 +28,7 @@ class Task(current_app.db.Model):
         return relationship("Island", back_populates="tasks")
 
     # The building that the task is associated with, may be None
-    working_building: Mapped['Building'] = relationship('Building', back_populates='task', uselist=False, cascade="all, delete-orphan")
+    working_building: Mapped['Placeable'] = relationship('Placeable', back_populates='task', uselist=False, cascade="all, delete-orphan")
 
 
     def __init__(self, endtime: DateTime, island_id: int = None, working_building: 'Building' = None):
