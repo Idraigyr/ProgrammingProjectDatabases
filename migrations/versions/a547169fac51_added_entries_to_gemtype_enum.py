@@ -11,7 +11,7 @@ from alembic_postgresql_enum import TableReference
 
 # revision identifiers, used by Alembic.
 revision = 'a547169fac51'
-down_revision = '8b082442ee8a'
+down_revision = '8adfc09eedeb'
 branch_labels = None
 depends_on = None
 
