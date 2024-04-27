@@ -279,7 +279,7 @@ export class WorldManager{
     async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
         try {
             // Get server time
-            let response = await this.userInfo.getCurrentTime();
+            let response = await this.playerInfo.getCurrentTime();
             let serverTime = new Date(response);
             serverTime.setSeconds(serverTime.getSeconds()+timeInSeconds);
             let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
@@ -490,7 +490,7 @@ export class WorldManager{
                 entity.setId(data);
                 this.removePendingPostRequest(requestIndex);
                 if (withTimer){
-                    this.postBuildingTimer(taskURI, entity.timeToBuild, entity.id, this.userInfo.islandID, postRetries);
+                    this.postBuildingTimer(taskURI, entity.timeToBuild, entity.id, this.playerInfo.islandID, postRetries);
                 }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");
