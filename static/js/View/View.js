@@ -14,7 +14,7 @@ export class IView {
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
 
-        this.boxHelper.visible = false; // TODO: set in env
+        this.boxHelper.visible = true; // TODO: set in env
     }
 
     /**
