@@ -2,7 +2,7 @@ let username = "Unknown user";
 let admin = false;
 let userId = 0;
 
-// TODO - @Flynn - This is a hacky way to get the username and admin status, link it to the UserInfo class
+// TODO - @Flynn - This is a hacky way to get the username and admin status, link it to the PlayerInfo class
 $(document).ready(function(){
    $.ajax({url: '/api/user_profile', type: 'GET'}).done(function(data){
        username = data.username;

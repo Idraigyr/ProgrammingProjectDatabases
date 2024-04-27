@@ -1,5 +1,5 @@
 import {API_URL, matchMakingURI} from "../configs/EndpointConfigs.js";
-import {UserInfo} from "./UserInfo.js";
+import {PlayerInfo} from "./PlayerInfo.js";
 import * as THREE from "three";
 import {Controller} from "./Controller.js";
 import {spellTypes} from "../Model/Spell.js";
@@ -20,7 +20,7 @@ export class MultiplayerController{
         //for remembering the interval for sending state updates
         this.matchmaking = false;
         this.inMatch = false;
-        this.opponentInfo = new UserInfo();
+        this.opponentInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
     }
 

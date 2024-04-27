@@ -15,13 +15,30 @@ class ForwardingNamespace(Namespace):
     def __init__(self, namespace):
         super().__init__(namespace)
         self._log = logging.getLogger(__name__)
-        self.clients: dict = {}
+        self.clients: dict = {} # user_id -> [sid1, sid2, ...]
+        self.playing: dict = {} # user_id -> game_id #TODO: might not be needed
+        self.matches: dict = {} # game_id -> {player1, player2, player1_status, player2_status, time_left}
 
     def get_user_from_sid(self, sid):
         for user_id, sids in self.clients.items():
             if sid in sids:
                 return user_id
         return None
+
+    def update_game_timer(self, game_id):
+        """
+        Updates the game timer for the given game_id
+        :param game_id:
+        :return:
+        """
+        while self.matches[game_id]['time_left'] > 0:
+            current_app.socketio.sleep(1)
+            self.matches[game_id]['time_left'] -= 1
+            self.emit('game_timer', {'time_left': self.matches[game_id]['time_left']}, room=self.matches[game_id]['player1'])
+            self.emit('game_timer', {'time_left': self.matches[game_id]['time_left']}, room=self.matches[game_id]['player2'])
+        self.emit('game_over', {'winner': -1}, room=self.matches[game_id]['player1']) # -1 means tie
+        self.emit('game_over', {'winner': -1}, room=self.matches[game_id]['player2']) # -1 means tie
+
 
 
     # Register clients when they connect
@@ -94,6 +111,40 @@ class ForwardingNamespace(Namespace):
         except Exception:
             self._log.error(f"Could not forward message: {data}", exc_info=True)
 
+    def on_player_ready(self, data):
+        """
+        registers that the player is ready to play (i.e. has loaded the multiplayer game)
+        :param data: message from the client
+        :return:
+        """
+        try:
+            targetId = int(data['target'])
+            if targetId not in self.clients:
+                self._log.error(f"Client not found: {targetId}. Dropping message.")
+                return
+            targetSids = self.clients[targetId]
+            senderId = self.get_user_from_sid(request.sid)
+            game_id = self.playing[senderId]
+
+            sender = 'player{0}'.format(1 if senderId == self.matches[game_id]['player1'] else 2)
+            target = 'player{0}'.format(1 if targetId == self.matches[game_id]['player1'] else 2)
+
+            if self.matches[game_id][target] == "ready":
+                self.matches[game_id][sender] = "playing"
+                self.matches[game_id][target] = "playing"
+                for sid in targetSids:
+                    self.emit('game_start', room=sid)
+                for sid in self.clients[senderId]:
+                    self.emit('game_start', room=sid)
+                self.socketio.start_background_task(self.update_game_timer, game_id)
+            else:
+                self.matches[game_id][sender] = "ready"
+
+        except Exception:
+            self._log.error(f"Could not start game: {data}", exc_info=True)
+            #TODO: send abort message to both players
+
+
     def on_match_found(self, data):
         """
         forwards the message to all the clients
@@ -112,6 +163,14 @@ class ForwardingNamespace(Namespace):
                 self._log.debug(f"Forwarding message to user_id = {target_id}: {data}")
                 data['sender'] = sender_id
                 data['opponent'] = target_ids[1] if target_id == target_ids[0] else target_ids[0]
+
+                # set a new game in the matches dict
+                game_id = 0 # TODO: generate a unique game id
+                self.matches[game_id] = {'player1': target_ids[0], 'player2': target_ids[1], 'player1_status': "loading", 'player2_status': "loading", 'time_left': 30} # TODO: move "loading" in an ENUM and put it with "time_left": 60*10 in a config
+                self.playing[target_id] = game_id
+                self.playing[sender_id] = game_id
+
+                data['game_id'] = game_id
 
                 for sid in target_sids:
                     self.emit('match_found', data, room=sid)

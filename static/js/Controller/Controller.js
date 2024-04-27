@@ -4,7 +4,7 @@ import {CharacterController} from "./CharacterController.js";
 import {InputManager} from "./InputManager.js";
 import {AssetLoader} from "./AssetLoader.js";
 import {CollisionDetector} from "./CollisionDetector.js";
-import {UserInfo} from "./UserInfo.js";
+import {PlayerInfo} from "./PlayerInfo.js";
 import {SpellCaster} from "./SpellCaster.js";
 import {ViewManager} from "./ViewManager.js";
 import {RaycastController} from "./RaycastController.js";
@@ -19,7 +19,7 @@ import {MultiplayerController} from "./MultiplayerController.js";
 
 /**
  * Controller namespace
- * @type {Readonly<{AssetManager: AssetManager, ItemManager: ItemManager, ViewManager: ViewManager, WorldManager: WorldManager, CameraManager: CameraManager, RaycastController: RaycastController, UserInfo: UserInfo, TimerManager: TimerManager, AssetLoader: AssetLoader, MinionController: MinionController, WorldLoader: WorldManager, CharacterController: CharacterController, BuildManager: BuildManager, MenuManager: MenuManager, CollisionDetector: CollisionDetector, InputManager: InputManager, SpellCaster: SpellCaster}>}
+ * @type {Readonly<{AssetManager: AssetManager, ItemManager: ItemManager, ViewManager: ViewManager, WorldManager: WorldManager, CameraManager: CameraManager, RaycastController: RaycastController, PlayerInfo: PlayerInfo, TimerManager: TimerManager, AssetLoader: AssetLoader, MinionController: MinionController, WorldLoader: WorldManager, CharacterController: CharacterController, BuildManager: BuildManager, MenuManager: MenuManager, CollisionDetector: CollisionDetector, InputManager: InputManager, SpellCaster: SpellCaster}>}
  */
 export const Controller = Object.freeze({
     AssetLoader: AssetLoader,
@@ -37,7 +37,7 @@ export const Controller = Object.freeze({
     MinionController: MinionController,
     RaycastController: RaycastController,
     CollisionDetector: CollisionDetector,
-    UserInfo: UserInfo,
+    PlayerInfo: PlayerInfo,
     SpellCaster: SpellCaster,
     PeerController: PeerController,
     MultiplayerController: MultiplayerController

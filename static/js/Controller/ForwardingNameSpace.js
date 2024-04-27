@@ -8,6 +8,8 @@ export class ForwardingNameSpace {
     registerHandlers(params) {
         // Get message from the server, under the '/forward' namespace
         this.socket.on('match_found', (data) => params.handleMatchFound(data));
+        this.socket.on('match_start', (data) => params.handleMatchStart(data));
+        this.socket.on('match_abort', (data) => params.handleMatchAbort(data));
         this.socket.on('forwarded', (data) =>params.processReceivedState(data));
 
     }
@@ -31,5 +33,4 @@ export class ForwardingNameSpace {
         // Cursed way to merge two JSON objects
         this.socket.emit('forward', {...{'target': targetId}, ...data});
     }
-
 }

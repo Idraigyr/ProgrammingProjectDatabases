@@ -49,3 +49,45 @@ export const buildTypes = (function (){
         }
     };
 })();
+
+export const gemTypes = (function (){
+    const number = {
+        amber: 0,
+        amethyst: 1,
+        diamond: 2,
+        emerald: 3,
+        ruby: 4,
+        sapphire: 5,
+    }
+
+    const name = {
+        0: "amber",
+        1: "amethyst",
+        2: "diamond",
+        3: "emerald",
+        4: "ruby",
+        5: "sapphire",
+    }
+
+    const icons = {
+        0: "./static/assets/images/gems/amber.png",
+        1: "./static/assets/images/gems/amethyst.png",
+        2: "./static/assets/images/gems/diamond.png",
+        3: "./static/assets/images/gems/emerald.png",
+        4: "./static/assets/images/gems/ruby.png",
+        5: "./static/assets/images/gems/sapphire.png",
+    }
+
+    return {
+        getNumber: function (name) {
+            return number[name];
+        },
+        getName: function (number) {
+            return name[number];
+        },
+        getIcon: function (number) {
+            return icons[number];
+        },
+        getSize: Object.keys(number).length
+    };
+})();

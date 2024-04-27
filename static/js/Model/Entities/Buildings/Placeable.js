@@ -13,7 +13,7 @@ export class Placeable extends Entity{
         this.id = params?.id ?? null;
         this.level = params?.level ?? 0;
         this.rotation = params?.rotation ??  0;
-        this.gemSlots = params?.gemSlots ?? 1;
+        this.gemSlots = params?.gemSlots ?? 0;
         this.levelUpTime = params?.levelUpTime ?? 0;
         this.gems = [];
         this.ready = true;
@@ -21,22 +21,44 @@ export class Placeable extends Entity{
         this.timeToBuild = 10; // in seconds
     }
 
+    /**
+     * adds a gem to the building
+     * @param gemId
+     */
+    addGem(gemId){
+        if(this.gems.length === this.gemSlots) throw new Error("Building already has the maximum amount of gems");
+        this.gems.push(gemId);
+    }
+
+    /**
+     * removes a gem from the building
+     * @param gemId
+     */
+    removeGem(gemId){
+        if(!this.gems.includes(gemId)) throw new Error("Building does not have the gem");
+        this.gems = this.gems.filter(gem => gem !== gemId);
+    }
+
+    /**
+     * set the id of the building according to the id in the database
+     * @param data
+     */
     setId(data){
        this.id = data.placeable_id;
     }
 
     /**
      * Formats the data for a POST request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPOSTData(userInfo, islandPosition){
+    formatPOSTData(playerInfo, islandPosition){ //TODO: add gems
         const gridPos = new THREE.Vector3().copy(this.position);
         gridPos.add(islandPosition);
         convertWorldToGridPosition(gridPos);
         const obj = {
-            island_id: userInfo.islandID,
+            island_id: playerInfo.islandID,
             x: gridPos.x/gridCellSize,
             z: gridPos.z/gridCellSize,
             rotation: this.rotation/90,
@@ -47,19 +69,19 @@ export class Placeable extends Entity{
         };
         console.log(this.rotation/90);
         for(const gem of this.gems){
-            //obj.gems.push(gem.formatPOSTData(userInfo));
+            //obj.gems.push(gem.formatPOSTData(playerInfo));
         }
         return obj;
     }
 
     /**
      * Formats the data for a PUT request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPUTData(userInfo, islandPosition){
-       const obj = this.formatPOSTData(userInfo, islandPosition);
+    formatPUTData(playerInfo, islandPosition){
+       const obj = this.formatPOSTData(playerInfo, islandPosition);
        obj.placeable_id = this.id;
        return obj;
     }
@@ -113,7 +135,7 @@ export class Placeable extends Entity{
             this.gemSlots = 8;
         }
         popUp(this.level, this.maxMana, this.maxHealth);
-        this.updateUserInfoBackend();
+        this.updatePlayerInfoBackend();
         return true;
     }
 

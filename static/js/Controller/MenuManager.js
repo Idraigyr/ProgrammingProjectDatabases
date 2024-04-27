@@ -1,7 +1,7 @@
 import {
     AltarMenu,
     BaseMenu,
-    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu,
+    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu, FuseInputMenu,
     HotbarMenu,
     ListMenu, MineMenu,
     PageMenu, ResourceBuildingsMenu,
@@ -33,6 +33,7 @@ export class MenuManager extends Subject{
     /**
      * ctor for the MenuManager
      * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
+     * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
         super();
@@ -59,8 +60,16 @@ export class MenuManager extends Subject{
         };
         this.collectInterval = null;
 
+        this.inputCrystalParams = {
+            meter: null,
+            current: 0,
+            max: 100
+        };
+        this.loadingprogress = 0;
+
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
+        this.gemId = 0;
     }
 
     // TODO: remove this
@@ -91,6 +100,9 @@ export class MenuManager extends Subject{
         if(menu instanceof AltarMenu){
             menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
         }
+        if(menu instanceof FusionTableMenu){
+            menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
+        }
         if(menu instanceof ListMenu){
             menu.element.addEventListener("drop", this.drop.bind(this));
             menu.element.addEventListener("dragover", this.dragover.bind(this));
@@ -109,26 +121,56 @@ export class MenuManager extends Subject{
         if(menu instanceof CollectMenu){
             menu.element.querySelector(".collect-button").addEventListener("click", this.dispatchCollectEvent.bind(this));
         }
-        //if(menu instanceof FusionTableMenu){
-        //    menu.element.querySelector(".fuse-button").addEventListener("click", () => console.log("fuse button clicked"));
-        //}
+        if(menu instanceof FuseInputMenu){
+            menu.element.querySelector(".add-button").addEventListener("click", this.dispatchAddEvent.bind(this));
+            menu.element.querySelector(".remove-button").addEventListener("click", this.dispatchRemoveEvent.bind(this));
+        }
     }
 
     // loading bar
-    simulateLoading() {
-      let progress = 0;
-      const progressBar = document.querySelector('.loading-bar');
+    FusionClicked() {
+      if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
+          this.toggleAnimation(true);
+          this.dispatchEvent(this.createFuseEvent());
+          this.inputCrystalParams.current = 0;
+          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
 
-      const intervalId = setInterval(() => {
-        progress += 1; // Increase bar progress
-        progressBar.style.width = `${progress}%`;
+          /*
+          // loading bar + reset features to be removed
+          const progressBar = document.querySelector('.loading-bar');
 
-        if (progress >= 100) {
-          clearInterval(intervalId);
-          // Loading complete -> restart
-          simulateLoading();
+          const intervalId = setInterval(() => {
+              this.loadingprogress += 1; // Increase bar progress
+              progressBar.style.width = `${this.loadingprogress}%`;
+
+              if (this.loadingprogress >= 100) {
+                  clearInterval(intervalId);
+                  // Loading complete -> add gem and reset bars
+                  this.#createRandomGemItem();
+                  this.loadingprogress = 0;
+                  progressBar.style.width = `${this.loadingprogress}%`;
+                  this.inputCrystalParams.current = 0;
+                  this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+                  this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+                  this.toggleAnimation(false);
+              }
+          }, 100); // Total time to load bar
+          */
+      }
+    }
+
+    createFuseEvent() {
+        return new CustomEvent("startFusion");
+    }
+
+    // Function to start or stop the fusing arrow animation based on condition
+    toggleAnimation(condition) {
+        if (condition) {
+            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.add('move-right');
+        } else {
+            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.remove('move-right');
         }
-      }, 100); // Total time to load bar
     }
 
     /**
@@ -157,9 +199,11 @@ export class MenuManager extends Subject{
      * @return {CustomEvent<{id: number | null}>}
      */
     createAddGemEvent(){
+        console.log("Adding gem to building: ", this.dragElement);
         return new CustomEvent("addGem", {
             detail: {
-                id: this.dragElement
+                id: this.dragElement,
+                slot: this.slot
             }
         });
     }
@@ -182,6 +226,22 @@ export class MenuManager extends Subject{
      */
     createCollectEvent() {
         return new CustomEvent("collect");
+    }
+
+    /**
+     * creates a custom add event
+     * @return {CustomEvent<>}
+     */
+    createAddEvent() {
+        return new CustomEvent("add");
+    }
+
+    /**
+     * creates a custom remove event
+     * @return {CustomEvent<>}
+     */
+    createRemoveEvent() {
+        return new CustomEvent("remove");
     }
 
     /**
@@ -217,6 +277,34 @@ export class MenuManager extends Subject{
         this.collectParams.current = 0;
         this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
         this.dispatchEvent(this.createCollectEvent());
+    }
+
+    /**
+     * dispatches a add event
+     * @param event
+     */
+    dispatchAddEvent(event){
+        if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
+            console.log("Adding 10 crystals to fuse stakes");
+            this.inputCrystalParams.current += 10;
+            this.dispatchEvent(this.createRemoveEvent());
+        }
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+    }
+
+    /**
+     * dispatches a remove event
+     * @param event
+     */
+    dispatchRemoveEvent(event){
+        if(this.inputCrystalParams.current-10 >= 0 && this.loadingprogress === 0){
+            console.log("Removing 10 crystals of fuse stakes");
+            this.inputCrystalParams.current -= 10;
+            this.dispatchEvent(this.createAddEvent());
+        }
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -373,7 +461,6 @@ export class MenuManager extends Subject{
             description: params.description,
             extra: params.extra
         });
-
         if(menuItem instanceof BuildingItem){
             menuItem.element.addEventListener("click", () => this.dispatchEvent(this.createBuildEvent(menuItem.id)));
         }
@@ -515,6 +602,30 @@ export class MenuManager extends Subject{
         this.addItems(items);
     }
 
+    #createSpellItems(){
+        let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell"];
+        let names = ["Fire", "Freeze", "Shield", "Heal", "Thunder"];
+        let items = [];
+        for (let i = 0; i < spells.length; i++){
+            items.push({
+                item: {name: spells[i], id: i, belongsIn: "SpellsMenu", getItemId: () => spells[i], getDisplayName: () => names[i]},
+                icon: {src: '/static/assets/images/spells/' + spells[i] + '.png', width: 50, height: 50},
+                description: ""
+            });
+        }
+        this.addItems(items);
+    }
+
+    #createHotbarItem(){
+        let buildSpell = {
+            //TODO: SpellsMenu should be HotbarMenu but that gives an error
+            item: {name: "buildSpell", id: 0, belongsIn: "SpellsMenu", getItemId: () => "buildSpell", getDisplayName: () => " Build"},
+            icon: {src: '/static/assets/images/spells/buildSpell.png', width: 50, height: 50},
+            description: ""
+        };
+        this.addItem(buildSpell);
+    }
+
     /**
      * create a menu
      * @param {string} ctor - corresponds to the name of a ctor which is a subclass of IMenu
@@ -544,10 +655,12 @@ export class MenuManager extends Subject{
      * create menus and menu items
      */
     createMenus(){
-        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu]);
+        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
+        this.#createSpellItems();
+        this.#createHotbarItem();
     }
 
     /**
@@ -602,8 +715,31 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * creates slot icons for the GemInsertMenu (basically just takes the icon of the gem and puts it in a slot)
+     * @param items
+     * @return {*}
+     */
+    createSlotIcons(items){
+        return items.map(item => this.createSlotIcon({
+            id: `slot-icon-${item.slot}`,
+            itemId: item.id,
+            src: item.icon.src
+        }));
+    }
+
+    /**
+     * maps ids to menu items, always succeeds even if some ids are not found
+     * so it is possible to have undefined values in the returned array
+     * @param {string[]} ids
+     * @return {MenuItem[]}
+     */
+    #getMenuItemsById(ids){
+        return ids.map(id => this.items[id]);
+    }
+
+    /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu" | "BuildMenu" | "FusionTableMenu"} | {name: "TowerMenu", items: Item[]} | {name: "MineMenu", items: Item[], crystals: number, maxCrystals: number, rate: number}} params
+     * @param {{name: "AltarMenu" | "BuildMenu"} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[]} | {name: "MineMenu", gemIds: String[], crystals: number, maxCrystals: number, rate: number}} params
      */
     #arrangeMenus(params){
         // arrange the menus in the container
@@ -619,14 +755,7 @@ export class MenuManager extends Subject{
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "TowerMenu", "afterbegin");
                 // show correct Gems based on received params
-                for(let i = 0; i < params.items.length; i++){
-                    icons.push(this.createSlotIcon({
-                        id: `slot-icon-${this.items[params.items[i]].slot}`,
-                        itemId: params.items[i],
-                        src: this.items[params.items[i]].icon.src
-                    }));
-                }
-                this.menus["GemInsertMenu"].addSlotIcons(icons);
+                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "TowerMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "TowerMenu", "afterbegin");
                 break;
@@ -643,19 +772,17 @@ export class MenuManager extends Subject{
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
-                for(let i = 0; i < params.items.length; i++){
-                    icons.push(this.createSlotIcon({
-                        id: `slot-icon-${params.items[i].slot}`,
-                        itemId: params.items[i].id,
-                        src: params.items[i].icon.src
-                    }));
-                }
-                this.menus["GemInsertMenu"].addSlotIcons(icons);
+                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
             case "FusionTableMenu":
-                //this.#moveMenu("InputMenu", "FuseTableMenu", "afterbegin");
+                this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
+                // show correct Gems based on received params
+                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
+                this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
+                this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");

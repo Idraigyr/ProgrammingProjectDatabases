@@ -9,6 +9,7 @@ export class Tower extends Placeable{
         super(params);
         this.spellSpawner = params.spellSpawner;
         this.timeToBuild = 600;
+        this.gemSlots = 3;
     }
 
     /**
@@ -21,24 +22,24 @@ export class Tower extends Placeable{
 
     /**
      * Formats the data for a POST request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPOSTData(userInfo, islandPosition){
-        const obj = super.formatPOSTData(userInfo, islandPosition);
+    formatPOSTData(playerInfo, islandPosition){
+        const obj = super.formatPOSTData(playerInfo, islandPosition);
         obj.tower_type = "magic";
         return obj;
     }
 
     /**
      * Formats the data for a PUT request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPUTData(userInfo, islandPosition){
-        const obj = super.formatPUTData(userInfo, islandPosition);
+    formatPUTData(playerInfo, islandPosition){
+        const obj = super.formatPUTData(playerInfo, islandPosition);
         obj.tower_type = "magic";
         return obj;
     }

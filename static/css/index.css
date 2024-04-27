@@ -18,6 +18,8 @@
 
 /*MenuManager CSS START*/
 :root{
+    --fuse-button-height: 80px;
+    --fuse-button-width: 80px;
     --close-button-size: 50px;
     --play-button-height: 60px;
     --play-button-width: 120px;
@@ -40,7 +42,6 @@
     top: 20vh;
     left: 30vw;
     display: none;
-    background-image: url('/static/assets/images/menu/listBackground.png');
 }
 
 .close-button {
@@ -70,6 +71,7 @@
     z-index: 9;
     width: 100%;
     height: 100%;
+    border-radius: 10px;
     background-color: #49173a;
     display: flex;
     flex-direction: column;
@@ -91,6 +93,8 @@
     position: relative;
     width: 100%;
     height: var(--menu-header-height);
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
     background-color: #f9f3d2;
     background-image: url('/static/assets/images/menu/listBackground.png');
     background-size: cover;
@@ -150,8 +154,38 @@
 }
 
 .play-button:hover {
-  transform: scale(1.10);
+    transform: scale(1.10);
+}
 
+.fuse-button-container {
+    position: relative;
+    width: 100%;
+    background-image: url('/static/assets/images/menu/headerBackground.png');
+    background-size: cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fuse-button {
+    background-color: transparent; /* Remove background color */
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: inline-block; /* Change display to inline-block */
+    margin: 5px;
+    height: var(--fuse-button-height); /* Set height */
+    width: var(--fuse-button-width); /* Set width */
+    background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
+    background-size: cover; /* Cover the entire button with the image */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent the background image from repeating */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    z-index: 1;
+}
+
+.fuse-button:hover {
+    transform: scale(1.10); /* Scale up the button on hover */
 }
 
 .sub-menu-container {
@@ -171,31 +205,27 @@
     height: calc(100% - var(--play-button-height) - var(--close-button-size));
 }
 
-#AltarMenu .list-menu{
-    width: 20%
-}
-
 #TowerMenu > .sub-menu-container, #MineMenu > .sub-menu-container {
     height: calc(100% - var(--close-button-size));
 }
 
-#MineMenu .list-menu{
+#FusionTableMenu > .sub-menu-container {
+    height: calc(100% - var(--fuse-button-height) - var(--close-button-size));
+}
+
+#FusionTableMenu .list-menu, #FusionTableMenu .slot-menu, #FusionTableMenu .buttons-menu{
     width: 25%
 }
 
-#MineMenu .slot-menu{
+#AltarMenu .list-menu{
+    width: 20%
+}
+
+#MineMenu .list-menu, #MineMenu .slot-menu, #MineMenu .buttons-menu{
     width: 25%
 }
 
-#MineMenu .buttons-menu{
-    width: 25%
-}
-
-#TowerMenu .list-menu{
-    width: 33%
-}
-
-#TowerMenu .slot-menu{
+#TowerMenu .list-menu, #TowerMenu .slot-menu{
     width: 33%
 }
 
@@ -275,6 +305,32 @@
     transform: translateY(4px);
 }
 
+.add-button, .remove-button {
+    position: relative;
+    width: 150px; /* Set a smaller width */
+    height: 75px; /* Set a smaller height */
+    background-color: #69644a;
+    border: 5px solid #0f172a;
+    border-radius: 10px;
+    margin: 0;
+    padding: 0;
+    font-size: 24px; /* Adjust font size accordingly */
+    aspect-ratio: 2/1;
+}
+
+.add-button:hover, .remove-button:hover {
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, .5), 0 0 20px rgba(255, 255, 255, .2);
+    outline-color: rgba(255, 255, 255, 0);
+    outline-offset: 10px; /* Adjust outline offset */
+    text-shadow: 1px 1px 2px #427388;
+}
+
+.add-button:active, .remove-button:active {
+    background-color: #3e8e41;
+    box-shadow: 0 3px #666; /* Adjust box shadow */
+    transform: translateY(3px); /* Adjust translateY */
+}
+
 .pickaxe {
     position: relative;
     aspect-ratio: 1/1;
@@ -296,6 +352,32 @@
     }
     100% {
         transform: translate(-45%) rotate(50deg);
+    }
+}
+
+.arrow {
+    width: 150px;
+    height: 150px;
+    position: relative;
+    right: 7%;
+    padding: 10px;
+    border-radius: 10px;
+    background-image: url('/static/assets/images/menu/arrow.png');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
+.move-right {
+    animation: moveRight 1s linear infinite; /* Adjust animation duration and timing function as needed */
+}
+
+@keyframes moveRight {
+    0% {
+        transform: translateX(-50%); /* Start position */
+    }
+    100% {
+        transform: translateX(50%); /* End position */
     }
 }
 

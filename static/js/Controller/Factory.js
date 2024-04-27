@@ -159,7 +159,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -174,6 +174,12 @@ export class Factory{
 
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
+
+        if(params.gems){
+            for(const gem of params.gems){
+                model.addGem(gem.id);
+            }
+        }
 
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
@@ -237,7 +243,7 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
@@ -247,7 +253,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type, position: position, rotation: building.rotation, withTimer: false, id: building.id}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

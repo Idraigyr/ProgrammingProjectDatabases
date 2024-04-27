@@ -14,7 +14,7 @@ import {gridCellSize} from "../configs/ViewConfigs.js";
 export class WorldManager{
     constructor(params) {
         this.world = null;
-        this.userInfo = params.userInfo;
+        this.playerInfo = params.playerInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
@@ -49,7 +49,8 @@ export class WorldManager{
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: building.rotation*90,
-                    id: building.placeable_id
+                    id: building.placeable_id,
+                    gems: building.gems
                 });
             }
 
@@ -225,13 +226,13 @@ export class WorldManager{
                 y: playerSpawn.y,
                 z: playerSpawn.z
             },
-            health: this.userInfo.health,
-            maxHealth: this.userInfo.maxHealth,
-            mana: this.userInfo.mana,
-            maxMana: this.userInfo.maxMana,
+            health: this.playerInfo.health,
+            maxHealth: this.playerInfo.maxHealth,
+            mana: this.playerInfo.mana,
+            maxMana: this.playerInfo.maxMana,
         };
 
-        this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
+        this.factory.currentTime = new Date(await this.playerInfo.getCurrentTime());
         this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
         this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
         this.world.setPlayer(this.factory.createPlayer(player));
@@ -253,23 +254,22 @@ export class WorldManager{
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        if(!this.userInfo.unlockedBuildings.includes(buildingName) || this.userInfo.buildingsPlaced > this.userInfo.maxBuildings){
+        if(!this.playerInfo.unlockedBuildings.includes(buildingName) || this.playerInfo.buildingsPlaced > this.playerInfo.maxBuildings){
             console.log("cant place building you have not unlocked or you have reached the max number of buildings");
-            console.log("unlocked buildings", this.userInfo.unlockedBuildings);
+            console.log("unlocked buildings", this.playerInfo.unlockedBuildings);
             console.log("building name", buildingName);
-            console.log("buildings placed", this.userInfo.buildingsPlaced);
-            console.log("max buildings", this.userInfo.maxBuildings);
+            console.log("buildings placed", this.playerInfo.buildingsPlaced);
+            console.log("max buildings", this.playerInfo.maxBuildings);
         }
-        if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
+        if(this.playerInfo.unlockedBuildings.includes(buildingName) && this.playerInfo.buildingsPlaced < this.playerInfo.maxBuildings){
             const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
             if(placeable){
-                const requestIndex = this.postRequests.length;
                 if(this.persistent){
-                    this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+                    this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable));
                 }
                 this.collisionDetector.generateColliderOnWorker();
-                this.userInfo.changeXP(10);
-                this.userInfo.buildingsPlaced++;
+                this.playerInfo.changeXP(10);
+                this.playerInfo.buildingsPlaced++;
             } else {
                 console.error("failed to add new building at that position");
             }
@@ -343,10 +343,20 @@ export class WorldManager{
         const building = this.world.getBuildingByPosition(this.currentPos);
         console.log("collect from mine - worldManager", building);
         if(building){
-            this.userInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.userInfo.getCurrentTime())));
+            this.playerInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.playerInfo.getCurrentTime())));
         } else {
             console.error("no building found at that position");
         }
+    }
+
+    async addCrystals(){
+        console.log("added 10 crystals");
+        this.playerInfo.changeCrystals(10);
+    }
+
+    async removeCrystals(){
+        console.log("removed 10 crystals");
+        this.playerInfo.changeCrystals(-10);
     }
 
     /**
@@ -364,7 +374,7 @@ export class WorldManager{
     updatePlayerStats(event){
         for(const key of event.detail.type){
             if (key === "crystals"){
-                if(!this.userInfo.changeCrystals(event.detail.params[key])){
+                if(!this.playerInfo.changeCrystals(event.detail.params[key])){
                     break;
                 }
             } else if(key === "health"){
@@ -376,9 +386,9 @@ export class WorldManager{
             } else if(key === "maxMana") {
                 this.world.player.increaseMaxMana(event.detail.params[key]);
             } else if (key === "xp"){
-                this.userInfo.changeXP(event.detail.params[key]);
+                this.playerInfo.changeXP(event.detail.params[key]);
             } else if (key === "level"){
-                this.userInfo.changeLevel(event.detail.params[key]);
+                this.playerInfo.changeLevel(event.detail.params[key]);
             }
             //TODO: sad sound when not enough crystals
             //TODO: update db?
@@ -419,11 +429,10 @@ export class WorldManager{
      * @param {String} uri - the URI to send the POST request to
      * @param {Entity} entity - the Entity that we want to add to the db
      * @param {Number} retries - the number of retries to resend the POST request
-     * @param {Number} requestIndex - the index of the request in the postRequests array
+     * @param {Number} requestIndex - the index of the Entity in the postRequests array (used to remove the request from the array) use insertPendingPostRequest to get the index
      * @returns {Promise<void>}
      */
     sendPOST(uri, entity, retries, requestIndex){
-        this.insertPendingPostRequest(entity);
         try {
             console.log("sending POST request: ", entity);
             const island = this.world.getIslandByPosition(entity.position);
@@ -433,7 +442,7 @@ export class WorldManager{
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "POST",
-                data: JSON.stringify(entity.formatPOSTData(this.userInfo, island.position)),
+                data: JSON.stringify(entity.formatPOSTData(this.playerInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -464,7 +473,7 @@ export class WorldManager{
      * @param entity - the Entity that we want to update in the db
      * @param retries - the number of retries to resend the PUT request
      */
-    sendPUT(uri, entity, retries){
+    sendPUT(uri, entity, retries){ //TODO: add to postRequests array
         const island = this.world.getIslandByPosition(entity.position);
         if(!island){ //TODO: add team check / check if island = player's
             throw new Error("No island found at position");
@@ -473,7 +482,7 @@ export class WorldManager{
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "PUT",
-                data: JSON.stringify(entity.formatPUTData(this.userInfo, island.position)),
+                data: JSON.stringify(entity.formatPUTData(this.playerInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {

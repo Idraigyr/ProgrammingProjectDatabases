@@ -19,12 +19,12 @@ export class Tree extends Placeable{
 
     /**
      * Formats the data for a POST request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} the building type
      */
-    formatPOSTData(userInfo, islandPosition){
-        const obj = super.formatPOSTData(userInfo, islandPosition);
+    formatPOSTData(playerInfo, islandPosition){
+        const obj = super.formatPOSTData(playerInfo, islandPosition);
         delete obj.level;
         obj.prop_type = "Tree";
         return obj;
@@ -32,12 +32,12 @@ export class Tree extends Placeable{
 
     /**
      * Formats the data for a PUT request
-     * @param userInfo {JSON} the user information
+     * @param playerInfo {JSON} the user information
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} the building type
      */
-    formatPUTData(userInfo, islandPosition){
-        const obj = super.formatPUTData(userInfo, islandPosition);
+    formatPUTData(playerInfo, islandPosition){
+        const obj = super.formatPUTData(playerInfo, islandPosition);
         obj.prop_type = "tree";
         return obj;
     }
