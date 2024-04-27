@@ -13,7 +13,7 @@ export class Factory{
 
     /**
      * Constructor for the factory
-     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector}} params
+     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector, camera: Camera}} params
      */
     constructor(params) {
         this.scene = params.scene;
@@ -21,6 +21,7 @@ export class Factory{
         this.assetManager = params.assetManager;
         this.timerManager = params.timerManager;
         this.collisionDetector = params.collisionDetector;
+        this.camera = params.camera;
         this.#currentTime = null;
     }
 
@@ -52,8 +53,8 @@ export class Factory{
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 0, buildingID: params.buildingID});
-        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 0, buildingID: params.buildingID}); //TODO: change team dynamically
+        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
             if(child.name === "handIKr") {
@@ -68,6 +69,8 @@ export class Factory{
         });
 
         this.scene.add(view.charModel);
+        this.scene.add(view.healthBar);
+
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
