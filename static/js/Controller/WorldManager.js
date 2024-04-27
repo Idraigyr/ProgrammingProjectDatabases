@@ -121,11 +121,11 @@ export class WorldManager{
             // Convert local time to ISO string
             let time = localTime.toISOString();
             let formattedDate = time.slice(0, 19);
-            console.log(JSON.stringify({starttime: response.slice(0, 19), endtime: formattedDate, type: "build", building_id: buildingID, island_id: islandId}));
+            console.log(JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId}));
             $.ajax({
                 url: `${API_URL}/${uri}`,
                 type: "POST",
-                data: JSON.stringify({starttime: response.slice(0, 19), endtime: formattedDate, type: "build", building_id: buildingID, island_id: islandId}),
+                data: JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId}),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
