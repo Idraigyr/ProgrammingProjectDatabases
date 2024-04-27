@@ -1,9 +1,11 @@
 import logging
 import os
 from json import JSONEncoder
+from logging.handlers import RotatingFileHandler
 
+import werkzeug.exceptions
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_migrate import check as check_db_schema
@@ -51,26 +53,54 @@ from os import environ
 from src.logger_formatter import CustomFormatter
 
 # Configure the logger
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
 
-ch.setFormatter(CustomFormatter())
+handlers = []
+logfile = environ.get('APP_LOG_FILE', None)
+if logfile:
+    fh = RotatingFileHandler(logfile, maxBytes=100000, backupCount=1)
+    handlers.append(fh)
+
+streamHandler = logging.StreamHandler()
+streamHandler.setFormatter(CustomFormatter())
+handlers.append(streamHandler)
 
 if environ.get('APP_DEBUG', "false") == "true":
     logging.basicConfig(level=logging.DEBUG,
                         format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
-                        handlers=[ch])
+                        handlers=handlers)
     logging.debug("Debug mode enabled")
 else:
     logging.basicConfig(level=logging.INFO,
                         format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
                         datefmt='%Y-%m-%d %H:%M:%S',
-                        handlers=[ch, logging.FileHandler('app.log', mode='a')]
+                        handlers=handlers
                         )
 
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
 
+@app.errorhandler(Exception)
+def log_exception(error):
+    # Log the exception
+    msg = f"Exception occurred: {error}"
+    status = 500
+    if isinstance(error, werkzeug.exceptions.HTTPException) and error.code < 500:
+        msg = error.__str__()
+        status = error.code
+
+    if request:
+        if 'api' in request.url:
+            msg = jsonify({'status': 'error', 'message': msg})
+
+        if status >= 500:
+            app.logger.exception(f"Exception occurred: {error} in {request.url}")
+        else:
+            app.logger.debug(f"Exception occurred: {error} in {request.url} - probably user error")
+        return msg, status
+    else:
+        app.logger.exception(f"Exception occurred: {error}")
+
+    return 'Internal Server Error', 500
 
 def setup_jwt(app: Flask):
     """
