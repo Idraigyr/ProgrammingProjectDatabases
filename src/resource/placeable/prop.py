@@ -125,6 +125,16 @@ class PropResource(Resource):
             if 'type' in data:
                 # Remove the type field as it's not needed, it's always 'prop' since we're in the prop endpoint
                 data.pop('type')
+            if 'island_id' in data:
+                # check if island_id exists
+                from src.model.island import Island
+                if Island.query.get(data['island_id']) is None:
+                    raise ValueError(f'Island with id {data["island_id"]} not found')
+
+            if 'task' in data:
+                # Remove the task field as it's not handled here
+                data.pop('task')
+
 
             prop = Prop(**data, blueprint_id=blueprint_id)
             current_app.db.session.add(prop)

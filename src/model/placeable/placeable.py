@@ -1,6 +1,9 @@
 from flask import current_app
-from sqlalchemy import BigInteger, String, Column, Integer, SmallInteger, ForeignKey, CheckConstraint
+from sqlalchemy import BigInteger, String, Column, Integer, SmallInteger, ForeignKey, CheckConstraint, DateTime
 from sqlalchemy.orm import mapped_column, Mapped, relationship, declared_attr
+
+from src.model.upgrade_task import BuildingUpgradeTask
+from src.model.task import Task
 
 
 class Placeable(current_app.db.Model):
@@ -26,6 +29,9 @@ class Placeable(current_app.db.Model):
     blueprint_id: Mapped[int] = mapped_column(SmallInteger, ForeignKey('blueprint.id'), nullable=False, default=0)
     blueprint: Mapped["Blueprint"] = relationship('Blueprint')
 
+    task_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id'), nullable=True)
+    task: Mapped[Task] = relationship("Task", back_populates="working_building", passive_deletes=True)
+
     def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, blueprint_id: int = 0, rotation: int = 0):
         """
         Initializes a placeable object
@@ -47,10 +53,32 @@ class Placeable(current_app.db.Model):
         self.rotation = rotation
 
 
+    def create_task(self, endtime: DateTime):
+        """
+        Create a new 'regular' task for this building
+        :param endtime: The time when the task should end
+        :return: The new task
+        """
+        task = Task(endtime, self.island_id, self)
+        self.task = task
+        return task
+
+    def create_upgrade_task(self, endtime: DateTime, used_crystals: int):
+        """
+        Create a new upgrade task for this building
+        :param endtime: The time when the task should end
+        :param used_crystals: The amount of crystals used for the upgrade
+        :return: The new task
+        """
+        task = BuildingUpgradeTask(endtime, self, self.level + 1, used_crystals)
+        self.task = task
+        return task
+
+
     def update(self, data: dict):
         """
         Updates the placeable object new data
-        Updating the id, island_id and type are not allowed
+        Updating the id, island_id, task_id and type are not allowed
         :param data: The new data
         :return:
         """

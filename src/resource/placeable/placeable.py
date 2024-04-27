@@ -2,6 +2,7 @@ from flask import request, current_app, Blueprint, Flask
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
+from src.resource.task import TaskSchema
 from src.resource import add_swagger
 from src.schema import ErrorSchema, SuccessSchema
 from src.resource.blueprint import BlueprintSchema
@@ -45,7 +46,8 @@ class PlaceableSchema(Schema):
         'blueprint': {
             'type': 'object',
             'items': BlueprintSchema,
-        }
+        },
+        'task': TaskSchema
     }
 
     required = ['island_id', 'x', 'z', 'rotation']
@@ -62,6 +64,7 @@ class PlaceableSchema(Schema):
                              type=placeable.type,
                              blueprint=BlueprintSchema(placeable.blueprint),
                              rotation=placeable.rotation,
+                             task=TaskSchema(placeable.task) if placeable.task is not None else None,
                              **kwargs)
         else:
             super().__init__(**kwargs)

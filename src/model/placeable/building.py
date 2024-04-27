@@ -1,10 +1,8 @@
 from typing import List
 
-from sqlalchemy import ForeignKey, BigInteger, SmallInteger, Column, DateTime, CheckConstraint
+from sqlalchemy import ForeignKey, BigInteger, SmallInteger, Column, CheckConstraint
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
-from src.model.task import Task
-from src.model.upgrade_task import BuildingUpgradeTask
 from src.model.gems import Gem
 from src.model.placeable.placeable import Placeable
 
@@ -19,9 +17,6 @@ class Building(Placeable):
     level: Mapped[int] = Column(SmallInteger(), CheckConstraint('level >= 0'), default=0, nullable=False)
 
     gems: Mapped[List[Gem]] = relationship('Gem')
-
-    task_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id'), nullable=True)
-    task: Mapped[Task] = relationship("Task", back_populates="working_building", passive_deletes=True)
 
     def __init__(self, island_id: int = 0, xpos: int = 0, zpos: int = 0, level: int = 0, blueprint_id: int = 0, rotation: int = 0) -> None:
         """
@@ -39,33 +34,11 @@ class Building(Placeable):
 
         self.level = level
 
-    def create_task(self, endtime: DateTime):
-        """
-        Create a new 'regular' task for this building
-        :param endtime: The time when the task should end
-        :return: The new task
-        """
-        task = Task(endtime, self.island_id, self)
-        self.task = task
-        return task
-
-    def create_upgrade_task(self, endtime: DateTime, used_crystals: int):
-        """
-        Create a new upgrade task for this building
-        :param endtime: The time when the task should end
-        :param used_crystals: The amount of crystals used for the upgrade
-        :return: The new task
-        """
-        task = BuildingUpgradeTask(endtime, self, self.level + 1, used_crystals)
-        self.task = task
-        return task
-
-
 
     def update(self, data: dict):
         """
         Update the building object with the given data
-        Note: blueprint_id cannot be changed
+        Note: blueprint_id & task_id cannot be changed
         :param data:
         :return:
         """

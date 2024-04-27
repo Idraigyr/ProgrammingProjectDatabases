@@ -139,7 +139,7 @@ class GemResource(Resource):
 
     @swagger.tags('gems')
     @summary('Update a gem by id. All fields (except ids) are updatable. Including attributes and their multipliers.'
-             ' Note that only one of the building_id or player_id can have a non-null value')
+             'A null building_id means the gem is in (island) storage, player_id must always be set')
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the updated gem in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)
@@ -203,6 +203,8 @@ class GemResource(Resource):
             player_id = None
             if 'player_id' in data:
                 player_id = data.pop('player_id')
+                if player_id is None:
+                    raise ValueError('player_id cannot be null')
 
             building_id = None
             if 'building_id' in data:
@@ -213,23 +215,8 @@ class GemResource(Resource):
             current_app.db.session.add(gem)
             current_app.db.session.commit() # This is necessary to get the gem id
 
-            # if gem_attributes: # not empty
-            #     for assoc in gem_attributes:
-            #         assoc['gem_id'] = gem.id
-            #         del assoc['gem_attribute_type'] # We don't need this, it's only (syntactically) required for the schema
-            #         gem_assoc = GemAttributeAssociation(**assoc)
-            #         gem.attributes_association.append(gem_assoc)
-            #
-
-            update_dict = {'attributes': gem_attributes}
-            if player_id:
-                update_dict['player_id'] = player_id
-
-            if building_id:
-                update_dict['building_id'] = building_id
-
             # We reuse the update method to add the attributes
-            gem.update(update_dict)
+            gem.update({'attributes': gem_attributes, 'player_id': player_id, 'building_id': building_id})
 
             current_app.db.session.commit()
 
