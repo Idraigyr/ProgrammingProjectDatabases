@@ -558,18 +558,21 @@
 
 .settings-container {
     position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);width: 100%;
+    top: 20px;
+    left: 25%;
+    right: 25%;
+    width: 100%;
+    bottom: 20px;
     height: fit-content;
     max-width: 800px;
-    margin: 0 auto;
+    max-height: 98%;
+    margin: auto auto;
     padding: 20px;
     background-color: #f9f3d2;
     border: 2px solid #0f172a;
     border-radius: 10px;
     z-index: 8;
-    overflow: hidden;
+    overflow: scroll;
 }
 .borderless{
     border: none;
