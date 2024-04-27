@@ -15,4 +15,6 @@ export const islandURI = 'api/island';
 
 export const blueprintURI = 'api/blueprint';
 
+export const taskURI = 'api/task';
+
 export const postRetries = 3;

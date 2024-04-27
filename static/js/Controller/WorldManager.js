@@ -1,5 +1,5 @@
 import {Model} from "../Model/ModelNamespace.js";
-import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/MinionSpawner.js";
@@ -99,7 +99,7 @@ export class WorldManager{
             if(placeable){
                 const requestIndex = this.postRequests.length;
                 if(this.persistent){
-                    this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+                    this.sendPOST(placeableURI, placeable, postRetries, requestIndex, event.detail.withTimer);
                 }
                 this.collisionDetector.generateColliderOnWorker();
                 this.userInfo.changeXP(10);
@@ -108,6 +108,42 @@ export class WorldManager{
                 console.error("failed to add new building at that position");
             }
 
+        }
+    }
+    async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
+        try {
+            // Get server time
+            let response = await this.userInfo.getCurrentTime();
+            let serverTime = new Date(response);
+            serverTime.setSeconds(serverTime.getSeconds()+timeInSeconds);
+            let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+            let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+            // Convert local time to ISO string
+            let time = localTime.toISOString();
+            let formattedDate = time.slice(0, 19);
+            console.log(JSON.stringify({starttime: response.slice(0, 19), endtime: formattedDate, type: "build", building_id: buildingID, island_id: islandId}));
+            $.ajax({
+                url: `${API_URL}/${uri}`,
+                type: "POST",
+                data: JSON.stringify({starttime: response.slice(0, 19), endtime: formattedDate, type: "build", building_id: buildingID, island_id: islandId}),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                if (retries > 0){
+                    this.postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries - 1);
+                } else {
+                    throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
+                }
+            });
+        } catch (err){
+            console.error(err);
         }
     }
 
@@ -232,7 +268,7 @@ export class WorldManager{
      * @param {Number} requestIndex - the index of the request in the postRequests array
      * @returns {Promise<void>}
      */
-    sendPOST(uri, entity, retries, requestIndex){
+    sendPOST(uri, entity, retries, requestIndex, withTimer = false){
         this.insertPendingPostRequest(entity);
         try {
             $.ajax({
@@ -249,10 +285,13 @@ export class WorldManager{
                 console.log(textStatus, data);
                 entity.setId(data);
                 this.removePendingPostRequest(requestIndex);
+                if (withTimer){
+                    this.postBuildingTimer(taskURI, entity.timeToBuild, entity.id, this.userInfo.islandID, postRetries);
+                }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");
                 if (retries > 0){
-                    this.sendPOST(uri, entity, retries - 1, requestIndex);
+                    this.sendPOST(uri, entity, retries - 1, requestIndex, withTimer);
                 } else {
                     throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
                     //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
