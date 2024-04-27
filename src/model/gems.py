@@ -24,7 +24,7 @@ class Gem(current_app.db.Model):
     building_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('building.placeable_id'), nullable=True)
 
     # The many-to-one relationship between gems and players
-    player_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player.user_profile_id'), nullable=True)
+    player_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player.user_profile_id'), nullable=False)
 
     # attributes: Mapped[list] = relationship('GemAttribute', secondary=association_table)
     attributes_association = relationship("GemAttributeAssociation", cascade="all, delete-orphan")
@@ -67,10 +67,6 @@ class Gem(current_app.db.Model):
         :param data: The new data
         :return:
         """
-        colliding_keys = ['building_id', 'player_id']
-        if len(list(data.keys() & colliding_keys)) > 1:
-            raise ValueError(f'Invalid data object, at most one of the following keys is allowed: {",".join(colliding_keys)}. '
-                             'Note that the absence of the key will unlink it from its relation with said attribute')
 
 
         if 'type' in data:
@@ -131,26 +127,22 @@ class Gem(current_app.db.Model):
 
 
         if 'building_id' in data:
-            from src.model.placeable.building import Building
-            if not Building.query.get(data['building_id']):
-                raise ValueError('Invalid building_id')
+            if data['building_id'] is None:
+                self.building_id = None
+            else:
+                from src.model.placeable.building import Building
+                if not Building.query.get(data['building_id']):
+                    raise ValueError('Invalid building_id')
 
-            self.building_id = int(data['building_id'])
-        else:
-            # If the building_id is not in the data, set it to None (NULL), therefore unlinking its relation with
-            # (in this case) the building
-            self.building_id = None
+                self.building_id = int(data['building_id'])
 
         if 'player_id' in data:
+            # Not nullable
             from src.model.player import Player
             if not Player.query.get(data['player_id']):
                 raise ValueError('Invalid player_id')
 
             self.player_id = int(data['player_id'])
-        else:
-            # If the player_id is not in the data, set it to None (NULL), therefore unlinking its relation with
-            # (in this case) the player
-            self.player_id = None
 
         if self.building_id is None and self.player_id is None:
             logging.error(f"Gem {self.id} is orphaned. This is not supposed to happen. Please investigate")
