@@ -48,13 +48,25 @@ class JSONClassEncoder:
 # Load environment variables
 assert load_dotenv(".env"), "unable to load .env file"
 from os import environ
+from src.logger_formatter import CustomFormatter
 
 # Configure the logger
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+ch.setFormatter(CustomFormatter())
+
 if environ.get('APP_DEBUG', "false") == "true":
-    logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    logging.basicConfig(level=logging.DEBUG,
+                        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                        handlers=[ch])
     logging.debug("Debug mode enabled")
 else:
-    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    logging.basicConfig(level=logging.INFO,
+                        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        handlers=[ch, logging.FileHandler('app.log', mode='a')]
+                        )
 
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
