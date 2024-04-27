@@ -21,4 +21,6 @@ export const gemURI = 'api/gem';
 
 export const gemAttributesURI = 'api/gem/attributes/list';
 
+export const taskURI = 'api/task';
+
 export const postRetries = 3;
