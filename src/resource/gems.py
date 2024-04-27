@@ -200,12 +200,6 @@ class GemResource(Resource):
             if 'attributes' in data:
                 gem_attributes = data.pop('attributes')
 
-            player_id = None
-            if 'player_id' in data:
-                player_id = data.pop('player_id')
-                if player_id is None:
-                    raise ValueError('player_id cannot be null')
-
             building_id = None
             if 'building_id' in data:
                 building_id = data.pop('building_id')
@@ -216,7 +210,7 @@ class GemResource(Resource):
             current_app.db.session.commit() # This is necessary to get the gem id
 
             # We reuse the update method to add the attributes
-            gem.update({'attributes': gem_attributes, 'player_id': player_id, 'building_id': building_id})
+            gem.update({'attributes': gem_attributes, 'building_id': building_id})
 
             current_app.db.session.commit()
 
