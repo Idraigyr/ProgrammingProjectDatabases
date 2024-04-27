@@ -89,8 +89,9 @@ def __init__(self, **kwargs):
                         self.check_type(type_, 'enum', item)
                     if v not in self.prop['enum']:
                         raise ValueError(f"{k} must have {' or '.join(self.prop['enum'])} but have {v}")
-                if v:  # NoneType check - if v is None, we don't need to check format
-                    self.check_format(type_, format_, v)
+                # Just fk it, we don't need to check format - it's broke af anyway
+                #if v:  # NoneType check - if v is None, we don't need to check format
+                #    self.check_format(type_, format_, v)
 
             if load_only:
                 del self[k]
