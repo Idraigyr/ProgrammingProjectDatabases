@@ -50,7 +50,7 @@ class Player(current_app.db.Model):
 
     # entity_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player_entity.entity_id'))
     # entity: Mapped["PlayerEntity"] = relationship("PlayerEntity", foreign_keys=[entity_id], back_populates="player")
-    entity: Mapped['PlayerEntity'] = relationship(back_populates="player", cascade="all, delete-orphan", uselist=False)
+    entity: Mapped['PlayerEntity'] = relationship(back_populates="player", cascade="all, delete-orphan", uselist=False, lazy=False)
 
     # lazy=False means that the spells are loaded when the player is loaded
     spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
@@ -72,6 +72,10 @@ class Player(current_app.db.Model):
 
     # The player friends
     friends: Mapped[List["Player"]] = relationship("Player", secondary=friends_association_table, uselist=True, primaryjoin=user_profile_id == friends_association_table.c.player_id, secondaryjoin=user_profile_id == friends_association_table.c.friend_id)
+
+    # The player's match queue entry
+    match_queue_entry: Mapped["MatchQueueEntry"] = relationship("MatchQueueEntry", back_populates="player", uselist=False, cascade="all, delete-orphan")
+
 
     def __init__(self, user_profile=None, crystals: int = 0, mana: int = 0, xp: int = None, last_logout: DateTime = None, last_login: DateTime = None):
         """
