@@ -104,14 +104,11 @@ export class ViewManager extends Subject{
      * @return {Wizard|*}
      */
     getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager
-        console.log("getPlayerModelByID: ", id);
         if(this.pairs.player[0].model.id === id){
-            console.log("returning own player");
             return this.pairs.player[0].model;
         } else {
             const char = this.pairs.character.find((pair) => {
                 if(pair.model instanceof Model.Wizard && pair.model.id === id){
-                    console.log("returning other player");
                     return true;
                 }
                 return false;
@@ -120,7 +117,6 @@ export class ViewManager extends Subject{
                 return char.model;
             }
         }
-        console.log("returning null");
         return null;
     }
 
@@ -161,7 +157,7 @@ export class ViewManager extends Subject{
                 if(pair.view.staysAlive){
                     this.dyingViews.push(pair.view);
                 }
-                pair.view.cleanUp();
+                pair.view.dispose();
                 return false;
             }
             return true;

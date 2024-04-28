@@ -9,6 +9,8 @@ from jwt import ExpiredSignatureError
 # Set this to True if you want to broadcast forwarded the message to the sender as well
 # It will ignore the original sender session, but will broadcast to all other sessions
 BROADCAST_TO_SELF: bool = True
+MAX_PLAYERS: int = 2
+MATCH_TIME: int = 10
 
 class ForwardingNamespace(Namespace):
 
@@ -16,8 +18,8 @@ class ForwardingNamespace(Namespace):
         super().__init__(namespace)
         self._log = logging.getLogger(__name__)
         self.clients: dict = {} # user_id -> [sid1, sid2, ...]
-        self.playing: dict = {} # user_id -> game_id #TODO: might not be needed
-        self.matches: dict = {} # game_id -> {player1, player2, player1_status, player2_status, time_left}
+        self.playing: dict = {} # user_id -> match_id
+        self.matches: dict = {} # match_id -> {players[], time_left} /// if we want to expand to multiple teams or players change players[id] to players[{id, team}]
 
     def get_user_from_sid(self, sid):
         for user_id, sids in self.clients.items():
@@ -25,19 +27,54 @@ class ForwardingNamespace(Namespace):
                 return user_id
         return None
 
-    def update_game_timer(self, game_id):
+    def update_match_timer(self, match_id):
         """
-        Updates the game timer for the given game_id
-        :param game_id:
+        Updates the match timer for the given match_id
+        :param match_id:
         :return:
         """
-        while self.matches[game_id]['time_left'] > 0:
-            current_app.socketio.sleep(1)
-            self.matches[game_id]['time_left'] -= 1
-            self.emit('game_timer', {'time_left': self.matches[game_id]['time_left']}, room=self.matches[game_id]['player1'])
-            self.emit('game_timer', {'time_left': self.matches[game_id]['time_left']}, room=self.matches[game_id]['player2'])
-        self.emit('game_over', {'winner': -1}, room=self.matches[game_id]['player1']) # -1 means tie
-        self.emit('game_over', {'winner': -1}, room=self.matches[game_id]['player2']) # -1 means tie
+        while self.matches[match_id]['time_left'] > 0:
+            self.socketio.sleep(1)
+            self.matches[match_id]['time_left'] -= 1
+            self._log.debug(f"emitting match_timer: {self.matches[match_id]['time_left']}")
+            for player_id in self.matches[match_id]['players']:
+                for sid in self.clients[player_id]:
+                    self.emit('match_timer', {'time_left': self.matches[match_id]['time_left']}, room=sid)
+        self._log.debug(f"emitting match_end: {match_id}")
+        self.end_match(match_id, None)
+
+    def end_match(self, match_id, winner_id):
+        """
+        Ends the match and sends the match_end message to the players
+        :param match_id: match_id
+        """
+        self._log.debug(f"Ending match: {match_id}")
+        try:
+            # TODO: transfer ownership of stakes to winner or when there is a draw, return stakes to players
+
+            for player_id in self.matches[match_id]['players']:
+                del self.playing[player_id]
+                for sid in self.clients[player_id]:
+                    self.emit('match_end', {'winner': winner_id}, room=sid)
+            self.matches.pop(match_id)
+        except Exception:
+            self._log.error(f"Could not end match: {match_id}", exc_info=True)
+
+    def on_altar_destroyed(self, data):
+        """
+        Handles the altar destroyed event i.e. a player has won the match
+        :param data: message from the client
+        """
+        try:
+            match_id = int(data['match_id'])
+            if match_id not in self.matches:
+                self._log.error(f"Match not found: {match_id}. Dropping message.")
+                return
+            winner_id = self.get_user_from_sid(request.sid)
+            self.end_match(match_id, winner_id)
+        except Exception:
+            self._log.error(f"Could not end match: {data}", exc_info=True)
+
 
 
 
@@ -102,7 +139,7 @@ class ForwardingNamespace(Namespace):
                 selfSessions = self.clients.get(senderId, [])
                 targetSids = targetSids + [sid for sid in selfSessions if sid not in selfSessions]
 
-            self._log.debug(f"Forwarding message to user_id = {targetId}: {data}")
+            # self._log.debug(f"Forwarding message to user_id = {targetId}: {data}")
             data['sender'] = senderId
 
             for sid in targetSids:
@@ -113,68 +150,38 @@ class ForwardingNamespace(Namespace):
 
     def on_player_ready(self, data):
         """
-        registers that the player is ready to play (i.e. has loaded the multiplayer game)
+        registers that the player is ready to play (i.e. has loaded the multiplayer match),
+        and starts the match if all players are ready
         :param data: message from the client
         :return:
         """
         try:
-            targetId = int(data['target'])
-            if targetId not in self.clients:
-                self._log.error(f"Client not found: {targetId}. Dropping message.")
-                return
-            targetSids = self.clients[targetId]
             senderId = self.get_user_from_sid(request.sid)
-            game_id = self.playing[senderId]
+            match_id = int(data['match_id'])
+            self._log.debug(f"Player ready: player_id: {senderId}, match_id: {match_id}")
+            if(senderId not in self.playing):
+                self.playing[senderId] = data['match_id']
 
-            sender = 'player{0}'.format(1 if senderId == self.matches[game_id]['player1'] else 2)
-            target = 'player{0}'.format(1 if targetId == self.matches[game_id]['player1'] else 2)
+                #add match to matches when first player is ready
+                if(match_id not in self.matches):
+                    self.matches[match_id] = {'players': [], 'time_left': MATCH_TIME}
 
-            if self.matches[game_id][target] == "ready":
-                self.matches[game_id][sender] = "playing"
-                self.matches[game_id][target] = "playing"
-                for sid in targetSids:
-                    self.emit('game_start', room=sid)
-                for sid in self.clients[senderId]:
-                    self.emit('game_start', room=sid)
-                self.socketio.start_background_task(self.update_game_timer, game_id)
-            else:
-                self.matches[game_id][sender] = "ready"
+                self.matches[match_id]['players'].append(senderId)
+                if len(self.matches[match_id]['players']) > MAX_PLAYERS - 1:
+                    #start the match both players are ready
+                    for player_id in self.matches[match_id]['players']:
+                        for sid in self.clients[player_id]:
+                            self.emit('match_start', room=sid)
+                            self._log.debug(f"match started: {match_id}")
+                    self.socketio.start_background_task(self.update_match_timer, match_id)
 
         except Exception:
-            self._log.error(f"Could not start game: {data}", exc_info=True)
+            self._log.error(f"Could not start match: {data}", exc_info=True)
             #TODO: send abort message to both players
 
-
-    def on_match_found(self, data):
+    def on_player_leaving(self, data):
         """
-        forwards the message to all the clients
+        registers that the player is leaving the match
         :param data: message from the client
+        :return:
         """
-        try:
-            # send opponentId to both players, players will fetch opponent details from server via REST API
-            target_ids = [int(data['player1']), int(data['player2'])]
-            for target_id in target_ids:
-                if target_id not in self.clients:
-                    self._log.error(f"Client not found: {target_id}. Dropping message.")
-                    return
-                target_sids = self.clients[target_id]
-                sender_id = self.get_user_from_sid(request.sid)
-
-                self._log.debug(f"Forwarding message to user_id = {target_id}: {data}")
-                data['sender'] = sender_id
-                data['opponent'] = target_ids[1] if target_id == target_ids[0] else target_ids[0]
-
-                # set a new game in the matches dict
-                game_id = 0 # TODO: generate a unique game id
-                self.matches[game_id] = {'player1': target_ids[0], 'player2': target_ids[1], 'player1_status': "loading", 'player2_status': "loading", 'time_left': 30} # TODO: move "loading" in an ENUM and put it with "time_left": 60*10 in a config
-                self.playing[target_id] = game_id
-                self.playing[sender_id] = game_id
-
-                data['game_id'] = game_id
-
-                for sid in target_sids:
-                    self.emit('match_found', data, room=sid)
-
-        except Exception:
-            self._log.error(f"Could not send match found message: {data}", exc_info=True)
-

@@ -14,6 +14,20 @@ export const assert = function(condition, message) {
 
 }
 
+function padLeadingZeros(num, size) {
+    return num.toString().padStart(size, "0");
+}
+
+export const formatSeconds = function(seconds){
+    if(seconds >= 3600){
+        const hours = Math.floor(seconds/3600);
+        return `${padLeadingZeros(hours,2)}:${padLeadingZeros(Math.floor((seconds - hours*3600)/60),2)}:${padLeadingZeros(seconds%60,2)}`;
+    } else if(seconds >= 60){
+        return `${padLeadingZeros(Math.floor(seconds/60),2)}:${padLeadingZeros(seconds%60,2)}`;
+    } else {
+        return `00:${padLeadingZeros(seconds,2)}`;
+    }
+}
 
 /**
  * Get the time difference in seconds

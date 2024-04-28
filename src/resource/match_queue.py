@@ -18,6 +18,7 @@ max_level = 10 #TODO: move this somewhere else / make it based on what's in db
 level_range = 1 #range of levels (+&-) to look for a match
 
 #dict of lists, each list contains player ids per level
+matches = []
 match_queue = dict()
 for i in range(max_level + 1):
     match_queue[i] = []
@@ -94,7 +95,8 @@ class MatchQueueResource(Resource):
                 #match them, remove them and send info via websocket
                 player1 = match_queue[player_level][0]
                 player2 = match_queue[player_level][1]
-                current_app.socketio.emit('match_found', {'player1': player1, 'player2': player2}, namespace='/forward')
+                matches.append({'player1': player1, 'player2': player2}) #unique match id
+                current_app.socketio.emit('match_found', {'player1': player1, 'player2': player2, 'match_id': len(matches) - 1}, namespace='/forward')
                 match_queue[player_level].remove(player1)
                 match_queue[player_level].remove(player2)
                 #...

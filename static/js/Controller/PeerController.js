@@ -12,7 +12,6 @@ export class PeerController{
      */
     update(data){
         if(data.state){
-            console.log("updating enemy sate: ", data.state)
             this.peer.fsm.setState(data.state);
             return;
         }

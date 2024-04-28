@@ -1,6 +1,7 @@
 import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
+import {Bridge} from "./Entities/Foundations/Bridge.js";
 
 /**
  * World class that contains all the islands and the player
@@ -14,6 +15,28 @@ export class World{
         this.player = null;
         this.entities = [];
         this.spawners = {minions: [], spells: []};
+    }
+
+    /**
+     * Remove all entities of a certain team + all bridges
+     * @param team
+     */
+    removeEntitiesByTeam(team){
+        this.entities = this.entities.filter((entity) => {
+            if(entity.team === team){
+                entity.dispose();
+                return false;
+            }
+            return true;
+        });
+
+        this.islands.filter((island) => {
+            if(island.team === team || island instanceof Bridge){
+                island.dispose();
+                return false;
+            }
+            return true;
+        });
     }
 
     /**
@@ -53,6 +76,13 @@ export class World{
      */
     clearMinionSpawners(){
         this.spawners.minions = [];
+    }
+
+    /**
+     * Clear all spell spawners
+     */
+    clearSpellSpawners(){
+        this.spawners.spells = [];
     }
 
     /**
@@ -137,14 +167,6 @@ export class World{
         }
         console.error("failed to add new building to island, there is no island at the position");
         //TODO: throw error?
-    }
-
-    /**
-     * Export the world to a json object
-     * @param json - the json object to export to
-     */
-    exportWorld(json){
-
     }
 
     /**

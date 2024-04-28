@@ -23,8 +23,8 @@ export class Fireball extends IView{
     /**
      * Clean up fireball
      */
-    cleanUp(){
-        super.cleanUp();
+    dispose(){
+        super.dispose();
     }
 
     /**

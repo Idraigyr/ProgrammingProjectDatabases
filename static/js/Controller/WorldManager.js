@@ -122,8 +122,6 @@ export class WorldManager{
         const xEdgeDiff = island1.position.x > island2.position.x ? island1.min.x - island2.max.x : island2.min.x - island1.max.x;
         const zEdgeDiff = island1.position.z > island2.position.z ? island1.min.z - island2.max.z : island2.min.z - island1.max.z;
 
-        console.log("xEdgeDiff", xEdgeDiff);
-        console.log("zEdgeDiff", zEdgeDiff);
         if(xEdgeDiff <= gridCellSize && zEdgeDiff <= gridCellSize){
            throw new Error("islands are too close to each other");
         }
@@ -179,8 +177,14 @@ export class WorldManager{
         return {position: bridgePosition, width: (bridgeMaxX - bridgeMinX)/gridCellSize + 1, length: (bridgeMaxZ - bridgeMinZ)/gridCellSize + 1};
     }
 
+    /**
+     * Adds an enemy player to the world
+     * @param params
+     * @return {Wizard}
+     */
     addOpponent(params){
-        const opponent = this.factory.createPlayer(params);
+        if(params.team === this.world.player.team) throw new Error("cannot add opponent with same team as player");
+        const opponent = this.factory.createOpponent(params);
         this.world.addEntity(opponent);
         return opponent;
     }
@@ -189,27 +193,48 @@ export class WorldManager{
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
+        const rotation = 180;
         console.log("offset", offset);
         if(currentIslandIsCenter){
             islandPosition.add(offset);
             //TODO: implement rotation in factory createIsland
-            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: 180, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
         } else {
             const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
-            //TODO: make sure these 2 lines work correctly
-            this.world.islands[0].position = this.world.islands[0].position.add(offset);
-            this.world.player.position = this.world.player.position.add(offset);
-            this.world.player.spawnPoint = this.world.player.spawnPoint.add(offset);
-            console.log("I moved myself with the island", this.world.player.position);
-            this.world.islands[0].rotation = 180;
+            this.moveCurrentIsland(offset, rotation);
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
         }
         const {position, width, length} = this.calculateBridgeMetrics(this.world.islands[0], this.world.islands[1]);
         //add a bridge between the 2 islands
-        this.world.addIsland(this.factory.createBridge({position: position, rotation: 0, width: width, length: length}));
+        this.world.addIsland(this.factory.createBridge({position: position, rotation: 0, width: width, length: length, team: 3}));
 
         this.collisionDetector.generateColliderOnWorker();
-        // this.collisionDetector.visualize({bvh: true});
+    }
+
+    /**
+     * Moves the current island and player to the new position, BE AWARE: this method does not call generateColliderOnWorker
+     * @param {THREE.Vector3} translation - the translation to apply to the island
+     * @param {number} rotation - the new rotation of the island in degrees
+     */
+    moveCurrentIsland(translation, rotation){
+        const island = this.world.islands[0];
+        island.position = island.position.add(translation);
+        island.rotation = rotation;
+        //TODO: make sure these 2 lines work correctly
+        console.log("I moved myself with the island", this.world.player.position);
+        this.world.player.spawnPoint = this.world.player.spawnPoint.add(translation);
+        this.world.player.position = this.world.player.spawnPoint;
+    }
+
+    /**
+     * resets the world state, removing all entities of other teams, removing spawners
+     * @param {number} team
+     */
+    resetWorldState(){
+        this.clearSpawners();
+        this.world.removeEntitiesByTeam(1);
+        this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
+        this.collisionDetector.generateColliderOnWorker();
     }
 
 
@@ -341,8 +366,12 @@ export class WorldManager{
         });
     }
 
-    clearMinionSpawners(){
+    /**
+     * Clears all spawners from the world
+     */
+    clearSpawners(){
         this.world.clearMinionSpawners();
+        this.world.clearSpellSpawners();
     }
 
     /**

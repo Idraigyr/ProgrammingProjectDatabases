@@ -163,7 +163,6 @@ class App {
 
 
         this.menuManager.addEventListener("startFusion", (event) => {
-            console.log("Fusion started");
             const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
             this.timerManager.createTimer(fusionTime, [() => {
                 const gem = this.itemManager.createGem(fusionLevel);
@@ -281,7 +280,6 @@ class App {
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots > 0){
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
-                console.log(params.gemIds);
             }
 
             //if the building is a mine, forward stored crystal information
@@ -304,7 +302,14 @@ class App {
         window.addEventListener("resize", this.onResize.bind(this));
 
         this.chatNameSpace.registerHandlers();
-        this.forwardingNameSpace.registerHandlers({handleMatchFound: this.multiplayerController.startMatch.bind(this.multiplayerController), processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController)});
+        this.forwardingNameSpace.registerHandlers({
+            handleMatchFound: this.multiplayerController.loadMatch.bind(this.multiplayerController),
+            handleMatchStart: this.multiplayerController.startMatch.bind(this.multiplayerController),
+            handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
+            handleMatchAbort: this.multiplayerController.abortMatch.bind(this.multiplayerController),
+            processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
+            updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
+        });
 
         //visualise camera line -- DEBUG STATEMENTS --
         // this.inputManager.addKeyDownEventListener("KeyN",() => {
@@ -342,8 +347,12 @@ class App {
         // navigator.sendBeacon(`${API_URL}/${playerURI}`, JSON.stringify(playerData));
     }
 
-    togglePhysicsUpdates(){
-        this.simulatePhysics = !this.simulatePhysics;
+    /**
+     * Toggles the physics simulation
+     * @param {bool} bool - optional parameter to toggle on (true) or off (false)
+     */
+    togglePhysicsUpdates(bool = null){
+        this.simulatePhysics = bool ?? !this.simulatePhysics;
     }
 
     /**

@@ -29,8 +29,8 @@ class SpellEntity extends Entity{
     update(deltaTime){
         this.timer += deltaTime;
         if(this.timer > this.duration){
-            //cleanup and delete
-            this.dispatchEvent(this.createDeleteEvent());
+            //dispose
+            this.dispose();
         }
     }
 

@@ -29,9 +29,15 @@ export class Minion extends IAnimatedView{
         this.camera = params.camera;
         this.healthBar = null;
         this.iniHealthBar();
-
     }
 
+    /**
+     * Clean up the view for disposal
+     */
+    dispose() {
+        this.healthBar.parent.remove(this.healthBar);
+        super.dispose();
+    }
 
 
     /**

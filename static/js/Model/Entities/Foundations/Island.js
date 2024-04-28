@@ -16,6 +16,14 @@ export class Island extends Foundation{
     }
 
     /**
+     * clean up the model for deletion
+     */
+    dispose() {
+        this.buildings.forEach(building => building.dispose());
+        super.dispose();
+    }
+
+    /**
      * Occupy a cell at the given world position
      * @param worldPosition - world position to occupy
      * @param dbType - type of the building

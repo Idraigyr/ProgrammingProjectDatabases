@@ -313,7 +313,7 @@ export class MinionController{
 
             if(current === end){
                 console.log("%cfound path", "color: green;");
-                printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
+                // printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
                 return this.retracePath(start, end);
             }
 
@@ -373,7 +373,6 @@ export class MinionController{
      */
     set worldMap(islands){
         this.#worldMap.setFromFoundations(islands);
-        printFoundationGrid(this.#worldMap.grid, this.#worldMap.width, this.#worldMap.length);
 
         //TODO: move this somewhere else? if placed in foundation you wouldn't need to calculate the position of the nodes more than once
         for(let i = 0; i < this.#worldMap.grid.length; i++){
@@ -404,6 +403,14 @@ export class MinionController{
      */
     get worldMap(){
         return this.#worldMap.slice();
+    }
+
+    /**
+     * clean up the minions and remove them
+     */
+    clearMinions(){
+        this.minions.forEach((minion) => minion.dispose());
+        this.minions = [];
     }
 
     /**

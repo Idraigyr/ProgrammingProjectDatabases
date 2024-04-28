@@ -3,6 +3,7 @@ import {PlayerInfo} from "./PlayerInfo.js";
 import * as THREE from "three";
 import {Controller} from "./Controller.js";
 import {spellTypes} from "../Model/Spell.js";
+import {formatSeconds} from "../helpers.js";
 
 /**
  * MultiplayerController class
@@ -16,6 +17,7 @@ export class MultiplayerController{
     forwardingNameSpace;
     peerController;
     updateInterval;
+    matchId = null;
     constructor(params) {
         //for remembering the interval for sending state updates
         this.matchmaking = false;
@@ -83,9 +85,36 @@ export class MultiplayerController{
         this.matchmaking = false;
     }
 
+    /**
+     * Updates the game timer
+     * @param data
+     * @return {Promise<void>}
+     */
+    async updateMatchTimer(data){
+        const timer = document.getElementById('game-timer');
+        timer.innerText = formatSeconds(data.time_left);
+    }
 
-    async startMatch(playerIds){
+    /**
+     * Toggles the visibility of the game timer
+     * @param {boolean | null} bool - optional parameter true to show the timer, false to hide it
+     */
+    toggleTimer(bool= null){
+        const timer = document.querySelector('.game-timer-container');
+        timer.style.display = (bool ? 'flex' : 'none') ?? (timer.style.display === 'none' ? 'flex' : 'none');
+    }
+
+
+    /**
+     * Loads the match and stops physics updates while loading
+     * @param {{player1: number, player2: number, matchId: number}} matchInfo
+     * @return {Promise<void>}
+     */
+    async loadMatch(matchInfo){
+        console.log("loading match...");
+        this.matchId = matchInfo['match_id'];
         this.togglePhysicsUpdates();
+        this.toggleTimer(true);
         const progressBar = document.getElementById('progress-bar');
 
         progressBar.labels[0].innerText = "retrieving Opponent info...";
@@ -99,7 +128,7 @@ export class MultiplayerController{
         document.querySelector('.loading-animation').style.display = 'block';
 
         //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
-        await this.opponentInfo.retrieveInfo(playerIds['player1'] === this.playerInfo.userID ? playerIds['player2'] : playerIds['player1']);
+        await this.opponentInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1']);
         progressBar.value = 50;
 
         progressBar.labels[0].innerText = "importing Opponent's island...";
@@ -123,18 +152,68 @@ export class MultiplayerController{
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);
-        //start receiving state updates from server
+        //announce to the server that the player is ready to start the match
+        this.forwardingNameSpace.sendPlayerReadyEvent(this.matchId);
+    }
+
+    /**
+     * Starts the match and resumes physics updates
+     */
+    startMatch(){
+        console.log("match started");
         document.querySelector('.loading-animation').style.display = 'none';
         this.togglePhysicsUpdates();
     }
 
-    endMatch(){
+    /**
+     * Ends the match and shows the win/lose/draw screen
+     * @param data
+     */
+    endMatch(data){
+        console.log(`match ended, winner: ${data.winner_id}`);
+        if(data.winner_id === this.playerInfo.userID){
+            //show win screen
+            console.log("you win");
+        } else if (data.winner_id === this.opponentInfo.userID){
+            //show lose screen
+            console.log("you lose");
+        } else {
+            //show draw screen
+            console.log("draw");
+        }
+        //wait for player to click on continue button
+        //send event to server that player is leaving match
+        this.leaveMatch();
+    }
+
+    /**
+     * Leaves the match => sets the game state back to single player
+     */
+    leaveMatch(){
+        console.log("leaving match");
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.labels[0].innerText = "leaving match...";
+        document.querySelector('.loading-animation').style.display = 'block';
+        this.togglePhysicsUpdates();
+
+        this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
+        this.toggleTimer(true);
         this.spellCaster.multiplayer = false;
-        this.worldManager.clearMinionSpawners();
+        //remove island from world and remove spawners
+        this.peerController.peer = null;
+        this.minionController.clearMinions();
+        this.worldManager.resetWorldState();
         //stop sending state updates to server
         this.stopSendingStateUpdates();
         //stop receiving state updates from server
-        //remove island from world
+        document.querySelector('.loading-animation').style.display = 'none';
+        this.toggleTimer(false);
+        this.togglePhysicsUpdates();
+        console.log("done leaving match");
+    }
+
+    abortMatch(){
+
     }
 
     async processReceivedState(data){

@@ -81,6 +81,7 @@ export class Factory{
         model.fsm = new MinionFSM(view.animations);
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(model, view);
         return model;
@@ -111,6 +112,33 @@ export class Factory{
         player.fsm = new PlayerFSM(view.animations);
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
+        player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
+        this.viewManager.addPair(player, view);
+        return player;
+    }
+
+    createOpponent(params){
+        // let sp = new THREE.Vector3(-8,15,12);
+        let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
+        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
+        //TODO: remove hardcoded height
+        const height = 3;
+        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, team: params?.team ?? 0});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
+
+        this.scene.add(view.charModel);
+
+        //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
+        view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
+        this.scene.add(view.boxHelper);
+
+        view.loadAnimations(this.assetManager.getAnimations("Player"));
+
+        player.fsm = new PlayerFSM(view.animations);
+        player.addEventListener("updatePosition",view.updatePosition.bind(view));
+        player.addEventListener("updateRotation",view.updateRotation.bind(view));
+        player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(player, view);
         return player;
@@ -118,19 +146,19 @@ export class Factory{
 
     /**
      * Creates bridge model and view
-     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number}} params
+     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, team: number}} params
      * @return {Bridge}
      */
     createBridge(params){
-        let bridgeModel = new Model.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length});
+        let bridgeModel = new Model.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length, team: params.team});
         let view = new View.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, thickness: 0.1});
 
         this.scene.add(view.initScene());
         view.boundingBox.setFromObject(view.charModel);
         this.scene.add(view.boxHelper);
 
-        console.log("bridgeModel", bridgeModel);
-        console.log("view", view);
+        bridgeModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
         this.viewManager.addPair(bridgeModel, view);
         return bridgeModel;
     }
@@ -153,6 +181,7 @@ export class Factory{
 
         islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));
         islandModel.addEventListener("updateRotation",view.updateRotation.bind(view));
+        islandModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.#addBuildings(islandModel, params.buildingsList);
 
@@ -162,13 +191,13 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
-        const modelParams = {position: pos, id: params.id};
+        const modelParams = {position: pos, id: params.id, team: params.team};
 
         //TODO: refactor this! not dynamic enough
         if(params.buildingName === "Mine"){
@@ -187,6 +216,7 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         model.rotate(params.rotation);
 
@@ -256,7 +286,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, team: islandModel.team}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

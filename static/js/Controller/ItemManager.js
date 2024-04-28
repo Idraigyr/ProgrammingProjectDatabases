@@ -28,7 +28,6 @@ export class ItemManager {
         const response = await $.getJSON(`${API_URL}/${gemAttributesURI}`);
         if(response){
             this.gemAttributes = response;
-            console.log("Gem attributes retrieved: ", this.gemAttributes);
         } else {
             throw new Error("Could not retrieve gem attributes");
         }

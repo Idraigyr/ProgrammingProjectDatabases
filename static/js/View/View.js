@@ -37,9 +37,9 @@ export class IView {
     }
 
     /**
-     * Clean up the view
+     * Clean up the view for deletion
      */
-    cleanUp() {
+    dispose() {
         try {
             this.boxHelper.parent.remove(this.boxHelper);
         } catch (err){

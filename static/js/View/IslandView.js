@@ -46,6 +46,14 @@ export class Island extends IView{
     }
 
     /**
+     * Clean up the view for deletion
+     */
+    dispose() {
+        super.dispose();
+        this.#grassField.parent.remove(this.#grassField);
+    }
+
+    /**
      * Create plane for the island
      * @returns {THREE.Mesh} group of plane object
      */
@@ -119,7 +127,7 @@ export class Island extends IView{
     initScene(){
         const group = new THREE.Group();
 
-        group.add(this.createLights());
+        group.add(this.createLights()); //TODO: remove this place in App.initScene
 
         let plane = this.createPlane();
         group.add(plane);

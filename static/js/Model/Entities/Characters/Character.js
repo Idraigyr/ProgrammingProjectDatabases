@@ -17,9 +17,6 @@ export class Character extends Entity{
      */
     constructor(params) {
         super(params);
-        if(this.constructor === Character){
-            throw new Error("cannot instantiate abstract class Character");
-        }
         this.phi = 0; // current horizontal rotation
         this.theta = 0; // current vertical rotation
         this.#rotation = new THREE.Quaternion(); // total rotation as a Quaternion
@@ -34,6 +31,14 @@ export class Character extends Entity{
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
+    }
+
+    /**
+     * Set the id of the entity
+     * @param {JSON} data - entire JSON object from db
+     */
+    setId(data){
+        this.id = data.entity.player_id;
     }
 
     /**
