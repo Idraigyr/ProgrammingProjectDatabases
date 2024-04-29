@@ -190,16 +190,20 @@ export class WorldManager{
     }
 
     async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
+        console.log("importing island island:", this.world.islands[0]);
+        console.log("importing island player", this.world.player);
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
         const rotation = 180;
         console.log("offset", offset);
         if(currentIslandIsCenter){
+            console.log("%ccurrent island is center", "color: green; font-size: 20px");
             islandPosition.add(offset);
             //TODO: implement rotation in factory createIsland
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
         } else {
+            console.log("%cother island is center", "color: red; font-size: 20px");
             const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
             this.moveCurrentIsland(offset, rotation);
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
@@ -228,13 +232,16 @@ export class WorldManager{
 
     /**
      * resets the world state, removing all entities of other teams, removing spawners
+     * @param {boolean} currentIslandIsCenter - whether the current island is the center island in the multiplayer match
      * @param {number} team
      */
-    resetWorldState(){
+    resetWorldState(currentIslandIsCenter = true){
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
-        this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
+        if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
         this.collisionDetector.generateColliderOnWorker();
+        console.log("reset world state island:", this.world.islands[0]);
+        console.log("reset world state player", this.world.player);
     }
 
 
@@ -350,13 +357,14 @@ export class WorldManager{
     /**
      * places minionSpawners on warrior huts and attaches event listeners to them. The event listeners add the minions to the world and attach their controller
      * @param {MinionController} controller
+     * @param {interval: number, maxSpawn: number} params - the parameters for the minion spawner
      */
-    generateMinionSpawners(controller){ //TODO: refactor this method: try to remove arrow function
+    generateMinionSpawners(controller, params){ //TODO: refactor this method: try to remove arrow function?
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const warriorHuts = island.getBuildingsByType("warrior_hut");
             warriorHuts.forEach((hut) => {
-                const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: 4, maxSpawn: 6});
+                const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: params.interval, maxSpawn: params.maxSpawn, team: 0});
                 spawner.addEventListener("spawn", (event) => {
                    controller.addMinion(this.factory.createMinion(event.detail));
                 });

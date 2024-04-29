@@ -82,6 +82,7 @@ export class Attribute extends Item{
 export class Gem extends Item{
     constructor(params) {
         super(params);
+        this.staked = false;
         this.power = params?.power ?? 0;
         this.attributes = [];
         this.equippedIn = params?.equippedIn ?? null; // Building id
@@ -140,6 +141,9 @@ export class Gem extends Item{
         let obj = super.formatPUTData();
         if(changes.includes("equippedIn")){
             obj.building_id = this.equippedIn;
+        }
+        if(changes.includes("staked")){
+            obj.staked = this.staked;
         }
         return obj;
     }

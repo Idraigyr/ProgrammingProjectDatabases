@@ -1,6 +1,6 @@
 import {Attribute, Gem} from "../Model/items/Item.js";
 import {API_URL, gemAttributesURI, gemURI, postRetries} from "../configs/EndpointConfigs.js";
-import {powerScaling} from "../configs/ControllerConfigs.js";
+import {minTotalPowerForStakes, powerScaling} from "../configs/ControllerConfigs.js";
 import {gemTypes} from "../configs/Enums.js";
 
 /**
@@ -97,6 +97,44 @@ export class ItemManager {
      */
     #convertViewIdToGemId(viewId){
         return Number.parseInt(viewId.substring(viewId.lastIndexOf("-") + 1), 10);
+    }
+
+    /**
+     * sets a gem a staked in the db
+     * @param {string[]} gemIds - the ids of the gems to stake in menuManager format
+     * @param {boolean} unstake - if true, unstake the gems
+     */
+    stakeGems(gemIds, unstake = false){
+        const gems = gemIds.map(id => this.#getGemById(this.#convertViewIdToGemId(id)));
+        const contained = false;
+        let powerStaked = 0;
+        this.gems.forEach(gem => {
+            const contained = gems.includes(gem);
+            if((contained && !unstake) || (!contained && unstake)) powerStaked += gem.power;
+            if(
+                (!unstake && (gem.staked && contained) || (!gem.staked && !contained)) ||
+                (unstake && (!gem.staked && contained) || (gem.staked && !contained))
+            ) return;
+            gem.staked = !gem.staked;
+            this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["staked"]);
+        });
+        console.log("powerStaked:", powerStaked)
+        return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
+    }
+
+    checkStakedGems(){
+        let powerStaked = 0;
+        this.gems.forEach(gem => {
+            if(gem.staked) powerStaked += gem.power;
+        });
+        return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
+    }
+
+    /**
+     * returns all staked gems
+     */
+    getStakedGems(){
+        return this.gems.filter(gem => gem.staked);
     }
 
     /**
@@ -290,7 +328,6 @@ export class ItemManager {
             }).done((data, textStatus, jqXHR) => {
                 console.log("PUT success");
                 console.log(textStatus, data);
-                gem.setId(data);
                 this.removePendingRequest(requestIndex);
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("PUT fail");

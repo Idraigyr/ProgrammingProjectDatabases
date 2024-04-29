@@ -24,6 +24,10 @@ export class MultiplayerController{
         this.inMatch = false;
         this.opponentInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
+
+        this.updateEvents = new Map();
+        this.updateEvents.set("updatedState", this.sendPlayerStateUpdate.bind(this));
+        this.updateEvents.set("createSpellEntity", this.sendCreateSpellEntityEvent.bind(this));
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -59,12 +63,21 @@ export class MultiplayerController{
         this.spellFactory = params.spellFactory;
     }
 
-    async toggleMatchMaking(){
+    /**
+     *
+     * @param {HTMLDivElement} container
+     * @return {Promise<void>}
+     */
+    async toggleMatchMaking(container){
         if(this.matchmaking){
             await this.endMatchMaking();
+            console.log(container);
+            container.classList.remove('pressed');
         } else {
             //only start matchmaking if player has a warrior hut? and has enough stakes?
             await this.startMatchMaking();
+            console.log(container);
+            container.classList.add('pressed');
         }
     }
 
@@ -113,6 +126,7 @@ export class MultiplayerController{
     async loadMatch(matchInfo){
         console.log("loading match...");
         this.matchId = matchInfo['match_id'];
+        this.matchmaking = false;
         this.togglePhysicsUpdates();
         this.toggleTimer(true);
         const progressBar = document.getElementById('progress-bar');
@@ -148,7 +162,7 @@ export class MultiplayerController{
         progressBar.labels[0].innerText = "creating paths for minions...";
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
-        this.worldManager.generateMinionSpawners(this.minionController);
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 1, maxSpawn: 1});
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);
@@ -161,6 +175,7 @@ export class MultiplayerController{
      */
     startMatch(){
         console.log("match started");
+        this.inMatch = true;
         document.querySelector('.loading-animation').style.display = 'none';
         this.togglePhysicsUpdates();
     }
@@ -197,17 +212,18 @@ export class MultiplayerController{
         this.togglePhysicsUpdates();
 
         this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
-        this.toggleTimer(true);
         this.spellCaster.multiplayer = false;
+        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView
         //remove island from world and remove spawners
         this.peerController.peer = null;
         this.minionController.clearMinions();
-        this.worldManager.resetWorldState();
+        this.worldManager.resetWorldState(this.playerInfo.userID < this.opponentInfo.userID);
         //stop sending state updates to server
         this.stopSendingStateUpdates();
         //stop receiving state updates from server
         document.querySelector('.loading-animation').style.display = 'none';
         this.toggleTimer(false);
+        this.inMatch = false;
         this.togglePhysicsUpdates();
         console.log("done leaving match");
     }
@@ -265,8 +281,9 @@ export class MultiplayerController{
             // => how to do this? do we
             // A) just send state of all objects,
             // B) send a list of all objects created since the last update so that opponent can create them as well
-        this.spellCaster.addEventListener("createSpellEntity", this.sendCreateSpellEntityEvent.bind(this));
-        this.worldManager.world.player.addEventListener("updatedState", this.sendPlayerStateUpdate.bind(this));
+
+        this.spellCaster.addEventListener("createSpellEntity", this.updateEvents.get("createSpellEntity"));
+        this.worldManager.world.player.addEventListener("updatedState", this.updateEvents.get("updatedState"));
         this.updateInterval = setInterval(() => {
             // Send state update to server
             //player state (position, rotation, health) => just check playerModel
@@ -283,7 +300,7 @@ export class MultiplayerController{
     stopSendingStateUpdates(){
         clearInterval(this.updateInterval);
         this.updateInterval = null;
-        this.spellCaster.removeEventListener("createSpellEntity", this.sendCreateSpellEntityEvent.bind(this));
-        this.worldManager.world.player.removeEventListener("updatedState", this.sendPlayerStateUpdate.bind(this));
+        this.spellCaster.removeEventListener("createSpellEntity", this.updateEvents.get("createSpellEntity"));
+        this.worldManager.world.player.removeEventListener("updatedState", this.updateEvents.get("updatedState"));
     }
 }

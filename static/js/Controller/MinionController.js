@@ -130,6 +130,10 @@ export class MinionController{
         //paths per team per warrior hut
         this.paths = {0: {}, 1: {}};
         this.altars = {0: null, 1: null};
+
+        //enemies, used only during multiplayer
+        this.enemies = [];
+        this.enemyRotation = new THREE.Quaternion();
     }
 
     /**
@@ -138,6 +142,26 @@ export class MinionController{
      */
     addMinion(minion){
         this.minions.push(minion);
+    }
+
+    /**
+     * add an enemy minion to the controller, used only during multiplayer
+     * @param {Minion} minion
+     */
+    addEnemy(minion){
+        this.enemies.push(minion);
+    }
+
+    /**
+     * updates an enemy minion, used only during multiplayer
+     * @param event
+     */
+    updateEnemy(event){
+        let minion = this.enemies.find((minion) => minion.id === event.detail.id);
+        if(!minion) return;
+        minion.position.set(event.detail.position.x, event.detail.position.y, event.detail.position.z);
+        minion.phi = event.detail.phi;
+        minion.rotation = this.enemyRotation;
     }
 
     /**
@@ -216,11 +240,13 @@ export class MinionController{
         let targetPosition = new THREE.Vector3().copy(minion.position);
         //TODO: update movement based on state
         //if altar is close enough, attack altar
-        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*2){ //TODO: find out why this is gridCellSize is too close
+        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*0.5){ //TODO: find out why this is gridCellSize is too close
+            // console.log("attacking altar; minion position: ", minion.position, "altar position: ", this.altars[minion.team === 0 ? 1 : 0]);
             //attack altar
             //set attack state & at the end of the attack animation, deal damage
             minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
             minion.lastAction = "AttackEnemy";
+            // console.log("attacking altar");
         } else {
             const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion);
             if(closestDistance < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
@@ -228,11 +254,13 @@ export class MinionController{
                 //set attack state & at the end of the attack animation, deal damage
                 minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
                 minion.lastAction = "AttackEnemy";
+                // console.log("attacking enemy");
             } else if(closestDistance < minionFollowRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //follow character
                 targetPosition.copy(closestEnemy.position);
                 minion.fsm.processEvent({detail: {newState: "WalkForward"}});
                 minion.lastAction = "FollowEnemy";
+                // console.log("following enemy");
             } else {
                 //walk towards altar
                 minion.fsm.processEvent({detail: {newState: "WalkForward"}});
@@ -255,6 +283,7 @@ export class MinionController{
                 targetPosition.copy(minion.input.currentNode.position);
                 targetPosition.y = minion.position.y;
                 minion.lastAction = "MovingToAltar";
+                // console.log("moving to altar");
             }
         }
 
@@ -267,6 +296,7 @@ export class MinionController{
             if(movement.length() > 0){
                 //TODO: fix rotation
                 minion.phi = new THREE.Vector3(1,0,0).angleTo(movement)*180/Math.PI;
+                // console.log(minion.phi);
                 minion.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), minion.phi*Math.PI/180);
             }
 
@@ -313,7 +343,7 @@ export class MinionController{
 
             if(current === end){
                 console.log("%cfound path", "color: green;");
-                // printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
+                printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
                 return this.retracePath(start, end);
             }
 
@@ -361,7 +391,7 @@ export class MinionController{
      * @return {*}
      */
     calculateIndexFromPosition(position){
-        let {x,z} = returnWorldToGridIndex(position.sub(this.#worldMap.position));
+        let {x,z} = returnWorldToGridIndex(position.clone().sub(this.#worldMap.position));
         x += (this.#worldMap.width - 1)/2;
         z += (this.#worldMap.length - 1)/2;
         return z*this.#worldMap.width + x;
@@ -372,7 +402,14 @@ export class MinionController{
      * @param {Foundation} islands
      */
     set worldMap(islands){
+        for(const island of islands){
+            printFoundationGrid(island.grid, island.width, island.length);
+        }
         this.#worldMap.setFromFoundations(islands);
+
+        for(const island of islands){
+            printFoundationGrid(island.grid, island.width, island.length);
+        }
 
         //TODO: move this somewhere else? if placed in foundation you wouldn't need to calculate the position of the nodes more than once
         for(let i = 0; i < this.#worldMap.grid.length; i++){
@@ -383,6 +420,7 @@ export class MinionController{
             if(!(island instanceof Island)) continue;
             const altar = island.getBuildingsByType("altar_building")[0];
             this.altars[island.team] = altar?.position ?? null;
+            console.log("altar position", this.altars[island.team])
         }
 
         for(const island of islands){

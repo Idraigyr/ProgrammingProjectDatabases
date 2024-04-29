@@ -32,7 +32,7 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null}} params
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -40,6 +40,7 @@ export class MenuManager extends Subject{
         this.container = params.container;
         this.blockInputCallback = params.blockInputCallback;
         this.matchMakeCallback = params.matchMakeCallback;
+        this.checkStakesCallback = params?.checkStakesCallback ?? null;
         this.items = {};
         this.menus = {};
 
@@ -72,6 +73,17 @@ export class MenuManager extends Subject{
         this.gemId = 0;
     }
 
+
+    /**
+     * method for adding callbacks to the menuManager in case they could not be added in the constructor/ they need to be changed
+     * @param {{blockInputCallback: {block: function, activate: function} | null, matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
+     */
+    addCallbacks(callbacks){
+        if(callbacks.blockInputCallback) this.blockInputCallback = callbacks.blockInputCallback;
+        if(callbacks.matchMakeCallback) this.matchMakeCallback = callbacks.matchMakeCallback;
+        if(callbacks.checkStakesCallback) this.checkStakesCallback = callbacks.checkStakesCallback;
+    }
+
     // TODO: remove this
     #createCtorToDBNameList(){
         return {
@@ -98,7 +110,9 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
         }
         if(menu instanceof AltarMenu){
-            menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
+            menu.element.querySelector(".play-button").addEventListener("click", (event) => {
+                this.matchMakeCallback(menu.element.querySelector(".play-button-container"));
+            });
         }
         if(menu instanceof FusionTableMenu){
             menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
@@ -124,6 +138,36 @@ export class MenuManager extends Subject{
         if(menu instanceof FuseInputMenu){
             menu.element.querySelector(".add-button").addEventListener("click", this.dispatchAddEvent.bind(this));
             menu.element.querySelector(".remove-button").addEventListener("click", this.dispatchRemoveEvent.bind(this));
+        }
+        if(menu instanceof StakesMenu){
+            menu.element.addEventListener("drop", (event) => { //TODO: put this eventlistener and the one below in one function
+                const gemsIds = [];
+                menu.element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
+                if(this.checkStakesCallback(gemsIds)){
+                    console.log("Stakes are enough");
+                    this.container.querySelector(".play-button-container").classList.remove("inactive");
+                    this.container.querySelector(".play-button-container").classList.add("active");
+                }else {
+                    console.log("Stakes are not enough");
+                    this.container.querySelector(".play-button-container").classList.remove("active");
+                    this.container.querySelector(".play-button-container").classList.add("inactive");
+                }
+            });
+        }
+        if(menu instanceof GemsMenu){
+             menu.element.addEventListener("drop", (event) => {
+                const gemsIds = [];
+                menu.element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
+                if (this.checkStakesCallback(gemsIds, true)) {
+                    console.log("Stakes are enough");
+                    this.container.querySelector(".play-button-container").classList.remove("inactive");
+                    this.container.querySelector(".play-button-container").classList.add("active");
+                } else {
+                    console.log("Stakes are not enough");
+                    this.container.querySelector(".play-button-container").classList.remove("active");
+                    this.container.querySelector(".play-button-container").classList.add("inactive");
+                }
+            });
         }
     }
 
@@ -655,7 +699,8 @@ export class MenuManager extends Subject{
      * create menus and menu items
      */
     createMenus(){
-        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
+        //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();

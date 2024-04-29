@@ -53,6 +53,13 @@ export const buildingAssetsKeys = Object.freeze([
     "Tree",
 ]);
 
+export const cursorImgPaths = Object.freeze({
+    aim: "./static/assets/images/crosshairs/aim.png",
+    cross: "./static/assets/images/crosshairs/cross.png",
+    crosshairs: "./static/assets/images/crosshairs/crosshairs.png",
+    target: "./static/assets/images/crosshairs/target.png",
+});
+
 export const menuPaths = Object.freeze({
 
 });

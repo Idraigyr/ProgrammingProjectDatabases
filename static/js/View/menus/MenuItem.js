@@ -4,6 +4,7 @@ export class MenuItem{
         this.name = params.name;
         this.belongsIn = params.belongsIn;
         this.icon = new Image(params.icon.width,params.icon.height);
+        this.icon.style.pointerEvents = "none";
         this.icon.src = params.icon.src;
         this.element = this.createElement(params);
     }
@@ -31,7 +32,9 @@ export class MenuItem{
         const descriptionText = document.createElement("p");
         description.classList.add("menu-item-description");
         descriptionName.classList.add("menu-item-description-name");
+        descriptionName.style.pointerEvents = "none";
         descriptionText.classList.add("menu-item-description-text");
+        descriptionText.style.pointerEvents = "none";
         description.appendChild(descriptionName);
         description.appendChild(descriptionText);
         element.id = this.id;

@@ -139,95 +139,105 @@
 
 
     <div class="settings-container hide" style="z-index: 1000">
-        <div>
-            <button class="close-button close-setting" ></button>
+        <div class="settings-menu">
+            <div class="close-button-container">
+                <button class="close-button close-setting" ></button>
+            </div>
+            <h1>
+                Game Settings
+            </h1>
+
+            <div class="settings">
+                <div class="slider">
+                    <label for="volume">
+                        Volume:
+                    </label>
+                    <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+                </div>
+                <div class="checkbox">
+                    <label for="sound">
+                        Sound Effects
+                    </label>
+                    <input type="checkbox" id="sound" name="sound" checked>
+
+                </div>
+                <div class="checkbox">
+                    <label for="music">
+                        Background Music
+                    </label>
+                    <input type="checkbox" id="music" name="music">
+
+                </div>
+
+                <div class="dropdown">
+                    <label for="performance">
+                        performance:
+                    </label>
+                    <select id="performance" name="performance">
+                        <option value="low">low</option>
+                        <option value="middle">middle</option>
+                        <option value="high">high</option>
+                    </select>
+                </div>
+
+                <div class="custom-dropdown">
+                    <button class="dropbtn">Cursor</button>
+                    <div class="dropdown-content cursors"></div>
+                </div>
+
+                <div class="key-binds">
+                    <div class="key-bind">
+                        <label for="move-forward">
+                            Move forward:
+                        </label>
+                        <input type="text" id="move-forward" name="move-forward" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="move-left">
+                            Move left:
+                        </label>
+                        <input type="text" id="move-left" name="move-left" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="move-right">
+                            Move right:
+                        </label>
+                        <input type="text" id="move-right" name="move-right" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="move-backwards">
+                            Move backwards:
+                        </label>
+                        <input type="text" id="move-backwards" name="move-backwards" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="jump">
+                            Jump:
+                        </label>
+                        <input type="text" id="jump" name="jump" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="open-menu">
+                            Open inventory:
+                        </label>
+                        <input type="text" id="open-menu" name="open-inventory" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="eat">
+                            Eat:
+                        </label>
+                        <input type="text" id="eat" name="eat" placeholder="default" maxlength="1">
+                    </div>
+                </div>
+            </div>
+            <button class="button logOutButton" id="logOutButton">Log out</button>
+            <button class="button alert deleteAccountButton" id="applyButton">Delete account</button>
+            <button class="button applyButton right-align" id="applyButton">Apply</button>
         </div>
-        <h1>
-            Game Settings
-        </h1>
-
-        <div class="settings">
-            <div class="slider">
-                <label for="volume">
-                    Volume:
-                </label>
-                <input type="range" id="volume" name="volume" min="0" max="100" value="50">
-            </div>
-            <div class="checkbox">
-                <label for="sound">
-                    Sound Effects
-                </label>
-                <input type="checkbox" id="sound" name="sound" checked>
-
-            </div>
-            <div class="checkbox">
-                <label for="music">
-                    Background Music
-                </label>
-                <input type="checkbox" id="music" name="music">
-
-            </div>
-
-            <div class="dropdown">
-                <label for="resolution">
-                    Resolution:
-                </label>
-                <select id="resolution" name="resolution">
-                    <option value="720p">720p</option>
-                    <option value="1080p">1080p</option>
-                    <option value="4k">4K</option>
-                </select>
-            </div>
-
-            <div class="key-binds">
-                <div class="key-bind">
-                    <label for="move-forward">
-                        Move forward:
-                    </label>
-                    <input type="text" id="move-forward" name="move-forward" placeholder="w" maxlength="1">
-                </div>
-                <div class="key-bind">
-                    <label for="move-left">
-                        Move left:
-                    </label>
-                    <input type="text" id="move-left" name="move-left" placeholder="a" maxlength="1">
-                </div>
-                <div class="key-bind">
-                    <label for="move-right">
-                        Move right:
-                    </label>
-                    <input type="text" id="move-right" name="move-right" placeholder="d" maxlength="1">
-                </div>
-                <div class="key-bind">
-                    <label for="move-backwards">
-                        Move backwards:
-                    </label>
-                    <input type="text" id="move-backwards" name="move-backwards" placeholder="s" maxlength="1">
-                </div>
-                <div class="key-bind">
-                    <label for="jump">
-                        Jump:
-                    </label>
-                    <input type="text" id="jump" name="jump" placeholder="Space" maxlength="1">
-                </div>
-                <div class="key-bind">
-                    <label for="open-inventory">
-                        Open inventory:
-                    </label>
-                    <input type="text" id="open-inventory" name="open-inventory" placeholder="e" maxlength="1">
-                </div>
-                <div class="key-bind">
-                    <label for="pause">
-                        Pause:
-                    </label>
-                    <input type="text" id="pause" name="pause" placeholder="Esc" maxlength="1">
-                </div>
-            </div>
-        </div>
-        <button class="button logOutButton" id="logOutButton">Log out</button>
-        <button class="button alert deleteAccountButton" id="applyButton">Delete account</button>
-        <button class="button applyButton right-align" id="applyButton">Apply</button>
-
+    </div>
+    
+    <div class="crosshair">
+        <img src="../static/assets/images/crosshairs/aim.png" id="crosshair-img">
     </div>
 
 
@@ -243,29 +253,29 @@
 
     <!-- UI/HUD -->
     <div class="settings-button" id="settings-btn">
-            <img src="../static/assets/images/Button_Blue.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue.png" class="button">
             <img src="../static/assets/images/Regular_02.png" class="icon">
     </div>
 
     <div class="HotBar">
         <div class="item Spell1 hovered">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell2">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
             </div>
         <div class="item Spell3">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell4">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell5">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
     </div>

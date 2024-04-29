@@ -127,7 +127,7 @@ export class Island extends IView{
     initScene(){
         const group = new THREE.Group();
 
-        group.add(this.createLights()); //TODO: remove this place in App.initScene
+        // group.add(this.createLights()); //TODO: remove this place in App.initScene
 
         let plane = this.createPlane();
         group.add(plane);

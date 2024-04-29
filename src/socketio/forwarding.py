@@ -10,7 +10,7 @@ from jwt import ExpiredSignatureError
 # It will ignore the original sender session, but will broadcast to all other sessions
 BROADCAST_TO_SELF: bool = True
 MAX_PLAYERS: int = 2
-MATCH_TIME: int = 10
+MATCH_TIME: int = 60*10
 
 class ForwardingNamespace(Namespace):
 
@@ -19,7 +19,7 @@ class ForwardingNamespace(Namespace):
         self._log = logging.getLogger(__name__)
         self.clients: dict = {} # user_id -> [sid1, sid2, ...]
         self.playing: dict = {} # user_id -> match_id
-        self.matches: dict = {} # match_id -> {players[], time_left} /// if we want to expand to multiple teams or players change players[id] to players[{id, team}]
+        self.matches: dict = {} # match_id -> {players[], time_left, timer_task} /// if we want to expand to multiple teams or players change players[id] to players[{id, team}]
 
     def get_user_from_sid(self, sid):
         for user_id, sids in self.clients.items():
@@ -33,15 +33,16 @@ class ForwardingNamespace(Namespace):
         :param match_id:
         :return:
         """
-        while self.matches[match_id]['time_left'] > 0:
-            self.socketio.sleep(1)
+        while match_id in self.matches and self.matches[match_id]['time_left'] > 0:
             self.matches[match_id]['time_left'] -= 1
             self._log.debug(f"emitting match_timer: {self.matches[match_id]['time_left']}")
             for player_id in self.matches[match_id]['players']:
                 for sid in self.clients[player_id]:
                     self.emit('match_timer', {'time_left': self.matches[match_id]['time_left']}, room=sid)
+            self.socketio.sleep(1)
         self._log.debug(f"emitting match_end: {match_id}")
-        self.end_match(match_id, None)
+        if match_id in self.matches:
+            self.end_match(match_id, None)
 
     def end_match(self, match_id, winner_id):
         """
@@ -55,7 +56,7 @@ class ForwardingNamespace(Namespace):
             for player_id in self.matches[match_id]['players']:
                 del self.playing[player_id]
                 for sid in self.clients[player_id]:
-                    self.emit('match_end', {'winner': winner_id}, room=sid)
+                    self.emit('match_end', {'winner_id': winner_id}, room=sid)
             self.matches.pop(match_id)
         except Exception:
             self._log.error(f"Could not end match: {match_id}", exc_info=True)
@@ -66,7 +67,7 @@ class ForwardingNamespace(Namespace):
         :param data: message from the client
         """
         try:
-            match_id = int(data['match_id'])
+            match_id = data['match_id']
             if match_id not in self.matches:
                 self._log.error(f"Match not found: {match_id}. Dropping message.")
                 return
@@ -111,8 +112,12 @@ class ForwardingNamespace(Namespace):
         Remove the clients when they disconnect
         """
         sid = request.sid
-
         for user_id, sids in self.clients.items():
+            # end match if player was in a match
+            if user_id in self.playing:
+                match_id = self.playing[user_id]
+                self.end_match(match_id, self.matches[match_id]['players'][0] if self.matches[match_id]['players'][0] != user_id else self.matches[match_id]['players'][1])
+
             if sid in sids:
                 sids.remove(sid)
                 if len(sids) == 0:
@@ -157,7 +162,7 @@ class ForwardingNamespace(Namespace):
         """
         try:
             senderId = self.get_user_from_sid(request.sid)
-            match_id = int(data['match_id'])
+            match_id = data['match_id']
             self._log.debug(f"Player ready: player_id: {senderId}, match_id: {match_id}")
             if(senderId not in self.playing):
                 self.playing[senderId] = data['match_id']

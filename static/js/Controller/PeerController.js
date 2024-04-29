@@ -11,6 +11,7 @@ export class PeerController{
      * @param data
      */
     update(data){
+        if(!this.peer) return;
         if(data.state){
             this.peer.fsm.setState(data.state);
             return;
