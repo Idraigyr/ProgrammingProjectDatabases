@@ -29,6 +29,7 @@ export class Minion extends IAnimatedView{
         this.camera = params.camera;
         this.healthBar = null;
         this.iniHealthBar();
+
     }
 
     /**

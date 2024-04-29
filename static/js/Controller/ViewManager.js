@@ -17,7 +17,8 @@ export class ViewManager extends Subject{
             island: [],
             player: [],
             character: [],
-            spellEntity: []
+            spellEntity: [],
+            proxy: []
         };
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
@@ -220,5 +221,11 @@ export class ViewManager extends Subject{
             });
         }
         this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime));
+    }
+
+    updateProxys(deltaTime){
+        this.pairs.proxy.forEach((pair) => {
+            pair.view.update(deltaTime);
+        });
     }
 }

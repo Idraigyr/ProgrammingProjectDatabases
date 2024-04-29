@@ -168,6 +168,35 @@ export class World{
         console.error("failed to add new building to island, there is no island at the position");
         //TODO: throw error?
     }
+    /** adds proxy models and view to the island of towers and altars
+     *  this is used to check for collisions with spells, and to display the health of the towers and altars
+     */
+    addProxys(){
+        //TODO: rewrite this to be more generic
+        this.islands.forEach((island) => {
+            island.getBuildingsByType("altar_building").forEach((building) => {
+                const proxy = this.factory.createProxy({
+                    position: building.position,
+                    team: building.team,
+                    buildingName: "Altar"
+
+                });
+                island.addProxy(proxy);
+            });
+
+            island.getBuildingsByType("tower_building").forEach((building) => {
+                const proxy = this.factory.createProxy({
+                    position: building.position,
+                    team: building.team,
+                    buildingName: "Tower"
+
+                });
+                island.addProxy(proxy);
+            });
+        });
+    }
+
+
 
     /**
      * Update the world and all its components

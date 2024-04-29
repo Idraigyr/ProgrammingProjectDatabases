@@ -298,6 +298,7 @@ class App {
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
 
+
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
 
@@ -432,6 +433,8 @@ class App {
         this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
         this.playerInfo.setLevelStats();
         this.worldManager.world.player.advertiseCurrentCondition();
+        //TODO: should be called at combat start
+        this.worldManager.addProxys();
         this.minionController.worldMap = this.worldManager.world.islands;
         //TODO: is there a better way to do this?
         this.multiplayerController.setUpProperties({
@@ -498,6 +501,9 @@ class App {
         this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
+
+        //should only be done in multiplayer
+        this.viewManager.updateProxys(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
         //OrbitControls -- DEBUG STATEMENTS --
