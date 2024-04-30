@@ -159,7 +159,8 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
 }
 
-.play-button-container.inactive .play-button, .play-button-container.pressed .play-button{
+.play-button-container.inactive .play-button{
+    pointer-events: none;
     filter: brightness(50%);
 }
 
@@ -167,8 +168,15 @@
     filter: brightness(100%);
 }
 
+.play-button-container.pressed .play-button{
+    filter: brightness(70%);
+}
+
 .play-button-container.active .play-button:hover {
     transform: scale(1.10);
+}
+.play-button-container.active .play-button:active {
+    transform: translateY(20px);
 }
 
 .fuse-button-container {

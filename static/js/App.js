@@ -146,10 +146,7 @@ class App {
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
         this.menuManager.addCallbacks({
             checkStakesCallback: this.itemManager.stakeGems.bind(this.itemManager),
-            matchMakeCallback: (container) => {
-                if(!this.itemManager.checkStakedGems()) return;
-                this.multiplayerController.toggleMatchMaking(container);
-            }
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController),
         });
 
 
@@ -160,6 +157,8 @@ class App {
         // Setup chat SocketIO namespace
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
+
+        this.multiplayerController.addEventListener("toggleMatchMaking", this.menuManager.toggleMatchMaking.bind(this.menuManager));
 
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
@@ -283,6 +282,7 @@ class App {
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
+            this.togglePhysicsUpdates(false);
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
@@ -303,12 +303,11 @@ class App {
                 params.rate = building.productionRate;
             }
 
-            this.togglePhysicsUpdates(false);
             this.menuManager.renderMenu(params);
-            this.togglePhysicsUpdates(true);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
             this.worldManager.currentRotation = event.detail.rotation;
+            this.togglePhysicsUpdates(true);
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
@@ -352,11 +351,11 @@ class App {
      */
     onVisibilityChange(){
         if(document.visibilityState === "visible"){
-            this.simulatePhysics = true;
-            this.clock.getDelta();
+            this.togglePhysicsUpdates(true);
         } else {
             if(this.multiplayerController.matchmaking) this.multiplayerController.toggleMatchMaking();
-            this.simulatePhysics = false;
+            if(this.menuManager.currentMenu === "AltarMenu") this.menuManager.exitMenu();
+            this.togglePhysicsUpdates(false);
         }
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
@@ -365,10 +364,11 @@ class App {
 
     /**
      * Toggles the physics simulation
-     * @param {bool} bool - optional parameter to toggle on (true) or off (false)
+     * @param {boolean | null} bool - optional parameter to toggle on (true) or off (false)
      */
     togglePhysicsUpdates(bool = null){
         this.simulatePhysics = bool ?? !this.simulatePhysics;
+        if(this.simulatePhysics) this.clock.getDelta();
     }
 
     /**
@@ -390,9 +390,7 @@ class App {
         await this.itemManager.retrieveGemAttributes();
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
-        for(const gem of this.itemManager.gems){
-            this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
-        }
+        this.menuManager.addItems(this.itemManager.getGemsViewParams());
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});
@@ -459,7 +457,11 @@ class App {
             forwardingNameSpace: this.forwardingNameSpace,
             collisionDetector: this.collisionDetector,
             spellFactory: this.spellFactory,
+            itemManager: this.itemManager,
         });
+
+        // this.menuManager.renderMenu({name: "AltarMenu"});
+        // this.menuManager.exitMenu();
     }
 
     initScene(){
@@ -492,8 +494,7 @@ class App {
 
             document.querySelector('.loading-animation').style.display = 'none';
             this.initScene();
-            this.simulatePhysics = true;
-            this.clock.getDelta();
+            this.togglePhysicsUpdates(true);
             this.update();
         } else {
             const warning = WebGL.getWebGLErrorMessage();

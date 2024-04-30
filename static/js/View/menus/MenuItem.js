@@ -78,10 +78,19 @@ export class SpellItem extends MenuItem{
 }
 
 export class GemItem extends MenuItem{
+    /**
+     * @param {Object} params
+     * if params.equipped === true then params has to have property params.slot
+     * @param params
+     */
     constructor(params) {
         super(params);
-        this.equipped = false;
-        this.slot = null;
+        this.equipped = params?.equipped ?? false;
+        if(this.equipped) {
+            if(!(typeof params?.slot === "number")) throw new Error("GemItem equipped without slot");
+            this.element.style.opacity = 0.5;
+        }
+        this.slot = params?.slot ?? null;
     }
 
     get type(){

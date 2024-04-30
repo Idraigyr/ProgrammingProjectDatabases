@@ -40,19 +40,17 @@ export class ItemManager {
      * @param gems
      */
     createGemModels(gems){
-        const buildingSlots = {};
+        const buildingSlots = new Map();
         for (let i = 0; i < gems.length; i++){
             const params = gems[i];
-            if(buildingSlots[params.building_id]){
-                buildingSlots[params.id]++;
-            } else {
-                buildingSlots[params.id] = 0;
-            }
+            let slot = buildingSlots.get(params.building_id) ?? -1;
+            buildingSlots.set(params.building_id, slot + 1);
             const gem = new Gem({
                 id: params.id,
                 equippedIn: params.building_id,
-                slot: buildingSlots[params.building_id],
-                name: params.type
+                slot: buildingSlots.get(params.building_id),
+                name: params.type,
+                staked: params.staked
             });
             //add attributes and total power to the gem
             let power = 0;
@@ -89,6 +87,24 @@ export class ItemManager {
         return this.getGemsEquippedInBuilding(buildingId).map(gem => gem.getItemId());
     }
 
+    /**
+     * return all gem ids formatted for use in the menuManager
+     * @return {{item: *, extra: {equipped: boolean}, icon: {src: *, width: number, height: number}, description: *}[]}
+     */
+    getGemsViewParams(){
+        return this.gems.map(gem => {
+            return {
+                item: gem,
+                icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50},
+                description: gem.description,
+                extra: {
+                    equipped: gem.equippedIn !== null,
+                    slot: gem.slot
+                }
+            }
+        });
+    }
+
 
     /**
      * converts a view id to a gem id (i.e. Gem-1 to 1). see menuManager for more information about view id
@@ -100,21 +116,18 @@ export class ItemManager {
     }
 
     /**
-     * sets a gem a staked in the db
+     * sets a gem as staked in the db based on if it's in the gems menu or not
      * @param {string[]} gemIds - the ids of the gems to stake in menuManager format
      * @param {boolean} unstake - if true, unstake the gems
      */
-    stakeGems(gemIds, unstake = false){
+    stakeGems(gemIds){
         const gems = gemIds.map(id => this.#getGemById(this.#convertViewIdToGemId(id)));
         const contained = false;
         let powerStaked = 0;
         this.gems.forEach(gem => {
             const contained = gems.includes(gem);
-            if((contained && !unstake) || (!contained && unstake)) powerStaked += gem.power;
-            if(
-                (!unstake && (gem.staked && contained) || (!gem.staked && !contained)) ||
-                (unstake && (!gem.staked && contained) || (gem.staked && !contained))
-            ) return;
+            if(!contained) powerStaked += gem.power;
+            if((!gem.staked && contained) || (gem.staked && !contained)) return;
             gem.staked = !gem.staked;
             this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["staked"]);
         });
@@ -135,6 +148,14 @@ export class ItemManager {
      */
     getStakedGems(){
         return this.gems.filter(gem => gem.staked);
+    }
+
+    /**
+     * removes gem from the model without changing the db
+     * @param gemId
+     */
+    deleteGem(gemId){
+        this.gems.filter(gem => gem.id !== gemId);
     }
 
     /**
@@ -163,6 +184,7 @@ export class ItemManager {
             gem.equippedIn = null;
             gem.slot = null;
             event.detail.building.removeGem(gem.id);
+            this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["equippedIn"]);
         }
         else throw new Error("Gem with id " + event.detail.id + " doesn't exist.");
     }
@@ -288,7 +310,6 @@ export class ItemManager {
                 console.log(textStatus, data);
                 gem.setId(data);
                 this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
-                console.log(gem);
                 this.removePendingRequest(requestIndex);
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");
@@ -349,7 +370,6 @@ export class ItemManager {
      * @param {number} fusionLevel
      */
     createGem(fusionLevel){
-        console.log("Creating gem");
         // Push item with params
         let power = this.#generatePowerNumber(this.playerInfo.level, fusionLevel);
         const viewType = Math.floor(Math.random() * gemTypes.getSize);
@@ -375,7 +395,6 @@ export class ItemManager {
         }
         gem.attributes.push(this.#generateRandomAttribute());
         gem.attributes[gem.attributes.length - 1].multiplier = power;
-        console.log(gem);
 
         if(this.persistent){
             this.sendPOST(gemURI, gem, postRetries, this.insertPendingRequest(gem));
