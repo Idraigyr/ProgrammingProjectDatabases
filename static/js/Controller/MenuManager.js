@@ -99,6 +99,7 @@ export class MenuManager extends Subject{
         }
         if(menu instanceof AltarMenu){
             menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
+            menu.element.querySelector(".stop-button").addEventListener("click", () => this.leaveMatch());
         }
         if(menu instanceof FusionTableMenu){
             menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
