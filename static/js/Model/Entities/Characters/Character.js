@@ -150,4 +150,20 @@ export class Character extends Entity{
         // throw new Error("cannot get type of abstract class Character");
         return "character";
     }
+
+    /**
+     * Take damage
+     */
+    takeDamage(damage){
+        this.health -= damage;
+        this.dispatchEvent(new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}}));
+        if(this.health <= 0){
+            this.health = 0;
+            this.dies();
+        }
+    }
+
+    dies(){
+        throw new Error("cannot call abstract method Character.dies");
+    }
 }

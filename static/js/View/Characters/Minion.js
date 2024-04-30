@@ -92,8 +92,8 @@ export class Minion extends IAnimatedView{
     }
 
 
-      OnHealth_(msg) {
-        const healthPercent = (msg.health / msg.maxHealth);
+      OnHealth_(event) {
+        const healthPercent = (event.detail.current / event.detail.total);
 
         this.realHealth_ = healthPercent;
       }

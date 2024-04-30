@@ -82,6 +82,7 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        model.addEventListener("healthChange",view.OnHealth_.bind(view));
 
         this.viewManager.addPair(model, view);
         return model;
@@ -318,7 +319,9 @@ export class Factory{
         this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("healthChange",view.OnHealth_.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
         this.viewManager.addPair(model, view);
         return model;
 

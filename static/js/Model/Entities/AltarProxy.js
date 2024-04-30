@@ -5,4 +5,11 @@ export class AltarProxy extends ProxyEntity{
         super(params);
 
     }
+
+    /**
+     * Function for when the altar dies and the match is over
+     */
+    die() {
+        //TODO: Implement match end
+    }
 }

@@ -83,8 +83,8 @@ export class ProxyView extends IView{
     }
 
 
-      OnHealth_(msg) {
-        const healthPercent = (msg.health / msg.maxHealth);
+      OnHealth_(event) {
+        const healthPercent = (event.detail.health / event.detail.maxHealth);
 
         this.realHealth_ = healthPercent;
       }

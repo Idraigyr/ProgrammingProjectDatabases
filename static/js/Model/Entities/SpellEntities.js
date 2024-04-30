@@ -34,9 +34,9 @@ class SpellEntity extends Entity{
         }
     }
 
-    onWorldCollision(deltaTime){}
+    onWorldCollision(deltaTime) {}
     /**
-     * Function to handle collision with characters
+     * Function to handle collision with characters and buildings
      * @param deltaTime - time since last update
      * @param character - character to check collision with
      */

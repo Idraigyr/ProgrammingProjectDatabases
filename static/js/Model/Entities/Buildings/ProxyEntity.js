@@ -12,7 +12,25 @@ export class ProxyEntity extends Entity {
 
 
     }
+    takeDamage(damage){
+        this.health -= damage;
+        this.dispatchEvent(new CustomEvent("healthChange", {detail: {health: this.health, maxHealth: this.maxHealth}}));
+        if(this.health <= 0){
+            this.health = 0;
+            this.die();
+        }
+    }
 
+    /**
+     * what happens when the entity dies*
+     */
+    die(){
+        throw new Error("pure virtual function called (ProxyEntity.die)");
+    }
+
+    /**
+     * @returns {string}
+     */
     get type() {
         return "proxy";
     }

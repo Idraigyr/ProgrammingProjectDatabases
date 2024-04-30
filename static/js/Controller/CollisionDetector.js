@@ -164,6 +164,12 @@ export class CollisionDetector extends Subject{
                     spellEntity.model.onCharacterCollision(deltaTime, player.model,spellEntity.view.boundingBox, player.view.boundingBox);
                 }
             });
+            this.viewManager.pairs.proxy.forEach((proxy) => {
+                if(this.boxToBoxCollision(spellEntity.view.boundingBox, proxy.view.boundingBox)){
+                    spellEntity.model.onCharacterCollision(deltaTime, proxy.model,spellEntity.view.boundingBox, proxy.view.boundingBox);
+                }
+
+            });
             this.viewManager.pairs.character.forEach((character) => {
                 if(this.boxToBoxCollision(spellEntity.view.boundingBox, character.view.boundingBox)){
                     spellEntity.model.onCharacterCollision(deltaTime, character.model, spellEntity.view.boundingBox, character.view.boundingBox);

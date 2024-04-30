@@ -5,4 +5,11 @@ export class TowerProxy extends ProxyEntity{
         super(params);
 
     }
+
+    /**
+     * Function for when the tower dies
+     */
+    die() {
+        //TODO: Implement tower exploding/dissapearing?
+    }
 }
