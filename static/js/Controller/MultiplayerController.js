@@ -92,7 +92,13 @@ export class MultiplayerController extends Subject{
         if(matchmake){
             //TODO: only start matchmaking if player has a warrior hut?
             if(!this.itemManager.checkStakedGems()) return;
-            await this.startMatchMaking();
+            try{
+                await this.startMatchMaking();
+            } catch (err){
+                //TODO: handle pathfinding error (no path to altar) => show error message to player
+                console.error(err);
+                await this.endMatchMaking();
+            }
         } else {
             await this.endMatchMaking();
         }
@@ -100,6 +106,8 @@ export class MultiplayerController extends Subject{
     }
 
     async startMatchMaking(){
+        //TODO: first test if path is available to altar if not throw error
+
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
         console.log(response);
