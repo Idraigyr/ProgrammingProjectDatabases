@@ -341,6 +341,9 @@ class App {
             this.clock.getDelta();
         } else {
             this.simulatePhysics = false;
+            if(this.playerInfo){
+                this.playerInfo.logout();
+            }
         }
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
