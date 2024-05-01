@@ -31,7 +31,7 @@ export class BuildingPreview extends IView{
             //     this.cleanUp();
             //     return false;
             // }
-            this.cleanUp();
+            this.dispose();
             return false;
         }
         return true;

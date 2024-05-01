@@ -39,6 +39,7 @@ class SpellSchema(Schema):
 class SpellResource(Resource):
     """
     A Spell resource is a resource/api endpoint that allows for the retrieval and modification of spell profiles
+    TODO: check if the invoking user is an admin, otherwise restrict access to the GET endpoint
     """
 
     @swagger.tags('spell')

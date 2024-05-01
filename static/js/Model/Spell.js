@@ -410,6 +410,16 @@ class Heal extends ConcreteSpell{
         });
     }
 }
+
+export const spellTypes = Object.freeze({
+    Fireball: Fireball,
+    IceWall: IceWall,
+    Zap: Zap,
+    ThunderCloud: ThunderCloud,
+    Shield: Shield,
+    Heal: Heal,
+    Build: BuildSpell
+});
 //spell ideas:
 //summon minion (self-explanatory)
 //heal over time (self-explanatory)

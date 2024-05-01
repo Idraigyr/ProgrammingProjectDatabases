@@ -47,7 +47,7 @@ export class CollisionDetector extends Subject{
             }
         }
         if(params.bvh){
-            this.visualizer = new MeshBVHHelper( this.collider, params.bvhDepth );
+            this.visualizer = new MeshBVHHelper( this.collider, params?.bvhDepth ?? 10);
             this.visualizer.visible = true;
             this.scene.add( this.visualizer );
         } else {
@@ -169,6 +169,8 @@ export class CollisionDetector extends Subject{
                     spellEntity.model.onCharacterCollision(deltaTime, character.model, spellEntity.view.boundingBox, character.view.boundingBox);
                 }
             });
+
+            //TODO: check for collision with other spellEntities (mainly collidables like icewall)
         }
     }
 
@@ -185,6 +187,48 @@ export class CollisionDetector extends Subject{
             });
         }
     }
+
+    /**
+     * gets all characters within distance of a character
+     * @param {Character} character
+     * @param {number} distance
+     * @return {Character[]}
+     */
+    getCharactersCloseToCharacter(character, distance){
+        let closeCharacters = [];
+        const algo = (otherCharacter) => {
+            if(character.position.distanceTo(otherCharacter.model.position) < distance){
+                closeCharacters.push(otherCharacter);
+            }
+        }
+        this.viewManager.pairs.character.forEach(algo);
+        this.viewManager.pairs.player.forEach(algo);
+        return closeCharacters;
+    }
+
+    /**
+     * gets the closest enemy to a character
+     * @param {Character} character
+     * @return {{closestEnemy: Character, closestDistance: number}}
+     */
+    getClosestEnemy(character){
+        let closestEnemy = null;
+        let closestDistance = Infinity;
+        const algo = (otherCharacter) => {
+            if(character.team !== otherCharacter.model.team){
+                let distance = character.position.distanceTo(otherCharacter.model.position);
+                if(distance < closestDistance){
+                    closestDistance = distance;
+                    closestEnemy = otherCharacter.model;
+                }
+            }
+        }
+        this.viewManager.pairs.character.forEach(algo);
+        this.viewManager.pairs.player.forEach(algo);
+        return {closestEnemy, closestDistance};
+    }
+
+
 
 
     /**

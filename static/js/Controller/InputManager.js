@@ -205,7 +205,6 @@ export class InputManager extends Subject{
 
     //TODO: remove all keys that need not be checked within an update function
     #onKey(KeyBoardEvent, bool){
-        if(this.blockedInput) return;
         switch (KeyBoardEvent.code){
             case upKey:
                 this.keys.up = bool;
@@ -255,12 +254,8 @@ export class InputManager extends Subject{
                 this.keys.spellSlot = 5;
                 this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
-            case eatingKey:
-                this.keys.eating = bool;
-                break;
-        }
 
-        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
+        }
     }
 
     /**
@@ -268,7 +263,9 @@ export class InputManager extends Subject{
      * @param {event} KeyBoardEvent event
      */
     #onKeyDown(KeyBoardEvent){
+        if(this.blockedInput) return;
         this.#onKey(KeyBoardEvent,true);
+        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
     /**
@@ -276,6 +273,7 @@ export class InputManager extends Subject{
      * @param {event} KeyBoardEvent event
      */
     #onKeyUp(KeyBoardEvent){
+        if(this.blockedInput) return;
         this.#onKey(KeyBoardEvent, false);
     }
 
@@ -286,5 +284,20 @@ export class InputManager extends Subject{
     addSettingButtonListener(callback) {
         const settingsButton = document.querySelector('.settings-button');
         settingsButton.addEventListener('click', callback);
+    }
+
+    addSettingsCloseButtonListener(callback) {
+        const settingsCloseButton = document.querySelector('.close-button');
+        settingsCloseButton.addEventListener('click', callback);
+    }
+
+    addLogoutButtonListener(callback) {
+        const logoutButton = document.querySelector('.logOutButton');
+        logoutButton.addEventListener('click', callback);
+    }
+
+    addDeleteAccountButtonListener(callback) {
+        const deleteAccountButton = document.querySelector('.deleteAccountButton');
+        deleteAccountButton.addEventListener('click', callback);
     }
 }

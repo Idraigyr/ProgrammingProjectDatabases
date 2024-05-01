@@ -1,14 +1,17 @@
 import logging
 import os
 from json import JSONEncoder
+from logging.handlers import RotatingFileHandler
 
+import werkzeug.exceptions
 from dotenv import load_dotenv
-from flask import Flask, jsonify, redirect
+from flask import Flask, jsonify, redirect, request
 from flask_jwt_extended import JWTManager
 from flask_migrate import Migrate
 from flask_migrate import check as check_db_schema
 from flask_migrate import upgrade as upgrade_db_schema
 from flask_restful_swagger_3 import get_swagger_blueprint
+from flask_socketio import SocketIO
 from flask_sqlalchemy import SQLAlchemy
 from oauthlib.oauth2 import WebApplicationClient
 from sqlalchemy.orm import DeclarativeBase
@@ -47,17 +50,57 @@ class JSONClassEncoder:
 # Load environment variables
 assert load_dotenv(".env"), "unable to load .env file"
 from os import environ
+from src.logger_formatter import CustomFormatter
 
 # Configure the logger
+
+handlers = []
+logfile = environ.get('APP_LOG_FILE', None)
+if logfile:
+    fh = RotatingFileHandler(logfile, maxBytes=100000, backupCount=1)
+    handlers.append(fh)
+
+streamHandler = logging.StreamHandler()
+streamHandler.setFormatter(CustomFormatter())
+handlers.append(streamHandler)
+
 if environ.get('APP_DEBUG', "false") == "true":
-    logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    logging.basicConfig(level=logging.DEBUG,
+                        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                        handlers=handlers)
     logging.debug("Debug mode enabled")
 else:
-    logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s')
+    logging.basicConfig(level=logging.INFO,
+                        format='[%(asctime)s] %(levelname)s in %(module)s: %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S',
+                        handlers=handlers
+                        )
 
 db: SQLAlchemy = SQLAlchemy(model_class=Base)
 app: Flask = Flask(environ.get('APP_NAME'))
 
+@app.errorhandler(Exception)
+def log_exception(error):
+    # Log the exception
+    msg = f"Exception occurred: {error}"
+    status = 500
+    if isinstance(error, werkzeug.exceptions.HTTPException) and error.code < 500:
+        msg = error.__str__()
+        status = error.code
+
+    if request:
+        if 'api' in request.url:
+            msg = jsonify({'status': 'error', 'message': msg})
+
+        if status >= 500:
+            app.logger.exception(f"Exception occurred: {error} in {request.url}")
+        else:
+            app.logger.debug(f"Exception occurred: {error} in {request.url} - probably user error")
+        return msg, status
+    else:
+        app.logger.exception(f"Exception occurred: {error}")
+
+    return 'Internal Server Error', 500
 
 def setup_jwt(app: Flask):
     """
@@ -167,9 +210,6 @@ def setup(app: Flask):
 
     # Lock the app context
     with app.app_context():
-        # import socket INSIDE the app context
-        from src.chatBox import socketio
-
         # import routes INSIDE the app context
         import src.routes
         app.register_blueprint(src.routes.public_routes.blueprint)
@@ -207,12 +247,15 @@ def setup(app: Flask):
                                              swagger_url=swagger_url, swagger_prefix_url=api_url,
                                              title=app.config['APP_NAME'])
             app.register_blueprint(resource, url_prefix=swagger_url)
-        socketio.init_app(app)
+
+        app.socketio = SocketIO(cors_allowed_origins='*')
+        app.socketio.init_app(app)
+        import src.socketio # Leave this import here, it registers the socketio events
 
         # Generate documentation
         from documentation import generate_pdoc
         generate_pdoc(generate=app.config.get('APP_GENERATE_DOCS', 'false') == 'true')  # to generate documentation set parameter to true: generate_pdoc(True)
-    return app, socketio
+    return app, app.socketio
 
 
 # RUN DEV SERVER

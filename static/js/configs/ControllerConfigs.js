@@ -4,10 +4,28 @@
  */
 export const TIMEOUT_SEC = 5;
 
-export let horizontalSensitivity = 0.5;
-export let verticalSensitivity = 0.3;
+//-- Camera --//
+export let horizontalSensitivity = 0.25;
+export let verticalSensitivity = 0.15;
 export let zoomSensitivity = 1;
 
+export const cameraPosition = {
+    offset: {
+        x: -5,
+        y: 2,
+        z: 1
+    },
+    lookAt: {
+        x: 500,
+        y: 0,
+        z: 0
+    }
+}
+export const maxZoomIn = 15;
+
+export const minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));
+
+//-- Character physics --//
 export const movementSpeed = 9;
 
 export const spellCastMovementSpeed = 2;
@@ -26,18 +44,12 @@ export const playerSpawn = {
     z: -10
 }
 
-export const cameraPosition = {
-    offset: {
-        x: -5,
-        y: 2,
-        z: 1
-    },
-    lookAt: {
-        x: 500,
-        y: 0,
-        z: 0
-    }
-}
-export const maxZoomIn = 15;
+//-- Minions --//
+export const minionAttackRadius = 3;
+export const minionFollowRadius = 10;
+export const minionSpeedMultiplier = 200;
 
-export const minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));
+//-- Gems --//
+export const powerScaling = 0.5;
+
+export const fusionTime = 2;

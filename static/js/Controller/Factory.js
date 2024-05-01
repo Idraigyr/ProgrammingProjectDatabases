@@ -1,10 +1,9 @@
 import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
-import {convertGridIndexToWorldPosition, convertWorldToGridPosition, correctRitualScale, setMinimumY} from "../helpers.js";
+import {convertGridIndexToWorldPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {SpellSpawner} from "../Model/SpellSpawner.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -14,7 +13,7 @@ export class Factory{
 
     /**
      * Constructor for the factory
-     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector}} params
+     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector, camera: Camera}} params
      */
     constructor(params) {
         this.scene = params.scene;
@@ -22,6 +21,7 @@ export class Factory{
         this.assetManager = params.assetManager;
         this.timerManager = params.timerManager;
         this.collisionDetector = params.collisionDetector;
+        this.camera = params.camera;
         this.#currentTime = null;
     }
 
@@ -47,14 +47,14 @@ export class Factory{
 
     /**
      * Creates minion model and view
-     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}} params
+     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}, buildingID: number} params, spawn needs to be in world coords, buildingID is the id of the building that spawned the minion
      * @return {Minion}
      */
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 1});
-        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 0, buildingID: params.buildingID}); //TODO: change team dynamically
+        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
             if(child.name === "handIKr") {
@@ -69,6 +69,8 @@ export class Factory{
         });
 
         this.scene.add(view.charModel);
+        this.scene.add(view.healthBar);
+
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
@@ -79,6 +81,7 @@ export class Factory{
         model.fsm = new MinionFSM(view.animations);
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(model, view);
         return model;
@@ -86,7 +89,7 @@ export class Factory{
 
     /**
      * Creates player model and view
-     * @param {{position: THREE.Vector3, maxMana: number, mana: number}} params
+     * @param {{position: THREE.Vector3, maxMana: number, mana: number, team: 0 | 1} | {position: THREE.Vector3, maxMana: number, mana: number}} params
      * @returns {Wizard}
      */
     createPlayer(params){
@@ -95,7 +98,7 @@ export class Factory{
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana});
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
 
         this.scene.add(view.charModel);
@@ -109,51 +112,52 @@ export class Factory{
         player.fsm = new PlayerFSM(view.animations);
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
+        player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
+        this.viewManager.addPair(player, view);
+        return player;
+    }
+
+    createOpponent(params){
+        // let sp = new THREE.Vector3(-8,15,12);
+        let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
+        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
+        //TODO: remove hardcoded height
+        const height = 3;
+        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, team: params?.team ?? 0});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
+
+        this.scene.add(view.charModel);
+
+        //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
+        view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
+        this.scene.add(view.boxHelper);
+
+        view.loadAnimations(this.assetManager.getAnimations("Player"));
+
+        player.fsm = new PlayerFSM(view.animations);
+        player.addEventListener("updatePosition",view.updatePosition.bind(view));
+        player.addEventListener("updateRotation",view.updateRotation.bind(view));
+        player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(player, view);
         return player;
     }
 
     /**
-     * Creates tower model and view
-     * @deprecated - use createBuilding instead
-     * @param {{position: THREE.Vector3}} params
-     * @return {Tower}
-     */
-    createTower(params){
-        const asset = this.assetManager.getAsset("Tower");
-        correctRitualScale(asset);
-        let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
-        convertWorldToGridPosition(currentPos);
-        let tower = new Model.Tower({position: currentPos, spellSpawner: new SpellSpawner({})});
-        let view = new View.Tower({charModel: asset, position: currentPos});
-        this.scene.add(view.charModel);
-
-        view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
-
-        tower.addEventListener("updatePosition",view.updatePosition.bind(view));
-        tower.addEventListener("updateRotation",view.updateRotation.bind(view));
-
-        this.viewManager.addPair(tower, view);
-        return tower;
-    }
-
-    /**
      * Creates bridge model and view
-     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number}} params
+     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, team: number}} params
      * @return {Bridge}
      */
     createBridge(params){
-        let bridgeModel = new Model.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length});
+        let bridgeModel = new Model.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length, team: params.team});
         let view = new View.Bridge({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, thickness: 0.1});
 
         this.scene.add(view.initScene());
         view.boundingBox.setFromObject(view.charModel);
-        //check Foundation class for new min and max specification
-        // bridgeModel.min = view.boundingBox.min.clone();
-        // bridgeModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
+
+        bridgeModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(bridgeModel, view);
         return bridgeModel;
@@ -161,11 +165,11 @@ export class Factory{
 
     /**
      * Creates island model and view
-     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, buildingsList: Object[]}} params
+     * @param {{position: THREE.Vector3, rotation: number, width: number, length: number, buildingsList: Object[], team: number | null}} params
      * @returns {Island} model of the island
      */
     createIsland(params){
-        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length});
+        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length, team: params.team});
 
         let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1}); //TODO: remove magic numbers
         //TODO: island asset?
@@ -173,10 +177,11 @@ export class Factory{
         this.scene.add(view.initScene());
 
         view.boundingBox.setFromObject(view.charModel);
-        //check Foundation class for new min and max specification
-        // islandModel.min = view.boundingBox.min.clone();
-        // islandModel.max = view.boundingBox.max.clone();
         this.scene.add(view.boxHelper);
+
+        islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));
+        islandModel.addEventListener("updateRotation",view.updateRotation.bind(view));
+        islandModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.#addBuildings(islandModel, params.buildingsList);
 
@@ -186,18 +191,13 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number}} params - buildingName needs to correspond to the name of a building in the Model namespace
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
-        correctRitualScale(asset);
-        setMinimumY(asset, 0); // TODO: is it always 0?
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
-        // Correct position to place the asset in the center of the cell
-        convertGridIndexToWorldPosition(pos);
-        // Convert position
-        const modelParams = {position: pos, id: params.id};
+        const modelParams = {position: pos, id: params.id, team: params.team};
 
         //TODO: refactor this! not dynamic enough
         if(params.buildingName === "Mine"){
@@ -207,15 +207,24 @@ export class Factory{
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
+        if(params.gems){
+            for(const gem of params.gems){
+                model.addGem(gem.id);
+            }
+        }
+
+        model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
+        model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
+        model.rotate(params.rotation);
+
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);
         this.scene.add(view.boxHelper);
 
-        model.addEventListener("updatePosition",view.updatePosition.bind(view));
-        model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
-        model.addEventListener("updateRotation",view.updateRotation.bind(view));
-        model.addEventListener("updateMinY", view.updateMinimumY.bind(view));
         this.viewManager.addPair(model, view);
 
         //TODO: withTimer: (DONE?)
@@ -267,13 +276,17 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
+        let position = new THREE.Vector3();
         buildingsList.forEach((building) => {
             try {
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: building.position, withTimer: false, id: building.id}));
+                position.set(building.position.x, building.position.y, building.position.z);
+                convertGridIndexToWorldPosition(position);
+                position.add(islandModel.position);
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, team: islandModel.team}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

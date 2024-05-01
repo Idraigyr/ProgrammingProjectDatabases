@@ -5,7 +5,7 @@
 /**
  * Shows default paths to the 3d models
  */
-export let assetPaths = {
+export let assetPaths = Object.freeze({
     Altar: ["./static/assets/3d-models/altar.glb",".glb"],
     Mine: ["./static/assets/3d-models/mine.glb",".glb"],
     Player: ["./static/assets/3d-models/Wizard.glb",".glb"],
@@ -31,11 +31,36 @@ export let assetPaths = {
     SkeletonTexture1: ["./static/assets/textures/skeleton_texture.png",".png"],
     WarriorHut: ["./static/assets/3d-models/warrior-hut.glb",".glb"],
     WarriorHut2: ["./static/assets/3d-models/warrior-hut-2.glb",".glb"],
-    SurabanglusFont: ["./static/fonts/Surabanglus_Regular.json",".json"]
-};
+    SurabanglusFont: ["./static/fonts/Surabanglus_Regular.json",".json"],
+    Wall1: ["./static/assets/3d-models/wall/wall_lvl1.glb",".glb"],
+    Wall2: ["./static/assets/3d-models/wall/wall_lvl2.glb",".glb"],
+    Wall3: ["./static/assets/3d-models/wall/wall_lvl3.glb",".glb"],
+    Wall: ["./static/assets/3d-models/wall/Wall_Alt.glb",".glb"],
+});
+
+export const buildingAssetsKeys = Object.freeze([
+    "Altar",
+    "Mine",
+    "FusionTable",
+    "WarriorHut",
+    "WarriorHut2",
+    "Wall",
+    "Wall1",
+    "Wall2",
+    "Wall3",
+    "Tower",
+    "Bush",
+    "Tree",
+]);
 
 export const menuPaths = Object.freeze({
 
 });
 
 export const gridCellSize = 10;
+
+export const islandWidth = 15;
+
+export const islandLength = 15;
+
+export const amountOfGemIcons = 10;

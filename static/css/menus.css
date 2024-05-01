@@ -208,7 +208,7 @@ h3 {
     }
 }
 
-.container {
+.settings-container {
   margin: 5px;
   width: 240px;
   border: 2px solid #0f172a;
@@ -229,19 +229,19 @@ h3 {
     margin: 0px;
 }
 
-.container::-webkit-scrollbar {
+.settings-container::-webkit-scrollbar {
     width: 12px; /* Width of the scrollbar */
 }
 
-.container::-webkit-scrollbar-track {
+.settings-container::-webkit-scrollbar-track {
     background: #f9f3d2; /* Color of the track */
 }
 
-.container::-webkit-scrollbar-thumb {
+.settings-container::-webkit-scrollbar-thumb {
     background: #565444; /* Color of the scrollbar handle */
 }
 
-.container::-webkit-scrollbar-thumb:hover {
+.settings-container::-webkit-scrollbar-thumb:hover {
     background: #3d3c30; /* Color of the scrollbar handle on hover */
 }
 

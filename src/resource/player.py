@@ -53,6 +53,10 @@ class PlayerSchema(Schema):
             'type': 'integer',
             'description': 'The unique identifier of the user profile'
         },
+        'username': {
+            'type': 'string',
+            'description': 'The username of the player'
+        },
         'crystals': {
             'type': 'integer',
             'description': 'The amount crystals the player has'
@@ -82,7 +86,8 @@ class PlayerSchema(Schema):
             'type': 'string',
             'format': 'date-time',
             'description': 'The last logout time of the player'
-        }
+        },
+        'friends': IntArraySchema
     }
 
     required = []  # nothing is required, but not giving anything is just doing nothing
@@ -96,6 +101,8 @@ class PlayerSchema(Schema):
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
                              blueprints=[blueprint.id for blueprint in player.blueprints],
+                             username=player.user_profile.username,
+                             friends=[friend.user_profile_id for friend in player.friends],
                              **kwargs)
         else:  # schema -> player
             super().__init__(**kwargs)
@@ -137,8 +144,8 @@ class PlayerResource(Resource):
 
     @swagger.tags('player')
     @swagger.expected(PlayerSchema)
-    @summary('Update the player profile by id. All fields (except id and gems) are updatable. Including entity (and its modifiable fields),'
-             ' spells (by ids), blueprints (by ids), last_login, last_logout, xp, mana and crystals')
+    @summary('Update the player profile by id. All fields (except id, gems and username) are updatable. Including entity (and its modifiable fields),'
+             ' spells (by ids), blueprints (by ids), friends (by ids), last_login, last_logout, xp, mana and crystals')
     @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)

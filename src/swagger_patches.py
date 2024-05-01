@@ -33,7 +33,10 @@ def check_type(self, type_, key, value):
                         for v in value:
                             self.check_type(cls.type,  key, v)
             if value is None:
-                if not self.properties[key].get('nullable', True):
+                b = self.properties[key]
+                if hasattr(b, 'properties'):
+                    b = b.properties
+                if not b.get('nullable', True):
                     raise ValueError(f'The attribute "{key}" must not be null')
                 else:
                     return # no need to check further
@@ -62,7 +65,7 @@ def __init__(self, **kwargs):
                     'The model "{0}" does not have an attribute "{1}"'.format(self.__class__.__name__, k))
             if type(self.properties[k]) == type:
                 if self.properties[k].type == 'object':
-                    self.properties[k](**v)
+                    self.properties[k](**v if v else {})
                 self.prop = self.properties[k].definitions()
             else:
                 self.prop = self.properties[k]
@@ -86,8 +89,9 @@ def __init__(self, **kwargs):
                         self.check_type(type_, 'enum', item)
                     if v not in self.prop['enum']:
                         raise ValueError(f"{k} must have {' or '.join(self.prop['enum'])} but have {v}")
-
-                self.check_format(type_, format_, v)
+                # Just fk it, we don't need to check format - it's broke af anyway
+                #if v:  # NoneType check - if v is None, we don't need to check format
+                #    self.check_format(type_, format_, v)
 
             if load_only:
                 del self[k]

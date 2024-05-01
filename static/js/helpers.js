@@ -14,6 +14,20 @@ export const assert = function(condition, message) {
 
 }
 
+function padLeadingZeros(num, size) {
+    return num.toString().padStart(size, "0");
+}
+
+export const formatSeconds = function(seconds){
+    if(seconds >= 3600){
+        const hours = Math.floor(seconds/3600);
+        return `${padLeadingZeros(hours,2)}:${padLeadingZeros(Math.floor((seconds - hours*3600)/60),2)}:${padLeadingZeros(seconds%60,2)}`;
+    } else if(seconds >= 60){
+        return `${padLeadingZeros(Math.floor(seconds/60),2)}:${padLeadingZeros(seconds%60,2)}`;
+    } else {
+        return `00:${padLeadingZeros(seconds,2)}`;
+    }
+}
 
 /**
  * Get the time difference in seconds
@@ -112,7 +126,7 @@ export const printGridPath = function(grid, path, width, length, currentNode = n
 }
 
 /**
- * Get grid index from world position
+ * Get grid index from world position assuming the grid is centered around 0,0,0
  * @param position world position
  * @returns {{x: number, z: number}} grid index
  */
@@ -121,7 +135,7 @@ export const returnWorldToGridIndex = function(position){
 }
 
 /**
- * Convert the world position to the grid position
+ * Convert the world position to the grid position assuming the grid is centered around 0,0,0
  * @param position - the world position
  * @returns {*} the grid position
  */
@@ -132,7 +146,7 @@ export const convertWorldToGridPosition = function (position){
 }
 
 /**
- * Convert the grid position to the world position
+ * Convert the grid position to the world position assuming the grid is centered around 0,0,0
  * @param position - the grid position
  * @returns {*} the world position
  */
@@ -269,7 +283,9 @@ export const adjustVelocity3 = function (staticBox, movableBox, boxVelocity){
  * @returns {String} the file extension
  */
 export const getFileExtension = function(path){
-    return path.slice((path.lastIndexOf(".") - 1 >>> 0) + 2);
+    const extension = path.slice((path.lastIndexOf(".") + 1));
+    if(!(extension.length > 0)) throw new Error(`can't extract extension from ${path}`);
+    return extension;
 }
 
 /**
@@ -349,14 +365,9 @@ export function getOccupiedCells(building){
     return cells;
 }
 
-/**
- * Set the minimum y position of the object
- * @param object - the object to set the minimum y position of
- * @param y - the y position to set the minimum y position to
- */
-export function setMinimumY(object, y){
-    const boundingBox = new THREE.Box3().setFromObject(object);
-    object.position.y += y - boundingBox.min.y;
+
+export const mapDegreesToNearestQuarter = function(degrees){
+    return Math.round((degrees < 0 ? 360 + degrees%360 : degrees%360)/90)*90;
 }
 
 /**

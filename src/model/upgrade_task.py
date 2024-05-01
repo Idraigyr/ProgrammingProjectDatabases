@@ -11,7 +11,7 @@ class BuildingUpgradeTask(Task):
     """
     A BuildingUpgradeTask is a task that represents the construction or an upgrade of a building
     """
-    id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id'), primary_key=True)
+    id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id', ondelete='cascade', onupdate='cascade'), primary_key=True)
 
     to_level: Mapped[int] = Column(SmallInteger, CheckConstraint('to_level >= 0'), nullable=False)
     used_crystals: Mapped[int] = Column(Integer, CheckConstraint('used_crystals >= 0'), nullable=False)

@@ -151,7 +151,7 @@ export class ParticleSystem{
      * cleans up object for garbage collection
      * removes existing particles from the scene
      */
-    cleanUp(){
+    dispose(){
         this.scene.remove(this.#points);
     }
 
@@ -247,7 +247,7 @@ export class ParticleSystem{
         this.updateParticles(deltaTime);
         this.updateGeometry();
         if(this.#particles.length === 0){
-            this.cleanUp();
+            this.dispose();
             return false;
         }
         return true;

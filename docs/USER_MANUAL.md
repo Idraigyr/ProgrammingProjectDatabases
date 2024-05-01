@@ -79,6 +79,7 @@ The index page is the main page of the game. It contains the following elements:
 
 By clicking the top left icon, the player can open the settings menu. Here, the player can change
 some basic settings about the game, such as audio, graphics and controls.
+He can also log out from the game and delete his account from here.
 
 ### Chat
 
@@ -97,10 +98,12 @@ If the player has the right to use cheats, the player can open the chat menu and
 
 ![Spell inventory image](/docs/img/spell-inventory.png)
 
-At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell cant be changed and 
+At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell can't be changed and 
 will always be the build spell, with which the player can build buildings on his island. The other 4 equipped spells can be changed
 in the altar menu, and will be displayed in the inventory hot-bar. The player always has one spell selected, which is shown by gold
 highlighting of the selected spell slot. Each individual spell has a unique icon, which is then shown on its equipped spot on the hot-bar.
+After using a spell, that spell becomes transparant for the cooldown period, and a timer is shown on the spell icon,
+displaying the exact remaining cooldown time. The spell can't be used for that period of time.
 
 # Game
 ___
@@ -228,6 +231,10 @@ If you want to move the building, you have to select the build spell in the inve
 The general currency in the game are the crystals. These can be mined by the player and are used
 for most actions in the game. There are also different gems with attributes that can be used to
 upgrade buildings.
+
+## Friends
+
+TODO - @Aaditya
 
 # Optimizations
 ___

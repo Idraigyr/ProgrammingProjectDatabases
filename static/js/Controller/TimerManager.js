@@ -5,10 +5,10 @@ export class Timer{
     /**
      *
      // * @param parent - parent of the timer, update function will be called by the parent
-     * @param duration - duration of the timer
-     * @param callbacks - array of callbacks to be called when the timer ends
-     * @param callbackParams - array of parameters for the callbacks either null or the same length as callbacks
-     * @param repeatable - if true, the timer will repeat
+     * @param {number} duration - duration of the timer in seconds
+     * @param {function[]} callbacks - array of callbacks to be called when the timer ends
+     * @param {Object[]} callbackParams - array of parameters for the callbacks either null or the same length as callbacks
+     * @param {boolean} repeatable - if true, the timer will repeat
      */
     constructor(duration, callbacks, repeatable= false, callbackParams = null){
         this.parent = null;
@@ -46,7 +46,13 @@ export class Timer{
         this.deltaTime = deltaTime;
         this.timer += deltaTime;
         if(this.timer >= this.duration){
-            this.callbacks.forEach((callback, i) => callback(this.callbacksParams?.[i]));
+            this.callbacks.forEach((callback, i) => {
+                try {
+                    callback(this.callbacksParams?.[i])
+                } catch (e) {
+                    console.error(e);
+                }
+            });
             if(this.repeatable){
                 this.timer = 0;
             }else{

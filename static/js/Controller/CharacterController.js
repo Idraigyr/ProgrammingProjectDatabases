@@ -10,7 +10,7 @@ import {
 } from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
-import {BaseCharAttackState, EatingState} from "../Model/States/PlayerStates.js";
+import {BaseCharAttackState, DefaultAttackState, EatingState} from "../Model/States/PlayerStates.js";
 
 
 
@@ -44,8 +44,8 @@ export class CharacterController extends Subject{
      */
     updateRotation(event){
         const {movementX, movementY} = event;
-        const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/360);
-        const rotateVertical = (movementY  * verticalSensitivity) *  (Math.PI/360);
+        const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/180);
+        const rotateVertical = (movementY  * verticalSensitivity) *  (Math.PI/180);
         this._character.phi -= rotateHorizontal;
         this._character.theta = THREE.MathUtils.clamp(this._character.theta - rotateVertical, -Math.PI/3, Math.PI /3);
 
@@ -139,11 +139,14 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-        console.log(!(this._character.fsm.currentState instanceof EatingState))
-       if (!(this._character.fsm.currentState instanceof EatingState)) {
+       if (!(this._character.fsm.currentState instanceof EatingState) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
             this.dispatchEvent(this.createEatingEvent());
-            console.log("dispacthing eating")
+            this.#inputManager.keys.eating = true;
         }
+       else
+         {
+              this.#inputManager.keys.eating = false;
+         }
     }
 
 
@@ -164,7 +167,6 @@ export class CharacterController extends Subject{
 
 
         if (this._character.fsm.currentState.movementPossible) {
-
             if (this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;

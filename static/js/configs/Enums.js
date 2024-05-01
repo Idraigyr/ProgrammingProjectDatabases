@@ -12,7 +12,8 @@ export const buildTypes = (function (){
         tower_building: 5,
         prop: 6,
         fuse_table: 7,
-        warrior_hut: 8
+        warrior_hut: 8,
+        wall_building: 9
     };
     const name = {
         0: "void",
@@ -24,6 +25,7 @@ export const buildTypes = (function (){
         6: "prop",
         7: "fuse_table",
         8: "warrior_hut",
+        9: "wall_building"
     }
 
     const menuName = {
@@ -31,7 +33,7 @@ export const buildTypes = (function (){
         3: "AltarMenu",
         7: "FusionTableMenu",
         5: "TowerMenu",
-        4: "MineMenu"
+        4: "MineMenu",
     }
 
     return {
@@ -45,5 +47,47 @@ export const buildTypes = (function (){
         getMenuName: function (number) {
             return menuName[number];
         }
+    };
+})();
+
+export const gemTypes = (function (){
+    const number = {
+        amber: 0,
+        amethyst: 1,
+        diamond: 2,
+        emerald: 3,
+        ruby: 4,
+        sapphire: 5,
+    }
+
+    const name = {
+        0: "amber",
+        1: "amethyst",
+        2: "diamond",
+        3: "emerald",
+        4: "ruby",
+        5: "sapphire",
+    }
+
+    const icons = {
+        0: "./static/assets/images/gems/amber.png",
+        1: "./static/assets/images/gems/amethyst.png",
+        2: "./static/assets/images/gems/diamond.png",
+        3: "./static/assets/images/gems/emerald.png",
+        4: "./static/assets/images/gems/ruby.png",
+        5: "./static/assets/images/gems/sapphire.png",
+    }
+
+    return {
+        getNumber: function (name) {
+            return number[name];
+        },
+        getName: function (number) {
+            return name[number];
+        },
+        getIcon: function (number) {
+            return icons[number];
+        },
+        getSize: Object.keys(number).length
     };
 })();

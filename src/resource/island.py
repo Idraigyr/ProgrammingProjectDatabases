@@ -86,6 +86,9 @@ class IslandSchema(Schema):
         elif placeable.type == 'prop':
             from src.resource.placeable.prop import PropSchema
             return PropSchema(placeable)
+        elif placeable.type == 'wall_building':
+            from src.resource.placeable.wall_building import WallBuildingSchema
+            return WallBuildingSchema(placeable)
 
         raise ValueError(f'Cannot find Schema for unknown placeable type {placeable.type}')
 

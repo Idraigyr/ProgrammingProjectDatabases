@@ -4,6 +4,7 @@ import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
 import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
+import {Model} from "../Model/ModelNamespace.js";
 
 /**
  * Class to manage the views of the game
@@ -31,9 +32,10 @@ export class ViewManager extends Subject{
             this.spellPreview.charModel.visible = false;
             return;
         }
-        const newEvent = {detail: {name: "", position: event.detail.params.position}};
+        const newEvent = {detail: {name: "", position: event.detail.params.position.clone()}};
+        const island = this.getIslandByPosition(newEvent.detail.position);
         if(event.detail.type.name === "build"){
-            if(this.getIslandByPosition(newEvent.detail.position)?.checkCell(newEvent.detail.position) !== buildTypes.getNumber("empty")){
+            if(island?.checkCell(newEvent.detail.position) !== buildTypes.getNumber("empty")){
                 newEvent.detail.name = "augmentBuild";
             } else {
                 newEvent.detail.name = "build";
@@ -70,7 +72,9 @@ export class ViewManager extends Subject{
      */
     addPair(model, view){
         if(model.type === "player" && this.pairs.player.length > 0){
-            throw new Error("player already exists");
+            this.pairs.character.push({model, view});
+            return;
+            // throw new Error("player already exists");
         }
         this.pairs[model.type].push({model, view});
     }
@@ -92,6 +96,28 @@ export class ViewManager extends Subject{
             });
             return found;
         }
+    }
+
+    /**
+     * retrieve the player model by id
+     * @param {number} id
+     * @return {Wizard|*}
+     */
+    getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager
+        if(this.pairs.player[0].model.id === id){
+            return this.pairs.player[0].model;
+        } else {
+            const char = this.pairs.character.find((pair) => {
+                if(pair.model instanceof Model.Wizard && pair.model.id === id){
+                    return true;
+                }
+                return false;
+            });
+            if(char){
+                return char.model;
+            }
+        }
+        return null;
     }
 
     /**
@@ -131,7 +157,7 @@ export class ViewManager extends Subject{
                 if(pair.view.staysAlive){
                     this.dyingViews.push(pair.view);
                 }
-                pair.view.cleanUp();
+                pair.view.dispose();
                 return false;
             }
             return true;
