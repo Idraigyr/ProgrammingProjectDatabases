@@ -15,13 +15,13 @@ import {
 } from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
-import {eatingKey, interactKey, subSpellKey} from "./configs/Keybinds.js";
+import {eatingKey, interactKey} from "./configs/Keybinds.js";
 import {gridCellSize} from "./configs/ViewConfigs.js";
 import {buildTypes, gemTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
-import {PlayerInfo} from "./Controller/PlayerInfo.js";
 import {Settings} from "./Menus/settings.js";
+import {Cursor} from "./Controller/Cursor.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -115,16 +115,23 @@ class App {
             offset: new THREE.Vector3(cameraPosition.offset.x,cameraPosition.offset.y,cameraPosition.offset.z),
             lookAt: new THREE.Vector3(cameraPosition.lookAt.x,cameraPosition.lookAt.y,cameraPosition.lookAt.z),
             target: null,
-            raycaster: this.raycastController
+            raycaster: this.raycastController,
+            //visualise axes -- DEBUG STATEMENTS --
+            // axisHelper: new Cursor({})
+            //visualise axes -- DEBUG STATEMENTS --
         });
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
+
+        //visualise axes -- DEBUG STATEMENTS --
+        // this.scene.add(this.cameraManager.axisHelper.charModel);
+        //visualise axes -- DEBUG STATEMENTS --
 
         this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
 
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
-        this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager});
+        this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager, camera: this.cameraManager.camera});
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
@@ -138,6 +145,10 @@ class App {
             matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
         });
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
+        this.menuManager.addCallbacks({
+            checkStakesCallback: this.itemManager.stakeGems.bind(this.itemManager),
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController),
+        });
 
 
         this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector, camera: this.cameraManager.camera});
@@ -147,6 +158,8 @@ class App {
         // Setup chat SocketIO namespace
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
+
+        this.multiplayerController.addEventListener("toggleMatchMaking", this.menuManager.toggleMatchMaking.bind(this.menuManager));
 
         this.playerInfo.addEventListener("updateCrystals", this.hud.updateCrystals.bind(this.hud));
         this.playerInfo.addEventListener("updateXp", this.hud.updateXP.bind(this.hud));
@@ -270,6 +283,7 @@ class App {
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
+            this.togglePhysicsUpdates(false);
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
@@ -294,10 +308,10 @@ class App {
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
             this.worldManager.currentRotation = event.detail.rotation;
+            this.togglePhysicsUpdates(true);
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
-
 
         document.addEventListener("visibilitychange", this.onVisibilityChange.bind(this));
         window.addEventListener("resize", this.onResize.bind(this));
@@ -338,10 +352,11 @@ class App {
      */
     onVisibilityChange(){
         if(document.visibilityState === "visible"){
-            this.simulatePhysics = true;
-            this.clock.getDelta();
+            this.togglePhysicsUpdates(true);
         } else {
-            this.simulatePhysics = false;
+            if(this.multiplayerController.matchmaking) this.multiplayerController.toggleMatchMaking();
+            if(this.menuManager.currentMenu === "AltarMenu") this.menuManager.exitMenu();
+            this.togglePhysicsUpdates(false);
         }
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
@@ -350,10 +365,11 @@ class App {
 
     /**
      * Toggles the physics simulation
-     * @param {bool} bool - optional parameter to toggle on (true) or off (false)
+     * @param {boolean | null} bool - optional parameter to toggle on (true) or off (false)
      */
     togglePhysicsUpdates(bool = null){
         this.simulatePhysics = bool ?? !this.simulatePhysics;
+        if(this.simulatePhysics) this.clock.getDelta();
     }
 
     /**
@@ -368,6 +384,7 @@ class App {
         await this.playerInfo.retrieveInfo();
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
+        this.settings.loadCursors();
         await this.assetManager.loadViews();
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
@@ -435,7 +452,6 @@ class App {
         this.worldManager.world.player.advertiseCurrentCondition();
         //TODO: should be called at combat start
         this.worldManager.addProxys();
-        this.minionController.worldMap = this.worldManager.world.islands;
         //TODO: is there a better way to do this?
         this.multiplayerController.setUpProperties({
             playerInfo: this.playerInfo,
@@ -446,7 +462,25 @@ class App {
             forwardingNameSpace: this.forwardingNameSpace,
             collisionDetector: this.collisionDetector,
             spellFactory: this.spellFactory,
+            itemManager: this.itemManager,
         });
+
+        // this.menuManager.renderMenu({name: "AltarMenu"});
+        // this.menuManager.exitMenu();
+    }
+
+    initScene(){
+        const group = new THREE.Group();
+        const light = new THREE.AmbientLight( 0xFFFFFF, 2);
+        light.position.set(0,3, 10);
+        light.castShadow = true;
+        group.add(light);
+
+        const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 10);
+        dirLight.position.set(0,100, 50);
+        dirLight.castShadow = true;
+        group.add(dirLight);
+        this.scene.add(group);
     }
 
     /**
@@ -462,13 +496,10 @@ class App {
             // });
             //TODO: remove this is test //
 
-            // Setup SocketIO
-
 
             document.querySelector('.loading-animation').style.display = 'none';
-            //init();
-            this.simulatePhysics = true;
-            this.clock.getDelta();
+            this.initScene();
+            this.togglePhysicsUpdates(true);
             this.update();
         } else {
             const warning = WebGL.getWebGLErrorMessage();

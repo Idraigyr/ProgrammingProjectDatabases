@@ -82,11 +82,13 @@ export class Attribute extends Item{
 export class Gem extends Item{
     constructor(params) {
         super(params);
+        this.staked = params?.staked ?? false;
         this.power = params?.power ?? 0;
         this.attributes = [];
         this.equippedIn = params?.equippedIn ?? null; // Building id
-        this.slot = null;
-        this.belongsIn = "GemsMenu";
+        this.slot = params?.slot ?? null;
+        this.belongsIn = (params?.staked ?? false) ? "StakesMenu" : "GemsMenu";
+        console.log("Gem created: ", this);
     }
     get type(){
         return "Gem";
@@ -127,7 +129,6 @@ export class Gem extends Item{
         this.attributes.forEach(attribute => {
             obj.attributes.push(attribute.formatPOSTData());
         });
-        console.log(obj);
         return obj;
     }
 
@@ -140,6 +141,9 @@ export class Gem extends Item{
         let obj = super.formatPUTData();
         if(changes.includes("equippedIn")){
             obj.building_id = this.equippedIn;
+        }
+        if(changes.includes("staked")){
+            obj.staked = this.staked;
         }
         return obj;
     }

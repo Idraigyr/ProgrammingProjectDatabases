@@ -81,9 +81,12 @@ export class Island extends Foundation{
      * @param vector - new position
      */
     set position(vector){
+        console.log("moving island");
         const delta = vector.clone().sub(this.position);
         for(const building of this.buildings){
+            if(building.constructor.name === "Altar") console.log("moving altar from position: ", building.position, " by delta: ", delta);
             building.position = building.position.add(delta);
+            if(building.constructor.name === "Altar") console.log("new altar position: ", building.position);
         }
         super.position = vector;
     }

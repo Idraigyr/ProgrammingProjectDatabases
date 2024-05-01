@@ -32,7 +32,7 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null}} params
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -40,10 +40,12 @@ export class MenuManager extends Subject{
         this.container = params.container;
         this.blockInputCallback = params.blockInputCallback;
         this.matchMakeCallback = params.matchMakeCallback;
+        this.checkStakesCallback = params?.checkStakesCallback ?? null;
         this.items = {};
         this.menus = {};
 
         this.menusEnabled = true;
+        this.matchmaking = false;
         this.currentMenu = null;
         this.dragElement = null;
         this.isSlotItem = false;
@@ -69,7 +71,17 @@ export class MenuManager extends Subject{
 
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
-        this.gemId = 0;
+    }
+
+
+    /**
+     * method for adding callbacks to the menuManager in case they could not be added in the constructor/ they need to be changed
+     * @param {{blockInputCallback: {block: function, activate: function} | null, matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
+     */
+    addCallbacks(callbacks){
+        if(callbacks.blockInputCallback) this.blockInputCallback = callbacks.blockInputCallback;
+        if(callbacks.matchMakeCallback) this.matchMakeCallback = callbacks.matchMakeCallback;
+        if(callbacks.checkStakesCallback) this.checkStakesCallback = callbacks.checkStakesCallback;
     }
 
     // TODO: remove this
@@ -98,7 +110,9 @@ export class MenuManager extends Subject{
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
         }
         if(menu instanceof AltarMenu){
-            menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
+            menu.element.querySelector(".play-button").addEventListener("click", (event) => {
+                this.matchMakeCallback();
+            });
         }
         if(menu instanceof FusionTableMenu){
             menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
@@ -124,6 +138,42 @@ export class MenuManager extends Subject{
         if(menu instanceof FuseInputMenu){
             menu.element.querySelector(".add-button").addEventListener("click", this.dispatchAddEvent.bind(this));
             menu.element.querySelector(".remove-button").addEventListener("click", this.dispatchRemoveEvent.bind(this));
+        }
+        if(menu instanceof StakesMenu){
+            menu.element.addEventListener("drop", (event) => {
+                this.checkStakes();
+            });
+        }
+        if(menu instanceof GemsMenu){
+             menu.element.addEventListener("drop", (event) => {
+                this.checkStakes();
+            });
+        }
+    }
+
+    checkStakes(){
+        const gemsIds = [];
+        this.menus["GemsMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
+        if(this.checkStakesCallback(gemsIds)){
+            this.container.querySelector(".play-button-container").classList.remove("inactive");
+            this.container.querySelector(".play-button-container").classList.add("active");
+        }else {
+            this.container.querySelector(".play-button-container").classList.remove("active");
+            this.container.querySelector(".play-button-container").classList.add("inactive");
+        }
+    }
+
+    /**
+     * toggle the matchmaking button and if gems are allowed to be dragged and dropped
+     * @param {{detail: {matchmaking: boolean}}} event
+     */
+    toggleMatchMaking(event){
+        this.matchmaking = event.detail.matchmaking;
+        const element = this.menus["AltarMenu"].element.querySelector(".play-button-container");
+        if(this.matchmaking){
+            element.classList.add("pressed");
+        } else {
+            element.classList.remove("pressed");
         }
     }
 
@@ -177,7 +227,7 @@ export class MenuManager extends Subject{
      * exit the current menu
      */
     exitMenu(){
-        this.hideMenu(this.currentMenu);
+        this.#hideMenu(this.currentMenu);
     }
 
     /**
@@ -199,7 +249,6 @@ export class MenuManager extends Subject{
      * @return {CustomEvent<{id: number | null}>}
      */
     createAddGemEvent(){
-        console.log("Adding gem to building: ", this.dragElement);
         return new CustomEvent("addGem", {
             detail: {
                 id: this.dragElement,
@@ -312,6 +361,7 @@ export class MenuManager extends Subject{
      * @param event
      */
     drag(event){
+        if(this.matchmaking) return;
         let id = event.target.id;
         this.isSlotItem = event.target.classList.contains("slot-item")
         if(this.isSlotItem) {
@@ -517,7 +567,9 @@ export class MenuManager extends Subject{
     #createMenuItem(item){
         if(item.belongsIn === "SpellsMenu"){
             return new SpellItem(item);
-        } else if (item.belongsIn === "GemsMenu"){
+        } else if (item.belongsIn === "GemsMenu" || item.belongsIn === "StakesMenu"){
+            item.equipped = item.extra?.equipped ?? false;
+            item.slot = item.extra?.slot ?? null;
             return new GemItem(item);
         } else if (item.belongsIn === "StatsMenu"){
             return new StatItem(item);
@@ -655,7 +707,8 @@ export class MenuManager extends Subject{
      * create menus and menu items
      */
     createMenus(){
-        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
+        //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
@@ -668,9 +721,8 @@ export class MenuManager extends Subject{
      * @param {{name: string}} params
      */
     renderMenu(params){
-        console.log(params)
         if(!params.name || !this.menusEnabled) return;
-        if(this.currentMenu) this.hideMenu(this.currentMenu);
+        if(this.currentMenu) this.#hideMenu(this.currentMenu);
         this.blockInputCallback.block();
         this.container.style.display = "block";
         this.currentMenu = params.name;
@@ -685,13 +737,14 @@ export class MenuManager extends Subject{
      * hide the current menu and call the blockInputCallback.activate function
      * @param {string} name
      */
-    hideMenu(name = this.currentMenu){
+    #hideMenu(name = this.currentMenu){
         if(!name || !this.menusEnabled) return;
         this.container.style.display = "none";
         if(name === "AltarMenu"){
-            this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
-                    this.items[item.id].attachTo(this.menus["GemsMenu"]);
-            });
+            // this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
+            //         this.items[item.id].attachTo(this.menus["GemsMenu"]);
+            // });
+            // this.checkStakes();
         }
         if(name === "MineMenu"){
             clearInterval(this.collectInterval);
@@ -750,6 +803,7 @@ export class MenuManager extends Subject{
                 this.#moveMenu("GemsMenu", "AltarMenu", "afterbegin");
                 this.#moveMenu("HotbarMenu", "AltarMenu", "afterbegin");
                 this.#moveMenu("SpellsMenu", "AltarMenu", "afterbegin");
+                this.checkStakes();
                 break;
             case "TowerMenu":
                 //TODO: show applied stats hide the others + change values based on the received params

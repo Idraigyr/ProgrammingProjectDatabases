@@ -147,7 +147,8 @@ export class Foundation extends Entity{
 
                     if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
                         console.error("islands overlap/invalid access");
-                        return null;
+                        return worldMap;
+                        // return null;
                     }
                     worldMap[worldIndex] = foundation.grid[foundationIndex];
                 }

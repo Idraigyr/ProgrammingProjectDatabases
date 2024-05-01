@@ -1,21 +1,19 @@
 import logging
 
 from flask import current_app
-from sqlalchemy import BigInteger, Enum, Column, Table, ForeignKey, SmallInteger, String, Float
+from sqlalchemy import BigInteger, Enum, Column, ForeignKey, SmallInteger, String, Float, Boolean
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from src.model.enums import GemType
 
-# The relationship table for the many-to-many relationship between gems and gem attributes
-# association_table = Table('gem_association', current_app.db.metadata,
-#                             Column('gem_id', BigInteger, ForeignKey('gem.id')),
-#                             Column('attribute_id', SmallInteger, ForeignKey('gem_attribute.id')),
-#                             Column('multiplier', Float)
-#                           )
-
 
 class Gem(current_app.db.Model):
+    """
+    A gem is a special type of item that can be used to boost buildings or mines
+    A gem is unique, but can have multiple attributes (from the same set) with different multipliers
+    A gem is always associated with a player, but can also be associated with a building (if it is used to boost said building)
+    """
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     type: Mapped[GemType] = Column(Enum(GemType), default=GemType, nullable=False)
@@ -25,6 +23,9 @@ class Gem(current_app.db.Model):
 
     # The many-to-one relationship between gems and players
     player_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('player.user_profile_id'), nullable=False)
+
+    # Wether this gem is used as a stake in a multiplayer game or not
+    staked: Mapped[bool] = Column(Boolean(), nullable=False, default=False)
 
     # attributes: Mapped[list] = relationship('GemAttribute', secondary=association_table)
     attributes_association = relationship("GemAttributeAssociation", cascade="all, delete-orphan")
@@ -42,7 +43,7 @@ class Gem(current_app.db.Model):
                                        multiplier=map['multiplier']
                                    ))
 
-    def __init__(self, type: str = None, attributes=None, player_id: int = None, building_id: int = None):
+    def __init__(self, type: str = None, attributes=None, player_id: int = None, building_id: int = None, staked: bool = False):
         if attributes is None:
             attributes = []
 
@@ -53,6 +54,7 @@ class Gem(current_app.db.Model):
         self.attributes = attributes
         self.player_id = player_id
         self.building_id = building_id
+        self.staked = staked
 
 
     def update(self, data: dict):
@@ -73,6 +75,11 @@ class Gem(current_app.db.Model):
             if not GemType.has_value(data['type']):
                 raise ValueError('Invalid gem type')
             self.type = GemType[data['type'].upper()]
+
+        if 'staked' in data:
+            if not isinstance(data['staked'], bool):
+                raise ValueError('staked must be a boolean')
+            self.staked = data['staked']
 
         if 'attributes' in data:
             copy = data['attributes'].copy()

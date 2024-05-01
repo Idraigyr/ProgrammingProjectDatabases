@@ -72,8 +72,8 @@ export class Minion extends IAnimatedView{
             fragmentShader: _PS,
             blending: THREE.NormalBlending,
             transparent: true,
-            depthTest: false,
-            depthWrite: false,
+            // depthTest: false,
+            // depthWrite: false,
             side: THREE.DoubleSide,
         });
 
@@ -111,6 +111,7 @@ export class Minion extends IAnimatedView{
         this.material_.uniforms.colour.value = c;
         if(this.mixer) this.mixer.update(deltaTime);
       }
+
       updatePosition(event){
         if(!this.charModel) return;
         if(!this.healthBar) return;

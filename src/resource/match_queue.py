@@ -1,8 +1,12 @@
+import logging
+
 from flask import request
 
 from flask import current_app
-from src.resource.player import PlayerSchema
-from src.schema import ErrorSchema
+
+from src.model.player_entity import PlayerEntity
+from src.model.match_queue import MatchQueueEntry
+from src.schema import ErrorSchema, SuccessSchema
 
 from flask import Flask, Blueprint
 from flask_jwt_extended import jwt_required, get_jwt_identity
@@ -13,16 +17,6 @@ from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.resource import add_swagger, clean_dict_input
 from src.swagger_patches import Schema, summary
-
-max_level = 10 #TODO: move this somewhere else / make it based on what's in db
-level_range = 1 #range of levels (+&-) to look for a match
-
-#dict of lists, each list contains player ids per level
-matches = []
-match_queue = dict()
-for i in range(max_level + 1):
-    match_queue[i] = []
-
 
 class MatchQueueSchema(Schema):
     """
@@ -36,7 +30,7 @@ class MatchQueueSchema(Schema):
         }
     }
 
-    required = []
+    required = ['matchmake']
     type = 'object'
 
     def __init__(self, **kwargs):
@@ -44,13 +38,21 @@ class MatchQueueSchema(Schema):
 
 
 class MatchQueueResource(Resource):
+    """
+    Resource for the match queue endpoint
+    There's no POST method because the match queue is a shared resource and players can only be added or removed from it
+    The delete endpoint has the same functionality as the put endpoint, but with matchmake set to False
+    """
+
 
     @swagger.tags('match queue')
     @summary('join the matchmaking queue for multiplayer')
     @swagger.expected(schema=MatchQueueSchema, required=True)
+    @swagger.parameter(name='player_id', description='The target player to add / remove from the queue. Should only be used by admins', _in='query', schema={'type': 'integer'}, required=False)
     @swagger.response(200, 'Success', schema=MatchQueueSchema)
+    @swagger.response(400, 'Invalid input', schema=ErrorSchema)
     @swagger.response(404, 'player not found', schema=ErrorSchema)
-    @swagger.response(409, 'player already in the queue', schema=ErrorSchema)
+    @swagger.response(409, 'player already / not in the queue', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -62,60 +64,113 @@ class MatchQueueResource(Resource):
         data = request.get_json()
         data = clean_dict_input(data)
 
+        target_user_id = int(escape(request.args.get('player_id', current_user_id)))
+
+        target_player: Optional[Player] = Player.query.get(target_user_id)
+        if not target_player:
+            return ErrorSchema(f"Player {target_user_id} not found"), 404
+
+        try:
+            # Validate the input
+            MatchQueueSchema(**data, _check_requirements=True)
+        except ValueError as e:
+            return ErrorSchema(str(e)), 400
+
+
+        add_to_queue = data['matchmake']
+        entry = MatchQueueEntry.query.filter_by(player_id=target_user_id).first()
+
+
+        if add_to_queue:
+            if entry is not None:
+                return ErrorSchema(f"Player {target_user_id} already in the queue"), 409
+
+            # First check if there's an opponent in the queue
+            # If there is, remove both players from the queue and start the match by sending a message to both players through the websocket
+            # If there isn't, add the player to the queue
+
+            # Check for opponents
+            diff: int = 1 if 'APP_MATCHMAKING_LEVEL_RANGE' not in current_app.config else int(current_app.config.get('APP_MATCHMAKING_LEVEL_RANGE'))
+
+            entry: Optional[MatchQueueEntry] = MatchQueueEntry.query\
+                        .join(Player) \
+                        .join(PlayerEntity) \
+                        .filter(MatchQueueEntry.player_id != target_user_id) \
+                        .filter(target_player.entity.level - diff <= PlayerEntity.level)\
+                        .filter(PlayerEntity.level <= target_player.entity.level + diff) \
+                        .first()
+
+            if entry is not None:
+                opponent: Player = entry.player
+                # Remove the entry (not player!) from the queue
+                current_app.db.session.delete(entry)
+                current_app.db.session.commit()
+
+                # Unique id based on the two player ids
+                match_id = f'{target_user_id}-{opponent.user_profile_id}'
+
+                # Send a message to the players through the websocket
+                current_app.socketio.emit('match_found', {'player1': target_player.user_profile_id, 'player2': opponent.user_profile_id, 'match_id': match_id}, namespace='/forward')
+
+                logging.getLogger(__name__).info(f"Match found between {target_user_id} (level={target_player.entity.level}) and {opponent.user_profile_id} (level={opponent.entity.level})")
+                return MatchQueueSchema(matchmake=True), 200
+
+            else:
+                # Add the player to the queue
+                entry = MatchQueueEntry(player_id=target_user_id)
+                current_app.db.session.add(entry)
+                current_app.db.session.commit()
+                logging.getLogger(__name__).info(f"Player {target_user_id} added to the queue")
+                return MatchQueueSchema(matchmake=True), 200
+
+
+
+        else:
+            if entry is None:
+                return ErrorSchema(f"Player {target_user_id} not in the queue"), 409
+            current_app.db.session.delete(entry)
+            current_app.db.session.commit()
+            return MatchQueueSchema(matchmake=False), 200
+
+
+
+    @swagger.tags('match queue')
+    @summary('leave the matchmaking queue for multiplayer')
+    @swagger.expected(schema=MatchQueueSchema, required=True)
+    @swagger.parameter(name='id', description='The target player to remove from the queue', _in='query', schema={'type': 'integer'}, required=False)
+    @swagger.response(200, 'Success', schema=SuccessSchema)
+    @swagger.response(400, 'Invalid input', schema=ErrorSchema)
+    @swagger.response(404, 'player not found', schema=ErrorSchema)
+    @swagger.response(409, 'player not in the queue', schema=ErrorSchema)
+    @jwt_required()
+    def delete(self):
+        """
+        remove player from the matchmaking queue
+        """
+
+        current_user_id = get_jwt_identity()
+
+        data = request.get_json()
+        data = clean_dict_input(data)
+
         target_user_id = int(escape(request.args.get('id', current_user_id)))
 
         player: Optional[Player] = Player.query.get(target_user_id)
-
-        player_data = PlayerSchema(player)
-
-        player_level = int(player_data['entity']['level'])
-        player_id = int(player_data['entity']['player_id'])
-
-        # Check if the target player exists
-        if player is None:
+        if not player:
             return ErrorSchema(f"Player {target_user_id} not found"), 404
-        else:
-            if(data['matchmake'] == False):
-                # remove player from the queue
-                try:
-                    match_queue[player_level].remove(player_id)
-                except ValueError:
-                    return ErrorSchema(f"Player {player_id} not in the queue"), 404
-                return MatchQueueSchema(), 200
 
-            # add player to the queue if not already in it
-            if(player_id in match_queue[player_level]):
-                return ErrorSchema(f"Player {player_id} already in the queue"), 409
-            match_queue[player_level].append(player_id)
+        try:
+            # Validate the input
+            MatchQueueSchema(**data, _check_requirements=True)
+        except ValueError as e:
+            return ErrorSchema(str(e)), 400
 
-            print(match_queue)
-            #TODO: implement matchmaking logic
-            #OPTION1: when 2 players are in the same queue, go to FINALISE
-            if(len(match_queue[player_level]) >= 2):
-                #match them, remove them and send info via websocket
-                player1 = match_queue[player_level][0]
-                player2 = match_queue[player_level][1]
-                matches.append({'player1': player1, 'player2': player2}) #unique match id
-                current_app.socketio.emit('match_found', {'player1': player1, 'player2': player2, 'match_id': len(matches) - 1}, namespace='/forward')
-                match_queue[player_level].remove(player1)
-                match_queue[player_level].remove(player2)
-                #...
-                return MatchQueueSchema(), 200
-            #OPTION2: when 2 players are in different queues but still within a certain level range,
-            """
-            count = 0
-            for i in range(player_level - level_range, player_level + level_range):
-                if i < 0 or i > max_level:
-                    continue
-                count += len(match_queue[i])
-            if(count >= 2):
-                # wait a certain amount of time to see if a new player will join one of their queues: if so go to OPTION1 else FINALISE
-                # return MatchQueueSchema(), 200
-                return ErrorSchema(f"can not yet match against players not of the same level"), 422
-            else:
-                return MatchQueueSchema(), 200
-            """
-
+        entry = MatchQueueEntry.query.filter_by(player_id=target_user_id).first()
+        if entry is None:
+            return ErrorSchema(f"Player {target_user_id} not in the queue"), 409
+        current_app.db.session.delete(entry)
+        current_app.db.session.commit()
+        return SuccessSchema(f"Player {target_user_id} succesfully removed from the matchmaking queue."), 200
 
 
 

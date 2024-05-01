@@ -47,14 +47,14 @@ export class Factory{
 
     /**
      * Creates minion model and view
-     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}, buildingID: number} params, spawn needs to be in world coords, buildingID is the id of the building that spawned the minion
+     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}, buildingID: number, team: number} params, spawn needs to be in world coords, buildingID is the id of the building that spawned the minion
      * @return {Minion}
      */
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 0, buildingID: params.buildingID}); //TODO: change team dynamically
-        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135,camera: this.camera});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: params.team, buildingID: params.buildingID});
+        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 25,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
             if(child.name === "handIKr") {
@@ -105,7 +105,7 @@ export class Factory{
         this.scene.add(view.charModel);
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
-        view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
+        view.boundingBox.set(currentPos.clone().sub(new THREE.Vector3(0.5,0,0.5)), currentPos.clone().add(new THREE.Vector3(0.5,height,0.5)));
         this.scene.add(view.boxHelper);
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));

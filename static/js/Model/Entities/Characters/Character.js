@@ -31,6 +31,8 @@ export class Character extends Entity{
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
+
+        this.updateEvent = this.forwardStateUpdate.bind(this);
     }
 
     /**
@@ -47,10 +49,10 @@ export class Character extends Entity{
      */
     set fsm(fsm){
         if(this.#fsm){
-            this.#fsm.removeEventListener("updatedState", this.forwardStateUpdate.bind(this));
+            this.#fsm.removeEventListener("updatedState", this.updateEvent);
         }
         this.#fsm = fsm;
-        this.#fsm.addEventListener("updatedState", this.forwardStateUpdate.bind(this));
+        this.#fsm.addEventListener("updatedState", this.updateEvent);
     }
 
     /**

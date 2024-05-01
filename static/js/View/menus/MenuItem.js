@@ -40,10 +40,6 @@ export class MenuItem{
         element.appendChild(this.icon);
         element.appendChild(description);
         descriptionName.innerText = this.name;
-        // If there is this.extra.cost, add it to the name
-        if(params?.extra?.cost) descriptionName.innerText += ` 💎 ${params.extra.cost}`;
-        // If there is this.extra.buildTime, add it to the name
-        if(params?.extra?.buildTime) descriptionName.innerText += ` ⌛ ${params.extra.buildTime}`;
         descriptionText.innerText = params?.description ?? "placeholder description";
         return element;
     }
@@ -91,6 +87,20 @@ export class BuildingItem extends MenuItem{
         super(params);
         this.element.classList.add("building-item");
         this.element.draggable = false;
+    }
+
+    createElement(params) {
+        const element = super.createElement(params);
+        const descriptionName = element.querySelector(".menu-item-description-name");
+        const descriptionText = element.querySelector(".menu-item-description-text");
+        let description = "";
+        // If there is this.extra.cost, add it to the name
+        if(params?.extra?.cost) description += ` 💎 ${params.extra.cost}`;
+        // If there is this.extra.buildTime, add it to the name
+        if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
+        descriptionName.innerText += description;
+        descriptionText.innerText = params?.description ?? "placeholder description";
+        return element;
     }
 
     get type(){
