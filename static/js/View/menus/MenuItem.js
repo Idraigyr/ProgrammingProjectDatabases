@@ -4,7 +4,6 @@ export class MenuItem{
         this.name = params.name;
         this.belongsIn = params.belongsIn;
         this.icon = new Image(params.icon.width,params.icon.height);
-        this.icon.style.pointerEvents = "none";
         this.icon.src = params.icon.src;
         this.element = this.createElement(params);
     }
@@ -32,9 +31,7 @@ export class MenuItem{
         const descriptionText = document.createElement("p");
         description.classList.add("menu-item-description");
         descriptionName.classList.add("menu-item-description-name");
-        descriptionName.style.pointerEvents = "none";
         descriptionText.classList.add("menu-item-description-text");
-        descriptionText.style.pointerEvents = "none";
         description.appendChild(descriptionName);
         description.appendChild(descriptionText);
         element.id = this.id;
@@ -43,10 +40,6 @@ export class MenuItem{
         element.appendChild(this.icon);
         element.appendChild(description);
         descriptionName.innerText = this.name;
-        // If there is this.extra.cost, add it to the name
-        if(params?.extra?.cost) descriptionName.innerText += ` 💎 ${params.extra.cost}`;
-        // If there is this.extra.buildTime, add it to the name
-        if(params?.extra?.buildTime) descriptionName.innerText += ` ⌛ ${params.extra.buildTime}`;
         descriptionText.innerText = params?.description ?? "placeholder description";
         return element;
     }
@@ -78,19 +71,10 @@ export class SpellItem extends MenuItem{
 }
 
 export class GemItem extends MenuItem{
-    /**
-     * @param {Object} params
-     * if params.equipped === true then params has to have property params.slot
-     * @param params
-     */
     constructor(params) {
         super(params);
-        this.equipped = params?.equipped ?? false;
-        if(this.equipped) {
-            if(!(typeof params?.slot === "number")) throw new Error("GemItem equipped without slot");
-            this.element.style.opacity = 0.5;
-        }
-        this.slot = params?.slot ?? null;
+        this.equipped = false;
+        this.slot = null;
     }
 
     get type(){
@@ -103,6 +87,20 @@ export class BuildingItem extends MenuItem{
         super(params);
         this.element.classList.add("building-item");
         this.element.draggable = false;
+    }
+
+    createElement(params) {
+        const element = super.createElement(params);
+        const descriptionName = element.querySelector(".menu-item-description-name");
+        const descriptionText = element.querySelector(".menu-item-description-text");
+        let description = "";
+        // If there is this.extra.cost, add it to the name
+        if(params?.extra?.cost) description += ` 💎 ${params.extra.cost}`;
+        // If there is this.extra.buildTime, add it to the name
+        if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
+        descriptionName.innerText += description;
+        descriptionText.innerText = params?.description ?? "placeholder description";
+        return element;
     }
 
     get type(){

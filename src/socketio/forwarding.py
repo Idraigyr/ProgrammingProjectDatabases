@@ -58,7 +58,7 @@ class ForwardingNamespace(Namespace):
         self._log.debug(f"Ending match: {match_id}")
         try:
             #transfer ownership of stakes to winner or when there is a draw, return stakes to players
-            if winner_id is -1:
+            if winner_id == -1:
                 Gem.query.filter(and_(Gem.player_id.in_(self.matches[match_id]['players']), Gem.staked == True)).update({'staked': False})
             else:
                 # player won; transfer gems to player
