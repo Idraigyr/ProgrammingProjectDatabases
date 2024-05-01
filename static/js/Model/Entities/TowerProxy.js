@@ -1,15 +1,15 @@
 import {ProxyEntity} from "./Buildings/ProxyEntity.js";
 
-export class AltarProxy extends ProxyEntity{
+export class TowerProxy extends ProxyEntity{
     constructor(params) {
         super(params);
 
     }
 
     /**
-     * Function for when the altar dies and the match is over
+     * Function for when the tower dies
      */
     die() {
-        //TODO: Implement match end
+        //TODO: Implement tower exploding/dissapearing?
     }
 }

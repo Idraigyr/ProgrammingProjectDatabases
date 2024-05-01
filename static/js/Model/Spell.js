@@ -148,6 +148,10 @@ class InstantDamage extends Effect{
         super(params);
         this.damage = params.damage;
     }
+
+    apply(target){
+        target.takeDamage(this.damage)
+    }
 }
 
 /**
@@ -307,7 +311,7 @@ export class Fireball extends ConcreteSpell{
             }),
             effects: [
                 new InstantDamage({
-                    damage: 0
+                    damage: 10
             }), new DoT({
                     damage: 0,
                     interval: 0,

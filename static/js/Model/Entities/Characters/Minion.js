@@ -14,4 +14,10 @@ export class Minion extends Character{
         this.buildingID = params?.buildingID ?? null;
         this.lastAction = "Idle"; // Idle, WalkToAltar, FollowEnemy, AttackEnemy
     }
+    /**
+     * Function that gets called when the minion dies
+     */
+    dies() {
+        //TODO: implement minion death
+    }
 }

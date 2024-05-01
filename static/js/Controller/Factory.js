@@ -82,6 +82,7 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        model.addEventListener("healthChange",view.OnHealth_.bind(view));
 
         this.viewManager.addPair(model, view);
         return model;
@@ -273,6 +274,58 @@ export class Factory{
         return model;
     }
 
+    createProxy(params) {
+        const asset = this.assetManager.getAsset(params.buildingName);
+        let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
+
+        let model = null;
+        //TODO: get health from a variable, so it is impacted by gems and level?
+        if (params.buildingName === "Altar") {
+            model = new Model.AltarProxy({
+                spawnPoint: currentPos,
+                position: currentPos,
+                team: params.team,
+                health: 100,
+                maxHealth: 100
+            });
+
+        }
+        if (params.buildingName === "Tower") {
+            model = new Model.TowerProxy({
+            spawnPoint: currentPos,
+            position: currentPos,
+            team: params.team,
+            health: 100,
+            maxHealth: 100
+        });
+        }
+
+        let view = new View.ProxyView({
+            position: currentPos,
+            charModel: asset.clone(),
+            scene: this.scene,
+            camera: this.camera
+        });
+        if (params.buildingName === "Altar") {
+            const height = 9;
+            view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(4,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(4.2,height,0.5)));
+        }
+        if (params.buildingName === "Tower") {
+            const height = 33;
+            view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(3,0,3)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(3,height,3)));
+        }
+
+        this.scene.add(view.healthBar);
+        this.scene.add(view.boxHelper);
+        model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("healthChange",view.OnHealth_.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
+        this.viewManager.addPair(model, view);
+        return model;
+
+    }
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to

@@ -15,6 +15,7 @@ import {Minion} from "./Characters/Minion.js";
 import {Watch} from "./Watch.js";
 import {Wall} from "./Buildings/Wall.js";
 import {Bridge} from "./Bridge.js";
+import {ProxyView} from "./ProxyView.js";
 
 /**
  * View namespace
@@ -40,5 +41,6 @@ export const View = Object.freeze({
     BuildingPreview: BuildingPreview,
     RitualSpell: RitualSpell,
     Watch: Watch,
-    Bridge: Bridge
+    Bridge: Bridge,
+    ProxyView: ProxyView
 });

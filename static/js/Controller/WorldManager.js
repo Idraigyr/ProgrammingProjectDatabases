@@ -215,6 +215,10 @@ export class WorldManager{
         this.collisionDetector.generateColliderOnWorker();
     }
 
+    addProxys(){
+        this.world.addProxys();
+    }
+
     /**
      * Moves the current island and player to the new position, BE AWARE: this method does not call generateColliderOnWorker
      * @param {THREE.Vector3} translation - the translation to apply to the island
@@ -579,6 +583,7 @@ export class WorldManager{
             console.error(err);
         }
     }
+
 
     async updateGems(){
 

@@ -142,6 +142,7 @@ class App {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
             },
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
         });
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
         this.menuManager.addCallbacks({
@@ -390,7 +391,9 @@ class App {
         await this.itemManager.retrieveGemAttributes();
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
-        this.menuManager.addItems(this.itemManager.getGemsViewParams());
+        for(const gem of this.itemManager.gems){
+            this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
+        }
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});
@@ -447,6 +450,8 @@ class App {
         this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
         this.playerInfo.setLevelStats();
         this.worldManager.world.player.advertiseCurrentCondition();
+        //TODO: should be called at combat start
+        this.worldManager.addProxys();
         //TODO: is there a better way to do this?
         this.multiplayerController.setUpProperties({
             playerInfo: this.playerInfo,
@@ -527,6 +532,9 @@ class App {
         this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
+
+        //should only be done in multiplayer
+        this.viewManager.updateProxys(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
         //OrbitControls -- DEBUG STATEMENTS --

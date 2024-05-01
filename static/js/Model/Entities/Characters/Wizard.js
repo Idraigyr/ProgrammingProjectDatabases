@@ -158,6 +158,13 @@ export class Wizard extends Character{
         return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
     }
 
+    /**
+     * Function that gets called when the player dies
+     */
+    dies() {
+        //TODO: implement character death
+    }
+
 
 
 
