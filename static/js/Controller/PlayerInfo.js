@@ -48,7 +48,12 @@ export class PlayerInfo extends Subject{
                 type: 'PUT',
                 data: JSON.stringify({
                     user_profile_id: this.userID,
-                    last_logout: currentTime
+                    last_logout: currentTime,
+                    entity: {
+                        x: Math.round(this.playerPosition.x),
+                        y: Math.round(this.playerPosition.y + 20), // To prevent the player from spawning in the ground
+                        z: Math.round(this.playerPosition.z)
+                    }
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -165,6 +170,10 @@ export class PlayerInfo extends Subject{
         return this.level*10;
     }
 
+    isPlayerLoggedIn(){
+        return this.userID !== null;
+    }
+
     /**
      * Calculates the mana bonus based on the level
      * @returns {number} - Mana bonus
@@ -195,6 +204,10 @@ export class PlayerInfo extends Subject{
         this.updatePlayerInfoBackend();
     }
 
+    updatePlayerPosition(event){
+        this.playerPosition = event.detail.position;
+    }
+
     /**
      * Updates the player information on the server
      */
@@ -211,9 +224,9 @@ export class PlayerInfo extends Subject{
                     xp: this.experience,
                     mana: this.mana,
                     entity: {
-                        // x: this.playerPosition.x,
-                        // y: this.playerPosition.y,
-                        // z: this.playerPosition.z,
+                        x: Math.round(this.playerPosition.x),
+                        y: Math.round(this.playerPosition.y),
+                        z: Math.round(this.playerPosition.z),
                         level: this.level
                     }
                 }),
@@ -247,7 +260,14 @@ export class PlayerInfo extends Subject{
             return 100000;
         }
     }
-
+    respawn(){
+        this.playerPosition.x = playerSpawn.x;
+        this.playerPosition.y = playerSpawn.y;
+        this.playerPosition.z = playerSpawn.z;
+        console.log("Player respawned on ", this.playerPosition);
+        this.advertiseCurrentCondition();
+        location.reload();
+    }
     /**
      * Changes the amount of experience
      * @param amount - Amount of experience to add

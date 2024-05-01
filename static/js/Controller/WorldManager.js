@@ -245,11 +245,17 @@ export class WorldManager{
      */
     async importWorld(islandID){
         const {island, characters} = await this.importIsland(islandID);
-
+        let playerPosition;
+        if(this.playerInfo.playerPosition) {
+            playerPosition = this.playerInfo.playerPosition;
+        }else{
+            playerPosition = {x: playerSpawn.x, y: playerSpawn.y, z: playerSpawn.z};
+        }
+        console.log("Player position from database: ", playerPosition);
         const player = {position: {
-                x: playerSpawn.x,
-                y: playerSpawn.y,
-                z: playerSpawn.z
+                x: playerPosition.x,
+                y: playerPosition.y,
+                z: playerPosition.z
             },
             health: this.playerInfo.health,
             maxHealth: this.playerInfo.maxHealth,

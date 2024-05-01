@@ -24,8 +24,7 @@ export class SpellCaster extends Subject{
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
-        this.#currentObject = null;
-        this.previousSelectedPosition = null;
+        this.removeCurrentObject();
     }
 
     /**
@@ -44,6 +43,7 @@ export class SpellCaster extends Subject{
     set currentObject(object){
         this.#currentObject = object;
         this.previousSelectedPosition = object?.position.clone();
+        this.previousSelectedRotation = object?.rotation.clone();
     }
 
     /**
@@ -152,10 +152,17 @@ export class SpellCaster extends Subject{
         // TODO: drop current object if it exists
         if(this.currentObject){
             this.currentObject.position = this.previousSelectedPosition;
+            this.currentObject.rotation = this.previousSelectedRotation;
             this.currentObject.ready = true;
         }
+        this.removeCurrentObject();
+    }
+
+    removeCurrentObject(){
         this.previousSelectedPosition = null;
-        this.currentObject = null;
+        this.previousSelectedRotation = null;
+        if(this.currentObject) this.currentObject.ready = true;
+        else this.currentObject = null;
     }
 
     dispatchVisibleSpellPreviewEvent(bool){

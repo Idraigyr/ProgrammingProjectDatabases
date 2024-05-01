@@ -211,8 +211,7 @@ class App {
                 building.cellIndex = island.occupyCell(pos, building.dbType);
                 // Remove the object from spellCaster
                 this.spellCaster.currentObject.ready = true;
-                this.spellCaster.currentObject = null;
-                //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
+                this.spellCaster.removeCurrentObject();
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -339,11 +338,10 @@ class App {
         if(document.visibilityState === "visible"){
             this.simulatePhysics = true;
             this.clock.getDelta();
+            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.login();
         } else {
             this.simulatePhysics = false;
-            if(this.playerInfo){
-                this.playerInfo.logout();
-            }
+            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.logout();
         }
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
@@ -406,6 +404,7 @@ class App {
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
         this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
+        this.worldManager.world.player.addEventListener("updatePosition", this.playerInfo.updatePlayerPosition.bind(this.playerInfo));
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
 
 

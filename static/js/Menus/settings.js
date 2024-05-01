@@ -53,9 +53,10 @@ export class Settings {
     constructor(inputManager, playerInfo) {
         this.inputManager = inputManager;
         this.playerInfo = playerInfo;
-        inputManager.addLogoutButtonListener(this.logOut.bind(this))
-        inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
-        inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
+        inputManager.addLogoutButtonListener(this.logOut.bind(this));
+        inputManager.addRespawnButtonListener(this.respawn.bind(this));
+        inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this));
+        inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this));
     }
     /**
      * Function to log out the user
@@ -72,6 +73,12 @@ export class Settings {
 
         // Redirect the user to the logout URL
         window.location.href = logoutUrl;
+    }
+    async respawn() {
+        console.log("Respawn button clicked")
+
+        // Send respawn info to the backend
+        await this.playerInfo.respawn();
     }
     /**
      * Function to exit the settings menu
