@@ -1,6 +1,6 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 
@@ -36,6 +36,52 @@ export class PlayerInfo extends Subject{
             x: 0,
             y: 0,
             z: 0
+        }
+    }
+
+    async logout(){
+        // Get current time
+        const currentTime = await this.getCurrentTime();
+        try {
+            $.ajax({
+                url: `${API_URL}/${playerURI}`,
+                type: 'PUT',
+                data: JSON.stringify({
+                    user_profile_id: this.userID,
+                    last_logout: currentTime
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                async: false,
+                error: (e) => {
+                    console.error(e);
+                }
+            });
+        } catch (err){
+            console.error(err);
+        }
+    }
+
+    async login(){
+        // Get current time
+        const currentTime = await this.getCurrentTime();
+        try {
+            $.ajax({
+                url: `${API_URL}/${playerURI}`,
+                type: 'PUT',
+                data: JSON.stringify({
+                    user_profile_id: this.userID,
+                    last_login: currentTime
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                async: false,
+                error: (e) => {
+                    console.error(e);
+                }
+            });
+        } catch (err){
+            console.error(err);
         }
     }
 

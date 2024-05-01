@@ -15,6 +15,8 @@ export const matchMakingURI = 'api/matchmaking';
 
 export const islandURI = 'api/island';
 
+export const logoutURI = 'api/auth/logout';
+
 export const blueprintURI = 'api/blueprint';
 
 export const gemURI = 'api/gem';

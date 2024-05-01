@@ -60,12 +60,15 @@ export class Settings {
     /**
      * Function to log out the user
      */
-    logOut() {
+    async logOut() {
         console.log("Log out button clicked")
         var currentUrl = window.location.href;
 
         // Append '/logout' to the current URL
         var logoutUrl = currentUrl + '/logout';
+
+        // Send logout info to the backend
+        await this.playerInfo.logout();
 
         // Redirect the user to the logout URL
         window.location.href = logoutUrl;

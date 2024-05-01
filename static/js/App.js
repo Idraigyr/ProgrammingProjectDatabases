@@ -444,6 +444,8 @@ class App {
             collisionDetector: this.collisionDetector,
             spellFactory: this.spellFactory,
         });
+        progressBar.labels[0].innerText = "Last touches...";
+        await this.playerInfo.login();
     }
 
     /**
