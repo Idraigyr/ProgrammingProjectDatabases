@@ -18,7 +18,8 @@ export class Mine extends Placeable{
         this.lastCollected = params.lastCollected;
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
         this.#maxCrystals = this.#calculateMaxCrystals();
-        this.gemSlots = 3;
+        this.gemSlots = 2;
+        this.upgradable = true;
     }
 
     /**

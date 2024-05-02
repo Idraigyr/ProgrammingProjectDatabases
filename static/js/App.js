@@ -191,6 +191,12 @@ class App {
             event.detail.building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             this.itemManager.removeGem(event);
         });
+        this.menuManager.addEventListener("lvlUp", (event) => {
+            const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            if(this.playerInfo.crystals < building?.upgradeCost) return;
+            this.playerInfo.changeCrystals(-building.upgradeCost);
+            // building.levelUp(); TODO: implement levelUp method
+        });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
@@ -294,6 +300,17 @@ class App {
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots > 0){
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
+                params.level = building.level;
+                // params.maxLevel = building.maxLevel; //TODO: implement maxLevel?
+                params.slots = building.gemSlots;
+                console.log("rendering slots: ", params.slots);
+            }
+
+            if(building?.upgradable){
+                params.currentLevel = building.level;
+                params.newLevel = building.maxLevel > building.level ? building.level + 1 : building.level;
+                params.upgradeCost = building.upgradeCost;
+                params.upgradeTime = building.upgradeTime;
             }
 
             //if the building is a mine, forward stored crystal information
@@ -391,9 +408,7 @@ class App {
         await this.itemManager.retrieveGemAttributes();
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
-        for(const gem of this.itemManager.gems){
-            this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
-        }
+        this.menuManager.addItems(this.itemManager.getGemsViewParams());
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});

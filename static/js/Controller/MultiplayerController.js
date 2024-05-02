@@ -211,7 +211,7 @@ export class MultiplayerController extends Subject{
      * Ends the match and shows the win/lose/draw screen
      * @param data
      */
-    endMatch(data){
+    async endMatch(data){
         console.log(`match ended, winner: ${data.winner_id}`); //TODO: let backend also send won or lost gem ids
         if(data.winner_id === this.playerInfo.userID){
             //show win screen
@@ -231,6 +231,8 @@ export class MultiplayerController extends Subject{
             //show draw screen
             console.log("draw");
         }
+        this.menuManager.unstakeGems();
+        this.menuManager.addItems(this.itemManager.updateGems(await this.playerInfo.retrieveGems()));
         //wait for player to click on continue button
         //send event to server that player is leaving match
         this.leaveMatch();

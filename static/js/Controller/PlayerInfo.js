@@ -3,6 +3,7 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
+import {assert} from "../helpers.js";
 
 /**
  * Class that holds the user information
@@ -79,6 +80,24 @@ export class PlayerInfo extends Subject{
         } catch (err){
             console.error(err);
         }
+    }
+
+    /**
+     * Retrieves user info from the server and filters out the gems
+     * the retrieveInfo method needs to have been called at least once before this method (to get userID)
+     * @return {Promise<Object[]>} - returns a promise that resolves with the gems array
+     */
+    async retrieveGems(){
+        assert(this.userID, "playerInfo.retrieveGems: userID is not defined");
+        try {
+            // GET request to server
+            const response = await $.getJSON(`${API_URL}/${playerURI}?id=${this.userID}`);
+            console.log(response);
+            return response.gems;
+        } catch (err){
+            console.error(err);
+        }
+        return null;
     }
 
     /**

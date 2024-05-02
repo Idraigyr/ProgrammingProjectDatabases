@@ -12,9 +12,12 @@ export class Placeable extends Entity{
         super(params);
         this.id = params?.id ?? null;
         this.level = params?.level ?? 0;
+        this.maxLevel = 4;
+        this.upgradable = false;
         this.rotation = params?.rotation ??  0;
         this.gemSlots = params?.gemSlots ?? 0;
-        this.levelUpTime = params?.levelUpTime ?? 0;
+        this.upgradeCost = params?.upgradeCost ?? 10;
+        this.upgradeTime = params?.upgradeTime ?? 10;
         this.gems = [];
         this.ready = true;
         this.cellIndex = null;

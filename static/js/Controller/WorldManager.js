@@ -584,11 +584,6 @@ export class WorldManager{
         }
     }
 
-
-    async updateGems(){
-
-    }
-
     async updateBuildings(){
 
     }

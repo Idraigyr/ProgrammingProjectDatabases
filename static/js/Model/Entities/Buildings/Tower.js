@@ -10,6 +10,7 @@ export class Tower extends Placeable{
         this.spellSpawner = params.spellSpawner;
         this.timeToBuild = 600;
         this.gemSlots = 3;
+        this.upgradable = true;
     }
 
     /**
