@@ -90,6 +90,10 @@ class GemSchema(Schema):
             'type': 'integer',
             'format': 'int64',
             'nullable': True,
+        },
+        'staked': {
+            'type': 'boolean',
+            'description': 'Whether the gem is used as a stake in a multiplayer match or not. Staked gems are "reserved" and cannot be used for boosting buildings or mines',
         }
     }
 
@@ -104,6 +108,7 @@ class GemSchema(Schema):
                              attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association],
                              building_id=gem.building_id,
                              player_id=gem.player_id,
+                             staked=gem.staked,
                              **kwargs)
         else:
             super().__init__(**kwargs)
