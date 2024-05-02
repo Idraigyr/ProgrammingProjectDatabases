@@ -104,6 +104,7 @@ class MineBuildingResource(Resource):
             # Convert the datetime strings to datetime objects
             if 'last_collected' in data:
                 data['last_collected'] = data['last_collected'].replace('T', ' ')
+                data["last_collected"] = data["last_collected"].split(".")[0]
                 data['last_collected'] = datetime.datetime.strptime(data['last_collected'], '%Y-%m-%d %H:%M:%S')
 
             # Update the mine building

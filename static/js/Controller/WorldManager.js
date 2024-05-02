@@ -50,7 +50,8 @@ export class WorldManager{
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: building.rotation*90,
                     id: building.placeable_id,
-                    gems: building.gems
+                    gems: building.gems,
+                    task: building.task
                 });
             }
 
