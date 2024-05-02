@@ -278,6 +278,32 @@ export class WorldManager{
         characters.forEach((characters) => {
 
         });
+        this.deleteOldTasks(); // TODO: or somewhere else?
+    }
+
+    async deleteOldTasks(){
+        // Get all tasks from the server
+        $.getJSON(`${API_URL}/${taskURI}/list?island_id=${this.playerInfo.islandID}&is_over=true`).done((data) => {
+            // Delete all tasks that are finished
+            data.forEach((task) => {
+                $.ajax({
+                    url: `${API_URL}/${taskURI}?id=${task.id}`,
+                    type: "DELETE",
+                    error: (e) => {
+                        console.error(e);
+                    }
+                }).done((data, textStatus, jqXHR) => {
+                    console.log("DELETE success");
+                    console.log(textStatus, data);
+                }).fail((jqXHR, textStatus, errorThrown) => {
+                    console.log("DELETE fail");
+                    console.error(textStatus, errorThrown);
+                });
+            });
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.error("GET request failed");
+            console.error(textStatus, errorThrown);
+        });
     }
 
     /**

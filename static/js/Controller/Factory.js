@@ -191,7 +191,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, team: number, task: Object}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -227,7 +227,18 @@ export class Factory{
         // create a timer that has a callback that triggers when the timer ends
         // put the buildingPreview in dyingViews of viewManager
         // just make the buildingView invisible for the duration of the timer
-
+        if (params.task){
+            console.log("task", params.task);
+            // Get if the timer is already finished
+            const timeEnd = new Date(params.task.endtime);
+            if(timeEnd < this.currentTime){
+                return model;
+            }
+            params.withTimer = true;
+            // Get difference in seconds
+            const timeDiff = (timeEnd - this.currentTime)/1000;
+            model.timeToBuild = timeDiff;
+        }
         if(params.withTimer){
             // Copy asset object
             const assetClone = asset.clone();
@@ -255,7 +266,7 @@ export class Factory{
             timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
             // Rotate the watch view each step
             timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
-                watch.charModel.rotation.y += 2*deltaTime;
+                if(watch.charModel) watch.charModel.rotation.y += 2*deltaTime;
             });
             // Remove watch view when the timer ends
             timer.addCallback(() => {
