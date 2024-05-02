@@ -18,7 +18,9 @@ import {
     StatItem
 } from "../View/menus/MenuItem.js";
 import {Subject} from "../Patterns/Subject.js";
-import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
+import {API_URL, blueprintURI, playerProfileURI, playerURI} from "../configs/EndpointConfigs.js";
+import {PlayerInfo} from "./PlayerInfo.js";
+import {Level} from "../configs/LevelConfigs.js";
 
 // loading bar
 
@@ -69,7 +71,8 @@ export class MenuManager extends Subject{
 
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
-        this.gemId = 0;
+        this.playerInfo = new PlayerInfo();
+
     }
 
     // TODO: remove this
@@ -556,46 +559,74 @@ export class MenuManager extends Subject{
 
         const items = [
             {
-                item: {name: "tower", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Tower", getDisplayName: () => "Tower"},
+                item: {name: "tower", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "setUserTower", getDisplayName: () => "Tower"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[towerName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[towerName]
+                }
             },
             {
                 item: {name: "wall", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Wall", getDisplayName: () => "Wall"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[wallName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[wallName]
+                }
             },
             {
                 item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[treeName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[treeName]
+                }
             },
             {
                 item: {name: "bush", id: 2, belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "Bush"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[bushName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[bushName]
+                }
             },
             {
                 item: {name: "mine", id: 3, belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "Mine"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[mineName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[mineName]
+                }
             },
             {
                 item: {name: "fusion table", id: 4, belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "Fusion table"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[fusionTableName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[fusionTableName]
+                }
             },
             {
                 item: {name: "warrior hut", id: 5, belongsIn: "CombatBuildingsMenu", getItemId: () => "WarriorHut", getDisplayName: () => "Warrior hut"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.buildTime}
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.cost,
+                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.buildTime,
+                    buildingThreshold: this.playerInfo.buildingsThreshold[warriorHutName],
+                    buildingAvailable: this.playerInfo.buildingsPlaced[warriorHutName]
+                }
             }
         ];
 
@@ -815,5 +846,9 @@ export class MenuManager extends Subject{
         } catch (e){
             console.error("Error in MenuManager: ", e);
         }
+    }
+
+    async setPlayerInfo(playerInfo) {
+        this.playerInfo = playerInfo;
     }
 }

@@ -1,4 +1,4 @@
-// Get the modal
+import * as AllFriends from "./Friends.js"
 document.addEventListener('DOMContentLoaded', (event) => {
     let friendsButton = document.getElementById("FriendsButton");
 
@@ -15,6 +15,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     let FriendList = document.getElementById("listFriend");
 
     let requestList = document.getElementById("listRequests");
+
+    const sendRequestButton = document.getElementById('requestSubmit');
+
+    const usernameFriend = document.getElementById("usernameFriend");
 
     friendsButton.onclick = function () {
         if (Friends.style.display === "block") {
@@ -53,6 +57,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         requestList.style.display = "block";
     }
 
+    sendRequestButton.onclick = function () {
+        let receiver_id = AllFriends.getPlayerID(usernameFriend.value.trim());
+        AllFriends.sendRequest(receiver_id);
+    }
+
     function populateFriends() {
 
         const listFriend = document.getElementById('listFriend');
@@ -78,9 +87,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
     function populateRequests() {
         const listRequest = document.getElementById('listRequests');
         listRequest.innerHTML = '';
-
-        let requestsList = ["Request1", "Request2", "Request3"];
-
+        let requestsList = [];
+        for(let r in AllFriends.getFriendRequests()){
+            requestsList.push(r.username);
+        }
         requestsList.forEach((RequestName, index) => {
             // add friend
             const request = document.createElement('div');

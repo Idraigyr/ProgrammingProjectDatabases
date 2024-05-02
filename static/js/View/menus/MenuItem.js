@@ -29,11 +29,14 @@ export class MenuItem{
         const description = document.createElement("div");
         const descriptionName = document.createElement("p");
         const descriptionText = document.createElement("p");
+        const descriptionPlaceableText = document.createElement("p");
         description.classList.add("menu-item-description");
         descriptionName.classList.add("menu-item-description-name");
         descriptionText.classList.add("menu-item-description-text");
+        descriptionPlaceableText.classList.add("menu-item-description-placeableText")
         description.appendChild(descriptionName);
         description.appendChild(descriptionText);
+        description.appendChild(descriptionPlaceableText)
         element.id = this.id;
         element.classList.add("menu-item");
         element.draggable = true;
@@ -44,6 +47,11 @@ export class MenuItem{
         if(params?.extra?.cost) descriptionName.innerText += ` 💎 ${params.extra.cost}`;
         // If there is this.extra.buildTime, add it to the name
         if(params?.extra?.buildTime) descriptionName.innerText += ` ⌛ ${params.extra.buildTime}`;
+        if(params?.extra?.buildingThreshold){
+            if(params?.extra?.buildingAvailable >= 0){
+                descriptionPlaceableText.innerText = `${params.extra.buildingAvailable} / ${params.extra.buildingThreshold}`;
+            }
+        }
         descriptionText.innerText = params?.description ?? "placeholder description";
         return element;
     }

@@ -9,7 +9,7 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import "./external/LevelUp.js"
-import "./Menus/friends.js"
+import "./external/Friends.js"
 import {OrbitControls} from "three-orbitControls";
 import {
     placeableURI,
@@ -373,6 +373,7 @@ class App {
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
         await this.itemManager.retrieveGemAttributes();
+        await this.menuManager.setPlayerInfo(this.playerInfo);
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         for(const gem of this.itemManager.gems){
