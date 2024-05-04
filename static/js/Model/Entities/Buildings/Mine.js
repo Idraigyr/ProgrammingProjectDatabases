@@ -19,7 +19,7 @@ export class Mine extends Placeable{
         this.lastCollected = null;
         if(params.lastCollected){
             this.lastCollected = params.lastCollected;
-        }else{
+        }else if (this.id){
             this.fetchLastCollected();
         }
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
