@@ -14,14 +14,25 @@ export class Minion extends Character{
         this.input = {blockedInput: false, currentTarget: null, currentNode: null, currentNodeIndex: 0};
         this.buildingID = params?.buildingID ?? null; // only used for friendly minions
         this.lastAction = "Idle"; // Idle, WalkToAltar, FollowEnemy, AttackEnemy
+        this.target = null;
     }
     /**
      * Function that gets called when the minion dies
      */
     dies() {
         //TODO: implement minion death
+        console.log("minion dies");
+        this.dispatchEvent(this.createDeleteEvent());
     }
 
+    /**
+     * Function that gets called when the minion attacks a target
+     * @param target
+     */
+    attack() {
+        //is target the problem?
+        this.target.takeDamage(10)
+    }
     setId(data) {
         this.id = data.id;
     }

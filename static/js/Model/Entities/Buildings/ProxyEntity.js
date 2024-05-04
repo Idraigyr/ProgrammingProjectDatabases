@@ -17,14 +17,14 @@ export class ProxyEntity extends Entity {
         this.dispatchEvent(new CustomEvent("healthChange", {detail: {health: this.health, maxHealth: this.maxHealth}}));
         if(this.health <= 0){
             this.health = 0;
-            this.die();
+            this.dies();
         }
     }
 
     /**
      * what happens when the entity dies*
      */
-    die(){
+    dies(){
         throw new Error("pure virtual function called (ProxyEntity.die)");
     }
 

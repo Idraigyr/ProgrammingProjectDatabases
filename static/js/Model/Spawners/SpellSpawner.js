@@ -35,7 +35,7 @@ export class SpellSpawner extends Spawner{
             this.dispatchEvent(this._createSpawnEvent({
                 type: this.spell,
                 position: new THREE.Vector3(-7,35,-10),
-                direction: new THREE.Vector3(10,-3,0).add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2)),
+                direction: new THREE.Vector3(10,-3,0).add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2)), //TODO: change this to the location of the target
                 team: 0
             }));
             this.timer = 0;

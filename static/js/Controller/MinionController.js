@@ -13,6 +13,7 @@ import {
 } from "../configs/ControllerConfigs.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
 import {Subject} from "../Patterns/Subject.js";
+import {MinionDefaultAttackState} from "../Model/States/MinionStates.js";
 
 //TODO: put this directly in grid of foundation?
 /**
@@ -141,6 +142,8 @@ export class MinionController extends Subject{
         //empty quaternion used as empty param to safe memory
         this.enemyRotation = new THREE.Quaternion();
         this.#idOffset = 1000;
+
+        this.attackTime = 0;
     }
 
     /**
@@ -301,6 +304,7 @@ export class MinionController extends Subject{
             minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
             minion.lastAction = "AttackEnemy";
             // console.log("attacking altar");
+            //TODO: put proxy as minion.target
         } else {
             const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion);
             if(closestDistance < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
@@ -308,6 +312,7 @@ export class MinionController extends Subject{
                 //set attack state & at the end of the attack animation, deal damage
                 minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
                 minion.lastAction = "AttackEnemy";
+                minion.target = closestEnemy;
                 // console.log("attacking enemy");
             } else if(closestDistance < minionFollowRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //follow character
@@ -360,6 +365,14 @@ export class MinionController extends Subject{
             minion.lastMovementVelocity.set(0,0,0);
             minion.velocity.set(0,0,0);
         }
+        if (minion.fsm.currentState instanceof MinionDefaultAttackState) {
+            this.attackTime += deltaTime;
+            if(this.attackTime > 0.8){
+                this.attackTime = 0;
+                minion.attack();
+            }
+        }
+
     }
 
 
