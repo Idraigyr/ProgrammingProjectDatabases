@@ -181,96 +181,7 @@ class App {
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
-        // Onclick event
-        //TODO: change nameless callbacks to methods of a class?
-        this.spellCaster.addEventListener("castBuildSpell", (event) => { //TODO: rename this to MoveBuilding or something and put this in worldManager
-            const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.params.position);
-            if(buildingNumber === buildTypes.getNumber("void")) return;
-            // Skip altar
-            if(buildingNumber === buildTypes.getNumber("altar_building")) return;
-            // If the selected cell is empty
-            if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
-                // If there is an object selected, drop it
-                // TODO: more advanced
-                // Get selected building
-                const building = this.spellCaster.currentObject;
-                // Update bounding box of the building
-                building.dispatchEvent(new CustomEvent("updateBoundingBox")); //TODO: put this in a method of the building's class
-                // Update occupied cells
-                const pos = event.detail.params.position;
-                const island = this.worldManager.world.getIslandByPosition(pos);
-                // // Get if the cell is occupied
-                // let buildOnCell = island.getCellIndex(pos);
-                // if (buildOnCell !== building.cellIndex){// TODO!!!!
-                //     let cell = island.checkCell(pos);
-                //     // Check if the cell is occupied
-                //     if(cell !== buildTypes.getNumber("empty")) return;
-                // }
-                island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
-                // Occupy cell
-                building.cellIndex = island.occupyCell(pos, building.dbType);
-                // Remove the object from spellCaster
-                this.spellCaster.currentObject.ready = true;
-                this.spellCaster.currentObject = null;
-                this.spellCaster.previousSelectedPosition = null;
-                // this.spellCaster.previousSelectedRotation = null;
-                // Update static mesh
-                this.collisionDetector.generateColliderOnWorker();
-                // Send put request to the server if persistence = true
-                if(this.worldManager.persistent){
-                    this.worldManager.sendPUT(placeableURI, building, postRetries);
-                }
-
-                //allow menus to be opened again
-                this.menuManager.menusEnabled = true;
-
-            } else if(buildingNumber === buildTypes.getNumber("empty")){ //open buildmenu
-                this.worldManager.currentPos = event.detail.params.position;
-                this.worldManager.currentRotation = event.detail.params.rotation;
-                this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
-                this.inputManager.exitPointerLock();
-
-            } else if (this.spellCaster.currentObject) { //What is this code block used for??? placing back in same spot after rotating?
-                // Get selected building
-                const building = this.spellCaster.currentObject;
-                // Update bounding box of the building
-                building.dispatchEvent(new CustomEvent("updateBoundingBox"));
-                // Update occupied cells
-                const pos = event.detail.params.position;
-                const island = this.worldManager.world.getIslandByPosition(pos);
-                // Update static mesh
-                this.collisionDetector.generateColliderOnWorker();
-                // Get if the cell is occupied
-                let buildOnCell = island.getCellIndex(pos);
-                if (buildOnCell !== building.cellIndex) return;
-                // Send put request to the server if persistence = true
-                if(this.worldManager.persistent){
-                    this.worldManager.sendPUT(placeableURI, building, postRetries);
-                }
-                // You have placed the same building on the same cell, so remove info from spellCaster
-                this.spellCaster.currentObject.ready = true;
-                this.spellCaster.currentObject = null;
-                this.spellCaster.previousSelectedPosition = null;
-                // this.spellCaster.previousSelectedRotation = null;
-
-                //allow menus to be opened again
-                this.menuManager.menusEnabled = true;
-
-            } else { //select object
-                /* Logic for selecting a building */
-                // There is already object
-                if(this.spellCaster.currentObject) return;
-                let selectedObject =  this.worldManager.world.getBuildingByPosition(event.detail.params.position);
-                // If no object selected or the object is not ready, return
-                if (!selectedObject || !selectedObject.ready) return;
-                // Select current object
-                this.spellCaster.currentObject = selectedObject;
-                this.spellCaster.currentObject.ready = false;
-
-                //disable opening menus while building is selected
-                this.menuManager.menusEnabled = false;
-            }
-        });
+        // Press E to interact with buildings
         this.spellCaster.addEventListener("interact", async (event) => {
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
@@ -382,7 +293,10 @@ class App {
         }
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});
+        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, spellCaster: this.spellCaster,
+            minionController: this.minionController, assetManager: this.assetManager, timerManager: this.timerManager, scene: this.scene, viewManager: this.viewManager, cameraManager: this.cameraManager,
+            menuManager: this.menuManager, itemManager: this.itemManager, forwardingNameSpace: this.forwardingNameSpace, playerController: this.playerController, hud: this.hud, settings: this.settings, inputManager: this.inputManager});
+                this.spellCaster.addEventListener("castBuildSpell", this.worldManager.manageBuildSpell.bind(this.worldManager));
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;

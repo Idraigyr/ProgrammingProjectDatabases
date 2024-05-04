@@ -6,6 +6,7 @@ import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
+import {buildTypes} from "../configs/Enums.js";
 
 
 /**
@@ -17,6 +18,9 @@ export class WorldManager{
         this.playerInfo = params.playerInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
+        this.menuManager = params.menuManager;
+        this.inputManager = params.inputManager;
+        this.spellCaster = params.spellCaster;
         this.collisionDetector = params.collisionDetector;
         this.currentPos = null;
         this.currentRotation = 0;
@@ -177,7 +181,85 @@ export class WorldManager{
 
         return {position: bridgePosition, width: (bridgeMaxX - bridgeMinX)/gridCellSize + 1, length: (bridgeMaxZ - bridgeMinZ)/gridCellSize + 1};
     }
+     manageBuildSpell(event){
+        const buildingNumber = this.checkPosForBuilding(event.detail.params.position);
+        if(buildingNumber === buildTypes.getNumber("void")) return;
+        // Skip altar
+        if(buildingNumber === buildTypes.getNumber("altar_building")) return;
+        // If the selected cell is empty
+        if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
+            // If there is an object selected, drop it
+            // Get selected building
+            const building = this.spellCaster.currentObject;
+            // Update bounding box of the building
+            building.dispatchEvent(new CustomEvent("updateBoundingBox")); //TODO: put this in a method of the building's class
+            // Update occupied cells
+            const pos = event.detail.params.position;
+            const island = this.world.getIslandByPosition(pos);
+            island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
+            // Occupy cell
+            building.cellIndex = island.occupyCell(pos, building.dbType);
+            // Remove the object from spellCaster
+            this.spellCaster.currentObject.ready = true;
+            this.spellCaster.currentObject = null;
+            this.spellCaster.previousSelectedPosition = null;
+            // Update static mesh
+            this.collisionDetector.generateColliderOnWorker();
+            // Send put request to the server if persistence = true
+            if(this.persistent){
+                this.sendPUT(placeableURI, building, postRetries);
+            }
 
+            //allow menus to be opened again
+            this.menuManager.menusEnabled = true;
+
+        } else if(buildingNumber === buildTypes.getNumber("empty")){ //open buildmenu
+            this.currentPos = event.detail.params.position;
+            this.currentRotation = event.detail.params.rotation;
+            this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
+            this.inputManager.exitPointerLock();
+
+        } else if (this.spellCaster.currentObject) { //What is this code block used for??? placing back in same spot after rotating?
+            // Get selected building
+            const building = this.spellCaster.currentObject;
+            // Update bounding box of the building
+            building.dispatchEvent(new CustomEvent("updateBoundingBox"));
+            // Update occupied cells
+            const pos = event.detail.params.position;
+            const island = this.world.getIslandByPosition(pos);
+            // Update static mesh
+            this.collisionDetector.generateColliderOnWorker();
+            // Get if the cell is occupied
+            let buildOnCell = island.getCellIndex(pos);
+            if (buildOnCell !== building.cellIndex) return;
+            // Send put request to the server if persistence = true
+            if(this.persistent){
+                this.sendPUT(placeableURI, building, postRetries);
+            }
+            // You have placed the same building on the same cell, so remove info from spellCaster
+            this.spellCaster.currentObject.ready = true;
+            this.spellCaster.currentObject = null;
+            this.spellCaster.previousSelectedPosition = null;
+            // this.spellCaster.previousSelectedRotation = null;
+
+            //allow menus to be opened again
+            this.menuManager.menusEnabled = true;
+
+        } else { //select object
+            /* Logic for selecting a building */
+            // There is already object
+            if(this.spellCaster.currentObject) return;
+            let selectedObject =  this.world.getBuildingByPosition(event.detail.params.position);
+            // If no object selected or the object is not ready, return
+            if (!selectedObject || !selectedObject.ready) return;
+            // Select current object
+            this.spellCaster.currentObject = selectedObject;
+            this.spellCaster.currentObject.ready = false;
+
+            //disable opening menus while building is selected
+            this.menuManager.menusEnabled = false;
+        }
+    }
     /**
      * Adds an enemy player to the world
      * @param params
