@@ -477,6 +477,7 @@ class App {
             forwardingNameSpace: this.forwardingNameSpace,
             collisionDetector: this.collisionDetector,
             spellFactory: this.spellFactory,
+            factory: this.factory,
             itemManager: this.itemManager,
         });
 

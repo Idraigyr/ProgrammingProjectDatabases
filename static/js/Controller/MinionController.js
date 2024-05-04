@@ -12,6 +12,7 @@ import {
     gravity, minionAttackRadius, minionFollowRadius, minionSpeedMultiplier
 } from "../configs/ControllerConfigs.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
+import {Subject} from "../Patterns/Subject.js";
 
 //TODO: put this directly in grid of foundation?
 /**
@@ -110,15 +111,19 @@ class PathNode{
 /**
  * Class for a minion controller
  */
-export class MinionController{
+export class MinionController extends Subject{
     #worldMap;
+    #minionNumber;
+    #idOffset;
 
     /**
      * MinionController constructor
      * @param {{collisionDetector: CollisionDetector}} params
      */
     constructor(params) {
+        super(params);
         this.minions = [];
+        this.#minionNumber = 0;
         this.collisionDetector = params.collisionDetector;
         this.#worldMap = new Foundation({});
         this.worldCenter = this.#worldMap.grid.length - 1 /2;
@@ -133,7 +138,9 @@ export class MinionController{
 
         //enemies, used only during multiplayer
         this.enemies = [];
+        //empty quaternion used as empty param to safe memory
         this.enemyRotation = new THREE.Quaternion();
+        this.#idOffset = 1000;
     }
 
     /**
@@ -141,7 +148,20 @@ export class MinionController{
      * @param {Minion} minion
      */
     addMinion(minion){
+        minion.setId({id: ++this.#minionNumber})
         this.minions.push(minion);
+        this.dispatchEvent(this.#createAddMinionEvent(minion));
+    }
+
+    /**
+     * creates a custom event for adding a minion to the controller
+     * used to easily add event listeners to newly added minions (multiplayer)
+     * @private
+     * @param minion
+     * @return {CustomEvent<{minion}>}
+     */
+    #createAddMinionEvent(minion){
+        return new CustomEvent("minionAdded", {detail: {minion: minion}});
     }
 
     /**
@@ -149,19 +169,53 @@ export class MinionController{
      * @param {Minion} minion
      */
     addEnemy(minion){
+        minion.id += this.#idOffset; //TODO: find a better way to differentiate between ally and enemy minions
         this.enemies.push(minion);
     }
 
     /**
      * updates an enemy minion, used only during multiplayer
+     * @param {{id: number, position: {x: number, y: number, z: number}, phi: number}} params
+     */
+    updateEnemy(params){
+        let minion = this.enemies.find((minion) => minion.id === params.id + this.#idOffset);
+        if(!minion) {
+            console.error("Minion not found");
+            return;
+        }
+        minion.position = minion.position.set(params.position.x, params.position.y, params.position.z);
+        minion.phi = params.phi;
+        minion.rotation = this.enemyRotation;
+    }
+
+    /**
+     * updates the state of an enemy minion, used only during multiplayer
+     * @param {{id: number, state: string}} params
+     */
+    updateEnemyState(params){
+        let minion = this.enemies.find((minion) => minion.id === params.id + this.#idOffset);
+        if(!minion) {
+            console.error("Minion not found");
+            return;
+        }
+        minion.fsm.setState(params.state);
+    }
+
+    /**
+     * updates all enemy minions, used only during multiplayer
      * @param event
      */
-    updateEnemy(event){
-        let minion = this.enemies.find((minion) => minion.id === event.detail.id);
-        if(!minion) return;
-        minion.position.set(event.detail.position.x, event.detail.position.y, event.detail.position.z);
-        minion.phi = event.detail.phi;
-        minion.rotation = this.enemyRotation;
+    updateEnemies(event){
+        event.forEach((enemyParams) => this.updateEnemy(enemyParams));
+    }
+
+    /**
+     * get the state of all minions
+     * @param {function} translationFunction - function to translate the id of the minion for the opponent
+     * @return {{phi: number, id: number, position: THREE.Vector3}[]}
+     */
+    getMinionsState(){
+        return this.minions.map((minion) => ({id: minion.id, position: minion.position, phi: minion.phi})); //TODO: add velocity for interpolation?
     }
 
     /**
@@ -444,11 +498,13 @@ export class MinionController{
     }
 
     /**
-     * clean up the minions and remove them
+     * clean up the minions (ally and foe) and remove them
      */
     clearMinions(){
         this.minions.forEach((minion) => minion.dispose());
+        this.enemies.forEach((enemy) => enemy.dispose());
         this.minions = [];
+        this.enemies = [];
     }
 
     /**

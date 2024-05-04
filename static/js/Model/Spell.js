@@ -267,6 +267,7 @@ class ConcreteSpell{
      * @param target - the target of the effects
      */
     applyEffects(target){
+        console.log("applying effects");
         this.effects.forEach((effect) => effect.apply(target));
     }
 }
