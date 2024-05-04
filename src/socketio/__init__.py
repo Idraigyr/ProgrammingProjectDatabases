@@ -15,4 +15,4 @@ def attach_namespaces(app: Flask) -> None:
     """
     # Register the namespaces
     app.socketio.on_namespace(ChatNamespace('/chat'))
-    app.socketio.on_namespace(ForwardingNamespace('/forward'))
+    app.socketio.on_namespace(ForwardingNamespace('/forward', app))

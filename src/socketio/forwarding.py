@@ -20,12 +20,13 @@ MATCH_TIME: int = 10
 
 class ForwardingNamespace(Namespace):
 
-    def __init__(self, namespace):
+    def __init__(self, namespace, app):
         super().__init__(namespace)
         self._log = logging.getLogger(__name__)
         self.clients: dict = {}  # user_id -> sid
         self.playing: dict = {}  # user_id -> match_id
         self.matches: dict = {}  # match_id -> {players[], time_left, timer_task} /// if we want to expand to multiple teams or players change players[id] to players[{id, team}]
+        self.app = app
 
     def get_user_from_sid(self, sid):
         for user_id, current_sid in self.clients.items():
@@ -58,7 +59,7 @@ class ForwardingNamespace(Namespace):
         """
         self._log.debug(f"Ending match: {match_id}")
         try:
-            with current_app.app_context():
+            with self.app.app_context():
                 #transfer ownership of stakes to winner or when there is a draw, return stakes to players
                 if winner_id is None:
                     Gem.query.filter(and_(Gem.player_id.in_(self.matches[match_id]['players']), Gem.staked == True)).update({'staked': False})
