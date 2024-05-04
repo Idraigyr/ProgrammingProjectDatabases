@@ -280,7 +280,7 @@ export class WorldManager{
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
 
-        if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsPlaced){
+        if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
             console.log("Cannot place");
         }
         else {
@@ -291,12 +291,13 @@ export class WorldManager{
                 }
                 this.collisionDetector.generateColliderOnWorker();
                 this.playerInfo.changeXP(10);
+                this.playerInfo.buildingsPlaced[buildingName]++;
+                return true;
             } else {
                 console.error("failed to add new building at that position");
             }
         }
-
-
+        return false;
     }
     async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
         try {

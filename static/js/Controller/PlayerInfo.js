@@ -1,9 +1,10 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {Level} from "../configs/LevelConfigs.js";
+import * as THREE from "three";
 
 /**
  * Class that holds the user information
@@ -13,7 +14,6 @@ export class PlayerInfo extends Subject{
         super();
         this.userID = null;
         this.islandID = null;
-        this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall"];
         this.gems = [];
         this.spells = [];
 
@@ -37,7 +37,14 @@ export class PlayerInfo extends Subject{
             y: 0,
             z: 0
         }
-        this.buildingsThreshold = {Tree: 5, Bush: 10, Wall: 5, Tower: 2, WarriorHut: 1, Mine: 1, FusionTable: 1};
+        this.buildingsThreshold = {Tree: Level[this.level]["Tree"],
+            Bush: Level[this.level]["Bush"],
+            Wall: Level[this.level]["Wall"],
+            Tower: Level[this.level]["Tower"],
+            WarriorHut: Level[this.level]["WarriorHut"],
+            Mine: Level[this.level]["Mine"],
+            FusionTable: Level[this.level]["FusionTable"]
+        };
         this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0}
 
     }
@@ -75,6 +82,13 @@ export class PlayerInfo extends Subject{
             this.playerPosition.z = response?.entity?.z ?? playerSpawn.z;
 
             this.xpThreshold = this.increaseXpThreshold();
+
+            const responseBuildings = await $.getJSON(`${API_URL}/${islandURI}?id=${this.islandID}`);
+            for(const building of responseBuildings.placeables){
+                if(building.blueprint.name in this.buildingsPlaced){
+                    this.buildingsPlaced[building.blueprint.name]++;
+                }
+            }
 
 
             this.advertiseCurrentCondition();
@@ -248,9 +262,9 @@ export class PlayerInfo extends Subject{
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
+            this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
 
         }
-        this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
     }
     /**
      * Increases the level of the player

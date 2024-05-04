@@ -745,6 +745,7 @@ export class MenuManager extends Subject{
         this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
     }
 
+
     /**
      * creates slot icons for the GemInsertMenu (basically just takes the icon of the gem and puts it in a slot)
      * @param items
@@ -816,6 +817,7 @@ export class MenuManager extends Subject{
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
+
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("ResourceBuildingsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");

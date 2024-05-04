@@ -1,6 +1,10 @@
+import {API_URL} from "../configs/EndpointConfigs.js";
+
 let playerList = [];
 let username = "Unknown user"
 let userID = 0;
+
+//TODO: Link username to socketIO
 $(document).ready(function(){
      $.ajax({url: '/api/player/list', type: "GET"}).done(function(data){
          playerList = data;
@@ -15,7 +19,7 @@ export function sendRequest(receiverID){
     $.ajax({
         url: '/api/friend_request',
         type: "POST",
-        data: JSON.stringify({sender_id: userID, receiver_id:receiverID,status:"pending"}),
+        data: JSON.stringify({sender_id: userID, receiver_id:receiverID}),
         dataType: "json",
         contentType: "application/json",
         error: (e) => {
@@ -29,16 +33,22 @@ export function sendRequest(receiverID){
     })
 }
 
-export function getFriendRequests() {
-    let requests = [];
-    $.ajax({url: '/api/friend_request/list', type: "GET"}).done(function(data){
-          for (let i in data){
-              if (data.receiver_id === userID){
-                  requests.push(data[i]);
-              }
-          }
-    });
-    return requests;
+export async function getFriendRequests() {
+    try {
+        const response = await $.ajax({
+            url: `${API_URL}/api/friend_request/list?receiver_id=${userID}`,
+            type: 'GET',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+        });
+
+        // Assuming response is an array, you can directly return it
+        return response;
+    } catch (error) {
+        console.error(error);
+        // Handle error appropriately, maybe throw it again or return an empty array
+        return [];
+    }
 }
 
 export function getPlayerID(receiver_username)  {
@@ -46,5 +56,37 @@ export function getPlayerID(receiver_username)  {
         if (playerList[receiver].username === receiver_username){
             return playerList[receiver].user_profile_id;
         }
+    }
+}
+
+export function getPlayerUsername(playerID){
+    for(let usernamePlayer in playerList){
+        if (playerList[usernamePlayer].user_profile_id === playerID ){
+            return playerList[usernamePlayer].username;
+        }
+    }
+}
+
+export function  getFriends() {
+    for(let player in playerList){
+        if(playerList[player].user_profile_id === userID){
+            return playerList[player].friends;
+        }
+    }
+}
+
+export async function getFriendRequestStatus(friendRequestID){
+    try {
+        const response = await $.ajax({
+            url: `${API_URL}/api/friend_request?id=${friendRequestID}`,
+            type: 'GET',
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+        });
+        return response.status;
+    } catch (error) {
+        console.error(error);
+        // Handle error appropriately, maybe throw it again or return an empty array
+        return [];
     }
 }

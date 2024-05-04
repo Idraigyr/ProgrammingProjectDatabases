@@ -1,4 +1,6 @@
 import * as AllFriends from "./Friends.js"
+import {API_URL} from "../configs/EndpointConfigs.js";
+
 document.addEventListener('DOMContentLoaded', (event) => {
     let friendsButton = document.getElementById("FriendsButton");
 
@@ -19,6 +21,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const sendRequestButton = document.getElementById('requestSubmit');
 
     const usernameFriend = document.getElementById("usernameFriend");
+
+    const acceptRequest = document.getElementById("acceptRequest");
 
     friendsButton.onclick = function () {
         if (Friends.style.display === "block") {
@@ -60,6 +64,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     sendRequestButton.onclick = function () {
         let receiver_id = AllFriends.getPlayerID(usernameFriend.value.trim());
         AllFriends.sendRequest(receiver_id);
+        usernameFriend.value = '';
     }
 
     function populateFriends() {
@@ -67,14 +72,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const listFriend = document.getElementById('listFriend');
         listFriend.innerHTML = '';
 
-        let friendsList = ["Friend1", "Friend2", "Friend3"];
+        let friendsList = AllFriends.getFriends();
 
-        friendsList.forEach((friendName, index) => {
+        friendsList.forEach(friends => {
             // add friend
             const friend = document.createElement('div');
-            friend.id = friendName;
+            friend.id = friends;
             friend.classList.add('friend');
-            friend.innerHTML = `${friendName}`;
+            friend.innerHTML = `${AllFriends.getPlayerUsername(friends)}`;
             const viewIsland = document.createElement('button');
             viewIsland.id = "viewIsland";
             viewIsland.innerHTML = `View Island`;
@@ -84,29 +89,92 @@ document.addEventListener('DOMContentLoaded', (event) => {
         });
     }
 
-    function populateRequests() {
+    async function populateRequests() {
         const listRequest = document.getElementById('listRequests');
         listRequest.innerHTML = '';
-        let requestsList = [];
-        for(let r in AllFriends.getFriendRequests()){
-            requestsList.push(r.username);
+        let tempRequests = await AllFriends.getFriendRequests();
+        for (const request of tempRequests) {
+            let status = await AllFriends.getFriendRequestStatus(request.id);
+            if(status === "pending"){
+                const requestElement = document.createElement('div');
+                requestElement.id = request.sender_id; // Assume each request has a unique sender ID
+                requestElement.classList.add('request');
+                requestElement.innerHTML = `${AllFriends.getPlayerUsername(request.sender_id)}`;
+
+                const acceptButton = document.createElement('button');
+                acceptButton.classList.add('Accept-Request');
+                acceptButton.onclick = () => acceptFriendRequest(request.id);
+
+                const rejectButton = document.createElement('button');
+                rejectButton.classList.add('Reject-Request');
+                rejectButton.onclick = () => rejectFriendRequest(request.id);
+
+                requestElement.appendChild(acceptButton);
+                requestElement.appendChild(rejectButton);
+                listRequest.appendChild(requestElement);
+            }
         }
-        requestsList.forEach((RequestName, index) => {
-            // add friend
-            const request = document.createElement('div');
-            request.id = RequestName;
-            request.classList.add('request');
-            request.innerHTML = `${RequestName}`;
-            const acceptRequest = document.createElement('button');
-            acceptRequest.id = "acceptRequest";
-            acceptRequest.classList.add('Accept-Request');
-            const rejectRequest = document.createElement('button');
-            rejectRequest.id = "rejectRequest";
-            rejectRequest.classList.add('Reject-Request');
-            request.appendChild(acceptRequest);
-            request.appendChild(rejectRequest);
-            listRequest.appendChild(request);
-        });
+    }
+
+    function acceptFriendRequest(requestID) {
+        // Handle accepting a friend request here
+        try {
+            $.ajax({
+                url: `${API_URL}/api/friend_request`,
+                type: "PUT",
+                data: JSON.stringify(formatPUTFriend(requestID, "accepted")),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done( function (){
+                $.ajax({
+                    url: `${API_URL}/api/friend_request?id=${requestID}`,
+                    type: "DELETE",
+                    contentType: "application/json",
+                    error: (e) => {
+                        console.error(e);
+                    }
+                })
+            });
+        } catch (err){
+            console.error(err);
+        }
 
     }
+
+    function rejectFriendRequest(requestID) {
+        // Handle rejecting a friend request here
+        try {
+            $.ajax({
+                url: `${API_URL}/api/friend_request`,
+                type: "PUT",
+                data: JSON.stringify(formatPUTFriend(requestID, "rejected")),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done( function (){
+                $.ajax({
+                    url: `${API_URL}/api/friend_request?id=${requestID}`,
+                    type: "DELETE",
+                    contentType: "application/json",
+                    error: (e) => {
+                        console.error(e);
+                    }
+                })
+            });
+        } catch (err){
+            console.error(err);
+        }
+    }
+
+    function formatPUTFriend(requestID, status) {
+        return {id: requestID, status: status};
+    }
+
+
+
 });
