@@ -178,7 +178,7 @@ export class MinionController extends Subject{
 
     /**
      * updates an enemy minion, used only during multiplayer
-     * @param {{id: number, position: {x: number, y: number, z: number}, phi: number}} params
+     * @param {{id: number, position: {x: number, y: number, z: number}, phi: number, health: number}} params
      */
     updateEnemy(params){
         let minion = this.enemies.find((minion) => minion.id === params.id + this.#idOffset);
@@ -189,6 +189,7 @@ export class MinionController extends Subject{
         minion.position = minion.position.set(params.position.x, params.position.y, params.position.z);
         minion.phi = params.phi;
         minion.rotation = this.enemyRotation;
+        minion.takeDamage(minion.health - params.health);
     }
 
     /**
@@ -205,6 +206,19 @@ export class MinionController extends Subject{
     }
 
     /**
+     * updates a friendly minion, used only during multiplayer (right now only used for taken damage)
+     * @param params
+     */
+    updateFriendlyState(params){
+        let minion = this.minions.find((minion) => minion.id === params.id - this.#idOffset);
+        if(!minion) {
+            console.error("Minion not found");
+            return;
+        }
+        minion.takeDamage(minion.health - params.health);
+    }
+
+    /**
      * updates all enemy minions, used only during multiplayer
      * @param event
      */
@@ -218,7 +232,7 @@ export class MinionController extends Subject{
      * @return {{phi: number, id: number, position: THREE.Vector3}[]}
      */
     getMinionsState(){
-        return this.minions.map((minion) => ({id: minion.id, position: minion.position, phi: minion.phi})); //TODO: add velocity for interpolation?
+        return this.minions.map((minion) => ({id: minion.id, position: minion.position, phi: minion.phi, health: minion.health})); //TODO: add velocity for interpolation?
     }
 
     /**

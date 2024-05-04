@@ -362,7 +362,7 @@ export class WorldManager{
     /**
      * places minionSpawners on warrior huts and attaches event listeners to them. The event listeners add the minions to the world and attach their controller
      * @param {MinionController} controller
-     * @param {interval: number, maxSpawn: number} params - the parameters for the minion spawner
+     * @param {{interval: number, maxSpawn: number}} params - the parameters for the minion spawner
      */
     generateMinionSpawners(controller, params){ //TODO: refactor this method: try to remove arrow function?
         this.world.islands.forEach((island) => {

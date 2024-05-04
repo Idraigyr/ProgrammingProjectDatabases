@@ -166,7 +166,7 @@ export class Character extends Entity{
      * Take damage
      */
     takeDamage(damage){
-
+        if(damage <= 0) return;
         this.health -= damage;
         this.dispatchEvent(this.createHealthUpdateEvent());
         if(this.health <= 0){

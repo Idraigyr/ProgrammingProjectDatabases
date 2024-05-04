@@ -4,6 +4,7 @@ from flask import current_app
 from sqlalchemy import Column, DateTime, func, String, Integer, ForeignKey
 from sqlalchemy.orm import relationship
 
+
 class ChatMessage(current_app.db.Model):
     
     id = Column(Integer, primary_key=True)

@@ -15,7 +15,7 @@ from src.model.match_queue import MatchQueueEntry
 # It will ignore the original sender session, but will broadcast to all other sessions
 BROADCAST_TO_SELF: bool = False
 MAX_PLAYERS: int = 2
-MATCH_TIME: int = 60 * 10
+MATCH_TIME: int = 10
 
 
 class ForwardingNamespace(Namespace):
@@ -54,16 +54,18 @@ class ForwardingNamespace(Namespace):
         """
         Ends the match and sends the match_end message to the players
         :param match_id: match_id
+        :param winner_id: winner_id
         """
         self._log.debug(f"Ending match: {match_id}")
         try:
-            #transfer ownership of stakes to winner or when there is a draw, return stakes to players
-            if winner_id == -1:
-                Gem.query.filter(and_(Gem.player_id.in_(self.matches[match_id]['players']), Gem.staked == True)).update({'staked': False})
-            else:
-                # player won; transfer gems to player
-                Gem.query.filter(and_(Gem.player_id.in_(self.matches[match_id]['players']), Gem.staked == True)).update({'player_id': winner_id, 'staked': False})
-            current_app.db.session.commit()
+            with current_app.app_context():
+                #transfer ownership of stakes to winner or when there is a draw, return stakes to players
+                if winner_id is None:
+                    Gem.query.filter(and_(Gem.player_id.in_(self.matches[match_id]['players']), Gem.staked == True)).update({'staked': False})
+                else:
+                    # player won; transfer gems to player
+                    Gem.query.filter(and_(Gem.player_id.in_(self.matches[match_id]['players']), Gem.staked == True)).update({'player_id': winner_id, 'staked': False})
+                current_app.db.session.commit()
 
             for player_id in self.matches[match_id]['players']:
                 del self.playing[player_id]

@@ -19,6 +19,7 @@ export class PeerController{
         this.peer.position = this.peer.position.set(data.position.x, data.position.y, data.position.z);
         this.peer.phi = data.phi; //TODO: maybe change phi and rotation to be updated by the same event (only 1 rotation property in character)
         this.peer.rotation = this.rotation;
+        this.peer.takeDamage(this.peer.health - data.health);
     }
 
 }
