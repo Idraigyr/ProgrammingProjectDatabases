@@ -125,14 +125,14 @@ export class ChatNamespace {
                     }
                 }
             }
-            else if (message !== ""){
-                socket.emit('message', messageData);
+            else if (message !== "" && !message.startsWith("\\")){
+                this.socket.emit('message', messageData);
             }
         } else if (!message.startsWith("\\")) { // Don't send the message if it starts with a backslash (cheat)
             this.socket.emit('message', messageData);
         } else{
             if (message !== ""){
-                socket.emit('message', messageData);
+                this.socket.emit('message', messageData);
             }
         }
     }
