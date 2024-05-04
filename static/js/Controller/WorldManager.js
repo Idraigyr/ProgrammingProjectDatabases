@@ -240,6 +240,7 @@ export class WorldManager{
      * @param {number} team
      */
     resetWorldState(currentIslandIsCenter = true){
+        this.factory.resetMinionCount();
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
         if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
@@ -373,7 +374,6 @@ export class WorldManager{
                    controller.addMinion(this.factory.createMinion(event.detail));
                 });
                 this.world.addMinionSpawner(spawner);
-
             });
         });
     }

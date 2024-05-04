@@ -10,6 +10,7 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
  */
 export class Factory{
     #currentTime;
+    #minionCount;
 
     /**
      * Constructor for the factory
@@ -23,6 +24,8 @@ export class Factory{
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
         this.#currentTime = null;
+
+        this.#minionCount = 0;
     }
 
     /**
@@ -42,18 +45,25 @@ export class Factory{
         return this.#currentTime;
     }
 
+    /**
+     * Resets the minion count
+     */
+    resetMinionCount(){
+        this.#minionCount = 0;
+    }
+
 
 
 
     /**
      * Creates minion model and view
-     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}, buildingID: number, team: number} params, spawn needs to be in world coords, buildingID is the id of the building that spawned the minion
+     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue", buildingID: number, team: number}} params - spawn needs to be in world coords, buildingID is the id of the building that spawned the minion (buildingID is only used for friendly minions)
      * @return {Minion}
      */
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: params.team, buildingID: params.buildingID});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: params.team, buildingID: params.buildingID, minionType: params.type});
         let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 25,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
@@ -82,7 +92,7 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
-        model.addEventListener("healthChange",view.OnHealth_.bind(view));
+        model.addEventListener("updateHealth",view.OnHealth_.bind(view));
 
         this.viewManager.addPair(model, view);
         return model;

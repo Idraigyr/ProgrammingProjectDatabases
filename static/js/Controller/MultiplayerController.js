@@ -15,6 +15,8 @@ export class MultiplayerController extends Subject{
     worldManager;
     itemManager;
     spellCaster;
+    spellFactory;
+    factory;
     minionController;
     forwardingNameSpace;
     peerController;
@@ -30,7 +32,9 @@ export class MultiplayerController extends Subject{
 
         this.updateEvents = new Map();
         this.updateEvents.set("updatedState", this.sendPlayerStateUpdate.bind(this));
+        this.updateEvents.set("updatedMinionState", this.sendMinionsStateUpdate.bind(this));
         this.updateEvents.set("createSpellEntity", this.sendCreateSpellEntityEvent.bind(this));
+        this.updateEvents.set("createMinion", this.sendCreateMinionEvent.bind(this));
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -58,7 +62,7 @@ export class MultiplayerController extends Subject{
 
     /**
      * add all the necessary controllers and managers to the MultiplayerController
-     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster, minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory, itemManager: ItemManager}} params
+     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster, minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory, factory: Factory, itemManager: ItemManager}} params
      */
     setUpProperties(params){
         this.playerInfo = params.playerInfo;
@@ -68,6 +72,7 @@ export class MultiplayerController extends Subject{
         this.minionController = params.minionController;
         this.forwardingNameSpace = params.forwardingNameSpace;
         this.spellFactory = params.spellFactory;
+        this.factory = params.factory;
         this.itemManager = params.itemManager;
     }
 
@@ -189,7 +194,7 @@ export class MultiplayerController extends Subject{
         progressBar.labels[0].innerText = "creating paths for minions...";
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
-        this.worldManager.generateMinionSpawners(this.minionController, {interval: 1, maxSpawn: 1});
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 10});
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);
@@ -250,13 +255,13 @@ export class MultiplayerController extends Subject{
 
         this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
         this.spellCaster.multiplayer = false;
+        //stop sending state updates to server & remove event listeners
+        this.stopSendingStateUpdates();
         this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView
         //remove island from world and remove spawners
         this.peerController.peer = null;
         this.minionController.clearMinions();
         this.worldManager.resetWorldState(this.playerInfo.userID < this.opponentInfo.userID);
-        //stop sending state updates to server
-        this.stopSendingStateUpdates();
         //stop receiving state updates from server
         document.querySelector('.loading-animation').style.display = 'none';
         this.toggleTimer(false);
@@ -275,23 +280,44 @@ export class MultiplayerController extends Subject{
         if (sender === target) {
             // Another session of our player emitted this message, probably should update our internal state as well
         }
-        const playerData = data.player;
-        const spellData = data.spellEvent;
-        const minionData = data.minions;
-        if(playerData) this.peerController.update(playerData);
-        if(spellData) {
-            spellData.type = spellTypes[spellData.type];
-            for (const property in spellData.params) {
+        if(data.player) this.peerController.update(data.player);
+        if(data.spellEvent) {
+            data.spellEvent.type = spellTypes[data.spellEvent.type];
+            for (const property in data.spellEvent.params) {
                 //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
-                if(spellData.params[property]?.x) spellData.params[property] = new THREE.Vector3(
-                    spellData.params[property].x,
-                    spellData.params[property].y,
-                    spellData.params[property].z
+                if(data.spellEvent.params[property]?.x) data.spellEvent.params[property] = new THREE.Vector3(
+                    data.spellEvent.params[property].x,
+                    data.spellEvent.params[property].y,
+                    data.spellEvent.params[property].z
                 );
             }
-            spellData.params.team = 1;
-            spellData.params.playerID = this.opponentInfo.userID;
-            this.spellFactory.createSpell({detail: spellData});
+            data.spellEvent.params.team = 1;
+            data.spellEvent.params.playerID = this.opponentInfo.userID;
+            this.spellFactory.createSpell({detail: data.spellEvent});
+        }
+        if(data.minions){
+            if(data.minions.create){
+                for (const property in data.minions.create) {
+                    //assume that if a property has x, it has y and z as well (meaning data.minions.create never contains properties with separate x, y, z values)
+                    if(data.minions.create[property]?.x) data.minions.create[property] = new THREE.Vector3(
+                        data.minions.create[property].x,
+                        data.minions.create[property].y,
+                        data.minions.create[property].z
+                    );
+                }
+                //create a minion
+                // add an eventListener to the enemy minion so damage taken can be forwarded to the opponent
+                const minion = this.factory.createMinion({...data.minions.create, team: 1});
+                minion.setId(data.minions.create);
+                this.minionController.addEnemy(minion);
+            }
+            if(data.minions.update){
+                //update a minion
+                this.minionController.updateEnemies(data.minions.update);
+            }
+            if(data.minions.state){
+                this.minionController.updateEnemyState(data.minions.state);
+            }
         }
 
         // console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
@@ -304,6 +330,40 @@ export class MultiplayerController extends Subject{
         });
     }
 
+    /**
+     * Send the minion creation event to the opponent
+     * @param event
+     */
+    sendCreateMinionEvent(event){
+        const createParams = {
+            type: event.detail.minion.minionType,
+            spawn: event.detail.minion.spawnPoint,
+            id: event.detail.minion.id,
+        }
+        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+            minions: {
+                create: createParams
+            }
+        });
+        event.detail.minion.addEventListener("updatedState", this.updateEvents.get("updatedMinionState"));
+    }
+
+    /**
+     * Send the minion state update to the opponent
+     * @param event
+     */
+    sendMinionsStateUpdate(event){
+        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+            minions: {
+                state: event.detail
+            }
+        });
+    }
+
+    /**
+     * Send the player state update to the opponent
+     * @param event
+     */
     sendPlayerStateUpdate(event){
         this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
             player: {
@@ -321,6 +381,7 @@ export class MultiplayerController extends Subject{
 
         this.spellCaster.addEventListener("createSpellEntity", this.updateEvents.get("createSpellEntity"));
         this.worldManager.world.player.addEventListener("updatedState", this.updateEvents.get("updatedState"));
+        this.minionController.addEventListener("minionAdded", this.updateEvents.get("createMinion"));
         this.updateInterval = setInterval(() => {
             // Send state update to server
             //player state (position, rotation, health) => just check playerModel
@@ -331,13 +392,27 @@ export class MultiplayerController extends Subject{
                     health: this.worldManager.world.player.health
                 }
             });
+            //minion state (position, rotation, health) => just check minionModel
+            this.forwardingNameSpace.sendTo(opponentId, {
+                minions: {
+                    update: this.minionController.getMinionsState()
+                }
+            });
         }, 16); //TODO: change this value to sync with fps (maybe sync it with other player?)
     }
 
+    /**
+     * Stops sending state updates to the server and removes the event listeners
+     */
     stopSendingStateUpdates(){
         clearInterval(this.updateInterval);
         this.updateInterval = null;
         this.spellCaster.removeEventListener("createSpellEntity", this.updateEvents.get("createSpellEntity"));
         this.worldManager.world.player.removeEventListener("updatedState", this.updateEvents.get("updatedState"));
+        // spawners and minions are removed when the match ends but we need to remove the event listeners in order to prevent memory leaks
+        this.minionController.minions.forEach(minion => { //TODO: do this also when a minion dies
+            minion.removeEventListener("updatedState", this.updateEvents.get("updatedMinionState"));
+        });
+        this.minionController.removeEventListener("minionAdded", this.updateEvents.get("addMinionStateListener"));
     }
 }

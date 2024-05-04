@@ -355,9 +355,9 @@ export class MenuManager extends Subject{
      * dispatches a add event
      * @param event
      */
-    dispatchAddEvent(event){
+    dispatchAddEvent(event){ //TODO: check first if you have enough crystals for this
         if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
-            console.log("Adding 10 crystals to fuse stakes");
+            console.log("Adding 10 crystals of fuse stakes");
             this.inputCrystalParams.current += 10;
             this.dispatchEvent(this.createRemoveEvent());
         }

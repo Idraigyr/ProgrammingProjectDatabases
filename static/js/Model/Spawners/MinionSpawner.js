@@ -19,7 +19,6 @@ export class MinionSpawner extends Spawner{
     update(deltaTime) {
         this.timer += deltaTime;
         if(this.timer >= this.interval && this.counter < this.maxSpawn){
-            console.log("Spawning minion");
             this.dispatchEvent(this._createSpawnEvent({
                 type: this.types[Math.floor(Math.random()*4)],
                 spawn: this.position,

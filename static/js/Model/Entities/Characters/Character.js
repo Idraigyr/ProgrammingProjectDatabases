@@ -63,6 +63,11 @@ export class Character extends Entity{
         return this.#fsm;
     }
 
+    /**
+     * Create a CustomEvent for dispatching the current (animation) state of the character
+     * @param event
+     * @return {CustomEvent<unknown>}
+     */
     createUpdatedStateEvent(event){
         return new CustomEvent("updatedState", {detail: event.detail});
     }
@@ -102,6 +107,10 @@ export class Character extends Entity{
      */
     createUpdateRotationEvent(){
         return new CustomEvent("updateRotation", {detail: {rotation: new THREE.Quaternion().copy(this.quatFromHorizontalRotation)}});
+    }
+
+    createHealthUpdateEvent(){
+        return new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}});
     }
 
     /**
@@ -157,8 +166,9 @@ export class Character extends Entity{
      * Take damage
      */
     takeDamage(damage){
+        console.log("taking damage");
         this.health -= damage;
-        this.dispatchEvent(new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}}));
+        this.dispatchEvent(this.createHealthUpdateEvent());
         if(this.health <= 0){
             this.health = 0;
             this.dies();
