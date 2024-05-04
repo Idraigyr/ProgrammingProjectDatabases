@@ -151,7 +151,7 @@ export class SpellCaster extends Subject{
         // TODO: add sound
         // TODO: drop current object if it exists
          if(this.currentObject){
-            this.currentObject.position = this.previousSelectedPosition.clone();
+            this.currentObject.position = this.previousSelectedPosition;
             this.currentObject.ready = true;
         }
         this.previousSelectedPosition = null;
