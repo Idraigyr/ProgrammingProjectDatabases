@@ -24,7 +24,8 @@ export class SpellCaster extends Subject{
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
-        this.removeCurrentObject();
+        this.previousSelectedPosition = null;
+        this.currentObject = null;
     }
 
     /**
@@ -43,7 +44,6 @@ export class SpellCaster extends Subject{
     set currentObject(object){
         this.#currentObject = object;
         this.previousSelectedPosition = object?.position.clone();
-        this.previousSelectedRotation = object?.rotation.clone();
     }
 
     /**
@@ -150,19 +150,13 @@ export class SpellCaster extends Subject{
         this.dispatchVisibleSpellPreviewEvent((!(this.multiplayer && event.detail.spellSlot-1 === 0) && this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview) ?? false);
         // TODO: add sound
         // TODO: drop current object if it exists
-        if(this.currentObject){
-            this.currentObject.position = this.previousSelectedPosition;
-            this.currentObject.rotation = this.previousSelectedRotation;
+         if(this.currentObject){
+            this.currentObject.position = this.previousSelectedPosition.clone();
             this.currentObject.ready = true;
         }
-        this.removeCurrentObject();
-    }
-
-    removeCurrentObject(){
         this.previousSelectedPosition = null;
-        this.previousSelectedRotation = null;
-        if(this.currentObject) this.currentObject.ready = true;
-        else this.currentObject = null;
+        this.currentObject = null;
+        this.raycaster.collisionDetector.generateColliderOnWorker();
     }
 
     dispatchVisibleSpellPreviewEvent(bool){

@@ -211,7 +211,9 @@ class App {
                 building.cellIndex = island.occupyCell(pos, building.dbType);
                 // Remove the object from spellCaster
                 this.spellCaster.currentObject.ready = true;
-                this.spellCaster.removeCurrentObject();
+                this.spellCaster.currentObject = null;
+                this.spellCaster.previousSelectedPosition = null;
+                // this.spellCaster.previousSelectedRotation = null;
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -249,6 +251,7 @@ class App {
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
                 this.spellCaster.previousSelectedPosition = null;
+                // this.spellCaster.previousSelectedRotation = null;
 
                 //allow menus to be opened again
                 this.menuManager.menusEnabled = true;
