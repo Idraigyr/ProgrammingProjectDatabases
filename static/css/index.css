@@ -22,6 +22,9 @@
     --close-button-size: 50px;
     --play-button-height: 60px;
     --play-button-width: 120px;
+    --lvl-up-button-height: 60px;
+    --lvl-up-button-width: 200px;
+    --lvl-up-button-margin: 5px;
     --menu-header-height: 10%;
     --menu-title-width: 50%; /* get width of .menu-title class */
     -webkit-user-select: none; /* Safari */
@@ -60,6 +63,10 @@
   transform: scale(1.10);
 }
 
+.close-button:active {
+  transform: translateY(5px);
+}
+
 .base-menu{
     position: relative;
     z-index: 9;
@@ -83,6 +90,40 @@
     align-items: end;
 }
 
+.lvl-up-button{
+    position: relative;
+    width: var(--lvl-up-button-width);
+    height: var(--lvl-up-button-height);
+    background-color: #37c924;
+    border: 5px solid #0f172a;
+    border-radius: 10px;
+    margin: var(--lvl-up-button-margin);
+    padding: 0;
+    font-size: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+}
+
+.lvl-up-button-text{
+    font-size: 20px;
+    flex-grow: 1;
+}
+
+.lvl-up-button.inactive{
+    pointer-events: none;
+    filter: brightness(50%);
+}
+
+.lvl-up-button:hover {
+  transform: scale(1.10);
+}
+
+.lvl-up-button:active {
+  transform: translateY(5px);
+}
+
 .menu-header{
     position: relative;
     width: 100%;
@@ -96,17 +137,47 @@
     flex-direction: row;
     justify-content: end;
     align-items: start;
-    gap: calc(50% - var(--close-button-size) - var(--menu-title-width)/2);
+    gap: calc(50% - var(--close-button-size) - var(--menu-title-width) / 2);
 }
 
-.menu-title{
+.building-menu .menu-header{
+    justify-content: start;
+    gap: calc(50% - var(--lvl-up-button-width) - var(--menu-title-width) / 2);
+}
+
+.menu-header .close-button-container{
+    height: 100%;
+}
+
+.building-menu .close-button-container{
+    height: 100%;
+    width: calc(100% - var(--lvl-up-button-width) - var(--menu-title-width) - 2*(50% - var(--lvl-up-button-width) - var(--menu-title-width) / 2));
+    display: flex;
+    justify-content: end;
+}
+
+.menu-header .lvl-up-button-container{
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-title-container{
     background-color: #69644a;
     border: 5px solid #0f172a;
     border-radius: 10px;
     height: 100%;
-    width: 50%;
+    width: var(--menu-title-width);
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-title{
     text-align: center;
 }
 
@@ -621,18 +692,30 @@
     position: relative;
     width: 100%;
     height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
 }
 
 .menu-item-description-name{
     color: orange;
     font-size: 20px;
     margin: 0;
+    flex-grow: 1;
 }
 
 .menu-item-description-text{
+    position: relative;
+    width: 100%;
+    height: 100%;
     color: orange;
     font-size: 20px;
+    text-overflow: ellipsis;
+    overflow: hidden;
     margin: 5px;
+    flex-grow: 1;
 }
 /*MenuManager CSS END*/
 

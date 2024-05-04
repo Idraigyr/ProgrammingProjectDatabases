@@ -73,8 +73,15 @@ export class SpellItem extends MenuItem{
 export class GemItem extends MenuItem{
     constructor(params) {
         super(params);
-        this.equipped = false;
-        this.slot = null;
+        this.equipped = params?.equipped ?? false;
+        this.slot = params?.slot ?? null;
+    }
+
+    createElement(params) {
+        const element =  super.createElement(params);
+        console.log("gem menuitem:", params);
+        if(params?.equipped) element.style.opacity = "0.5";
+        return element;
     }
 
     get type(){

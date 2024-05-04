@@ -8,6 +8,7 @@ export class FusionTable extends Placeable{
         super(params);
         this.timeToBuild = 900;
         this.gemSlots = 3;
+        this.upgradable = true;
     }
 
     /**

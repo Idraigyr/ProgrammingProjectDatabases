@@ -1,3 +1,5 @@
+import {assert} from "../../helpers.js";
+
 export class IMenu {
     constructor(params) {
         this.parent = params.parent;
@@ -47,7 +49,7 @@ export class IMenu {
 
 export class ButtonsMenu extends IMenu{
     constructor(params) {
-        params.classes = ["buttons-menu"];
+        params.classes ? params.classes.push("buttons-menu") : params.classes = ["buttons-menu"];
         super(params);
         this.display = "flex";
     }
@@ -169,9 +171,11 @@ export class FuseInputMenu extends ButtonsMenu{
 
 export class SlotMenu extends IMenu{
     constructor(params) {
-        params.classes = ["slot-menu"];
+        params.classes ? params.classes.push("slot-menu") : params.classes = ["slot-menu"];
         super(params);
         this.display = "flex";
+        this.slots = params?.slots ?? 0;
+        this.visibleSlots = 0;
     }
 
     createElement(params){
@@ -188,6 +192,7 @@ export class SlotMenu extends IMenu{
             slot.classList.add("slot");
             slot.dataset.menu = this.name;
             slot.id = `slot-${i}`;
+            slot.style.display = "none";
             slotDiv.appendChild(slot);
         }
         element.appendChild(slotDiv);
@@ -203,6 +208,19 @@ export class SlotMenu extends IMenu{
         super.hide();
     }
 
+    /**
+     * Renders a certain amount of slots or throws an error if the amount is too high
+     * assert(amount <= this.slots, "Too many slots for the amount of slots")
+     * @param amount
+     */
+    renderSlots(amount){
+        assert(amount <= this.slots, "Too many slots for the amount of slots")
+        this.visibleSlots = amount;
+        for(let i = 0; i < this.slots; i++){
+            this.element.querySelector(`#slot-${i}`).style.display = i < amount ? "flex" : "none";
+        }
+    }
+
     //TODO: remove all icons from slots on hide
     removeSlotIcons(){
         this.element.querySelectorAll(".slot").forEach(slot => {
@@ -211,6 +229,7 @@ export class SlotMenu extends IMenu{
     }
     //TODO: add icons to slots on render depending on given params
     addSlotIcons(icons){
+        assert(icons.length <= this.slots, "Too many icons for the amount of slots");
         icons.forEach((icon, i) => {
             this.addIcon(i, icon);
         });
@@ -230,12 +249,15 @@ export class SlotMenu extends IMenu{
 }
 
 export class GemInsertMenu extends SlotMenu{
+    /**
+     * Constructor for the GemInsertMenu which is a SlotMenu with 3 slots
+     * @param params
+     */
     constructor(params) {
         params.slots = 3;
         super(params);
         this.allows = ["Gem"];
     }
-    //fake fem insert by just showing an image of the gem in the insert, don't move the gem element instead hide it in the gem menu
 
     get name(){
         return "GemInsertMenu";
@@ -249,7 +271,7 @@ export class GemInsertMenu extends SlotMenu{
 
 export class ListMenu extends IMenu{
     constructor(params) {
-        params.classes = ["list-menu"];
+        params.classes ? params.classes.push("list-menu") : params.classes = ["list-menu"];
         super(params);
         this.display = "flex";
         this.titleBar = this.element.querySelector(".list-menu-title-bar");
@@ -432,7 +454,7 @@ export class DecorationsMenu extends ListMenu{
 
 export class BaseMenu extends IMenu{
     constructor(params) {
-        params.classes = ["base-menu"];
+        params.classes ? params.classes.push("base-menu") : params.classes = ["base-menu"];
         super(params);
         this.display = "flex";
         this.allows = [];
@@ -449,16 +471,22 @@ export class BaseMenu extends IMenu{
     createElement(params){
         let element = document.createElement("div");
         const headerDiv = document.createElement("div");
+        const titleDiv = document.createElement("div");
         const title = document.createElement("h1");
+        const closeButtonDiv = document.createElement("div");
         const closeButton = document.createElement("button");
         const subMenuDiv = document.createElement("div");
         headerDiv.classList.add("menu-header");
+        closeButtonDiv.classList.add("close-button-container");
+        titleDiv.classList.add("menu-title-container");
         title.classList.add("menu-title");
         title.innerText = this.title;
         subMenuDiv.classList.add("sub-menu-container");
         closeButton.classList.add("close-button");
-        headerDiv.appendChild(title);
-        headerDiv.appendChild(closeButton);
+        closeButtonDiv.appendChild(closeButton);
+        titleDiv.appendChild(title);
+        headerDiv.appendChild(titleDiv);
+        headerDiv.appendChild(closeButtonDiv);
         element.appendChild(headerDiv);
         element.appendChild(subMenuDiv);
         element.id = this.name;
@@ -479,10 +507,52 @@ export class BaseMenu extends IMenu{
 
 }
 
+export class BuildingMenu extends BaseMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("building-menu") : params.classes = ["building-menu"];
+        super(params);
+        this.allows = [];
+    }
+
+    createElement(params){
+        const element = super.createElement(params);
+        // element.classList.remove("base-menu");
+        const lvlUpButtonDiv = document.createElement("div");
+        const lvlUpButton = document.createElement("button");
+        lvlUpButtonDiv.classList.add("lvl-up-button-container");
+        lvlUpButton.classList.add("lvl-up-button");
+        lvlUpButton.innerText = "lvl 0 → 0 \n 💎 0 ⌛ 0";
+        lvlUpButtonDiv.appendChild(lvlUpButton);
+        element.querySelector(".menu-header").insertAdjacentElement("afterbegin" , lvlUpButtonDiv);
+        return element;
+    }
+
+    updateLvlUpButton(params){
+        const lvlUpButton = this.element.querySelector(".lvl-up-button");
+        if(params.currentLevel === params.newLevel){
+            lvlUpButton.classList.add("inactive");
+            params.upgradeCost = 0;
+            params.upgradeTime = 0;
+        } else {
+            lvlUpButton.classList.remove("inactive");
+        }
+        this.element.querySelector(".lvl-up-button").innerText = `lvl ${params.currentLevel} → ${params.newLevel} \n 💎 ${params.upgradeCost} ⌛ ${params.upgradeTime}`;
+    }
+
+    get name(){
+        return "BuildingMenu";
+    }
+
+    get title(){
+        return "Building";
+
+    }
+}
+
 
 export class AltarMenu extends BaseMenu{
     constructor(params) {
-        params.classes = ["altar-menu"];
+        params.classes ? params.classes.push("altar-menu") : params.classes = ["altar-menu"];
         super(params);
         this.allows = ["SpellsMenu", "HotbarMenu", "GemsMenu", "StakesMenu"];
     }
@@ -511,9 +581,9 @@ export class AltarMenu extends BaseMenu{
     }
 }
 
-export class TowerMenu extends BaseMenu{
+export class TowerMenu extends BuildingMenu{
     constructor(params) {
-        params.classes = ["tower-menu"];
+        params.classes ? params.classes.push("tower-menu") : params.classes = ["tower-menu"];
         super(params);
         this.allows = ["GemsMenu", "GemInsertMenu", "StatsMenu"];
     }
@@ -527,9 +597,9 @@ export class TowerMenu extends BaseMenu{
     }
 }
 
-export class MineMenu extends BaseMenu{
+export class MineMenu extends BuildingMenu{
     constructor(params) {
-        params.classes = ["mine-menu"];
+        params.classes ? params.classes.push("mine-menu") : params.classes = ["mine-menu"];
         super(params);
         this.allows = ["GemsMenu", "GemInsertMenu", "StatsMenu", "CollectMenu"];
     }
@@ -543,9 +613,9 @@ export class MineMenu extends BaseMenu{
     }
 }
 
-export class FusionTableMenu extends BaseMenu{
+export class FusionTableMenu extends BuildingMenu{
     constructor(params) {
-        params.classes = ["fusion-table-menu"];
+        params.classes ? params.classes.push("fusion-table-menu") : params.classes = ["fusion-table-menu"];
         super(params);
         this.allows = ["FuseInputMenu", "GemsMenu", "GemInsertMenu", "StatsMenu"];
     }
@@ -574,7 +644,7 @@ export class FusionTableMenu extends BaseMenu{
 
 export class PageMenu extends IMenu{
     constructor(params) {
-        params.classes = ["page-menu"];
+        params.classes ? params.classes.push("page-menu") : params.classes = ["page-menu"];
         super(params);
         this.display = "flex";
         this.allows = [];
@@ -593,18 +663,24 @@ export class PageMenu extends IMenu{
     createElement(params){
         let element = document.createElement("div");
         const headerDiv = document.createElement("div");
+        const titleDiv = document.createElement("div");
+        const closeButtonDiv = document.createElement("div");
         const closeButton = document.createElement("button");
         const title = document.createElement("h1");
         const chooseSubMenuDiv = document.createElement("div");
         const subMenuDiv = document.createElement("div");
+        closeButtonDiv.classList.add("close-button-container");
+        titleDiv.classList.add("menu-title-container");
         headerDiv.classList.add("menu-header");
         closeButton.classList.add("close-button");
         title.classList.add("menu-title");
         title.innerText = this.title;
         chooseSubMenuDiv.classList.add("sub-menu-bookmark-container");
         subMenuDiv.classList.add("sub-menu-container");
-        headerDiv.appendChild(title);
-        headerDiv.appendChild(closeButton);
+        titleDiv.appendChild(title);
+        closeButtonDiv.appendChild(closeButton);
+        headerDiv.appendChild(titleDiv);
+        headerDiv.appendChild(closeButtonDiv);
         element.appendChild(headerDiv);
         element.appendChild(chooseSubMenuDiv);
         element.appendChild(subMenuDiv);
@@ -627,7 +703,7 @@ export class PageMenu extends IMenu{
 
 export class BuildMenu extends PageMenu{
     constructor(params) {
-        params.classes = ["build-menu"];
+        params.classes ? params.classes.push("build-menu") : params.classes = ["build-menu"];
         super(params);
         this.allows = ["CombatBuildingsMenu", "ResourceBuildingsMenu", "DecorationsMenu"];
         this.params = {

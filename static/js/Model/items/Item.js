@@ -12,7 +12,6 @@ export class Item{
      * @return {string}
      */
     getItemId(){
-        console.log("getItemId: ", `${this.type}-${this.id}`);
         return `${this.type}-${this.id}`;
     }
 
@@ -88,14 +87,22 @@ export class Gem extends Item{
         this.equippedIn = params?.equippedIn ?? null; // Building id
         this.slot = params?.slot ?? null;
         this.belongsIn = (params?.staked ?? false) ? "StakesMenu" : "GemsMenu";
-        console.log("Gem created: ", this);
+        console.log("created gem:", this);
     }
     get type(){
         return "Gem";
     }
 
+    getDescription(){
+        let description = "";
+        this.attributes.forEach(attribute => {
+            description += `${attribute.name} x${Math.round(attribute.multiplier*100)/100} / `;
+        });
+        return description.slice(0, description.length-3);
+    }
+
     addAttribute(attribute){
-        const hasAttribute = this.attributes.find(attr => attr.type === attribute.type);
+        const hasAttribute = this.attributes.find(attr => attr.name === attribute.name);
         if(hasAttribute){
             hasAttribute.multiplier += attribute.multiplier;
         } else {
@@ -113,7 +120,6 @@ export class Gem extends Item{
      */
     setId(data) {
         this.id = data.id;
-        console.log("Gem id set to: ", this.id);
     }
 
     /**

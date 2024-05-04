@@ -1,12 +1,25 @@
 import {
     AltarMenu,
     BaseMenu,
-    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu, FuseInputMenu,
+    BuildMenu,
+    CollectMenu,
+    CombatBuildingsMenu,
+    DecorationsMenu,
+    FusionTableMenu,
+    GemInsertMenu,
+    GemsMenu,
+    FuseInputMenu,
     HotbarMenu,
-    ListMenu, MineMenu,
-    PageMenu, ResourceBuildingsMenu,
+    ListMenu,
+    MineMenu,
+    PageMenu,
+    ResourceBuildingsMenu,
     SlotMenu,
-    SpellsMenu, StakesMenu, StatsMenu, TowerMenu
+    SpellsMenu,
+    StakesMenu,
+    StatsMenu,
+    TowerMenu,
+    BuildingMenu
 } from "../View/menus/IMenu.js";
 import {
     BuildingItem,
@@ -108,6 +121,9 @@ export class MenuManager extends Subject{
     #addMenuCallbacks(menu){
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
+        }
+        if(menu instanceof BuildingMenu){
+            menu.element.querySelector(".lvl-up-button").addEventListener("click", this.dispatchLvlUpEvent.bind(this));
         }
         if(menu instanceof AltarMenu){
             menu.element.querySelector(".play-button").addEventListener("click", (event) => {
@@ -304,6 +320,13 @@ export class MenuManager extends Subject{
                 id: buildingId
             }
         });
+    }
+
+    /**
+     * creates a custom lvl up event
+     */
+    dispatchLvlUpEvent(){
+        this.dispatchEvent(new CustomEvent("lvlUp"));
     }
 
     /**
@@ -740,12 +763,6 @@ export class MenuManager extends Subject{
     #hideMenu(name = this.currentMenu){
         if(!name || !this.menusEnabled) return;
         this.container.style.display = "none";
-        if(name === "AltarMenu"){
-            // this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
-            //         this.items[item.id].attachTo(this.menus["GemsMenu"]);
-            // });
-            // this.checkStakes();
-        }
         if(name === "MineMenu"){
             clearInterval(this.collectInterval);
             this.collectInterval = null;
@@ -765,6 +782,16 @@ export class MenuManager extends Subject{
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
         this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+    }
+
+    /**
+     * move all gems from the StakesMenu to the GemsMenu
+     */
+    unstakeGems(){
+        this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
+            const gem = this.items[item.id];
+            this.items[item.id].attachTo(this.menus["GemsMenu"]);
+        });
     }
 
     /**
@@ -792,7 +819,7 @@ export class MenuManager extends Subject{
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu" | "BuildMenu"} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[]} | {name: "MineMenu", gemIds: String[], crystals: number, maxCrystals: number, rate: number}} params
+     * @param {{name: "AltarMenu" | "BuildMenu"} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number} | {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number}} params
      */
     #arrangeMenus(params){
         // arrange the menus in the container
@@ -809,7 +836,9 @@ export class MenuManager extends Subject{
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#moveMenu("StatsMenu", "TowerMenu", "afterbegin");
                 // show correct Gems based on received params
+                this.menus["GemInsertMenu"].renderSlots(params.slots);
                 this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus["TowerMenu"].updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "TowerMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "TowerMenu", "afterbegin");
                 break;
@@ -819,13 +848,14 @@ export class MenuManager extends Subject{
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
                 this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
                 this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
-
+                this.menus["MineMenu"].updateLvlUpButton(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
                 this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
+                this.menus["GemInsertMenu"].renderSlots(params.slots);
                 this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
@@ -833,7 +863,9 @@ export class MenuManager extends Subject{
             case "FusionTableMenu":
                 this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
                 // show correct Gems based on received params
+                this.menus["GemInsertMenu"].renderSlots(params.slots);
                 this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus["FusionTableMenu"].updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");

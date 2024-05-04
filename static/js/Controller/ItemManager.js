@@ -37,7 +37,7 @@ export class ItemManager {
      * creates gem models based on gem data from the database,
      * currenly gems that are equipped in a building are added chronologicaly to the building so slot positions are not preserved between sessions
      * (db currently does not store slot positions)
-     * @param gems
+     * @param {Object[]} gems
      */
     createGemModels(gems){
         const buildingSlots = new Map();
@@ -66,7 +66,17 @@ export class ItemManager {
             gem.power = power;
             this.gems.push(gem);
         }
+    }
 
+    /**
+     * adds new gem models to the itemManager for gems from the gems parameter that are not already in the itemManager
+     * @param {Object[]} gems
+     * @return {Object[]} - the view parameters for the new gems
+     */
+    updateGems(gems){
+        const newGems = gems.filter(params => !this.gems.some(gem => gem.id === params.id));
+        this.createGemModels(newGems);
+        return this.getGemsViewParams().filter(gemViewParams => newGems.some(params => params.id === gemViewParams.item.id));
     }
 
     /**
@@ -96,7 +106,7 @@ export class ItemManager {
             return {
                 item: gem,
                 icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50},
-                description: gem.description,
+                description: gem.getDescription(),
                 extra: {
                     equipped: gem.equippedIn !== null,
                     slot: gem.slot
