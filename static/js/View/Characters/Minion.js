@@ -109,6 +109,8 @@ export class Minion extends IAnimatedView{
 
         this.material_.uniforms.health.value = this.animHealth_;
         this.material_.uniforms.colour.value = c;
+        this.healthBar.quaternion.copy(this.camera.quaternion);
+
         if(this.mixer) this.mixer.update(deltaTime);
       }
 
@@ -129,7 +131,6 @@ export class Minion extends IAnimatedView{
         this.charModel.setRotationFromQuaternion(event.detail.rotation);
         this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
         //this.boundingBox.setFromObject(this.charModel, true);
-        this.healthBar.quaternion.copy(this.camera.quaternion);
     }
 
     GenerateBuffers_() {

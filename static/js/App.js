@@ -450,7 +450,7 @@ class App {
         this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
         this.playerInfo.setLevelStats();
         this.worldManager.world.player.advertiseCurrentCondition();
-        //TODO: should be called at combat start
+        //TODO: should be called at combat start! @Flynn
         this.worldManager.addProxys();
         //TODO: is there a better way to do this?
         this.multiplayerController.setUpProperties({
@@ -533,7 +533,7 @@ class App {
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
-        //should only be done in multiplayer
+        //TODO: should only be done in multiplayer @Flynn
         this.viewManager.updateProxys(this.deltaTime);
 
         this.renderer.render( this.scene, this.cameraManager.camera );
