@@ -4,6 +4,7 @@ from json import JSONEncoder
 from logging.handlers import RotatingFileHandler
 
 import werkzeug.exceptions
+from concurrent_log_handler import ConcurrentRotatingFileHandler
 from dotenv import load_dotenv
 from flask import Flask, jsonify, redirect, request
 from flask_jwt_extended import JWTManager
@@ -57,7 +58,7 @@ from src.logger_formatter import CustomFormatter
 handlers = []
 logfile = environ.get('APP_LOG_FILE', None)
 if logfile:
-    fh = RotatingFileHandler(logfile, maxBytes=100000, backupCount=1)
+    fh = ConcurrentRotatingFileHandler(logfile, maxBytes=100000, backupCount=1)  # Set delay to prevent WinError 32
     handlers.append(fh)
 
 streamHandler = logging.StreamHandler()

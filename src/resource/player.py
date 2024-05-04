@@ -94,7 +94,8 @@ class PlayerSchema(Schema):
 
     def __init__(self, player: Player= None, **kwargs):
         if player is not None: # player -> schema
-            super().__init__(crystals=player.crystals, mana=player.mana, xp=player.xp,
+            super().__init__(user_profile_id=player.user_profile_id,
+                             crystals=player.crystals, mana=player.mana, xp=player.xp,
                              last_login=str(player.last_login).replace(' ', 'T'),
                              last_logout=str(player.last_logout).replace(' ', 'T'),
                              spells=[spell.id for spell in player.spells],

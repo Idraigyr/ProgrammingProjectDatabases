@@ -30,6 +30,7 @@ The following is a list of environment variables that can be set in the `.env` f
 | `APP_GENERATE_DOCS            ` | boolean    | Generate PyDoc documentation on startup into the `pydocs` directory                                                                                                                                     | False         | False                                   |
 | `APP_PASSWORD_RESET_ENABLED   ` | boolean    | Enable/disable the password-reset endpoint. Disabling disallows the reset of a forgotten password                                                                                                       | True          | False                                   |
 | `APP_LOG_FILE                 ` | string     | Set the filename to save the logs to. Leaving this empty won't save logs to a file.                                                                                                                     |               | False                                   |
+| `APP_MATCHMAKING_LEVEL_RANGE  ` | integer    | The max difference between 2 player levels to be matched against each other. Setting this to 1 would allow a player of level 5 to be matched against a player of level 6, but not to a level 7.         | 1             | False                                   |
 
 
 
