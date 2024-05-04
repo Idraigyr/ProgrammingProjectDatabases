@@ -137,7 +137,7 @@
 }
 
 .play-button {
-    position: absolute;
+    position: relative;
     height: var(--play-button-height);
     width: var(--play-button-width);
     border: none;

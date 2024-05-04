@@ -491,14 +491,10 @@ export class AltarMenu extends BaseMenu{
         const element = super.createElement(params);
         const playButtonDiv = document.createElement("div");
         const playButton = document.createElement("button");
-        const stopButton = document.createElement("button");
         playButtonDiv.classList.add("play-button-container");
         playButton.classList.add("play-button");
         //playButton.innerText = "Play";
         playButtonDiv.appendChild(playButton);
-        stopButton.classList.add("stop-button");
-        stopButton.innerText = "Leave\nMatch";
-        playButtonDiv.appendChild(stopButton);
         const headerDiv = element.querySelector(".menu-header");
         headerDiv.insertAdjacentElement("afterend", playButtonDiv);
         return element;

@@ -53,6 +53,7 @@ export class Settings {
     constructor(inputManager, playerInfo) {
         this.inputManager = inputManager;
         this.playerInfo = playerInfo;
+        inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
@@ -70,6 +71,14 @@ export class Settings {
         // Redirect the user to the logout URL
         window.location.href = logoutUrl;
     }
+
+    /**
+     * Function to log out the user
+     */
+    leaveMatch() {
+        console.log("Leave match button clicked")
+    }
+
     /**
      * Function to exit the settings menu
      */

@@ -89,6 +89,26 @@ export class ItemManager {
         return this.getGemsEquippedInBuilding(buildingId).map(gem => gem.getItemId());
     }
 
+    calculateBuildingStats(buildingId){
+        let gems = this.getGemsEquippedInBuilding(buildingId);
+        let stats = {
+            // default stats
+            hp: 100,
+            damage: 20,
+            attackSpeed: 1,
+            mineSpeed: 1,
+            gemBonus: 1,
+            fuseSpeed: 1,
+            capacity: 1000
+        };
+        for (let i = 0; i < gems.length; i++){
+            for (let j = 0; j < gems[i].attributes.length; j++){
+                let attribute = gems[i].attributes[j];
+                stats[attribute.name] += attribute.multiplier;
+            }
+        }
+        return stats;
+    }
 
     /**
      * converts a view id to a gem id (i.e. Gem-1 to 1). see menuManager for more information about view id
@@ -179,6 +199,21 @@ export class ItemManager {
     getEquippedGems(buildingId){
         const equippedGems = this.gems.filter(item => item.equippedIn === buildingId);
         let menuItems = equippedGems.map(this.#itemToMenuItem);
+    }
+
+    #generateStatItem(){
+        let boosts = ["hp", "damage", "mineSpeed", "gemBonus", "fuseSpeed"];
+        let stats = [100, 20, 1, 1, 1];
+        let names = ["HP: ", "Damage: ", "Mining speed: ", "Gem chance: ", "Fusion speed: "];
+        let items = [];
+        for (let i = 0; i < boosts.length; i++){
+            items.push({
+                item: {name: names[i], id: i, belongsIn: "StatsMenu", getItemId: () => boosts[i], getDisplayName: () => names[i]},
+                icon: {src: '/static/assets/images/menu/' + boosts[i] + '.png', width: 50, height: 50},
+                description: ""
+            });
+        }
+        this.menuManager.addItems(items);
     }
 
     /**
