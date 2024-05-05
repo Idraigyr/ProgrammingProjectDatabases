@@ -144,6 +144,10 @@ export class MinionController extends Subject{
         this.#idOffset = 1000;
 
         this.attackTime = 0;
+
+        this.deleteCallbacks = new Map();
+        this.deleteCallbacks.set("minion", this.clearMinion.bind(this));
+        this.deleteCallbacks.set("enemy", this.clearEnemy.bind(this));
     }
 
     /**
@@ -152,6 +156,7 @@ export class MinionController extends Subject{
      */
     addMinion(minion){
         minion.setId({id: ++this.#minionNumber})
+        minion.addEventListener("delete", this.deleteCallbacks.get("minion"));
         this.minions.push(minion);
         this.dispatchEvent(this.#createAddMinionEvent(minion));
     }
@@ -173,6 +178,7 @@ export class MinionController extends Subject{
      */
     addEnemy(minion){
         minion.id += this.#idOffset; //TODO: find a better way to differentiate between ally and enemy minions
+        minion.addEventListener("delete", this.deleteCallbacks.get("enemy"));
         this.enemies.push(minion);
     }
 
@@ -532,6 +538,34 @@ export class MinionController extends Subject{
         this.enemies.forEach((enemy) => enemy.dispose());
         this.minions = [];
         this.enemies = [];
+    }
+
+    /**
+     * callback for minion delete event so that the controller can remove the minion from the list
+     * @param {{detail: {model: Minion}}} event - delete event from Minion
+     */
+    clearMinion(event){
+        const minion = this.minions.find((minion) => minion.id === event.detail.model.id);
+        if(minion){
+            console.log("minion deleted from controller");
+            minion.removeEventListener("delete", this.deleteCallbacks.get("minion"));
+            minion.dispose();
+            this.minions = this.minions.filter((minion) => minion.id !== event.detail.model.id);
+        }
+    }
+
+    /**
+     * callback for minion delete event so that the controller can remove the Enemy from the list
+     * @param {{detail: {model: Minion}}} event - delete event from Minion
+     */
+    clearEnemy(event){
+        const enemy = this.enemies.find((enemy) => enemy.id === event.detail.model.id);
+        if(enemy){
+            console.log("enemy deleted from controller");
+            enemy.removeEventListener("delete", this.deleteCallbacks.get("enemy"));
+            enemy.dispose();
+            this.enemies = this.enemies.filter((enemy) => enemy.id !== event.detail.model.id);
+        }
     }
 
     /**

@@ -7,7 +7,7 @@ export class PeerController{
     }
 
     /**
-     * updates state of peer. will be used for 2 stateUpdate events: 1) for state change 2) for position and rotation change
+     * updates state of peer. will be used for 3 seperate stateUpdate events: 1) for state change 2) for position and rotation change 3) for health change
      * @param data
      */
     update(data){
@@ -19,7 +19,6 @@ export class PeerController{
         this.peer.position = this.peer.position.set(data.position.x, data.position.y, data.position.z);
         this.peer.phi = data.phi; //TODO: maybe change phi and rotation to be updated by the same event (only 1 rotation property in character)
         this.peer.rotation = this.rotation;
-        this.peer.takeDamage(this.peer.health - data.health);
     }
 
 }

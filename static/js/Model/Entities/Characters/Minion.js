@@ -21,7 +21,7 @@ export class Minion extends Character{
      */
     dies() {
         //TODO: implement minion death
-        console.log("minion dies");
+        console.log(`minion dies: id (${this.id})`);
         this.dispatchEvent(this.createDeleteEvent());
     }
 
@@ -44,5 +44,16 @@ export class Minion extends Character{
      */
     createUpdatedStateEvent(event){
         return new CustomEvent("updatedState", {detail: {...event.detail, id: this.id}});
+    }
+
+    /**
+     * overrides the health update event from Character to include the id of the minion (used for multiplayer)
+     * @param {number} prevHealth
+     * @return {CustomEvent<{current: (*|number), total: (*|number), id}>}
+     */
+    createHealthUpdateEvent(prevHealth) {
+        const event = super.createHealthUpdateEvent(prevHealth);
+        event.detail.id = this.id;
+        return event;
     }
 }
