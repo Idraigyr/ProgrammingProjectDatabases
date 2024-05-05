@@ -209,6 +209,10 @@ export class MultiplayerController extends Subject{
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
         this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
+        progressBar.value = 85;
+
+        progressBar.labels[0].innerText = "creating proxys for buildings...";
+        this.worldManager.addProxys();
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);

@@ -481,8 +481,6 @@ class App {
         this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
         this.playerInfo.setLevelStats();
         this.worldManager.world.player.advertiseCurrentCondition();
-        //TODO: should be called at combat start! @Flynn
-        this.worldManager.addProxys();
         //TODO: is there a better way to do this?
         this.multiplayerController.setUpProperties({
             playerInfo: this.playerInfo,
@@ -531,9 +529,10 @@ class App {
             // });
             //TODO: remove this is test //
 
+            this.initScene();
+
 
             document.querySelector('.loading-animation').style.display = 'none';
-            this.initScene();
             this.togglePhysicsUpdates(true);
             this.update();
         } else {

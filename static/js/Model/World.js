@@ -2,6 +2,7 @@ import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 import {Bridge} from "./Entities/Foundations/Bridge.js";
+import {Island} from "./Entities/Foundations/Island.js";
 
 /**
  * World class that contains all the islands and the player
@@ -174,6 +175,7 @@ export class World{
     addProxys(){
         //TODO: rewrite this to be more generic
         this.islands.forEach((island) => {
+            if(!(island instanceof Island)) return;
             island.getBuildingsByType("altar_building").forEach((building) => {
                 const proxy = this.factory.createProxy({
                     position: building.position,
