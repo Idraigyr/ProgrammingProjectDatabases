@@ -2,6 +2,7 @@ export class MenuItem{
     constructor(params) {
         this.id = params.id;
         this.name = params.name;
+        this.display = "block";
         this.belongsIn = params.belongsIn;
         this.icon = new Image(params.icon.width,params.icon.height);
         this.icon.src = params.icon.src;
@@ -9,7 +10,7 @@ export class MenuItem{
     }
 
     render(){
-        this.element.style.display = "block";
+        this.element.style.display = this.display;
     }
 
     hide(){
@@ -53,6 +54,7 @@ export class SpellItem extends MenuItem{
     constructor(params) {
         super(params);
         this.unlocked = false;
+        this.display = "flex";
     }
 
     render() {
@@ -152,8 +154,8 @@ export class StatItem extends MenuItem{
     constructor(params) {
         super(params);
         this.element.draggable = false;
+        this.display = "flex";
         this.value = 0;
-        this.name = "";
     }
 
     get type(){

@@ -110,6 +110,18 @@ export class Gem extends Item{
         }
     }
 
+    /**
+     * Get the attributes of the gem
+     * @return {Map<any, any>}
+     */
+    getAttributes(){
+        let stats = new Map();
+        this.attributes.forEach(attribute => {
+            stats.set(attribute.name, attribute.multiplier);
+        });
+        return stats;
+    }
+
     removeAttribute(type){
         this.attributes = this.attributes.filter(attribute => attribute.type !== type);
     }

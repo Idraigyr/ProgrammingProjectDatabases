@@ -115,22 +115,17 @@ export class ItemManager {
         });
     }
 
-    calculateBuildingStats(buildingId){
+    /**
+     * returns a map of the stat multipliers of all gems equipped in a building
+     * @param buildingId
+     * @return {Map<any, any>}
+     */
+    getBuildingStatMultipliers(buildingId){
+        let stats = new Map();
         let gems = this.getGemsEquippedInBuilding(buildingId);
-        let stats = {
-            // default stats
-            hp: 100,
-            damage: 20,
-            attackSpeed: 1,
-            mineSpeed: 1,
-            gemBonus: 1,
-            fuseSpeed: 1,
-            capacity: 1000
-        };
         for (let i = 0; i < gems.length; i++){
             for (let j = 0; j < gems[i].attributes.length; j++){
-                let attribute = gems[i].attributes[j];
-                stats[attribute.name] += attribute.multiplier;
+                stats.set(gems[i].attributes[j].name, (stats.get(gems[i].attributes[j].name) ?? 0) + gems[i].attributes[j].multiplier);
             }
         }
         return stats;
@@ -152,7 +147,7 @@ export class ItemManager {
      * @param {boolean} unstake - if true, unstake the gems
      */
     stakeGems(gemIds){
-        const gems = gemIds.map(id => this.#getGemById(this.#convertViewIdToGemId(id)));
+        const gems = gemIds.map(id => this.getGemById(this.#convertViewIdToGemId(id)));
         const contained = false;
         let powerStaked = 0;
         this.gems.forEach(gem => {
@@ -194,11 +189,11 @@ export class ItemManager {
      * @param {{detail: {id: number, building: Placeable, slot: number}}} event
      */
     addGem(event){
-        const gem = this.#getGemById(this.#convertViewIdToGemId(event.detail.id));
+        const gem = this.getGemById(this.#convertViewIdToGemId(event.detail.id));
         if(gem) {
             gem.equippedIn = event.detail.building.id;
             gem.slot = event.slot;
-            event.detail.building.addGem(gem.id);
+            event.detail.building.addGem(gem);
             this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["equippedIn"]);
         }
         else throw new Error("Gem with id " + event.detail.id + " doesn't exist.");
@@ -209,12 +204,12 @@ export class ItemManager {
      * @param {{detail: {id: number, building: Placeable}}} event
      */
     removeGem(event){
-        const gem = this.#getGemById(this.#convertViewIdToGemId(event.detail.id));
+        const gem = this.getGemById(this.#convertViewIdToGemId(event.detail.id));
         // Remove the gem to the building
         if(gem) {
             gem.equippedIn = null;
             gem.slot = null;
-            event.detail.building.removeGem(gem.id);
+            event.detail.building.removeGem(gem);
             this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["equippedIn"]);
         }
         else throw new Error("Gem with id " + event.detail.id + " doesn't exist.");
@@ -238,7 +233,7 @@ export class ItemManager {
      * @param {number} id
      * @return {*}
      */
-    #getGemById(id){
+    getGemById(id){
         return this.gems.find(item => item.id === id);
     }
 
@@ -270,21 +265,6 @@ export class ItemManager {
     getEquippedGems(buildingId){
         const equippedGems = this.gems.filter(item => item.equippedIn === buildingId);
         let menuItems = equippedGems.map(this.#itemToMenuItem);
-    }
-
-    #generateStatItem(){
-        let boosts = ["hp", "damage", "mineSpeed", "gemBonus", "fuseSpeed"];
-        let stats = [100, 20, 1, 1, 1];
-        let names = ["HP: ", "Damage: ", "Mining speed: ", "Gem chance: ", "Fusion speed: "];
-        let items = [];
-        for (let i = 0; i < boosts.length; i++){
-            items.push({
-                item: {name: names[i], id: i, belongsIn: "StatsMenu", getItemId: () => boosts[i], getDisplayName: () => names[i]},
-                icon: {src: '/static/assets/images/menu/' + boosts[i] + '.png', width: 50, height: 50},
-                description: ""
-            });
-        }
-        this.menuManager.addItems(items);
     }
 
     /**

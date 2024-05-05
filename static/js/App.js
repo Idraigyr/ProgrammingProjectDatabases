@@ -186,10 +186,12 @@ class App {
         this.menuManager.addEventListener("addGem", (event) => {
             event.detail.building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             this.itemManager.addGem(event);
+            this.menuManager.updateMenu({name: buildTypes.getMenuNameFromCtorName(event.detail.building.constructor.name), stats: event.detail.building.getStats()});
         });
         this.menuManager.addEventListener("removeGem", (event) => {
             event.detail.building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             this.itemManager.removeGem(event);
+            this.menuManager.updateMenu({name: buildTypes.getMenuNameFromCtorName(event.detail.building.constructor.name), stats: event.detail.building.getStats()});
         });
         this.menuManager.addEventListener("lvlUp", (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
@@ -300,7 +302,7 @@ class App {
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots > 0){
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
-                params.stats = this.itemManager.calculateBuildingStats(building.id);
+                params.stats = building.getStats();
                 params.level = building.level;
                 // params.maxLevel = building.maxLevel; //TODO: implement maxLevel?
                 params.slots = building.gemSlots;
@@ -318,9 +320,11 @@ class App {
             if(buildingNumber === buildTypes.getNumber("mine_building")){
                 const currentTime = new Date(await this.playerInfo.getCurrentTime());
                 params.crystals = building.checkStoredCrystals(currentTime);
-                params.maxCrystals = params.stats["capacity"];
+                params.maxCrystals = building.maxCrystals;
                 params.rate = building.productionRate;
-                params.rate = params.stats["mineSpeed"];
+
+                // params.maxCrystals = params.stats.get("capacity");
+                // params.rate = params.stats.get("mineSpeed");
             }
             if(buildingNumber === buildTypes.getNumber("tower_building")){
                 // tower stats for Lucas
@@ -419,7 +423,7 @@ class App {
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
-        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo});
+        this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;

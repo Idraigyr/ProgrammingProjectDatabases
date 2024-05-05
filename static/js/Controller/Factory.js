@@ -100,7 +100,7 @@ export class Factory{
 
     /**
      * Creates player model and view
-     * @param {{position: THREE.Vector3, maxMana: number, mana: number, team: 0 | 1} | {position: THREE.Vector3, maxMana: number, mana: number}} params
+     * @param {{position: THREE.Vector3, maxMana: number, mana: number, maxHealth: number, health: number, team: 0 | 1 | undefined | null}} params
      * @returns {Wizard}
      */
     createPlayer(params){
@@ -109,7 +109,7 @@ export class Factory{
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, health: params.health, maxHealth: params.maxHealth, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
@@ -208,7 +208,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, stats: {name: string, value: number}[], team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -224,9 +224,14 @@ export class Factory{
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
+        //TODO: remove and make dynamic
+        for(const stat of params.stats){
+            model.addStat(stat.name, stat.value);
+        }
+
         if(params.gems){
             for(const gem of params.gems){
-                model.addGem(gem.id);
+                model.addGem(gem);
             }
         }
 
@@ -345,7 +350,7 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[]}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
@@ -355,7 +360,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, team: islandModel.team}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

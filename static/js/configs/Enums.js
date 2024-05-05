@@ -28,6 +28,19 @@ export const buildTypes = (function (){
         9: "wall_building"
     }
 
+    const ctorName = {
+        0: undefined,
+        1: undefined,
+        2: "Bridge",
+        3: "Altar",
+        4: "Mine",
+        5: "Tower",
+        6: "Prop",
+        7: "FusionTable",
+        8: "WarriorHut",
+        9: "Wall"
+    }
+
     const menuName = {
         1: "BuildMenu",
         3: "AltarMenu",
@@ -46,6 +59,19 @@ export const buildTypes = (function (){
 
         getMenuName: function (number) {
             return menuName[number];
+        },
+
+        getCtorName: function (number) {
+            return ctorName[number];
+        },
+
+        getMenuNameFromCtorName: function (ctorName) {
+            for (let key in menuName) {
+                if (ctorName === this.getCtorName(key)) {
+                    return menuName[key];
+                }
+            }
+            return undefined;
         }
     };
 })();
@@ -90,4 +116,34 @@ export const gemTypes = (function (){
         },
         getSize: Object.keys(number).length
     };
+})();
+
+export const buildingStats = (function (){
+    const stats = {
+        Altar: [
+            {name: "capacity", value: 100}, // repurposed for health
+        ],
+        Mine: [
+            {name: "capacity", value: 1000}, // max crystals
+            {name: "speed", value: 1}, // crystals per second
+            {name: "fortune", value: 1}, // chance of getting a gem
+        ],
+        Tower: [
+            {name: "capacity", value: 100}, // repurposed for health
+            {name: "range", value: 5}, // range of the tower
+            {name: "damage", value: 5}, // damage of the tower
+            {name: "speed", value: 1}, // attack speed of the tower
+            {name: "fortune", value: 1}, // chance of getting a critical hit
+        ],
+        FusionTable: [
+            {name: "speed", value: 1}, // speed of gem fusion
+            {name: "fortune", value: 1}, // chance of getting higher quality gem
+        ]
+    }
+
+    return {
+        getStats: function (name) {
+            return stats[name] ?? [];
+        }
+    }
 })();

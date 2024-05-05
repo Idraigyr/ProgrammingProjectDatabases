@@ -6,18 +6,24 @@ import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
+import {buildingStats} from "../configs/Enums.js";
 
 
 /**
  * Class that manages the world
  */
 export class WorldManager{
+    /**
+     * Constructor for the WorldManager
+     * @param {Object} params - the parameters for the WorldManager
+     */
     constructor(params) {
         this.world = null;
         this.playerInfo = params.playerInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
+        this.itemManager = params.itemManager;
         this.currentPos = null;
         this.currentRotation = 0;
 
@@ -45,12 +51,18 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
+                let gems = [];
+                for(const gem of building.gems){
+                    gems.push(this.itemManager.getGemById(gem.id));
+                }
+                console.log("imported building", building);
                 island.buildings.push({
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: building.rotation*90,
                     id: building.placeable_id,
-                    gems: building.gems
+                    gems: gems,
+                    stats: buildingStats.getStats(building.blueprint.name)
                 });
             }
 
