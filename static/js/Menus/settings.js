@@ -23,6 +23,7 @@ export class Settings {
 
         inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
+        inputManager.addRespawnButtonListener(this.respawn.bind(this));
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
         const button = document.getElementById('applyButton');
@@ -56,15 +57,25 @@ export class Settings {
     /**
      * Function to log out the user
      */
-    logOut() {
+    async logOut() {
         console.log("Log out button clicked")
         var currentUrl = window.location.href;
 
         // Append '/logout' to the current URL
         var logoutUrl = currentUrl + '/logout';
 
+        // Send logout info to the backend
+        await this.playerInfo.logout();
+
         // Redirect the user to the logout URL
         window.location.href = logoutUrl;
+    }
+
+    async respawn() {
+        console.log("Respawn button clicked")
+
+        // Send respawn info to the backend
+        await this.playerInfo.respawn();
     }
 
     /**

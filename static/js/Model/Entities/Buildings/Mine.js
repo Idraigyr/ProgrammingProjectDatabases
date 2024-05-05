@@ -1,5 +1,6 @@
 import {Placeable} from "./Placeable.js";
 import {timeDifferenceInSeconds} from "../../../helpers.js";
+import {API_URL, placeableURI} from "../../../configs/EndpointConfigs.js"
 
 /**
  * Class for the mine model
@@ -15,11 +16,37 @@ export class Mine extends Placeable{
     constructor(params) {
         super(params);
         this.timeToBuild = 300;
-        this.lastCollected = params.lastCollected;
+        this.lastCollected = null;
+        if(params.lastCollected){
+            this.lastCollected = params.lastCollected;
+        }else if (this.id){
+            this.fetchLastCollected();
+        }
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
         this.#maxCrystals = this.#calculateMaxCrystals();
         this.gemSlots = 2;
         this.upgradable = true;
+    }
+    async fetchLastCollected(){
+        try{
+            $.ajax({
+                url: `${API_URL}/${placeableURI}/${this.dbType}?placeable_id=${this.id}`,
+                type: "GET",
+                contentType: "application/json",
+                success: (data) => {
+                    console.log("Last collectd before: ", this.lastCollected, "Last collected after(?): ", data.last_collected);
+                    this.lastCollected = new Date(data.last_collected);
+                    // Add timezone offset
+                    this.lastCollected.setMinutes(this.lastCollected.getMinutes() - this.lastCollected.getTimezoneOffset());
+                    },
+                error: (e) => {
+                    console.error("Error fetching last collected, current id: ", this.id);
+                    console.error(e);
+                }
+            });
+        } catch (e) {
+            console.error(e);
+        }
     }
 
     /**
@@ -30,8 +57,25 @@ export class Mine extends Placeable{
     takeStoredCrystals(currentTime){
         console.log("Taking stored crystals, current time: ", currentTime, "last collected: ", this.lastCollected);
         const amount = this.checkStoredCrystals(currentTime);
-        this.lastCollected = currentTime;
+        this.updateLastCollected(currentTime);
         return amount;
+    }
+
+    updateLastCollected(currentTime){
+        this.lastCollected = currentTime;
+        // Send info to backend
+        $.ajax({
+            url: `${API_URL}/${placeableURI}/${this.dbType}`,
+            type: "PUT",
+            contentType: "application/json",
+            data: JSON.stringify({
+                placeable_id: this.id,
+                last_collected: currentTime
+            }),
+            error: (e) => {
+                console.error(e);
+            }
+        })
     }
 
     /**
@@ -40,7 +84,12 @@ export class Mine extends Placeable{
      * @return {number}
      */
     checkStoredCrystals(currentTime){
-        const timePassed = timeDifferenceInSeconds(this.lastCollected, currentTime);
+        let timePassed = timeDifferenceInSeconds(this.lastCollected, currentTime);
+        if(this.lastCollected.getFullYear() <= 2000){
+            // Our game is not that old
+            this.updateLastCollected(currentTime);
+            timePassed = 0;
+        }
         return Math.min(this.maxCrystals, timePassed * this.productionRate);
     }
 

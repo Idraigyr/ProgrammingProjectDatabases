@@ -62,7 +62,8 @@ export class WorldManager{
                     rotation: building.rotation*90,
                     id: building.placeable_id,
                     gems: gems,
-                    stats: buildingStats.getStats(building.blueprint.name)
+                    stats: buildingStats.getStats(building.blueprint.name),
+                    task: building.task
                 });
             }
 
@@ -269,11 +270,17 @@ export class WorldManager{
      */
     async importWorld(islandID){
         const {island, characters} = await this.importIsland(islandID);
-
+        let playerPosition;
+        if(this.playerInfo.playerPosition) {
+            playerPosition = this.playerInfo.playerPosition;
+        }else{ //TODO: if i'm not mistaken, this is unneccesary because it already happens in the playerInfo
+            playerPosition = {x: playerSpawn.x, y: playerSpawn.y, z: playerSpawn.z};
+        }
+        console.log("Player position from database: ", playerPosition);
         const player = {position: {
-                x: playerSpawn.x,
-                y: playerSpawn.y,
-                z: playerSpawn.z
+                x: playerPosition.x,
+                y: playerPosition.y,
+                z: playerPosition.z
             },
             health: this.playerInfo.health,
             maxHealth: this.playerInfo.maxHealth,
@@ -294,6 +301,32 @@ export class WorldManager{
         this.world.player.changeEquippedSpell(4,new IceWall({}));
         characters.forEach((characters) => {
 
+        });
+        this.deleteOldTasks(); // TODO: or somewhere else?
+    }
+
+    async deleteOldTasks(){
+        // Get all tasks from the server
+        $.getJSON(`${API_URL}/${taskURI}/list?island_id=${this.playerInfo.islandID}&is_over=true`).done((data) => {
+            // Delete all tasks that are finished
+            data.forEach((task) => {
+                $.ajax({
+                    url: `${API_URL}/${taskURI}?id=${task.id}`,
+                    type: "DELETE",
+                    error: (e) => {
+                        console.error(e);
+                    }
+                }).done((data, textStatus, jqXHR) => {
+                    console.log("DELETE success");
+                    console.log(textStatus, data);
+                }).fail((jqXHR, textStatus, errorThrown) => {
+                    console.log("DELETE fail");
+                    console.error(textStatus, errorThrown);
+                });
+            });
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.error("GET request failed");
+            console.error(textStatus, errorThrown);
         });
     }
 

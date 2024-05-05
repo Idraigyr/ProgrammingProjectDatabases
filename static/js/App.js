@@ -382,7 +382,10 @@ class App {
     onVisibilityChange(){
         if(document.visibilityState === "visible"){
             this.togglePhysicsUpdates(true);
+            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.login();
         } else {
+            this.simulatePhysics = false;
+            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.logout();
             if(this.multiplayerController.matchmaking) this.multiplayerController.toggleMatchMaking();
             if(this.menuManager.currentMenu === "AltarMenu") this.menuManager.exitMenu();
             this.togglePhysicsUpdates(false);
@@ -448,6 +451,7 @@ class App {
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
         this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
+        this.worldManager.world.player.addEventListener("updatePosition", this.playerInfo.updatePlayerPosition.bind(this.playerInfo)); //TODO: do this only once on visibility change
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
 
 
@@ -492,6 +496,9 @@ class App {
             factory: this.factory,
             itemManager: this.itemManager,
         });
+
+        progressBar.labels[0].innerText = "Last touches...";
+        await this.playerInfo.login();
 
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();

@@ -82,6 +82,11 @@ h1 {
   margin-left: 94%;
 }
 
+.respawnButton{
+  background: #ccc5ab;
+  margin-left: 94%;
+}
+
 /* exit button */
 .exit {
   position: relative;

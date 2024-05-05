@@ -24,9 +24,9 @@ export class SpellCaster extends Subject{
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
-        this.#currentObject = null;
         this.previousSelectedPosition = null;
         this.camera = params.camera;
+        this.currentObject = null;
     }
 
     /**
@@ -157,6 +157,7 @@ export class SpellCaster extends Subject{
         }
         this.previousSelectedPosition = null;
         this.currentObject = null;
+        this.raycaster.collisionDetector.generateColliderOnWorker();
     }
 
     dispatchVisibleSpellPreviewEvent(bool){

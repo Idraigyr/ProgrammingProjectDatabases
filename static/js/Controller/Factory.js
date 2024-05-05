@@ -10,7 +10,6 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
  */
 export class Factory{
     #currentTime;
-    #minionCount;
 
     /**
      * Constructor for the factory
@@ -24,8 +23,6 @@ export class Factory{
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
         this.#currentTime = null;
-
-        this.#minionCount = 0;
     }
 
     /**
@@ -43,13 +40,6 @@ export class Factory{
     get currentTime(){
         if(!this.#currentTime) throw new Error("currentTime is not set");
         return this.#currentTime;
-    }
-
-    /**
-     * Resets the minion count
-     */
-    resetMinionCount(){
-        this.#minionCount = 0;
     }
 
 
@@ -208,18 +198,13 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, stats: {name: string, value: number}[], team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, stats: {name: string, value: number}[], team: number, task: Object}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
         const modelParams = {position: pos, id: params.id, team: params.team};
-
-        //TODO: refactor this! not dynamic enough
-        if(params.buildingName === "Mine"){
-            modelParams.lastCollected = this.currentTime;
-        }
 
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
@@ -254,7 +239,18 @@ export class Factory{
         // create a timer that has a callback that triggers when the timer ends
         // put the buildingPreview in dyingViews of viewManager
         // just make the buildingView invisible for the duration of the timer
-
+        if (params.task){
+            console.log("task", params.task);
+            // Get if the timer is already finished
+            const timeEnd = new Date(params.task.endtime);
+            if(timeEnd < this.currentTime){
+                return model;
+            }
+            params.withTimer = true;
+            // Get difference in seconds
+            const timeDiff = (timeEnd - this.currentTime)/1000;
+            model.timeToBuild = timeDiff;
+        }
         if(params.withTimer){
             // Copy asset object
             const assetClone = asset.clone();
@@ -282,7 +278,7 @@ export class Factory{
             timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
             // Rotate the watch view each step
             timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
-                watch.charModel.rotation.y += 2*deltaTime;
+                if(watch.charModel) watch.charModel.rotation.y += 2*deltaTime;
             });
             // Remove watch view when the timer ends
             timer.addCallback(() => {
@@ -350,7 +346,7 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[]}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[], task}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
@@ -360,7 +356,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team, task: building.task}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }
