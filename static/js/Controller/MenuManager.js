@@ -609,10 +609,48 @@ export class MenuManager extends Subject{
     /**
      * create stat menu items
      */
-    #createStatMenuItems(){
-        const stats = [];
-        for(const stat in stats){
-            this.items[stat.id] = new StatItem(stat);
+    #createStatMenuItems(params){
+        //const stats = [];
+        //for(const stat in stats){
+        //    this.items[stat.id] = new StatItem(stat);
+        //}
+        console.log(params);
+        let boosts = [];
+        let names = [];
+        let buildingStats = [];
+        if (params.name === "FusionTableMenu"){
+            boosts = ["gemBonus", "fuseSpeed"];
+            names = ["Gem chance: ", "Fusion speed: "];
+            buildingStats = [params.stats["gemBonus"], params.stats["fuseSpeed"]];
+        }
+        else if (params.name === "TowerMenu"){
+            boosts = ["hp", "damage", "attackSpeed"];
+            names = ["HP: ", "Damage: ", "Attack speed: "];
+            buildingStats = [params.stats["hp"], params.stats["damage"], params.stats["attackSpeed"]];
+        }
+        else if (params.name === "MineMenu"){
+            boosts = ["mineSpeed", "capacity", "gemBonus"];
+            names = ["Mining speed: ", "Capacity: ", "Gem chance: "];
+            buildingStats = [params.stats["mineSpeed"], params.stats["capacity"], params.stats["gemBonus"]];
+        }
+        console.log(buildingStats);
+        let items = [];
+        for (let i = 0; i < boosts.length; i++){
+            items.push({
+                item: {name: boosts[i], id: i, belongsIn: "StatsMenu", getItemId: () => boosts[i], getDisplayName: () => names[i] + buildingStats[i]},
+                icon: {src: '/static/assets/images/menu/' + boosts[i] + '.png', width: 50, height: 50},
+                description: ""
+            });
+        }
+        //todo fix deleting stat items
+        //this.removeStatsMenuItems();
+        this.addItems(items);
+    }
+
+    removeStatsMenuItems(){
+        let ids = ["gemBonus", "fuseSpeed", "hp", "damage", "attackSpeed", "mineSpeed", "capacity"];
+        for (let i = 0; i < ids.length; i++){
+            this.removeItem(ids[i]);
         }
     }
 
@@ -733,7 +771,6 @@ export class MenuManager extends Subject{
         //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
         this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
-        this.#createStatMenuItems();
         this.#createBuildingItems();
         this.#createSpellItems();
         this.#createHotbarItem();
@@ -754,6 +791,7 @@ export class MenuManager extends Subject{
             this.menus[child].render();
         });
         this.menus[params.name].render();
+        this.#createStatMenuItems(params);
     }
 
     /**

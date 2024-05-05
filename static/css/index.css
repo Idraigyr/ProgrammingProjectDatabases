@@ -250,6 +250,27 @@
     transform: translateY(20px);
 }
 
+.stop-button {
+    position: relative;
+    height: var(--play-button-height);
+    width: var(--play-button-width);
+    border: none;
+    cursor: pointer;
+    display: inline-block; /* Change display to inline-block */
+    background-image: url('/static/assets/images/menu/leaveMatch.png'); /* Set background image */
+    background-size: cover; /* Cover the entire button with the image */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent the background image from repeating */
+    background-color: transparent;
+    z-index: 20;
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    right: -40%;
+}
+
+.stop-button:hover {
+    transform: scale(1.10);
+}
+
 .fuse-button-container {
     position: relative;
     width: 100%;

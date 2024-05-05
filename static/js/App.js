@@ -300,6 +300,7 @@ class App {
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots > 0){
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
+                params.stats = this.itemManager.calculateBuildingStats(building.id);
                 params.level = building.level;
                 // params.maxLevel = building.maxLevel; //TODO: implement maxLevel?
                 params.slots = building.gemSlots;
@@ -317,10 +318,17 @@ class App {
             if(buildingNumber === buildTypes.getNumber("mine_building")){
                 const currentTime = new Date(await this.playerInfo.getCurrentTime());
                 params.crystals = building.checkStoredCrystals(currentTime);
-                params.maxCrystals = building.maxCrystals;
+                params.maxCrystals = params.stats["capacity"];
                 params.rate = building.productionRate;
+                params.rate = params.stats["mineSpeed"];
             }
-
+            if(buildingNumber === buildTypes.getNumber("tower_building")){
+                // tower stats for Lucas
+                // gets called on menu open
+                // default values: hp: 100, damage: 20, attackSpeed: 1
+                console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
+                    " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
+            }
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
