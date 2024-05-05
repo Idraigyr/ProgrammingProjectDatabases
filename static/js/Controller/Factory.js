@@ -110,9 +110,10 @@ export class Factory{
         //TODO: remove hardcoded height
         const height = 3;
         let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
-        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
+
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(currentPos.clone().sub(new THREE.Vector3(0.5,0,0.5)), currentPos.clone().add(new THREE.Vector3(0.5,height,0.5)));
@@ -124,6 +125,7 @@ export class Factory{
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        player.addEventListener("updateHealth",view.OnHealth_.bind(view));
 
         this.viewManager.addPair(player, view);
         return player;
@@ -136,9 +138,11 @@ export class Factory{
         //TODO: remove hardcoded height
         const height = 3;
         let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, team: params?.team ?? 0});
-        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
+        this.scene.add(view.healthBar);
+
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
@@ -150,6 +154,8 @@ export class Factory{
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        player.addEventListener("updateHealth",view.OnHealth_.bind(view));
+
 
         this.viewManager.addPair(player, view);
         return player;

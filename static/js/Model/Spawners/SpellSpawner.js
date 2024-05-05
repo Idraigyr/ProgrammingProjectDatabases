@@ -13,6 +13,10 @@ export class SpellSpawner extends Spawner{
         super(params);
         this.spell = params?.spell?.type;
         this.spellParams = params?.spell?.params;
+        this.nearestTarget = null;
+        this.damageMultiplier = params?.damage;
+        this.speedMultiplier = params?.speed;
+
     }
 
     /**
@@ -26,12 +30,26 @@ export class SpellSpawner extends Spawner{
     }
 
     /**
+     * Calculate the tower damage
+     */
+    calculateDamage(){
+        return (15 * this.damageMultiplier);
+    }
+
+    /**
+     * Calculate the tower shooting speed (interval)
+     */
+    calculateSpeed() {
+        return (this.interval / this.speedMultiplier);
+    }
+
+    /**
      * Update the spawner
      * @param deltaTime - time since last update
      */
     update(deltaTime) {
         this.timer += deltaTime;
-        if(this.timer >= this.interval && this.spell){
+        if(this.timer >= this.calculateSpeed() && this.spell){
             this.dispatchEvent(this._createSpawnEvent({
                 type: this.spell,
                 position: new THREE.Vector3(-7,35,-10),
