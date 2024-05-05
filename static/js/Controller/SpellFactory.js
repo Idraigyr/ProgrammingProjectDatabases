@@ -66,7 +66,8 @@ export class SpellFactory{
             velocity: spell.spell.velocity,
             fallOf: spell.fallOf,
             position: details.params.position,
-            team: details.params.team
+            team: details.params.team,
+            canDamage: details?.canDamage ?? true
         });
         let uniforms = {
             diffuseTexture: {
@@ -102,7 +103,8 @@ export class SpellFactory{
             spellType: spell,
             position: details.params.position,
             duration: spell.spell.duration,
-            team: details.params.team
+            team: details.params.team,
+            canDamage: details?.canDamage ?? true
         });
         let position = new THREE.Vector3().copy(details.params.position);
         position.y += 15;

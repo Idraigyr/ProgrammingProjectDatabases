@@ -109,8 +109,13 @@ export class Character extends Entity{
         return new CustomEvent("updateRotation", {detail: {rotation: new THREE.Quaternion().copy(this.quatFromHorizontalRotation)}});
     }
 
-    createHealthUpdateEvent(){
-        return new CustomEvent("updateHealth", {detail: {current: this.health, total: this.maxHealth}});
+    /**
+     * Create a CustomEvent for updating the health of the character
+     * @param {number} prevHealth
+     * @return {CustomEvent<{current: (*|number), total: (*|number)}>}
+     */
+    createHealthUpdateEvent(prevHealth){
+        return new CustomEvent("updateHealth", {detail: {previous: prevHealth, current: this.health, total: this.maxHealth}});
     }
 
     /**
@@ -166,9 +171,10 @@ export class Character extends Entity{
      * Take damage
      */
     takeDamage(damage){
-
+        if(damage <= 0) return;
+        const prevHealth = this.health;
         this.health -= damage;
-        this.dispatchEvent(this.createHealthUpdateEvent());
+        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
         if(this.health <= 0){
             this.health = 0;
             this.dies();

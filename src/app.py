@@ -17,7 +17,6 @@ from flask_sqlalchemy import SQLAlchemy
 from oauthlib.oauth2 import WebApplicationClient
 from sqlalchemy.orm import DeclarativeBase
 
-
 """
 This is the main entry point for the application.
 """
@@ -252,6 +251,8 @@ def setup(app: Flask):
         app.socketio = SocketIO(cors_allowed_origins='*')
         app.socketio.init_app(app)
         import src.socketio # Leave this import here, it registers the socketio events
+        from src.socketio import attach_namespaces
+        attach_namespaces(app)
 
         # Generate documentation
         from documentation import generate_pdoc

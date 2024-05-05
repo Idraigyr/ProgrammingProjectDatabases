@@ -270,6 +270,16 @@ class ConcreteSpell{
         console.log("applying effects");
         this.effects.forEach((effect) => effect.apply(target));
     }
+
+    /**
+     * Apply harmless effects to the target (harmless = no influence on health)
+     * @param target
+     */
+    applyHarmlessEffects(target){
+        console.log("applying harmless effects");
+        this.effects.filter((effect) => !effect.damage).forEach((effect) => effect.apply(target));
+
+    }
 }
 
 /**

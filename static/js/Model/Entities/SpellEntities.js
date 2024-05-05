@@ -11,6 +11,7 @@ class SpellEntity extends Entity{
         super(params);
         this.spellType = params.spellType;
         this.duration = params.duration;
+        this.canDamage = params?.canDamage ?? true;
         this.hitSomething = false;
         this.timer = 0;
     }
@@ -42,7 +43,11 @@ class SpellEntity extends Entity{
      */
     onCharacterCollision(deltaTime, character){
         if(this.team !== character.team){
-            this.spellType.applyEffects(character);
+            if(this.canDamage){
+                this.spellType.applyEffects(character);
+            } else {
+                this.spellType.applyHarmlessEffects(character);
+            }
             this.hitSomething = true;
             character.hit = true;
         }
