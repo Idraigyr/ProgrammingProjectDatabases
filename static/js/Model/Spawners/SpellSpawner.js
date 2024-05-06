@@ -11,11 +11,12 @@ export class SpellSpawner extends Spawner{
      */
     constructor(params) {
         super(params);
-        this.spell = params?.spell?.type;
-        this.spellParams = params?.spell?.params;
+        this.spell = params?.spell?.type ?? null;
+        this.spellParams = params?.spell?.params ?? null;
+        if(this.spellParams) this.spellParams.position = this.position.clone();
         this.nearestTarget = null;
-        this.damageMultiplier = params?.damage;
-        this.speedMultiplier = params?.speed;
+        this.damageMultiplier = params?.damage ?? 1;
+        this.speedMultiplier = params?.speed ?? 1;
 
     }
 
@@ -27,13 +28,15 @@ export class SpellSpawner extends Spawner{
     setSpell(type, params){
         this.spell = type;
         this.spellParams = params;
+        this.spellParams.position = this.position.clone();
     }
 
     /**
      * Calculate the tower damage
+     * @param base - the base damage
      */
-    calculateDamage(){
-        return (15 * this.damageMultiplier);
+    calculateDamage(base){
+        return (base * this.damageMultiplier);
     }
 
     /**
@@ -50,11 +53,18 @@ export class SpellSpawner extends Spawner{
     update(deltaTime) {
         this.timer += deltaTime;
         if(this.timer >= this.calculateSpeed() && this.spell){
+            const params = {...this.spellParams};
+            params.damage = this.calculateDamage(this.spellParams.damage);
+            if(this.nearestTarget) {
+                params.direction = new THREE.Vector3().subVectors(this.nearestTarget.position, this.position).normalize();
+            } else {
+                params.direction = new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2).normalize();
+            }
+            //random offset
+            params.direction.add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2).normalize());
             this.dispatchEvent(this._createSpawnEvent({
                 type: this.spell,
-                position: new THREE.Vector3(-7,35,-10),
-                direction: new THREE.Vector3(10,-3,0).add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2)), //TODO: change this to the location of the target
-                team: 0
+                params: params
             }));
             this.timer = 0;
         }
