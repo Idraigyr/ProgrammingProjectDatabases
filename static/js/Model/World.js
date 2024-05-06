@@ -3,6 +3,8 @@ import {buildTypes} from "../configs/Enums.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 import {Bridge} from "./Entities/Foundations/Bridge.js";
 import {Island} from "./Entities/Foundations/Island.js";
+import {SpellSpawner} from "./Spawners/SpellSpawner.js";
+import {Fireball} from "./Spell.js";
 
 /**
  * World class that contains all the islands and the player
@@ -197,7 +199,28 @@ export class World{
             });
         });
     }
-
+    /**
+    adds a spellspawner to every tower on the island
+     */
+    addSpellSpawners(){
+        this.islands.forEach((island) => {
+            if(!(island instanceof Island)) return;
+            island.getBuildingsByType("tower_building").forEach((tower) => {
+                let position = tower.position.clone();
+                position.y += 40;
+                const spawner = new SpellSpawner({
+                    spell: new Fireball({}),
+                    position: position,
+                    team: tower.team,
+                    collisionDetector: this.collisionDetector
+                });
+                spawner.addEventListener("spawn", (event) => {
+                   this.spellFactory.createSpell(event.detail);
+                });
+                this.addSpellSpawner(spawner);
+            });
+        });
+    }
 
 
     /**

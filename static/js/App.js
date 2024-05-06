@@ -570,6 +570,7 @@ class App {
         //TODO: should only be done in multiplayer @Flynn
         this.viewManager.updateProxys(this.deltaTime);
 
+
         this.renderer.render( this.scene, this.cameraManager.camera );
         //OrbitControls -- DEBUG STATEMENTS --
         // this.renderer.render( this.scene, orbitCam );

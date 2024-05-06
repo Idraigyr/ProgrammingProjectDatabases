@@ -213,6 +213,7 @@ export class MultiplayerController extends Subject{
 
         progressBar.labels[0].innerText = "creating proxys for buildings...";
         this.worldManager.addProxys();
+        this.worldManager.addSpellSpawners()
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);

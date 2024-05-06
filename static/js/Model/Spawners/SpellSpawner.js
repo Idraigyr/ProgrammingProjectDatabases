@@ -1,5 +1,7 @@
 import * as THREE from "three";
 import {Spawner} from "./Spawner.js";
+import {Fireball} from "../Spell.js";
+
 
 /**
  * @class SpellSpawner - class for spawning spells
@@ -14,10 +16,13 @@ export class SpellSpawner extends Spawner{
         this.spell = params?.spell?.type;
         this.spellParams = params?.spell?.params;
         this.nearestTarget = null;
-        this.damageMultiplier = params?.damage;
-        this.speedMultiplier = params?.speed;
-
+        this.position = params?.position;
+        this.damageMultiplier = params?.damage ?? 1;
+        this.speedMultiplier = params?.speed ?? 1;
+        this.collisionDetector = params?.collisionDetector;
+        this.team = params?.team;
     }
+
 
     /**
      * Set the spell to spawn
@@ -48,14 +53,24 @@ export class SpellSpawner extends Spawner{
      * @param deltaTime - time since last update
      */
     update(deltaTime) {
-        this.timer += deltaTime;
-        if(this.timer >= this.calculateSpeed() && this.spell){
-            this.dispatchEvent(this._createSpawnEvent({
-                type: this.spell,
-                position: new THREE.Vector3(-7,35,-10),
-                direction: new THREE.Vector3(10,-3,0).add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2)), //TODO: change this to the location of the target
-                team: 0
-            }));
+        const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this);
+        if (closestEnemy != null && closestDistance < 500) //TODO: make the range a parameter (in config file?)
+           {
+            this.timer += deltaTime;
+            if(this.timer >= this.calculateSpeed()) {
+                this.dispatchEvent(this._createSpawnEvent({
+                    type: this.spell,
+                    position: this.position,
+                    direction: closestEnemy.position.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2)),
+                    team: this.team
+                }));
+                console.log("spawned fireball");
+
+
+                this.timer = 0;
+            }
+        }
+        else {
             this.timer = 0;
         }
     }

@@ -232,6 +232,11 @@ export class WorldManager{
         this.world.addProxys();
     }
 
+
+    addSpellSpawners(){
+        this.world.addSpellSpawners();
+    }
+
     /**
      * Moves the current island and player to the new position, BE AWARE: this method does not call generateColliderOnWorker
      * @param {THREE.Vector3} translation - the translation to apply to the island
