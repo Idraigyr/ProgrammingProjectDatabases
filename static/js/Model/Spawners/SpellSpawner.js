@@ -13,8 +13,9 @@ export class SpellSpawner extends Spawner{
      */
     constructor(params) {
         super(params);
-        this.spell = params?.spell?.type;
-        this.spellParams = params?.spell?.params;
+        this.spell = params?.spell?.type ?? null;
+        this.spellParams = params?.spell?.params ?? null;
+        if(this.spellParams) this.spellParams.position = this.position.clone();
         this.nearestTarget = null;
         this.position = params?.position;
         this.damageMultiplier = params?.damage ?? 1;
@@ -22,7 +23,6 @@ export class SpellSpawner extends Spawner{
         this.collisionDetector = params?.collisionDetector;
         this.team = params?.team;
     }
-
 
     /**
      * Set the spell to spawn
@@ -32,13 +32,15 @@ export class SpellSpawner extends Spawner{
     setSpell(type, params){
         this.spell = type;
         this.spellParams = params;
+        this.spellParams.position = this.position.clone();
     }
 
     /**
      * Calculate the tower damage
+     * @param base - the base damage
      */
-    calculateDamage(){
-        return (15 * this.damageMultiplier);
+    calculateDamage(base){
+        return (base * this.damageMultiplier);
     }
 
     /**
@@ -53,24 +55,21 @@ export class SpellSpawner extends Spawner{
      * @param deltaTime - time since last update
      */
     update(deltaTime) {
-        const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this);
-        if (closestEnemy != null && closestDistance < 500) //TODO: make the range a parameter (in config file?)
-           {
-            this.timer += deltaTime;
-            if(this.timer >= this.calculateSpeed()) {
-                this.dispatchEvent(this._createSpawnEvent({
-                    type: this.spell,
-                    position: this.position,
-                    direction: closestEnemy.position.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2)),
-                    team: this.team
-                }));
-                console.log("spawned fireball");
-
-
-                this.timer = 0;
+        this.timer += deltaTime;
+        if(this.timer >= this.calculateSpeed() && this.spell){
+            const params = {...this.spellParams};
+            params.damage = this.calculateDamage(this.spellParams.damage);
+            if(this.nearestTarget) {
+                params.direction = new THREE.Vector3().subVectors(this.nearestTarget.position, this.position).normalize();
+            } else {
+                params.direction = new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2).normalize();
             }
-        }
-        else {
+            //random offset
+            params.direction.add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2).normalize());
+            this.dispatchEvent(this._createSpawnEvent({
+                type: this.spell,
+                params: params
+            }));
             this.timer = 0;
         }
     }
