@@ -207,15 +207,16 @@ export class World{
             if(!(island instanceof Island)) return;
             island.getBuildingsByType("tower_building").forEach((tower) => {
                 let position = tower.position.clone();
-                position.y += 40;
+                position.y += 35
+                position.x += 3;
                 const spawner = new SpellSpawner({
-                    spell: new Fireball({}),
+                    spell: {type: new Fireball({}), params: {damage: 10, velocity: 20 }},
                     position: position,
                     team: tower.team,
                     collisionDetector: this.collisionDetector
                 });
                 spawner.addEventListener("spawn", (event) => {
-                   this.spellFactory.createSpell(event.detail);
+                   this.spellFactory.createSpell(event);
                 });
                 this.addSpellSpawner(spawner);
             });

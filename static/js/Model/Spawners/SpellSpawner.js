@@ -1,6 +1,5 @@
 import * as THREE from "three";
 import {Spawner} from "./Spawner.js";
-import {Fireball} from "../Spell.js";
 
 
 /**
@@ -55,21 +54,32 @@ export class SpellSpawner extends Spawner{
      * @param deltaTime - time since last update
      */
     update(deltaTime) {
-        this.timer += deltaTime;
-        if(this.timer >= this.calculateSpeed() && this.spell){
-            const params = {...this.spellParams};
-            params.damage = this.calculateDamage(this.spellParams.damage);
-            if(this.nearestTarget) {
-                params.direction = new THREE.Vector3().subVectors(this.nearestTarget.position, this.position).normalize();
-            } else {
-                params.direction = new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2).normalize();
+        const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this);
+        if (closestEnemy != null && closestDistance < 500) //TODO: make the range a parameter (in config file?)
+        {
+            this.timer += deltaTime;
+            if(this.timer >= this.calculateSpeed() && this.spell) {
+                const params = {...this.spellParams};
+                params.damage = this.calculateDamage(this.spellParams.damage);
+                if (this.nearestTarget) {
+                    params.direction = new THREE.Vector3().subVectors(this.nearestTarget.position, this.position).normalize();
+                } else {
+                    params.direction = new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize();
+                }
+                params.team = this.team;
+                params.position = this.position.clone();
+                //random offset
+                params.direction.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize());
+                console.log("Spawning spell", this.spell, "with params", params);
+                this.dispatchEvent(this._createSpawnEvent({
+                    type: this.spell,
+                    params: params
+                }));
+                this.timer = 0;
             }
-            //random offset
-            params.direction.add(new THREE.Vector3(Math.random()*4-2,-Math.random()*4,Math.random()*4-2).normalize());
-            this.dispatchEvent(this._createSpawnEvent({
-                type: this.spell,
-                params: params
-            }));
+        }
+        else
+        {
             this.timer = 0;
         }
     }
