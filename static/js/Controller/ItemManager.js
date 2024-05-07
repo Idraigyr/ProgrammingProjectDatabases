@@ -426,6 +426,7 @@ export class ItemManager {
             this.sendPOST(gemURI, gem, postRetries, this.insertPendingRequest(gem));
         }
         this.gems.push(gem);
+        this.menuManager.toggleAnimation(false);
         return gem;
     }
 
