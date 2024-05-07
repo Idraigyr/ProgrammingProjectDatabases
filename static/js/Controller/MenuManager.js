@@ -232,6 +232,7 @@ export class MenuManager extends Subject{
 
     // Function to start or stop the fusing arrow animation based on condition
     toggleAnimation(condition) {
+        console.log(condition);
         if (condition) {
             this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.add('move-right');
         } else {
