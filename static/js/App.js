@@ -248,14 +248,14 @@ class App {
     /**
      * Pauses the physics simulation when the tab is not visible
      */
-    onVisibilityChange(){
+    async onVisibilityChange(){
         if(document.visibilityState === "visible"){
             this.simulatePhysics = true;
             this.clock.getDelta();
-            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.login();
+            if(this.playerInfo.isPlayerLoggedIn()) await this.playerInfo.login();
         } else {
             this.simulatePhysics = false;
-            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.logout();
+            if(this.playerInfo.isPlayerLoggedIn()) await this.playerInfo.logout();
         }
         // let playerData = {"level": 1}; //TODO: fill with method from
         // let islandData = {}; //TODO: fill with method from worldManager
@@ -291,6 +291,7 @@ class App {
         for(const gem of this.itemManager.gems){
             this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
         }
+        progressBar.value = 80;
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, spellCaster: this.spellCaster,
@@ -302,12 +303,16 @@ class App {
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
         this.collisionDetector.generateColliderOnWorker();
-        progressBar.value = 100;
+
+        progressBar.value = 95;
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
             InputManager: this.inputManager,
             collisionDetector: this.collisionDetector
         });
+        progressBar.labels[0].innerText = "last touches...";
+        this.playerInfo.login();
+        progressBar.value = 100;
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded
@@ -363,8 +368,6 @@ class App {
             collisionDetector: this.collisionDetector,
             spellFactory: this.spellFactory,
         });
-        progressBar.labels[0].innerText = "Last touches...";
-        await this.playerInfo.login();
     }
 
     /**

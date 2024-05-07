@@ -55,7 +55,6 @@ export class PlayerInfo extends Subject{
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
@@ -78,7 +77,6 @@ export class PlayerInfo extends Subject{
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
@@ -230,7 +228,6 @@ export class PlayerInfo extends Subject{
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
