@@ -203,6 +203,7 @@ export class WorldManager{
             this.spellCaster.currentObject.ready = true;
             this.spellCaster.currentObject = null;
             this.spellCaster.previousSelectedPosition = null;
+            this.spellCaster.previousRotation = null;
             // Update static mesh
             this.collisionDetector.generateColliderOnWorker();
             // Send put request to the server if persistence = true
@@ -240,7 +241,7 @@ export class WorldManager{
             this.spellCaster.currentObject.ready = true;
             this.spellCaster.currentObject = null;
             this.spellCaster.previousSelectedPosition = null;
-            // this.spellCaster.previousSelectedRotation = null;
+            this.spellCaster.previousRotation = null;
 
             //allow menus to be opened again
             this.menuManager.menusEnabled = true;

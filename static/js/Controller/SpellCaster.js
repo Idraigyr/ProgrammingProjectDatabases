@@ -25,6 +25,7 @@ export class SpellCaster extends Subject{
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
         this.previousSelectedPosition = null;
+        this.previousRotation = null;
         this.currentObject = null;
     }
 
@@ -44,6 +45,7 @@ export class SpellCaster extends Subject{
     set currentObject(object){
         this.#currentObject = object;
         this.previousSelectedPosition = object?.position.clone();
+        this.previousRotation = object?.rotation;
     }
 
     /**
@@ -153,10 +155,15 @@ export class SpellCaster extends Subject{
          if(this.currentObject){
             this.currentObject.position = this.previousSelectedPosition;
             this.currentObject.ready = true;
+            if(this.previousRotation){
+                this.currentObject.rotation = this.previousRotation;
+                this.currentObject.rotate(0);
+            }
+            this.raycaster.collisionDetector.generateColliderOnWorker();
         }
         this.previousSelectedPosition = null;
+        this.previousRotation = null;
         this.currentObject = null;
-        this.raycaster.collisionDetector.generateColliderOnWorker();
     }
 
     dispatchVisibleSpellPreviewEvent(bool){

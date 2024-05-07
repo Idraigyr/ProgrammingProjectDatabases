@@ -3,6 +3,8 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
+// Import vector from three.js
+import {Vector3} from "three";
 
 /**
  * Class that holds the user information
@@ -32,11 +34,7 @@ export class PlayerInfo extends Subject{
         this.xpThreshold = 50;
         this.buildingsPlaced = 0;
 
-        this.playerPosition = {
-            x: 0,
-            y: 0,
-            z: 0
-        }
+        this.playerPosition = new Vector3(0, 0, 0);
     }
 
     async logout(){
