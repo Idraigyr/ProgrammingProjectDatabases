@@ -653,6 +653,17 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * updates the buildings placed and total buildings placed in the buildingItems based on the params
+     * @param {{building: string, placed: number, total: number}[]} params
+     */
+    #updateBuildingItems(params){
+        console.log("inside updateBuildingItems:", params);
+        for(const param of params){
+            this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+        }
+    }
+
+    /**
      * create building menu items
      */
     #createBuildingItems(){
@@ -794,13 +805,22 @@ export class MenuManager extends Subject{
 
     /**
      * updates the current menu with the given params
-     * currently only necessary for stats
+     * currently only necessary for stats and BuildingItems
      * @param {Object} params
      */
     updateMenu(params){
         if(!params.name || !this.menusEnabled) return;
         if(!this.currentMenu) throw new Error("No menu is currently active");
-        this.#arrangeStatMenuItems(params);
+        switch (params.name){
+            case "TowerMenu":
+            case "MineMenu":
+            case "FusionTableMenu":
+                this.#arrangeStatMenuItems(params);
+                break;
+            case "BuildMenu":
+                this.#updateBuildingItems(params.buildings);
+                break;
+        }
     }
 
     /**
@@ -866,7 +886,7 @@ export class MenuManager extends Subject{
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu" | "BuildMenu"} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} | {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map}} params
+     * @param {{name: "AltarMenu"} | {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} | {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map}} params
      */
     #arrangeMenus(params){ //TODO: for mine put maxCrysals and rate as stats (capacity and mineSpeed)
         // arrange the menus in the container
@@ -921,6 +941,7 @@ export class MenuManager extends Subject{
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
+                this.#updateBuildingItems(params.buildings);
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("ResourceBuildingsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");

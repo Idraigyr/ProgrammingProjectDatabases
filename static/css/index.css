@@ -738,8 +738,8 @@
     margin: 5px;
     flex-grow: 1;
 }
-.menu-item-description-placeableText{
-        color: orange;
+.menu-item-description-placed{
+    color: orange;
     font-size: 20px;
     margin: 5px;
 }

@@ -198,7 +198,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, stats: {name: string, value: number}[], team: number, task: Object}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, stats: {name: string, value: number}[] | undefined, team: number, task: Object}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -210,8 +210,10 @@ export class Factory{
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
         //TODO: remove and make dynamic
-        for(const stat of params.stats){
+        if(params.stats){
+            for(const stat of params.stats){
             model.addStat(stat.name, stat.value);
+        }
         }
 
         if(params.gems){

@@ -1,6 +1,6 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI, islandURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
@@ -37,7 +37,8 @@ export class PlayerInfo extends Subject{
             y: 0,
             z: 0
         }
-        this.buildingsThreshold = {Tree: Level[this.level]["Tree"],
+        this.buildingsThreshold = {
+            Tree: Level[this.level]["Tree"],
             Bush: Level[this.level]["Bush"],
             Wall: Level[this.level]["Wall"],
             Tower: Level[this.level]["Tower"],

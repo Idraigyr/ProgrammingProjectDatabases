@@ -249,7 +249,15 @@ class App {
             } else if(buildingNumber === buildTypes.getNumber("empty")){ //open buildmenu
                 this.worldManager.currentPos = event.detail.params.position;
                 this.worldManager.currentRotation = event.detail.params.rotation;
-                this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber)});
+                let buildings = [];
+                for(const building in this.playerInfo.buildingsPlaced){
+                    buildings.push({
+                        building: building,
+                        placed: this.playerInfo.buildingsPlaced[building],
+                        total: this.playerInfo.buildingsThreshold[building]
+                    });
+                }
+                this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber), buildings: buildings});
                 this.inputManager.exitPointerLock();
 
             } else if (this.spellCaster.currentObject) { //What is this code block used for??? placing back in same spot after rotating?
@@ -300,6 +308,17 @@ class App {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
             let params = {name: buildTypes.getMenuName(buildingNumber)}
+
+            if(buildingNumber === buildTypes.getNumber("empty")){
+                params.buildings = [];
+                for(const building in this.playerInfo.buildingsPlaced){
+                    params.buildings.push({
+                        building: building,
+                        placed: this.playerInfo.buildingsPlaced[building],
+                        total: this.playerInfo.buildingsThreshold[building]
+                    });
+                }
+            }
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots > 0){
@@ -423,7 +442,6 @@ class App {
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
         await this.itemManager.retrieveGemAttributes();
-        await this.menuManager.setPlayerInfo(this.playerInfo);
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());

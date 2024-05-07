@@ -102,6 +102,9 @@ export class BuildingItem extends MenuItem{
         const element = super.createElement(params);
         const descriptionName = element.querySelector(".menu-item-description-name");
         const descriptionText = element.querySelector(".menu-item-description-text");
+        const placedDescription = document.createElement("p");
+        placedDescription.classList.add("menu-item-description-placed");
+        element.querySelector(".menu-item-description").appendChild(placedDescription);
         let description = "";
         // If there is this.extra.cost, add it to the name
         if(params?.extra?.cost) description += ` 💎 ${params.extra.cost}`;
@@ -109,6 +112,7 @@ export class BuildingItem extends MenuItem{
         if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
         descriptionName.innerText += description;
         descriptionText.innerText = params?.description ?? "placeholder description";
+        placedDescription.innerText = "placed: 0/0";
         return element;
     }
 
