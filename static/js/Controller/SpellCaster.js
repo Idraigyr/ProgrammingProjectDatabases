@@ -286,4 +286,20 @@ export class SpellCaster extends Subject{
     onRightClickUp(){
 
     }
+
+    /**
+     * changes spell Cooldown
+     * @param spell
+     * @param Cooldown
+     */
+    changeCooldown(spell, Cooldown){
+        this.#wizard.changeSpellCoolDown(spell, Cooldown);
+    }
+
+    /**
+     * change spell cost to zero
+     */
+    changeSpellCost() {
+        this.#wizard.changeSpellCost();
+    }
 }

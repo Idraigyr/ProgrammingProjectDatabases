@@ -16,14 +16,15 @@ let regex = {
     "mana": /\\mana\((0*[0-9]\d*)\)/,
     "level": /\\level\((0*[0-9]\d*)\)/,
     "xp": /\\xp\((0*[0-9]\d*)\)/,
-    "position": /\\position\((0*[0-9]\d*),(0*[0-9]\d*),(0*[0-9]\d*)\)/,
+    "position": /\\position\(([+-]?\d+(\.\d+)?),([+-]?\d+(\.\d+)?),([+-]?\d+(\.\d+)?)\)/,
     "crystal": /\\crystal\((0*[1-9]\d*)\)/,
     "shieldCooldown": /\\shieldCooldown\((0*[0-9]\d*)\)/,
     "fireCooldown": /\\fireCooldown\((0*[0-9]\d*)\)/,
     "thunderCloudCooldown": /\\thunderCloudCooldown\((0*[0-9]\d*)\)/,
     "buildCooldown": /\\buildCooldown\((0*[0-9]\d*)\)/,
     "health": /\\health\((0*[0-9]\d*)\)/,
-    "forceSpells": /\\forceSpells/
+    "forceSpells": /\\forceSpells/,
+    "forceBuildDuration": /\\forceBuildDuration/
 }
 export class ChatNamespace {
 
@@ -75,7 +76,10 @@ export class ChatNamespace {
         //add cheats
         if (admin) {
             if (message.match(regex["mana"])) {
-                this.app.playerInfo.mana = Number(message.match(regex["mana"])[1]);
+                this.app.playerInfo.updateMana({detail: {
+                    current: Number(message.match(regex["mana"])[1]),
+                    total: this.app.playerInfo.maxMana
+                    }});
             } else if (message.match(regex["level"])) {
                 if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0) {
                     this.app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
@@ -87,43 +91,24 @@ export class ChatNamespace {
             } else if (message.match(regex["crystal"])) {
                 this.app.playerInfo.changeCrystals(Number(message.match(regex["crystal"])[1]));
             } else if (message.match(regex["health"])) {
-                this.app.playerInfo.health = Number(message.match(regex["health"])[1]);
+                this.app.playerInfo.changeHealth(Number(message.match(regex["health"])[1]));
+                this.app.worldManager.world.player.health = Number(message.match(regex["health"])[1]);
             } else if (message.match(regex["position"])) {
-                this.app.playerInfo.playerPosition.x = Number(message.match(regex["position"])[1]);
-                this.app.playerInfo.playerPosition.y = Number(message.match(regex["position"])[2]);
-                this.app.playerInfo.playerPosition.z = Number(message.match(regex["position"])[3]);
+                this.app.playerController.tempPosition.x = Number(message.match(regex["position"])[1]);
+                this.app.playerController.tempPosition.y = Number(message.match(regex["position"])[3]);
+                this.app.playerController.tempPosition.z = Number(message.match(regex["position"])[5]);
             } else if (message.match(regex["shieldCooldown"])) {
-                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
-                    if (this.app.playerInfo.spells[i].name === "shield") {
-                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["shieldCooldown"])[1]);
-                        break;
-                    }
-                }
+                this.app.spellCaster.changeCooldown("shield", Number(message.match(regex["shieldCooldown"])[1]));
             } else if (message.match(regex["fireCooldown"])) {
-                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
-                    if (this.app.playerInfo.spells[i].name === "fire") {
-                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["fireCooldown"])[1]);
-                        break;
-                    }
-                }
+                this.app.spellCaster.changeCooldown("fireball", Number(message.match(regex["shieldCooldown"])[1]));
+
             } else if (message.match(regex["buildCooldown"])) {
-                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
-                    if (this.app.playerInfo.spells[i].name === "build") {
-                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["buildCooldown"])[1]);
-                        break;
-                    }
-                }
+                this.app.spellCaster.changeCooldown("build", Number(message.match(regex["shieldCooldown"])[1]));
+
             } else if (message.match(regex["forceSpells"])) {
-                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
-                    this.app.playerInfo.spells[i].cost = 0;
-                }
+                this.app.spellCaster.changeSpellCost();
             } else if (message.match(regex["thunderCloudCooldown"])) {
-                for (let i = 0; i < this.app.playerInfo.spells.length; i++) {
-                    if (this.app.playerInfo.spells[i].name === "thundercloud") {
-                        this.app.playerInfo.spells[i].cooldown = Number(message.match(regex["thunderCloudCooldown"])[1]);
-                        break;
-                    }
-                }
+                this.app.spellCaster.changeCooldown("thundercloud", Number(message.match(regex["shieldCooldown"])[1]));
             }
             else if (message !== "" && !message.startsWith("\\")){
                 this.socket.emit('message', messageData);

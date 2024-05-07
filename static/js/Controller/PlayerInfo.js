@@ -277,11 +277,9 @@ export class PlayerInfo extends Subject{
             console.error(err);
         }
     }
-
-    changeMana(amount){
-        this.mana = amount;
-        this.dispatchEvent(this.createUpdateManaEvent());
-        this.updatePlayerInfoBackend();
+    changeHealth(amount) {
+        this.health = amount
+        this.dispatchEvent(this.createUpdateHealthEvent());
     }
     /**
      * Increases the experience threshold based on the level
