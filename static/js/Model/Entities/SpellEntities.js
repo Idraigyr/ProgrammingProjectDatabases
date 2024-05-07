@@ -2,6 +2,7 @@ import {Entity} from "./Entity.js";
 import * as THREE from "three";
 import {adjustVelocity, adjustVelocity2, adjustVelocity3, launchCollidedObject} from "../../helpers.js";
 import {Minion} from "./Characters/Minion.js";
+import {ProxyEntity} from "./Proxys/ProxyEntity.js";
 
 /**
  * @class SpellEntity - represents a spell entity
@@ -162,7 +163,10 @@ export class Projectile extends SpellEntity{
         super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
-            launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, 1, 20, deltaTime);
+            //TODO: is there a better way to do this?
+            if (!(character  instanceof ProxyEntity)){
+                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, 1, 20, deltaTime);
+            }
             this.timer += this.duration;
             this.dispatchEvent(this.createDeleteEvent());
         }

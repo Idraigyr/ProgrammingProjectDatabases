@@ -23,6 +23,7 @@ export class Factory{
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
         this.#currentTime = null;
+        this.playerInfo = params.playerInfo;
     }
 
     /**
@@ -116,6 +117,7 @@ export class Factory{
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         player.addEventListener("updateHealth",view.OnHealth_.bind(view));
+        player.addEventListener("playerDied",this.playerInfo.respawn.bind(this.playerInfo));
 
         this.viewManager.addPair(player, view);
         return player;

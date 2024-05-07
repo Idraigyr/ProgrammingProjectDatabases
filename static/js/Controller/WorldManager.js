@@ -435,7 +435,7 @@ export class WorldManager{
             const towers = island.getBuildingsByType("tower_building");
             towers.forEach((tower) => {
                 const position = tower.position;
-                position.y += 50;
+                position.y += 40;
                 const spawner = new SpellSpawner({
                     position: position,
                     buildingID: tower.id,

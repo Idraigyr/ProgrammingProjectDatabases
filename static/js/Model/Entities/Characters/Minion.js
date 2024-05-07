@@ -53,7 +53,6 @@ export class Minion extends Character{
      * Function that gets called when the minion dies
      */
     dies() {
-        //TODO: implement minion death
         console.log(`minion dies: id (${this.id})`);
         this.dispatchEvent(this.createDeleteEvent());
     }
@@ -63,7 +62,6 @@ export class Minion extends Character{
      * @param target
      */
     attack() {
-        //is target the problem?
         this.target?.takeDamage(10);
     }
     setId(data) {

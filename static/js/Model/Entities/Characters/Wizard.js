@@ -164,7 +164,8 @@ export class Wizard extends Character{
      */
     dies() {
         console.log("Player died")
-        //TODO: implement character death
+        this.dispatchEvent(new CustomEvent("playerDied"));
+
     }
 
 

@@ -213,8 +213,8 @@ export class MultiplayerController extends Subject{
             spell: {
                 type: new Fireball({}),
                 params: {
-                    damage: 10,
-                    velocity: 20,
+                    damage: 20,
+                    velocity: 70,
                     duration: 4,
                 }
             },

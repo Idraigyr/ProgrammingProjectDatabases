@@ -55,7 +55,7 @@ export class SpellSpawner extends Spawner{
      */
     update(deltaTime) {
         const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this);
-        if (closestEnemy != null && closestDistance < 500) //TODO: make the range a parameter (in config file?)
+        if (closestEnemy != null && closestDistance < 150) //TODO: make the range a parameter (in config file?)
         {
             this.timer += deltaTime;
             if(this.timer >= this.calculateSpeed() && this.spell) {
@@ -63,12 +63,11 @@ export class SpellSpawner extends Spawner{
                 params.damage = this.calculateDamage(this.spellParams.damage);
                 const enemyPosition = closestEnemy.position;
                 enemyPosition.y += Math.floor(closestEnemy.height/2);
-                params.direction = new THREE.Vector3().subVectors(enemyPosition, this.position).normalize();
+                params.direction = new THREE.Vector3().subVectors(enemyPosition, this.position).normalize(); //Is randomness needed? Because the tower is slow enough to not be overpowered without it
                 params.team = this.team;
                 params.position = this.position.clone();
                 //random offset
                 // params.direction.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize());
-                console.log("Spawning spell", this.spell, "with params", params);
                 this.dispatchEvent(this._createSpawnEvent({
                     type: this.spell.constructor,
                     params: params
