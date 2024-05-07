@@ -235,6 +235,7 @@ class App {
                 // Remove the object from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
+                this.spellCaster.previousRotation = null;
                 //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
@@ -280,6 +281,7 @@ class App {
                 // You have placed the same building on the same cell, so remove info from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
+                this.spellCaster.previousRotation = null;
                 this.spellCaster.previousSelectedPosition = null;
 
                 //allow menus to be opened again
@@ -400,13 +402,13 @@ class App {
     /**
      * Pauses the physics simulation when the tab is not visible
      */
-    onVisibilityChange(){
+    async onVisibilityChange(){
         if(document.visibilityState === "visible"){
             this.togglePhysicsUpdates(true);
-            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.login();
+            if(this.playerInfo.isPlayerLoggedIn()) await this.playerInfo.login();
         } else {
             this.simulatePhysics = false;
-            if(this.playerInfo.isPlayerLoggedIn()) this.playerInfo.logout();
+            if(this.playerInfo.isPlayerLoggedIn()) await this.playerInfo.logout();
             if(this.multiplayerController.matchmaking) this.multiplayerController.toggleMatchMaking();
             if(this.menuManager.currentMenu === "AltarMenu") this.menuManager.exitMenu();
             this.togglePhysicsUpdates(false);

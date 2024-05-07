@@ -160,7 +160,7 @@ export class SpellCaster extends Subject{
                 this.currentObject.rotation = this.previousRotation;
                 this.currentObject.rotate(0);
             }
-            this.raycaster.collisionDetector.generateColliderOnWorker();
+            // this.raycaster.collisionDetector.generateColliderOnWorker();
         }
         this.previousSelectedPosition = null;
         this.previousRotation = null;
