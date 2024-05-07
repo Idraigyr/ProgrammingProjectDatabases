@@ -95,8 +95,8 @@ export class ChatNamespace {
                 this.app.worldManager.world.player.health = Number(message.match(regex["health"])[1]);
             } else if (message.match(regex["position"])) {
                 this.app.playerController.tempPosition.x = Number(message.match(regex["position"])[1]);
-                this.app.playerController.tempPosition.y = Number(message.match(regex["position"])[2]);
-                this.app.playerController.tempPosition.z = Number(message.match(regex["position"])[3]);
+                this.app.playerController.tempPosition.y = Number(message.match(regex["position"])[3]);
+                this.app.playerController.tempPosition.z = Number(message.match(regex["position"])[5]);
             } else if (message.match(regex["shieldCooldown"])) {
                 this.app.spellCaster.changeCooldown("shield", Number(message.match(regex["shieldCooldown"])[1]));
             } else if (message.match(regex["fireCooldown"])) {
