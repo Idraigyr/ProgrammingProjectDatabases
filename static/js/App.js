@@ -445,6 +445,7 @@ class App {
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
+        progressBar.value = 80;
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
@@ -453,12 +454,16 @@ class App {
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
         this.collisionDetector.generateColliderOnWorker();
-        progressBar.value = 100;
+
+        progressBar.value = 95;
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
             InputManager: this.inputManager,
             collisionDetector: this.collisionDetector
         });
+        progressBar.labels[0].innerText = "last touches...";
+        this.playerInfo.login();
+        progressBar.value = 100;
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded

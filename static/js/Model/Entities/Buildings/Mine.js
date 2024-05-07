@@ -32,6 +32,7 @@ export class Mine extends Placeable{
             $.ajax({
                 url: `${API_URL}/${placeableURI}/${this.dbType}?placeable_id=${this.id}`,
                 type: "GET",
+                async: true,
                 contentType: "application/json",
                 success: (data) => {
                     console.log("Last collectd before: ", this.lastCollected, "Last collected after(?): ", data.last_collected);
@@ -61,7 +62,7 @@ export class Mine extends Placeable{
         return amount;
     }
 
-    updateLastCollected(currentTime){
+    async updateLastCollected(currentTime){
         this.lastCollected = currentTime;
         // Send info to backend
         $.ajax({

@@ -5,6 +5,7 @@ import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
 import {Level} from "../configs/LevelConfigs.js";
+import {Vector3} from "three";
 
 /**
  * Class that holds the user information
@@ -32,11 +33,8 @@ export class PlayerInfo extends Subject{
         this.experience = 0;
         this.xpThreshold = 50;
 
-        this.playerPosition = {
-            x: 0,
-            y: 0,
-            z: 0
-        }
+        this.playerPosition = new Vector3(0, 0, 0);
+
         this.buildingsThreshold = {
             Tree: Level[this.level]["Tree"],
             Bush: Level[this.level]["Bush"],
@@ -68,7 +66,6 @@ export class PlayerInfo extends Subject{
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
@@ -91,7 +88,6 @@ export class PlayerInfo extends Subject{
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
@@ -268,7 +264,6 @@ export class PlayerInfo extends Subject{
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
