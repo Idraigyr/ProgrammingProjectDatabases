@@ -2,7 +2,7 @@ import {API_URL, matchMakingURI} from "../configs/EndpointConfigs.js";
 import {PlayerInfo} from "./PlayerInfo.js";
 import * as THREE from "three";
 import {Controller} from "./Controller.js";
-import {spellTypes} from "../Model/Spell.js";
+import {Fireball, spellTypes} from "../Model/Spell.js";
 import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
 
@@ -209,10 +209,24 @@ export class MultiplayerController extends Subject{
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
         this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
+        this.worldManager.generateSpellSpawners({
+            spell: {
+                type: new Fireball({}),
+                params: {
+                    damage: 20,
+                    velocity: 70,
+                    duration: 4,
+                }
+            },
+            interval: 5
+        });
+        this.worldManager.world.spawners.spells.forEach(spawner => {
+            spawner.addEventListener("spawn", this.updateEvents.get("createSpellEntity"));
+        });
         progressBar.value = 85;
 
         progressBar.labels[0].innerText = "creating proxys for buildings...";
-        this.worldManager.addProxys();
+        this.worldManager.generateProxys();
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);
@@ -499,6 +513,9 @@ export class MultiplayerController extends Subject{
         // spawners and minions are removed when the match ends but we need to remove the event listeners in order to prevent memory leaks
         this.minionController.minions.forEach(minion => { //TODO: do this also when a minion dies
             minion.removeEventListener("updatedState", this.updateEvents.get("updatedMinionState"));
+        });
+        this.worldManager.world.spawners.spells.forEach(spawner => {
+            spawner.removeEventListener("spawn", this.updateEvents.get("createSpellEntity"));
         });
         this.minionController.removeEventListener("minionAdded", this.updateEvents.get("addMinionStateListener"));
     }

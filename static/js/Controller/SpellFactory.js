@@ -3,7 +3,6 @@ import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {Fireball, ThunderCloud, Shield, BuildSpell, IceWall} from "../Model/Spell.js";
 import * as THREE from "three";
-import {iceWall} from "../configs/SpellConfigs.js";
 
 /**
  * Factory class that creates models and views for the spells
@@ -27,6 +26,7 @@ export class SpellFactory{
      * @param event event with spell details
      */
     createSpell(event){
+        console.log("SpellFactory: createSpell", event.detail.type);
         let entityModel = null;
         switch (event.detail.type){
             case Fireball:
@@ -44,6 +44,9 @@ export class SpellFactory{
             case BuildSpell:
                 const customEvent = new CustomEvent('callBuildManager', {detail: event.detail});
                 document.dispatchEvent(customEvent);
+                break;
+            default:
+                console.log("Spell type not found");
                 break;
         }
         if(!entityModel) return;

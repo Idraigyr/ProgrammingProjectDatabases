@@ -3,6 +3,8 @@ import {buildTypes} from "../configs/Enums.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 import {Bridge} from "./Entities/Foundations/Bridge.js";
 import {Island} from "./Entities/Foundations/Island.js";
+import {SpellSpawner} from "./Spawners/SpellSpawner.js";
+import {Fireball} from "./Spell.js";
 
 /**
  * World class that contains all the islands and the player
@@ -73,6 +75,14 @@ export class World{
     }
 
     /**
+     * Add a spell spawner to the world
+     * @param {SpellSpawner} spawner
+     */
+    addSpellSpawner(spawner){
+        this.spawners.spells.push(spawner);
+    }
+
+    /**
      * Clear all minion spawners
      */
     clearMinionSpawners(){
@@ -84,14 +94,6 @@ export class World{
      */
     clearSpellSpawners(){
         this.spawners.spells = [];
-    }
-
-    /**
-     * Add a spell spawner to the world
-     * @param {SpellSpawner} spawner
-     */
-    addSpellSpawner(spawner){
-        this.spawners.spells.push(spawner);
     }
 
     /**
@@ -169,35 +171,6 @@ export class World{
         console.error("failed to add new building to island, there is no island at the position");
         //TODO: throw error?
     }
-    /** adds proxy models and view to the island of towers and altars
-     *  this is used to check for collisions with spells, and to display the health of the towers and altars
-     */
-    addProxys(){
-        //TODO: rewrite this to be more generic
-        this.islands.forEach((island) => {
-            if(!(island instanceof Island)) return;
-            island.getBuildingsByType("altar_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Altar"
-
-                });
-                island.addProxy(proxy);
-            });
-
-            island.getBuildingsByType("tower_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Tower"
-
-                });
-                island.addProxy(proxy);
-            });
-        });
-    }
-
 
 
     /**

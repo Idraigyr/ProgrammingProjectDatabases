@@ -153,7 +153,7 @@ class App {
         });
 
 
-        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector, camera: this.cameraManager.camera});
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector, camera: this.cameraManager.camera, playerInfo: this.playerInfo});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new Controller.BuildManager(this.raycastController, this.scene);
 
@@ -597,6 +597,7 @@ class App {
 
         //TODO: should only be done in multiplayer @Flynn
         this.viewManager.updateProxys(this.deltaTime);
+
 
         this.renderer.render( this.scene, this.cameraManager.camera );
         //OrbitControls -- DEBUG STATEMENTS --

@@ -14,13 +14,45 @@ export class Minion extends Character{
         this.input = {blockedInput: false, currentTarget: null, currentNode: null, currentNodeIndex: 0};
         this.buildingID = params?.buildingID ?? null; // only used for friendly minions
         this.lastAction = "Idle"; // Idle, WalkToAltar, FollowEnemy, AttackEnemy
-        this.target = null;
     }
+
+    /**
+     * cleans up the current target of the minion for deletion
+     */
+    #disposeOfTarget(){
+        if(this.target){
+            this.target.removeEventListener("delete", this.#disposeOfTarget.bind(this));
+            this.input.currentTarget = null;
+        }
+    }
+
+    /**
+     * setter for the target of the minion
+     * @param {ProxyEntity | Character} target
+     */
+    set target(target) {
+        if(this.input.currentTarget === target) return;
+        if(this.input.currentTarget){
+            this.#disposeOfTarget();
+        }
+        this.input.currentTarget = target;
+        if(this.input.currentTarget){
+            this.input.currentTarget.addEventListener("delete", this.#disposeOfTarget.bind(this));
+        }
+    }
+
+    /**
+     * getter for the target of the minion
+     * @return {ProxyEntity | Character | null}
+     */
+    get target() {
+        return this.input.currentTarget;
+    }
+
     /**
      * Function that gets called when the minion dies
      */
     dies() {
-        //TODO: implement minion death
         console.log(`minion dies: id (${this.id})`);
         this.dispatchEvent(this.createDeleteEvent());
     }
@@ -30,8 +62,7 @@ export class Minion extends Character{
      * @param target
      */
     attack() {
-        //is target the problem?
-        this.target.takeDamage(10)
+        this.target?.takeDamage(10);
     }
     setId(data) {
         this.id = data.id;
