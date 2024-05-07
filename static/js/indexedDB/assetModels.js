@@ -33,7 +33,6 @@ async function getModelUrl(modelName) {
   if (model) {
     return URL.createObjectURL(model.content);
   } else {
-    console.error('Model not found:', modelName);
     return null;
   }
 }

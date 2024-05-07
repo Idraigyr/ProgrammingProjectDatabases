@@ -336,27 +336,25 @@ export class WorldManager{
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        if(!this.playerInfo.unlockedBuildings.includes(buildingName) || this.playerInfo.buildingsPlaced > this.playerInfo.maxBuildings){
-            console.log("cant place building you have not unlocked or you have reached the max number of buildings");
-            console.log("unlocked buildings", this.playerInfo.unlockedBuildings);
-            console.log("building name", buildingName);
-            console.log("buildings placed", this.playerInfo.buildingsPlaced);
-            console.log("max buildings", this.playerInfo.maxBuildings);
+
+        if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
+            console.log("Cannot place");
         }
-        if(this.playerInfo.unlockedBuildings.includes(buildingName) && this.playerInfo.buildingsPlaced < this.playerInfo.maxBuildings){
+        else {
             const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
-            if(placeable){
-                if(this.persistent){
+            if (placeable) {
+                if (this.persistent) {
                     this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
                 }
                 this.collisionDetector.generateColliderOnWorker();
                 this.playerInfo.changeXP(10);
-                this.playerInfo.buildingsPlaced++;
+                this.playerInfo.buildingsPlaced[buildingName]++;
+                return true;
             } else {
                 console.error("failed to add new building at that position");
             }
-
         }
+        return false;
     }
     async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
         try {

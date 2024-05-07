@@ -8,6 +8,8 @@ import {SpellFactory} from "./Controller/SpellFactory.js";
 import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
+import "./external/LevelUp.js"
+import "./external/friendsMenu.js"
 import {OrbitControls} from "three-orbitControls";
 import {
     placeableURI,
@@ -421,6 +423,7 @@ class App {
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
         await this.itemManager.retrieveGemAttributes();
+        await this.menuManager.setPlayerInfo(this.playerInfo);
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
@@ -474,9 +477,11 @@ class App {
             } // TODO: show message
             else {
                 // Subtract the price from the player's crystals
-                this.playerInfo.changeCrystals(-price);
+                if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){
+                    this.playerInfo.changeCrystals(-price) ;
+                }
             }
-            this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}});
+
         }); //build building with event.detail.id on selected Position;
         this.playerInfo.addEventListener("updateMaxManaAndHealth", this.worldManager.world.player.updateMaxManaAndHealth.bind(this.worldManager.world.player));
         this.playerInfo.setLevelStats();

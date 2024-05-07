@@ -4,6 +4,7 @@ import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI} from "../confi
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
+import {Level} from "../configs/LevelConfigs.js";
 
 /**
  * Class that holds the user information
@@ -13,7 +14,6 @@ export class PlayerInfo extends Subject{
         super();
         this.userID = null;
         this.islandID = null;
-        this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall"];
         this.gems = [];
         this.spells = [];
 
@@ -31,13 +31,22 @@ export class PlayerInfo extends Subject{
         this.level = 0;
         this.experience = 0;
         this.xpThreshold = 50;
-        this.buildingsPlaced = 0;
 
         this.playerPosition = {
             x: 0,
             y: 0,
             z: 0
         }
+        this.buildingsThreshold = {Tree: Level[this.level]["Tree"],
+            Bush: Level[this.level]["Bush"],
+            Wall: Level[this.level]["Wall"],
+            Tower: Level[this.level]["Tower"],
+            WarriorHut: Level[this.level]["WarriorHut"],
+            Mine: Level[this.level]["Mine"],
+            FusionTable: Level[this.level]["FusionTable"]
+        };
+        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0}
+
     }
 
     async logout(){
@@ -124,6 +133,13 @@ export class PlayerInfo extends Subject{
             this.playerPosition.z = response?.entity?.z ?? playerSpawn.z;
 
             this.xpThreshold = this.increaseXpThreshold();
+
+            const responseBuildings = await $.getJSON(`${API_URL}/${islandURI}?id=${this.islandID}`);
+            for(const building of responseBuildings.placeables){
+                if(building.blueprint.name in this.buildingsPlaced){
+                    this.buildingsPlaced[building.blueprint.name]++;
+                }
+            }
 
 
             this.advertiseCurrentCondition();
@@ -261,6 +277,11 @@ export class PlayerInfo extends Subject{
         }
     }
 
+    changeMana(amount){
+        this.mana = amount;
+        this.dispatchEvent(this.createUpdateManaEvent());
+        this.updatePlayerInfoBackend();
+    }
     /**
      * Increases the experience threshold based on the level
      * @returns {number} - New experience threshold
@@ -309,63 +330,25 @@ export class PlayerInfo extends Subject{
     }
     // TODO: rewrite this to have a map of levels and their respective values
     setLevelStats(){
-        if(this.level === 0){
-            this.maxMana = 50;
+        if(this.level){
+            this.maxMana = Level[this.level]["maxMana"];
+            this.maxHealth = Level[this.level]["maxHealth"];
+            this.maxGemAttribute = Level[this.level]["maxGemAttribute"];
+            this.xpThreshold = Level[this.level]["xpThreshold"];
+            this.buildingsThreshold["Tree"] = Level[this.level]["Tree"];
+            this.buildingsThreshold["Bush"] = Level[this.level]["Bush"];
+            this.buildingsThreshold["Wall"] = Level[this.level]["Wall"];
+            this.buildingsThreshold["Tower"] = Level[this.level]["Tower"];
+            this.buildingsThreshold["WarriorHut"] = Level[this.level]["WarriorHut"];
+            this.buildingsThreshold["Mine"] = Level[this.level]["Mine"];
+            this.buildingsThreshold["FusionTable"] = Level[this.level]["FusionTable"];
             this.dispatchEvent(this.createUpdateManaEvent());
-            this.maxHealth = 50;
             this.dispatchEvent(this.createUpdateHealthEvent());
-            this.maxGemAttribute = 1;
-            this.maxBuildings = 2;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall"];
-            this.xpThreshold = 50;
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
-        }else if(this.level === 1){
-            this.maxMana = 100;
-            this.dispatchEvent(this.createUpdateManaEvent());
-            this.maxHealth = 100;
-            this.dispatchEvent(this.createUpdateHealthEvent());
-            this.maxGemAttribute = 2;
-            this.maxBuildings = 4;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
-            this.xpThreshold = 100;
-            this.dispatchEvent(this.createUpdateXpEvent());
-            this.dispatchEvent(this.createUpdateXpThresholdEvent());
-        } else if(this.level === 2){
-            this.maxMana = 200;
-            this.dispatchEvent(this.createUpdateManaEvent());
-            this.maxHealth = 200;
-            this.dispatchEvent(this.createUpdateHealthEvent());
-            this.maxGemAttribute = 4;
-            this.maxBuildings = 6;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
-            this.xpThreshold = 200;
-            this.dispatchEvent(this.createUpdateXpThresholdEvent());
-            this.dispatchEvent(this.createUpdateXpEvent());
-        } else if(this.level === 3){
-            this.maxMana = 400;
-            this.dispatchEvent(this.createUpdateManaEvent());
-            this.maxHealth = 400;
-            this.dispatchEvent(this.createUpdateHealthEvent());
-            this.maxGemAttribute = 6;
-            this.maxBuildings = 8;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
-            this.xpThreshold = 350;
-            this.dispatchEvent(this.createUpdateXpThresholdEvent());
-            this.dispatchEvent(this.createUpdateXpEvent());
-        } else if(this.level === 4){
-            this.maxMana = 600;
-            this.dispatchEvent(this.createUpdateManaEvent());
-            this.maxHealth = 600;
-            this.dispatchEvent(this.createUpdateHealthEvent());
-            this.maxGemAttribute = 8;
-            this.maxBuildings = 10;
-            this.unlockedBuildings = ["WarriorHut", "Mine","FusionTable", "Tree", "Wall", "Tower", "Bush"];
-            this.xpThreshold = 100000;
-            this.dispatchEvent(this.createUpdateXpThresholdEvent());
-            this.dispatchEvent(this.createUpdateXpEvent());
+            this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
+
         }
-        this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
     }
     /**
      * Increases the level of the player
@@ -392,7 +375,7 @@ export class PlayerInfo extends Subject{
         }
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.setLevelStats();
-        popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute, this.maxBuildings, this.unlockedBuildings);
+        popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute);
         this.updatePlayerInfoBackend();
         return true;
     }

@@ -32,7 +32,7 @@
         }
       }
     </script>
-    <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
+    <script src="{{ url_for('static', filename='js/stats/buildStats/stats.min.js') }}"></script>
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
             integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
@@ -80,12 +80,41 @@
             </div>
             <div class="chat-input-area">
                 <input type="text" id="chatInput" placeholder="Type your message...">
-                <button id="sendMessage" class="btn btn-primary">
-                    <i class="fa fa-paper-plane"></i> Send
-                </button>
+                <button id="sendMessage"> Send </button>
             </div>
 
         </div>
+    </div>
+
+        <!-- Level UP -->
+    <div id="LevelUp" class="Levelpopup">
+      <!-- Popup content -->
+      <div class="Levelpopup-content" id="LevelPopupContent" >
+        <button id="detailsButton" class="details-button"> View Details </button>
+      </div>
+    </div>
+
+        <!-- Details Popup-->
+    <div id="LevelDetails" class="detailsInfo">
+      <!-- Details content-->>
+      <div class="Details-content" id="detailsContent">
+      </div>
+    </div>
+
+    <!-- Friends -->
+    <button id="FriendsButton" class="Friends-Button"></button>
+
+    <div id="Friends" class="Friends-Content">
+        <button id="friendListButton" class="Friend-List-Button"></button>
+        <button id="friendAddButton" class="Friend-Add-Button"></button>
+        <button id="friendRequestButton" class="Friend-Request-Button"></button>
+        <div id="addFriend" class="Add-Friend">
+            <label for="usernameFriend" style="color:black;">Username:</label>
+            <input type="text" id="usernameFriend" name="usernameFriend">
+            <button id="requestSubmit" class="Request-Submit" value=""> </button>
+        </div>
+        <div id="listFriend" class="Friend-List"></div>
+        <div id="listRequests" class="Request-List"></div>
     </div>
 
     <!--SocketIO JS -->
@@ -374,6 +403,7 @@
         function animate() {
             if (config.showFPS && !stats.dom.parentElement) {
                 document.body.appendChild(stats.dom);
+                console.log(stats.getFPS())
             } else if (!config.showFPS && stats.dom.parentElement) {
                 stats.dom.remove();
             }

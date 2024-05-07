@@ -1,6 +1,6 @@
-let username = "Unknown user";
+export let username = "Unknown user";
 let admin = false;
-let userId = 0;
+export let userId = 0;
 
 // TODO - @Flynn - This is a hacky way to get the username and admin status, link it to the PlayerInfo class
 $(document).ready(function(){
@@ -124,11 +124,16 @@ export class ChatNamespace {
                         break;
                     }
                 }
-            } else {
+            }
+            else if (message !== "" && !message.startsWith("\\")){
                 this.socket.emit('message', messageData);
             }
         } else if (!message.startsWith("\\")) { // Don't send the message if it starts with a backslash (cheat)
             this.socket.emit('message', messageData);
+        } else{
+            if (message !== ""){
+                this.socket.emit('message', messageData);
+            }
         }
     }
 }
