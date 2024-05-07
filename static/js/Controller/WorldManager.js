@@ -51,9 +51,12 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
+                console.log("imported building", building.blueprint.name);
                 let gems = [];
-                for(const gem of building.gems){
+                if(building.gems){
+                    for(const gem of building.gems){
                     gems.push(this.itemManager.getGemById(gem.id));
+                }
                 }
                 console.log("imported building", building);
                 island.buildings.push({
