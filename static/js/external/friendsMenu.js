@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     let addFriendButton = document.getElementById("friendAddButton");
 
-    let reauestFriendButton = document.getElementById("friendRequestButton");
+    let requestFriendButton = document.getElementById("friendRequestButton");
 
     let listFriendButton = document.getElementById("friendListButton");
 
@@ -22,20 +22,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const usernameFriend = document.getElementById("usernameFriend");
 
-    const acceptRequest = document.getElementById("acceptRequest");
 
-    friendsButton.onclick = function () {
+    friendsButton.onclick = async function () {
         if (Friends.style.display === "block") {
             Friends.style.display = "none";
             addFriendButton.style.display = "none";
             listFriendButton.style.display = "none";
-            reauestFriendButton.style.display = "none";
+            requestFriendButton.style.display = "none";
         } else {
-            populateFriends();
+            await populateFriends();
             Friends.style.display = "block";
             addFriendButton.style.display = "block";
             listFriendButton.style.display = "block"
-            reauestFriendButton.style.display = "block";
+            requestFriendButton.style.display = "block";
         }
 
     }
@@ -47,46 +46,46 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
 
-    listFriendButton.onclick = function () {
+    listFriendButton.onclick = async function () {
         addFriend.style.display = "none";
         requestList.style.display = "none";
-        populateFriends();
+        await populateFriends();
         FriendList.style.display = "block";
     }
 
-    reauestFriendButton.onclick = function () {
+    requestFriendButton.onclick = async function () {
         addFriend.style.display = "none";
         FriendList.style.display = "none";
-        populateRequests();
+        await populateRequests();
         requestList.style.display = "block";
     }
 
-    sendRequestButton.onclick = function () {
-        let receiver_id = AllFriends.getPlayerID(usernameFriend.value.trim());
+    sendRequestButton.onclick = async function () {
+        let receiver_id = await AllFriends.getPlayerID(usernameFriend.value.trim());
         AllFriends.sendRequest(receiver_id);
         usernameFriend.value = '';
     }
 
-    function populateFriends() {
+    async function populateFriends() {
 
         const listFriend = document.getElementById('listFriend');
         listFriend.innerHTML = '';
 
-        let friendsList = AllFriends.getFriends();
+        let friendsList = await AllFriends.getFriends();
 
-        friendsList.forEach(friends => {
+        for (const friends of friendsList){
             // add friend
             const friend = document.createElement('div');
             friend.id = friends;
             friend.classList.add('friend');
-            friend.innerHTML = `${AllFriends.getPlayerUsername(friends)}`;
+            friend.innerHTML = `${await AllFriends.getPlayerUsername(friends)}`;
             const viewIsland = document.createElement('button');
             viewIsland.id = "viewIsland";
             viewIsland.innerHTML = `View Island`;
             viewIsland.classList.add('View-Island');
             friend.appendChild(viewIsland);
             listFriend.appendChild(friend);
-        });
+        }
     }
 
     async function populateRequests() {
@@ -97,18 +96,23 @@ document.addEventListener('DOMContentLoaded', (event) => {
             let status = await AllFriends.getFriendRequestStatus(request.id);
             if(status === "pending"){
                 const requestElement = document.createElement('div');
-                requestElement.id = request.sender_id; // Assume each request has a unique sender ID
+                requestElement.id = "Request-bar"; // Assume each request has a unique sender ID
                 requestElement.classList.add('request');
-                requestElement.innerHTML = `${AllFriends.getPlayerUsername(request.sender_id)}`;
+                requestElement.innerHTML = `${await AllFriends.getPlayerUsername(request.sender_id)}`;
 
                 const acceptButton = document.createElement('button');
                 acceptButton.classList.add('Accept-Request');
-                acceptButton.onclick = () => acceptFriendRequest(request.id);
+                acceptButton.onclick = function (){
+                    acceptFriendRequest(request);
+                    requestElement.remove()
+                }
 
                 const rejectButton = document.createElement('button');
                 rejectButton.classList.add('Reject-Request');
-                rejectButton.onclick = () => rejectFriendRequest(request.id);
-
+                rejectButton.onclick = function (){
+                    rejectFriendRequest(request.id);
+                    requestElement.remove()
+                }
                 requestElement.appendChild(acceptButton);
                 requestElement.appendChild(rejectButton);
                 listRequest.appendChild(requestElement);
@@ -116,13 +120,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     }
 
-    function acceptFriendRequest(requestID) {
+    function acceptFriendRequest(request) {
         // Handle accepting a friend request here
         try {
             $.ajax({
                 url: `${API_URL}/api/friend_request`,
                 type: "PUT",
-                data: JSON.stringify(formatPUTFriend(requestID, "accepted")),
+                data: JSON.stringify(formatPUTFriend(request.id, "accepted")),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -130,14 +134,20 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 }
             }).done( function (){
                 $.ajax({
-                    url: `${API_URL}/api/friend_request?id=${requestID}`,
+                    url: `${API_URL}/api/friend_request?id=${request.id}`,
                     type: "DELETE",
                     contentType: "application/json",
                     error: (e) => {
                         console.error(e);
                     }
                 })
+
             });
+            for (let player in AllFriends.playerList){
+                if(AllFriends.playerList[player].user_profile_id === request.receiver_id){
+                    AllFriends.playerList[player].friends.push(request.sender_id);
+                }
+            }
         } catch (err){
             console.error(err);
         }
@@ -173,6 +183,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     function formatPUTFriend(requestID, status) {
         return {id: requestID, status: status};
+    }
+
+    window.onclick = function(event) {
+        if (!Friends.contains(event.target) && event.target !== friendsButton  && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')){
+            Friends.style.display = 'none';
+        }
     }
 
 
