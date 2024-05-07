@@ -7,6 +7,8 @@ import * as THREE from "three";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 import {buildingStats} from "../configs/Enums.js";
+import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
+import {Island} from "../Model/Entities/Foundations/Island.js";
 
 
 /**
@@ -228,10 +230,6 @@ export class WorldManager{
         this.collisionDetector.generateColliderOnWorker();
     }
 
-    addProxys(){
-        this.world.addProxys();
-    }
-
 
     addSpellSpawners(){
         this.world.addSpellSpawners();
@@ -258,7 +256,6 @@ export class WorldManager{
      * @param {number} team
      */
     resetWorldState(currentIslandIsCenter = true){
-        this.factory.resetMinionCount();
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
         if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
@@ -424,6 +421,62 @@ export class WorldManager{
                    controller.addMinion(this.factory.createMinion(event.detail));
                 });
                 this.world.addMinionSpawner(spawner);
+            });
+        });
+    }
+
+    /**
+     * places spellSpawners on towers and attaches event listeners to them. The event listeners add the spells to the world
+     * @param {{spell: {type: ConcreteSpell, params: Object}, interval: number}} params - the parameters for the spell spawner
+     */
+    generateSpellSpawners(params){
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
+            const towers = island.getBuildingsByType("tower_building");
+            towers.forEach((tower) => {
+                const position = tower.position;
+                position.y += 50;
+                const spawner = new SpellSpawner({
+                    position: position,
+                    buildingID: tower.id,
+                    interval: params.interval,
+                    spell: params.spell,
+                    team: 0,
+                    collisionDetector: this.collisionDetector
+                });
+                spawner.addEventListener("spawn", (event) => {
+                    this.spellFactory.createSpell(event);
+                });
+                this.world.addSpellSpawner(spawner);
+            });
+        });
+    }
+
+    /** adds proxy models and view to the island of towers and altars
+     *  this is used to check for collisions with spells, and to display the health of the towers and altars
+     */
+    generateProxys(){
+        //TODO: rewrite this to be more generic
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Island)) return;
+            island.getBuildingsByType("altar_building").forEach((building) => {
+                const proxy = this.factory.createProxy({
+                    position: building.position,
+                    team: building.team,
+                    buildingName: "Altar"
+
+                });
+                island.addProxy(proxy);
+            });
+
+            island.getBuildingsByType("tower_building").forEach((building) => {
+                const proxy = this.factory.createProxy({
+                    position: building.position,
+                    team: building.team,
+                    buildingName: "Tower"
+
+                });
+                island.addProxy(proxy);
             });
         });
     }

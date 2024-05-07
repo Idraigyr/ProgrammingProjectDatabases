@@ -14,8 +14,8 @@ import {Minion} from "./Entities/Characters/Minion.js";
 import {Bridge} from "./Entities/Foundations/Bridge.js";
 import {Wall} from "./Entities/Buildings/Wall.js";
 import {Character} from "./Entities/Characters/Character.js";
-import {AltarProxy} from "./Entities/AltarProxy.js";
-import {TowerProxy} from "./Entities/TowerProxy.js";
+import {AltarProxy} from "./Entities/Proxys/AltarProxy.js";
+import {TowerProxy} from "./Entities/Proxys/TowerProxy.js";
 
 
 /**

@@ -10,7 +10,7 @@ class SpellEntity extends Entity{
     constructor(params) {
         super(params);
         this.spellType = params.spellType;
-        this.duration = params.duration;
+        this.duration = params?.duration ?? 0;
         this.canDamage = params?.canDamage ?? true;
         this.hitSomething = false;
         this.timer = 0;
@@ -126,7 +126,7 @@ export class Projectile extends SpellEntity{
         super(params);
         this.direction = params.direction;
         this.velocity = params.velocity;
-        this.fallOf = params.fallOf;
+        this.fallOf = params?.fallOf ?? 0;
     }
     /**
      * updates projectile (position, superclass.update) and dispatches updatePosition event

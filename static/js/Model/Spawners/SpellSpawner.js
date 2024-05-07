@@ -8,14 +8,14 @@ import {Spawner} from "./Spawner.js";
 export class SpellSpawner extends Spawner{
     /**
      * ctor
-     * @param {{position: THREE.Vector3, team: number, spellFactory: spellFactory, direction: THREE.Vector3, spell: ConcreteSpell, interval: number, spawnPosition: THREE.Vector3}} params
+     * @param {{position: THREE.Vector3, team: number, spellFactory: spellFactory, direction: THREE.Vector3, spell: ConcreteSpell, interval: number, spawnPosition: THREE.Vector3, collisionDetector: CollisionDetector}} params
      */
     constructor(params) {
         super(params);
         this.spell = params?.spell?.type ?? null;
         this.spellParams = params?.spell?.params ?? null;
         if(this.spellParams) this.spellParams.position = this.position.clone();
-        this.nearestTarget = null;
+        this.nearestTarget = null; //TODO: remove?
         this.position = params?.position;
         this.damageMultiplier = params?.damage ?? 1;
         this.speedMultiplier = params?.speed ?? 1;
@@ -61,18 +61,16 @@ export class SpellSpawner extends Spawner{
             if(this.timer >= this.calculateSpeed() && this.spell) {
                 const params = {...this.spellParams};
                 params.damage = this.calculateDamage(this.spellParams.damage);
-                if (this.nearestTarget) {
-                    params.direction = new THREE.Vector3().subVectors(this.nearestTarget.position, this.position).normalize();
-                } else {
-                    params.direction = new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize();
-                }
+                const enemyPosition = closestEnemy.position;
+                enemyPosition.y += Math.floor(closestEnemy.height/2);
+                params.direction = new THREE.Vector3().subVectors(enemyPosition, this.position).normalize();
                 params.team = this.team;
                 params.position = this.position.clone();
                 //random offset
-                params.direction.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize());
+                // params.direction.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize());
                 console.log("Spawning spell", this.spell, "with params", params);
                 this.dispatchEvent(this._createSpawnEvent({
-                    type: this.spell,
+                    type: this.spell.constructor,
                     params: params
                 }));
                 this.timer = 0;

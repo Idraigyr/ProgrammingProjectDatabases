@@ -75,6 +75,14 @@ export class World{
     }
 
     /**
+     * Add a spell spawner to the world
+     * @param {SpellSpawner} spawner
+     */
+    addSpellSpawner(spawner){
+        this.spawners.spells.push(spawner);
+    }
+
+    /**
      * Clear all minion spawners
      */
     clearMinionSpawners(){
@@ -86,14 +94,6 @@ export class World{
      */
     clearSpellSpawners(){
         this.spawners.spells = [];
-    }
-
-    /**
-     * Add a spell spawner to the world
-     * @param {SpellSpawner} spawner
-     */
-    addSpellSpawner(spawner){
-        this.spawners.spells.push(spawner);
     }
 
     /**
@@ -170,57 +170,6 @@ export class World{
         }
         console.error("failed to add new building to island, there is no island at the position");
         //TODO: throw error?
-    }
-    /** adds proxy models and view to the island of towers and altars
-     *  this is used to check for collisions with spells, and to display the health of the towers and altars
-     */
-    addProxys(){
-        //TODO: rewrite this to be more generic
-        this.islands.forEach((island) => {
-            if(!(island instanceof Island)) return;
-            island.getBuildingsByType("altar_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Altar"
-
-                });
-                island.addProxy(proxy);
-            });
-
-            island.getBuildingsByType("tower_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Tower"
-
-                });
-                island.addProxy(proxy);
-            });
-        });
-    }
-    /**
-    adds a spellspawner to every tower on the island
-     */
-    addSpellSpawners(){
-        this.islands.forEach((island) => {
-            if(!(island instanceof Island)) return;
-            island.getBuildingsByType("tower_building").forEach((tower) => {
-                let position = tower.position.clone();
-                position.y += 35
-                position.x += 3;
-                const spawner = new SpellSpawner({
-                    spell: {type: new Fireball({}), params: {damage: 10, velocity: 20 }},
-                    position: position,
-                    team: tower.team,
-                    collisionDetector: this.collisionDetector
-                });
-                spawner.addEventListener("spawn", (event) => {
-                   this.spellFactory.createSpell(event);
-                });
-                this.addSpellSpawner(spawner);
-            });
-        });
     }
 
 

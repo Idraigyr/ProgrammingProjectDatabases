@@ -39,8 +39,12 @@ export class ProxyView extends IView{
      * Clean up the view for disposal
      */
     dispose() {
+        try {
+            this.boxHelper.parent.remove(this.boxHelper);
+        } catch (err){
+            console.log("BoxHelper not added to scene.");
+        }
         this.healthBar.parent.remove(this.healthBar);
-        super.dispose();
     }
 
 
