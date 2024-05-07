@@ -118,6 +118,31 @@ export class Wizard extends Character{
     }
 
     /**
+     * changes spellCooldown
+     * @param spellName
+     * @param coolDown
+     */
+    changeSpellCoolDown(spellName, coolDown){
+        let index = 0;
+        for(let spell of this.spells){
+            if(spell.name === spellName){
+                spell.spell.cooldown = coolDown;
+                this.spellCooldowns[index] = coolDown;
+            }
+            index++;
+        }
+    }
+
+    /**
+     * sets cost of all spells to 0
+     */
+    changeSpellCost() {
+        for(let spell of this.spells){
+            spell.cost = 0;
+        }
+    }
+
+    /**
      * Notify observers of the current condition of the player
      */
     advertiseCurrentCondition(){

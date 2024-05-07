@@ -17,6 +17,11 @@ export function popUp(level, maxMana, maxHealth, maxGemAttribute){
     levelContent.prepend(newLevelP);
     modal.style.display = "block";
 
+    setTimeout(function () {
+        newLevelP.remove();
+        modal.style.display = "none";
+    }, 5000);
+
 
     let details = document.getElementById("detailsButton");
 
@@ -48,8 +53,6 @@ export function popUp(level, maxMana, maxHealth, maxGemAttribute){
     }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
     document.onkeydown = function(event) {
-        newLevelP.remove();
-        modal.style.display = "none";
         levelDetails.remove();
         detailsInfo.style.display = "none";
     }

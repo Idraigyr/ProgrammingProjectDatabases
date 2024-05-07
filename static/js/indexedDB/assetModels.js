@@ -14,7 +14,6 @@ async function storeModel(modelName, blob){
           name: modelName,
           content: blob
         });
-        console.log(`Model ${modelName} stored successfully.`);
         return blob; // Return the blob if successfully stored
   } catch (error) {
         console.error(`Error storing model ${modelName}:`, error);
