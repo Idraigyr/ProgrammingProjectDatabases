@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             listFriendButton.style.display = "none";
             requestFriendButton.style.display = "none";
         } else {
+            FriendList.style.display = "none";
             await populateFriends();
             Friends.style.display = "block";
             addFriendButton.style.display = "block";
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
 
     listFriendButton.onclick = async function () {
+        FriendList.style.display = "none";
         addFriend.style.display = "none";
         requestList.style.display = "none";
         await populateFriends();

@@ -100,15 +100,15 @@ export class ChatNamespace {
             } else if (message.match(regex["shieldCooldown"])) {
                 this.app.spellCaster.changeCooldown("shield", Number(message.match(regex["shieldCooldown"])[1]));
             } else if (message.match(regex["fireCooldown"])) {
-                this.app.spellCaster.changeCooldown("fireball", Number(message.match(regex["shieldCooldown"])[1]));
+                this.app.spellCaster.changeCooldown("fireball", Number(message.match(regex["fireCooldown"])[1]));
 
             } else if (message.match(regex["buildCooldown"])) {
-                this.app.spellCaster.changeCooldown("build", Number(message.match(regex["shieldCooldown"])[1]));
+                this.app.spellCaster.changeCooldown("build", Number(message.match(regex["buildCooldown"])[1]));
 
             } else if (message.match(regex["forceSpells"])) {
                 this.app.spellCaster.changeSpellCost();
             } else if (message.match(regex["thunderCloudCooldown"])) {
-                this.app.spellCaster.changeCooldown("thundercloud", Number(message.match(regex["shieldCooldown"])[1]));
+                this.app.spellCaster.changeCooldown("thundercloud", Number(message.match(regex["thunderCloudCooldown"])[1]));
             }
             else if (message !== "" && !message.startsWith("\\")){
                 this.socket.emit('message', messageData);
