@@ -96,6 +96,7 @@ class ForwardingNamespace(Namespace):
         Register the clients when they connect
         """
         sid = request.sid
+        print(f"Client connected: sid={sid}")
 
         try:
             verify_jwt_in_request()
@@ -114,6 +115,8 @@ class ForwardingNamespace(Namespace):
 
         if user_id not in self.clients:
             self.clients[user_id] = sid
+            self._log.debug(f"Client connected: user_id={user_id}, sid={sid}")
+            print(f"Client connected: user_id={user_id}, sid={sid}")
         else:
             self._log.error(f"player is already logged in", exc_info=True)
             #TODO: send error message to client that they are already connected
@@ -144,6 +147,7 @@ class ForwardingNamespace(Namespace):
             # remove player from clients
             self.clients.pop(user_id)
             self._log.info(f"Client disconnected: user_id={user_id}, sid={sid}")
+            print(f"Client disconnected: user_id={user_id}, sid={sid}")
             break
 
     def on_forward(self, data):
@@ -210,17 +214,21 @@ class ForwardingNamespace(Namespace):
         """
 
 
-    def on_match_found(self, match_id: int, player1: int, player2: int):
+    def on_match_found(self, player1: int, player2: int):
         """
         Sends a message to the matched players that they have been matched
         :param match_id: match_id
         :param player1: player1
         :param player2: player2
         """
+        print("clients:", self.clients)
+        # Unique id based on the two player ids
+        match_id = f'{player1}-{player2}'
         self._log.debug(f"Match found: {match_id}")
+
         try:
             self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player2])
             self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player1])
         except Exception:
-            self._log.error(f"Could not send match found message: {match_id}", exc_info=True)
+            self._log.error(f"Could not send match found message: {match_id} between {player1} and {player2}", exc_info=True)
 

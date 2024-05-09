@@ -111,6 +111,7 @@ class App {
 
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new Controller.RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
+        this.collisionDetector.setRaycastController(this.raycastController);
         this.inputManager = new Controller.InputManager({canvas: canvas});
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -303,7 +304,6 @@ class App {
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
-            this.togglePhysicsUpdates(false);
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
             if (building && !building.ready) return;
@@ -360,7 +360,6 @@ class App {
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
             this.worldManager.currentRotation = event.detail.rotation;
-            this.togglePhysicsUpdates(true);
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
@@ -424,7 +423,9 @@ class App {
      */
     togglePhysicsUpdates(bool = null){
         this.simulatePhysics = bool ?? !this.simulatePhysics;
-        if(this.simulatePhysics) this.clock.getDelta();
+        if(this.simulatePhysics) {
+            this.clock.getDelta();
+        }
     }
 
     /**
