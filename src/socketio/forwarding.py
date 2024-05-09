@@ -208,3 +208,19 @@ class ForwardingNamespace(Namespace):
         :param data: message from the client
         :return:
         """
+
+
+    def on_match_found(self, match_id: int, player1: int, player2: int):
+        """
+        Sends a message to the matched players that they have been matched
+        :param match_id: match_id
+        :param player1: player1
+        :param player2: player2
+        """
+        self._log.debug(f"Match found: {match_id}")
+        try:
+            self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player2])
+            self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player1])
+        except Exception:
+            self._log.error(f"Could not send match found message: {match_id}", exc_info=True)
+
