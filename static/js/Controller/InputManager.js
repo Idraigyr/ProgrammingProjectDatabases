@@ -291,9 +291,19 @@ export class InputManager extends Subject{
         settingsCloseButton.addEventListener('click', callback);
     }
 
+    addRespawnButtonListener(callback) {
+        const respawnButton = document.querySelector('.respawnButton');
+        respawnButton.addEventListener('click', callback);
+    }
+
     addLogoutButtonListener(callback) {
         const logoutButton = document.querySelector('.logOutButton');
         logoutButton.addEventListener('click', callback);
+    }
+
+    addLeaveMatchButtonListener(callback) {
+        const leaveMatchButton = document.querySelector('.leaveMatchButton');
+        leaveMatchButton.addEventListener('click', callback);
     }
 
     addDeleteAccountButtonListener(callback) {

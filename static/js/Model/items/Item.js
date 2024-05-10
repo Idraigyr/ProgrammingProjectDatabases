@@ -12,7 +12,6 @@ export class Item{
      * @return {string}
      */
     getItemId(){
-        console.log("getItemId: ", `${this.type}-${this.id}`);
         return `${this.type}-${this.id}`;
     }
 
@@ -82,23 +81,45 @@ export class Attribute extends Item{
 export class Gem extends Item{
     constructor(params) {
         super(params);
+        this.staked = params?.staked ?? false;
         this.power = params?.power ?? 0;
         this.attributes = [];
         this.equippedIn = params?.equippedIn ?? null; // Building id
-        this.slot = null;
-        this.belongsIn = "GemsMenu";
+        this.slot = params?.slot ?? null;
+        this.belongsIn = (params?.staked ?? false) ? "StakesMenu" : "GemsMenu";
+        console.log("created gem:", this);
     }
     get type(){
         return "Gem";
     }
 
+    getDescription(){
+        let description = "";
+        this.attributes.forEach(attribute => {
+            description += `${attribute.name} x${Math.round(attribute.multiplier*100)/100} / `;
+        });
+        return description.slice(0, description.length-3);
+    }
+
     addAttribute(attribute){
-        const hasAttribute = this.attributes.find(attr => attr.type === attribute.type);
+        const hasAttribute = this.attributes.find(attr => attr.name === attribute.name);
         if(hasAttribute){
             hasAttribute.multiplier += attribute.multiplier;
         } else {
             this.attributes.push(attribute);
         }
+    }
+
+    /**
+     * Get the attributes of the gem
+     * @return {Map<any, any>}
+     */
+    getAttributes(){
+        let stats = new Map();
+        this.attributes.forEach(attribute => {
+            stats.set(attribute.name, attribute.multiplier);
+        });
+        return stats;
     }
 
     removeAttribute(type){
@@ -111,7 +132,6 @@ export class Gem extends Item{
      */
     setId(data) {
         this.id = data.id;
-        console.log("Gem id set to: ", this.id);
     }
 
     /**
@@ -127,7 +147,6 @@ export class Gem extends Item{
         this.attributes.forEach(attribute => {
             obj.attributes.push(attribute.formatPOSTData());
         });
-        console.log(obj);
         return obj;
     }
 
@@ -140,6 +159,9 @@ export class Gem extends Item{
         let obj = super.formatPUTData();
         if(changes.includes("equippedIn")){
             obj.building_id = this.equippedIn;
+        }
+        if(changes.includes("staked")){
+            obj.staked = this.staked;
         }
         return obj;
     }

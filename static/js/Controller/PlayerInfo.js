@@ -1,10 +1,11 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, islandURI, playerProfileURI, playerURI, timeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI, islandURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
+import {assert} from "../helpers.js";
 import {Level} from "../configs/LevelConfigs.js";
-import * as THREE from "three";
+import {Vector3} from "three";
 
 /**
  * Class that holds the user information
@@ -32,12 +33,10 @@ export class PlayerInfo extends Subject{
         this.experience = 0;
         this.xpThreshold = 50;
 
-        this.playerPosition = {
-            x: 0,
-            y: 0,
-            z: 0
-        }
-        this.buildingsThreshold = {Tree: Level[this.level]["Tree"],
+        this.playerPosition = new Vector3(0, 0, 0);
+
+        this.buildingsThreshold = {
+            Tree: Level[this.level]["Tree"],
             Bush: Level[this.level]["Bush"],
             Wall: Level[this.level]["Wall"],
             Tower: Level[this.level]["Tower"],
@@ -47,6 +46,55 @@ export class PlayerInfo extends Subject{
         };
         this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0}
 
+    }
+
+    async logout(){
+        // Get current time
+        const currentTime = await this.getCurrentTime();
+        try {
+            $.ajax({
+                url: `${API_URL}/${playerURI}`,
+                type: 'PUT',
+                data: JSON.stringify({
+                    user_profile_id: this.userID,
+                    last_logout: currentTime,
+                    entity: {
+                        x: Math.round(this.playerPosition.x),
+                        y: Math.round(this.playerPosition.y + 20), // To prevent the player from spawning in the ground
+                        z: Math.round(this.playerPosition.z)
+                    }
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                error: (e) => {
+                    console.error(e);
+                }
+            });
+        } catch (err){
+            console.error(err);
+        }
+    }
+
+    async login(){
+        // Get current time
+        const currentTime = await this.getCurrentTime();
+        try {
+            $.ajax({
+                url: `${API_URL}/${playerURI}`,
+                type: 'PUT',
+                data: JSON.stringify({
+                    user_profile_id: this.userID,
+                    last_login: currentTime
+                }),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                error: (e) => {
+                    console.error(e);
+                }
+            });
+        } catch (err){
+            console.error(err);
+        }
     }
 
     /**
@@ -99,6 +147,24 @@ export class PlayerInfo extends Subject{
     }
 
     /**
+     * Retrieves user info from the server and filters out the gems
+     * the retrieveInfo method needs to have been called at least once before this method (to get userID)
+     * @return {Promise<Object[]>} - returns a promise that resolves with the gems array
+     */
+    async retrieveGems(){
+        assert(this.userID, "playerInfo.retrieveGems: userID is not defined");
+        try {
+            // GET request to server
+            const response = await $.getJSON(`${API_URL}/${playerURI}?id=${this.userID}`);
+            console.log(response);
+            return response.gems;
+        } catch (err){
+            console.error(err);
+        }
+        return null;
+    }
+
+    /**
      * Retrieves the current time from the server
      * @returns {Promise<*>} - Promise that resolves with the current time
      */
@@ -136,6 +202,10 @@ export class PlayerInfo extends Subject{
         return this.level*10;
     }
 
+    isPlayerLoggedIn(){
+        return this.userID !== null;
+    }
+
     /**
      * Calculates the mana bonus based on the level
      * @returns {number} - Mana bonus
@@ -166,6 +236,10 @@ export class PlayerInfo extends Subject{
         this.updatePlayerInfoBackend();
     }
 
+    updatePlayerPosition(event){
+        this.playerPosition = event.detail.position;
+    }
+
     /**
      * Updates the player information on the server
      */
@@ -182,15 +256,14 @@ export class PlayerInfo extends Subject{
                     xp: this.experience,
                     mana: this.mana,
                     entity: {
-                        // x: this.playerPosition.x,
-                        // y: this.playerPosition.y,
-                        // z: this.playerPosition.z,
-                        // level: this.level
+                        x: Math.round(this.playerPosition.x),
+                        y: Math.round(this.playerPosition.y),
+                        z: Math.round(this.playerPosition.z),
+                        level: this.level
                     }
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
-                async: false,
                 error: (e) => {
                     console.error(e);
                 }
@@ -221,7 +294,14 @@ export class PlayerInfo extends Subject{
             return 100000;
         }
     }
-
+    respawn(){
+        this.playerPosition.x = playerSpawn.x;
+        this.playerPosition.y = playerSpawn.y;
+        this.playerPosition.z = playerSpawn.z;
+        console.log("Player respawned on ", this.playerPosition);
+        this.advertiseCurrentCondition();
+        location.reload();
+    }
     /**
      * Changes the amount of experience
      * @param amount - Amount of experience to add

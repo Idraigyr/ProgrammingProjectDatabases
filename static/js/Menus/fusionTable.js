@@ -257,6 +257,7 @@ const arrow = document.getElementById('arrow');
 
 // Function to start or stop the animation based on condition
 function toggleAnimation(condition) {
+    console.log(condition);
     if (condition) {
         arrow.classList.add('move-right');
     } else {

@@ -31,6 +31,8 @@ export class Character extends Entity{
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
+
+        this.updateEvent = this.forwardStateUpdate.bind(this);
     }
 
     /**
@@ -47,10 +49,10 @@ export class Character extends Entity{
      */
     set fsm(fsm){
         if(this.#fsm){
-            this.#fsm.removeEventListener("updatedState", this.forwardStateUpdate.bind(this));
+            this.#fsm.removeEventListener("updatedState", this.updateEvent);
         }
         this.#fsm = fsm;
-        this.#fsm.addEventListener("updatedState", this.forwardStateUpdate.bind(this));
+        this.#fsm.addEventListener("updatedState", this.updateEvent);
     }
 
     /**
@@ -61,6 +63,11 @@ export class Character extends Entity{
         return this.#fsm;
     }
 
+    /**
+     * Create a CustomEvent for dispatching the current (animation) state of the character
+     * @param event
+     * @return {CustomEvent<unknown>}
+     */
     createUpdatedStateEvent(event){
         return new CustomEvent("updatedState", {detail: event.detail});
     }
@@ -100,6 +107,15 @@ export class Character extends Entity{
      */
     createUpdateRotationEvent(){
         return new CustomEvent("updateRotation", {detail: {rotation: new THREE.Quaternion().copy(this.quatFromHorizontalRotation)}});
+    }
+
+    /**
+     * Create a CustomEvent for updating the health of the character
+     * @param {number} prevHealth
+     * @return {CustomEvent<{current: (*|number), total: (*|number)}>}
+     */
+    createHealthUpdateEvent(prevHealth){
+        return new CustomEvent("updateHealth", {detail: {previous: prevHealth, current: this.health, total: this.maxHealth}});
     }
 
     /**
@@ -149,5 +165,23 @@ export class Character extends Entity{
     get type(){
         // throw new Error("cannot get type of abstract class Character");
         return "character";
+    }
+
+    /**
+     * Take damage
+     */
+    takeDamage(damage){
+        if(damage <= 0) return;
+        const prevHealth = this.health;
+        this.health -= damage;
+        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
+        if(this.health <= 0){
+            this.health = 0;
+            this.dies();
+        }
+    }
+
+    dies(){
+        throw new Error("cannot call abstract method Character.dies");
     }
 }

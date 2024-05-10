@@ -6,18 +6,26 @@ import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
 import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
+import {buildingStats} from "../configs/Enums.js";
+import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
+import {Island} from "../Model/Entities/Foundations/Island.js";
 
 
 /**
  * Class that manages the world
  */
 export class WorldManager{
+    /**
+     * Constructor for the WorldManager
+     * @param {Object} params - the parameters for the WorldManager
+     */
     constructor(params) {
         this.world = null;
         this.playerInfo = params.playerInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
+        this.itemManager = params.itemManager;
         this.currentPos = null;
         this.currentRotation = 0;
 
@@ -45,12 +53,22 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
+                console.log("imported building", building.blueprint.name);
+                let gems = [];
+                if(building.gems){
+                    for(const gem of building.gems){
+                    gems.push(this.itemManager.getGemById(gem.id));
+                }
+                }
+                console.log("imported building", building);
                 island.buildings.push({
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: building.rotation*90,
                     id: building.placeable_id,
-                    gems: building.gems
+                    gems: gems,
+                    stats: buildingStats.getStats(building.blueprint.name),
+                    task: building.task
                 });
             }
 
@@ -190,16 +208,20 @@ export class WorldManager{
     }
 
     async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
+        console.log("importing island island:", this.world.islands[0]);
+        console.log("importing island player", this.world.player);
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
         const rotation = 180;
         console.log("offset", offset);
         if(currentIslandIsCenter){
+            console.log("%ccurrent island is center", "color: green; font-size: 20px");
             islandPosition.add(offset);
             //TODO: implement rotation in factory createIsland
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
         } else {
+            console.log("%cother island is center", "color: red; font-size: 20px");
             const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
             this.moveCurrentIsland(offset, rotation);
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
@@ -209,6 +231,11 @@ export class WorldManager{
         this.world.addIsland(this.factory.createBridge({position: position, rotation: 0, width: width, length: length, team: 3}));
 
         this.collisionDetector.generateColliderOnWorker();
+    }
+
+
+    addSpellSpawners(){
+        this.world.addSpellSpawners();
     }
 
     /**
@@ -228,13 +255,16 @@ export class WorldManager{
 
     /**
      * resets the world state, removing all entities of other teams, removing spawners
+     * @param {boolean} currentIslandIsCenter - whether the current island is the center island in the multiplayer match
      * @param {number} team
      */
-    resetWorldState(){
+    resetWorldState(currentIslandIsCenter = true){
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
-        this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
+        if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
         this.collisionDetector.generateColliderOnWorker();
+        console.log("reset world state island:", this.world.islands[0]);
+        console.log("reset world state player", this.world.player);
     }
 
 
@@ -245,11 +275,17 @@ export class WorldManager{
      */
     async importWorld(islandID){
         const {island, characters} = await this.importIsland(islandID);
-
+        let playerPosition;
+        if(this.playerInfo.playerPosition) {
+            playerPosition = this.playerInfo.playerPosition;
+        }else{ //TODO: if i'm not mistaken, this is unneccesary because it already happens in the playerInfo
+            playerPosition = {x: playerSpawn.x, y: playerSpawn.y, z: playerSpawn.z};
+        }
+        console.log("Player position from database: ", playerPosition);
         const player = {position: {
-                x: playerSpawn.x,
-                y: playerSpawn.y,
-                z: playerSpawn.z
+                x: playerPosition.x,
+                y: playerPosition.y,
+                z: playerPosition.z
             },
             health: this.playerInfo.health,
             maxHealth: this.playerInfo.maxHealth,
@@ -270,6 +306,32 @@ export class WorldManager{
         this.world.player.changeEquippedSpell(4,new IceWall({}));
         characters.forEach((characters) => {
 
+        });
+        this.deleteOldTasks(); // TODO: or somewhere else?
+    }
+
+    async deleteOldTasks(){
+        // Get all tasks from the server
+        $.getJSON(`${API_URL}/${taskURI}/list?island_id=${this.playerInfo.islandID}&is_over=true`).done((data) => {
+            // Delete all tasks that are finished
+            data.forEach((task) => {
+                $.ajax({
+                    url: `${API_URL}/${taskURI}?id=${task.id}`,
+                    type: "DELETE",
+                    error: (e) => {
+                        console.error(e);
+                    }
+                }).done((data, textStatus, jqXHR) => {
+                    console.log("DELETE success");
+                    console.log(textStatus, data);
+                }).fail((jqXHR, textStatus, errorThrown) => {
+                    console.log("DELETE fail");
+                    console.error(textStatus, errorThrown);
+                });
+            });
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.error("GET request failed");
+            console.error(textStatus, errorThrown);
         });
     }
 
@@ -348,18 +410,74 @@ export class WorldManager{
     /**
      * places minionSpawners on warrior huts and attaches event listeners to them. The event listeners add the minions to the world and attach their controller
      * @param {MinionController} controller
+     * @param {{interval: number, maxSpawn: number}} params - the parameters for the minion spawner
      */
-    generateMinionSpawners(controller){ //TODO: refactor this method: try to remove arrow function
+    generateMinionSpawners(controller, params){ //TODO: refactor this method: try to remove arrow function?
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const warriorHuts = island.getBuildingsByType("warrior_hut");
             warriorHuts.forEach((hut) => {
-                const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: 4, maxSpawn: 6});
+                const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: params.interval, maxSpawn: params.maxSpawn, team: 0});
                 spawner.addEventListener("spawn", (event) => {
                    controller.addMinion(this.factory.createMinion(event.detail));
                 });
                 this.world.addMinionSpawner(spawner);
+            });
+        });
+    }
 
+    /**
+     * places spellSpawners on towers and attaches event listeners to them. The event listeners add the spells to the world
+     * @param {{spell: {type: ConcreteSpell, params: Object}, interval: number}} params - the parameters for the spell spawner
+     */
+    generateSpellSpawners(params){
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
+            const towers = island.getBuildingsByType("tower_building");
+            towers.forEach((tower) => {
+                const position = tower.position;
+                position.y += 40;
+                const spawner = new SpellSpawner({
+                    position: position,
+                    buildingID: tower.id,
+                    interval: params.interval,
+                    spell: params.spell,
+                    team: 0,
+                    collisionDetector: this.collisionDetector
+                });
+                spawner.addEventListener("spawn", (event) => {
+                    this.spellFactory.createSpell(event);
+                });
+                this.world.addSpellSpawner(spawner);
+            });
+        });
+    }
+
+    /** adds proxy models and view to the island of towers and altars
+     *  this is used to check for collisions with spells, and to display the health of the towers and altars
+     */
+    generateProxys(){
+        //TODO: rewrite this to be more generic
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Island)) return;
+            island.getBuildingsByType("altar_building").forEach((building) => {
+                const proxy = this.factory.createProxy({
+                    position: building.position,
+                    team: building.team,
+                    buildingName: "Altar"
+
+                });
+                island.addProxy(proxy);
+            });
+
+            island.getBuildingsByType("tower_building").forEach((building) => {
+                const proxy = this.factory.createProxy({
+                    position: building.position,
+                    team: building.team,
+                    buildingName: "Tower"
+
+                });
+                island.addProxy(proxy);
             });
         });
     }
@@ -568,10 +686,6 @@ export class WorldManager{
         } catch (err){
             console.error(err);
         }
-    }
-
-    async updateGems(){
-
     }
 
     async updateBuildings(){

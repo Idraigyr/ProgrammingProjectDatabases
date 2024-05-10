@@ -22,10 +22,11 @@ export class Wizard extends Character{
      * Change the equipped spell
      * @param index - index of the spell slot to equip
      * @param newSpell - new spell to equip
+     * @param onCooldown - if the spell should be on cooldown when equipped
      */
-    changeEquippedSpell(index, newSpell){
+    changeEquippedSpell(index, newSpell, onCooldown = false){
         this.spells.splice(index,1,newSpell);
-        this.spellCooldowns.splice(index,1,newSpell.getCooldown());
+        this.spellCooldowns.splice(index,1,onCooldown ? newSpell.getCooldown() : 0);
     }
 
     /**
@@ -181,6 +182,15 @@ export class Wizard extends Character{
      */
     #createUpdateCooldownsEvent() {
         return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
+    }
+
+    /**
+     * Function that gets called when the player dies
+     */
+    dies() {
+        console.log("Player died")
+        this.dispatchEvent(new CustomEvent("playerDied"));
+
     }
 
 

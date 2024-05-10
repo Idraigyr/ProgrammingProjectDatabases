@@ -97,7 +97,7 @@ export class CharacterController extends Subject{
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
         //const correctedDeltaTime = min(deltaTime, 0.1);
         this._character.velocity.y += deltaTime * gravity;
-
+        this.tempPosition.copy(this._character.position);
         this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustCharacterPosition(this._character, this.tempPosition, deltaTime);
@@ -159,8 +159,6 @@ export class CharacterController extends Subject{
             this._character.fsm.setState("Idle");
             return;
         }
-
-
 
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);

@@ -13,6 +13,7 @@ export class Island extends Foundation{
     constructor(params) {
         super(params);
         this.buildings = [];
+        this.proxys = [];
     }
 
     /**
@@ -20,7 +21,22 @@ export class Island extends Foundation{
      */
     dispose() {
         this.buildings.forEach(building => building.dispose());
+        this.disposeProxys();
         super.dispose();
+    }
+    /**
+     * clean up the model for deletion
+     */
+    disposeProxys(){
+        this.proxys.forEach(proxy => proxy.dispose());
+    }
+
+    /**
+     * Add a proxy to the island
+     * @param proxy - proxy to add
+     */
+    addProxy(proxy) {
+        this.proxys.push(proxy);
     }
 
     /**
@@ -65,9 +81,12 @@ export class Island extends Foundation{
      * @param vector - new position
      */
     set position(vector){
+        console.log("moving island");
         const delta = vector.clone().sub(this.position);
         for(const building of this.buildings){
+            if(building.constructor.name === "Altar") console.log("moving altar from position: ", building.position, " by delta: ", delta);
             building.position = building.position.add(delta);
+            if(building.constructor.name === "Altar") console.log("new altar position: ", building.position);
         }
         super.position = vector;
     }
@@ -137,4 +156,5 @@ export class Island extends Foundation{
     getBuildingByIndex(index){
         return this.buildings.find(building => building.cellIndex === index);
     }
+
 }

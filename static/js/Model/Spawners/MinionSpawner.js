@@ -8,6 +8,7 @@ export class MinionSpawner extends Spawner{
         super(params);
         this.counter = 0;
         this.maxSpawn = params?.maxSpawn ?? 1;
+        this.team = params?.team ?? 0;
         this.types = ["SkeletonMinion", "SkeletonWarrior", "SkeletonMage", "SkeletonRogue"];
     }
 
@@ -18,11 +19,11 @@ export class MinionSpawner extends Spawner{
     update(deltaTime) {
         this.timer += deltaTime;
         if(this.timer >= this.interval && this.counter < this.maxSpawn){
-            console.log("Spawning minion");
             this.dispatchEvent(this._createSpawnEvent({
                 type: this.types[Math.floor(Math.random()*4)],
                 spawn: this.position,
                 buildingID: this.buildingID,
+                team: this.team
             }));
             this.timer = 0;
             this.counter++;

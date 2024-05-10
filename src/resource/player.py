@@ -179,9 +179,11 @@ class PlayerResource(Resource):
             # Convert the datetime strings to datetime objects
             if 'last_login' in data:
                 data['last_login'] = data['last_login'].replace('T', ' ')
+                data['last_login'] = data["last_login"].split('.')[0] # Remove fractions of seconds
                 data['last_login'] = datetime.datetime.strptime(data['last_login'], '%Y-%m-%d %H:%M:%S')
             if 'last_logout' in data:
                 data['last_logout'] = data['last_logout'].replace('T', ' ')
+                data['last_logout'] = data["last_logout"].split('.')[0] # Remove fractions of seconds
                 data['last_logout'] = datetime.datetime.strptime(data['last_logout'], '%Y-%m-%d %H:%M:%S')
 
             # Update the player profile, might throw semantic errors as ValueError

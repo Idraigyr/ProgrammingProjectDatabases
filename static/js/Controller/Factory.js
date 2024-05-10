@@ -23,6 +23,7 @@ export class Factory{
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
         this.#currentTime = null;
+        this.playerInfo = params.playerInfo;
     }
 
     /**
@@ -47,14 +48,14 @@ export class Factory{
 
     /**
      * Creates minion model and view
-     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue"}, buildingID: number} params, spawn needs to be in world coords, buildingID is the id of the building that spawned the minion
+     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue", buildingID: number, team: number}} params - spawn needs to be in world coords, buildingID is the id of the building that spawned the minion (buildingID is only used for friendly minions)
      * @return {Minion}
      */
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: 0, buildingID: params.buildingID}); //TODO: change team dynamically
-        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 135,camera: this.camera});
+        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: params.team, buildingID: params.buildingID, minionType: params.type});
+        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 25,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
             if(child.name === "handIKr") {
@@ -82,6 +83,7 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        model.addEventListener("updateHealth",view.OnHealth_.bind(view));
 
         this.viewManager.addPair(model, view);
         return model;
@@ -89,7 +91,7 @@ export class Factory{
 
     /**
      * Creates player model and view
-     * @param {{position: THREE.Vector3, maxMana: number, mana: number, team: 0 | 1} | {position: THREE.Vector3, maxMana: number, mana: number}} params
+     * @param {{position: THREE.Vector3, maxMana: number, mana: number, maxHealth: number, health: number, team: 0 | 1 | undefined | null}} params
      * @returns {Wizard}
      */
     createPlayer(params){
@@ -98,13 +100,14 @@ export class Factory{
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
-        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
+        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, health: params.health, maxHealth: params.maxHealth, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
 
+
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
-        view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
+        view.boundingBox.set(currentPos.clone().sub(new THREE.Vector3(0.5,0,0.5)), currentPos.clone().add(new THREE.Vector3(0.5,height,0.5)));
         this.scene.add(view.boxHelper);
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
@@ -113,6 +116,8 @@ export class Factory{
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        player.addEventListener("updateHealth",view.OnHealth_.bind(view));
+        player.addEventListener("playerDied",this.playerInfo.respawn.bind(this.playerInfo));
 
         this.viewManager.addPair(player, view);
         return player;
@@ -125,9 +130,11 @@ export class Factory{
         //TODO: remove hardcoded height
         const height = 3;
         let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, team: params?.team ?? 0});
-        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos});
+        let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
+        this.scene.add(view.healthBar);
+
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
@@ -139,6 +146,8 @@ export class Factory{
         player.addEventListener("updatePosition",view.updatePosition.bind(view));
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        player.addEventListener("updateHealth",view.OnHealth_.bind(view));
+
 
         this.viewManager.addPair(player, view);
         return player;
@@ -191,7 +200,7 @@ export class Factory{
 
     /**
      * Creates building model and view
-     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, team: number}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
+     * @param {{position: THREE.Vector3, buildingName: string, withTimer: boolean, id: number, rotation: number, gems: Object[] | undefined, stats: {name: string, value: number}[] | undefined, team: number, task: Object}} params - buildingName needs to correspond to the name of a building in the Model namespace, position needs to be in world coords
      * @returns {Placeable} model of the building
      */
     createBuilding(params){
@@ -199,17 +208,19 @@ export class Factory{
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
         const modelParams = {position: pos, id: params.id, team: params.team};
 
-        //TODO: refactor this! not dynamic enough
-        if(params.buildingName === "Mine"){
-            modelParams.lastCollected = this.currentTime;
-        }
-
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
 
+        //TODO: remove and make dynamic
+        if(params.stats){
+            for(const stat of params.stats){
+            model.addStat(stat.name, stat.value);
+        }
+        }
+
         if(params.gems){
             for(const gem of params.gems){
-                model.addGem(gem.id);
+                model.addGem(gem);
             }
         }
 
@@ -232,7 +243,18 @@ export class Factory{
         // create a timer that has a callback that triggers when the timer ends
         // put the buildingPreview in dyingViews of viewManager
         // just make the buildingView invisible for the duration of the timer
-
+        if (params.task){
+            console.log("task", params.task);
+            // Get if the timer is already finished
+            const timeEnd = new Date(params.task.endtime);
+            if(timeEnd < this.currentTime){
+                return model;
+            }
+            params.withTimer = true;
+            // Get difference in seconds
+            const timeDiff = (timeEnd - this.currentTime)/1000;
+            model.timeToBuild = timeDiff;
+        }
         if(params.withTimer){
             // Copy asset object
             const assetClone = asset.clone();
@@ -260,7 +282,7 @@ export class Factory{
             timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
             // Rotate the watch view each step
             timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
-                watch.charModel.rotation.y += 2*deltaTime;
+                if(watch.charModel) watch.charModel.rotation.y += 2*deltaTime;
             });
             // Remove watch view when the timer ends
             timer.addCallback(() => {
@@ -273,10 +295,62 @@ export class Factory{
         return model;
     }
 
+    createProxy(params) {
+        const asset = this.assetManager.getAsset(params.buildingName);
+        let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
+
+        let model = null;
+        //TODO: get health from a variable, so it is impacted by gems and level?
+        if (params.buildingName === "Altar") {
+            model = new Model.AltarProxy({
+                spawnPoint: currentPos,
+                position: currentPos,
+                team: params.team,
+                health: 100,
+                maxHealth: 100
+            });
+
+        }
+        if (params.buildingName === "Tower") {
+            model = new Model.TowerProxy({
+            spawnPoint: currentPos,
+            position: currentPos,
+            team: params.team,
+            health: 100,
+            maxHealth: 100
+        });
+        }
+
+        let view = new View.ProxyView({
+            position: currentPos,
+            charModel: asset.clone(),
+            scene: this.scene,
+            camera: this.camera
+        });
+        if (params.buildingName === "Altar") {
+            const height = 9;
+            view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(4,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(4.2,height,0.5)));
+        }
+        if (params.buildingName === "Tower") {
+            const height = 33;
+            view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(3,0,3)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(3,height,3)));
+        }
+
+        this.scene.add(view.healthBar);
+        this.scene.add(view.boxHelper);
+        model.addEventListener("updatePosition",view.updatePosition.bind(view));
+        model.addEventListener("updateRotation",view.updateRotation.bind(view));
+        model.addEventListener("healthChange",view.OnHealth_.bind(view));
+        model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+
+        this.viewManager.addPair(model, view);
+        return model;
+
+    }
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[], task}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
@@ -286,7 +360,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, team: islandModel.team}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team, task: building.task}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

@@ -1,75 +1,90 @@
 // all variables for game settings
 import { API_URL } from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
-
+import {cursorImgPaths} from "../configs/ViewConfigs.js";
 let volume = 50;
 let soundEffects = true;
 let backgroundMusic = true;
 let resolution = 1080;
 let keyBinds = new Map();
-keyBinds.set('moveForward', 'w');
-keyBinds.set('moveLeft', 'a');
-keyBinds.set('moveRight', 'd');
-keyBinds.set('moveBackwards', 's');
+keyBinds.set('move-forward', 'w');
+keyBinds.set('move-left', 'a');
+keyBinds.set('move-right', 'd');
+keyBinds.set('move-backwards', 's');
 keyBinds.set('jump', ' ');
-keyBinds.set('openInventory', 'e');
-keyBinds.set('attack', 'LMB');
-keyBinds.set('pause', 'Esc');
-
-// changing the variables when changed and applied in settings menu
-/**
- * Function to change the game settings
- */
-document.addEventListener("DOMContentLoaded", function() {
-    // Select the button and text input elements by their ids
-    const button = document.getElementById('applyButton');
-
-    // Add an event listener to the button
-    button.addEventListener('click', function() {
-
-        // Retrieve the values from the settings menu input fields
-        volume = document.getElementById("volume").value;
-        soundEffects = document.getElementById("sound").checked;
-        backgroundMusic = document.getElementById("music").checked;
-        resolution = document.getElementById("resolution").value;
-        keyBinds.set('moveForward', document.getElementById('move-forward').value);
-        keyBinds.set('moveForward', document.getElementById('move-left').value);
-        keyBinds.set('moveForward', document.getElementById('move-right').value);
-        keyBinds.set('moveForward', document.getElementById('move-backwards').value);
-        keyBinds.set('moveForward', document.getElementById('jump').value);
-        keyBinds.set('moveForward', document.getElementById('open-inventory').value);
-        keyBinds.set('moveForward', document.getElementById('attack').value);
-        keyBinds.set('moveForward', document.getElementById('pause').value);
-        alert("Changes applied!");
-    });
-});
-
-
-
-
-
+keyBinds.set('open-inventory', 'e');
+keyBinds.set('eat', 'q');
 
 export class Settings {
     constructor(inputManager, playerInfo) {
+        this.map = null;
         this.inputManager = inputManager;
         this.playerInfo = playerInfo;
+
+        inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
+        inputManager.addRespawnButtonListener(this.respawn.bind(this));
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
+        const button = document.getElementById('applyButton');
+        button.addEventListener('click', this.applySettings.bind(this));
+        const keybinds = document.querySelector('.key-binds');
+        keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
+
+    loadCursors() {
+        const cursors = document.querySelector('.cursors');
+        for(let cursor in cursorImgPaths) {
+            const cursorDiv = document.createElement('div');
+            cursorDiv.addEventListener('click', this.switchCursor.bind(this));
+            const cursorName = document.createElement('p');
+            const cursorImg = document.createElement('img');
+            cursorImg.src = cursorImgPaths[cursor];
+            cursorName.innerHTML = cursor;
+            cursorDiv.classList.add('cursor');
+            cursorDiv.dataset.cursor = cursor;
+            cursorDiv.classList.add('cursor-options');
+            cursorImg.classList.add('cursor-img');
+            cursorName.classList.add('cursor-name');
+            cursorImg.style.pointerEvents = 'none';
+            cursorName.style.pointerEvents = 'none';
+            cursorDiv.appendChild(cursorName);
+            cursorDiv.appendChild(cursorImg);
+            cursors.appendChild(cursorDiv);
+        }
+    }
+
     /**
      * Function to log out the user
      */
-    logOut() {
+    async logOut() {
         console.log("Log out button clicked")
         var currentUrl = window.location.href;
 
         // Append '/logout' to the current URL
         var logoutUrl = currentUrl + '/logout';
 
+        // Send logout info to the backend
+        await this.playerInfo.logout();
+
         // Redirect the user to the logout URL
         window.location.href = logoutUrl;
     }
+
+    async respawn() {
+        console.log("Respawn button clicked")
+
+        // Send respawn info to the backend
+        await this.playerInfo.respawn();
+    }
+
+    /**
+     * Function to log out the user
+     */
+    leaveMatch() {
+        console.log("Leave match button clicked")
+    }
+
     /**
      * Function to exit the settings menu
      */
@@ -107,4 +122,17 @@ export class Settings {
 
     }
 
+    applySettings(){
+
+    }
+
+    switchCursor(event) {
+        console.log(event);
+        const crosshair = document.querySelector('#crosshair-img');
+        crosshair.src = cursorImgPaths[event.target.dataset.cursor];
+    }
+
+    changeKeyBind(event) {
+        console.log(event);
+    }
 }

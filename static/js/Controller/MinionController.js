@@ -12,6 +12,8 @@ import {
     gravity, minionAttackRadius, minionFollowRadius, minionSpeedMultiplier
 } from "../configs/ControllerConfigs.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
+import {Subject} from "../Patterns/Subject.js";
+import {MinionDefaultAttackState} from "../Model/States/MinionStates.js";
 
 //TODO: put this directly in grid of foundation?
 /**
@@ -110,15 +112,19 @@ class PathNode{
 /**
  * Class for a minion controller
  */
-export class MinionController{
+export class MinionController extends Subject{
     #worldMap;
+    #minionNumber;
+    #idOffset;
 
     /**
      * MinionController constructor
      * @param {{collisionDetector: CollisionDetector}} params
      */
     constructor(params) {
+        super(params);
         this.minions = [];
+        this.#minionNumber = 0;
         this.collisionDetector = params.collisionDetector;
         this.#worldMap = new Foundation({});
         this.worldCenter = this.#worldMap.grid.length - 1 /2;
@@ -130,6 +136,18 @@ export class MinionController{
         //paths per team per warrior hut
         this.paths = {0: {}, 1: {}};
         this.altars = {0: null, 1: null};
+
+        //enemies, used only during multiplayer
+        this.enemies = [];
+        //empty quaternion used as empty param to safe memory
+        this.enemyRotation = new THREE.Quaternion();
+        this.#idOffset = 1000;
+
+        this.attackTime = 0;
+
+        this.deleteCallbacks = new Map();
+        this.deleteCallbacks.set("minion", this.clearMinion.bind(this));
+        this.deleteCallbacks.set("enemy", this.clearEnemy.bind(this));
     }
 
     /**
@@ -137,7 +155,90 @@ export class MinionController{
      * @param {Minion} minion
      */
     addMinion(minion){
+        minion.setId({id: ++this.#minionNumber})
+        minion.addEventListener("delete", this.deleteCallbacks.get("minion"));
         this.minions.push(minion);
+        this.dispatchEvent(this.#createAddMinionEvent(minion));
+    }
+
+    /**
+     * creates a custom event for adding a minion to the controller
+     * used to easily add event listeners to newly added minions (multiplayer)
+     * @private
+     * @param minion
+     * @return {CustomEvent<{minion}>}
+     */
+    #createAddMinionEvent(minion){
+        return new CustomEvent("minionAdded", {detail: {minion: minion}});
+    }
+
+    /**
+     * add an enemy minion to the controller, used only during multiplayer
+     * @param {Minion} minion
+     */
+    addEnemy(minion){
+        minion.id += this.#idOffset; //TODO: find a better way to differentiate between ally and enemy minions
+        minion.addEventListener("delete", this.deleteCallbacks.get("enemy"));
+        this.enemies.push(minion);
+    }
+
+    /**
+     * updates an enemy minion, used only during multiplayer
+     * @param {{id: number, position: {x: number, y: number, z: number}, phi: number, health: number}} params
+     */
+    updateEnemy(params){
+        let minion = this.enemies.find((minion) => minion.id === params.id + this.#idOffset);
+        if(!minion) {
+            console.error("Minion not found");
+            return;
+        }
+        minion.position = minion.position.set(params.position.x, params.position.y, params.position.z);
+        minion.phi = params.phi;
+        minion.rotation = this.enemyRotation;
+        minion.takeDamage(minion.health - params.health);
+    }
+
+    /**
+     * updates the state of an enemy minion, used only during multiplayer
+     * @param {{id: number, state: string}} params
+     */
+    updateEnemyState(params){
+        let minion = this.enemies.find((minion) => minion.id === params.id + this.#idOffset);
+        if(!minion) {
+            console.error("Minion not found");
+            return;
+        }
+        minion.fsm.setState(params.state);
+    }
+
+    /**
+     * updates a friendly minion, used only during multiplayer (right now only used for taken damage)
+     * @param params
+     */
+    updateFriendlyState(params){
+        let minion = this.minions.find((minion) => minion.id === params.id - this.#idOffset);
+        if(!minion) {
+            console.error("Minion not found");
+            return;
+        }
+        minion.takeDamage(minion.health - params.health);
+    }
+
+    /**
+     * updates all enemy minions, used only during multiplayer
+     * @param event
+     */
+    updateEnemies(event){
+        event.forEach((enemyParams) => this.updateEnemy(enemyParams));
+    }
+
+    /**
+     * get the state of all minions
+     * @param {function} translationFunction - function to translate the id of the minion for the opponent
+     * @return {{phi: number, id: number, position: THREE.Vector3}[]}
+     */
+    getMinionsState(){
+        return this.minions.map((minion) => ({id: minion.id, position: minion.position, phi: minion.phi, health: minion.health})); //TODO: add velocity for interpolation?
     }
 
     /**
@@ -216,11 +317,14 @@ export class MinionController{
         let targetPosition = new THREE.Vector3().copy(minion.position);
         //TODO: update movement based on state
         //if altar is close enough, attack altar
-        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*2){ //TODO: find out why this is gridCellSize is too close
+        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*0.5){ //TODO: find out why this is gridCellSize is too close
+            // console.log("attacking altar; minion position: ", minion.position, "altar position: ", this.altars[minion.team === 0 ? 1 : 0]);
             //attack altar
             //set attack state & at the end of the attack animation, deal damage
             minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
             minion.lastAction = "AttackEnemy";
+            // console.log("attacking altar");
+            //TODO: put proxy as minion.target
         } else {
             const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion);
             if(closestDistance < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
@@ -228,11 +332,14 @@ export class MinionController{
                 //set attack state & at the end of the attack animation, deal damage
                 minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
                 minion.lastAction = "AttackEnemy";
+                minion.target = closestEnemy;
+                // console.log("attacking enemy");
             } else if(closestDistance < minionFollowRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //follow character
                 targetPosition.copy(closestEnemy.position);
                 minion.fsm.processEvent({detail: {newState: "WalkForward"}});
                 minion.lastAction = "FollowEnemy";
+                // console.log("following enemy");
             } else {
                 //walk towards altar
                 minion.fsm.processEvent({detail: {newState: "WalkForward"}});
@@ -255,6 +362,7 @@ export class MinionController{
                 targetPosition.copy(minion.input.currentNode.position);
                 targetPosition.y = minion.position.y;
                 minion.lastAction = "MovingToAltar";
+                // console.log("moving to altar");
             }
         }
 
@@ -267,6 +375,7 @@ export class MinionController{
             if(movement.length() > 0){
                 //TODO: fix rotation
                 minion.phi = new THREE.Vector3(1,0,0).angleTo(movement)*180/Math.PI;
+                // console.log(minion.phi);
                 minion.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), minion.phi*Math.PI/180);
             }
 
@@ -276,6 +385,14 @@ export class MinionController{
             minion.lastMovementVelocity.set(0,0,0);
             minion.velocity.set(0,0,0);
         }
+        if (minion.fsm.currentState instanceof MinionDefaultAttackState) {
+            this.attackTime += deltaTime;
+            if(this.attackTime > 0.8){
+                this.attackTime = 0;
+                minion.attack();
+            }
+        }
+
     }
 
 
@@ -313,7 +430,7 @@ export class MinionController{
 
             if(current === end){
                 console.log("%cfound path", "color: green;");
-                // printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
+                printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
                 return this.retracePath(start, end);
             }
 
@@ -361,7 +478,7 @@ export class MinionController{
      * @return {*}
      */
     calculateIndexFromPosition(position){
-        let {x,z} = returnWorldToGridIndex(position.sub(this.#worldMap.position));
+        let {x,z} = returnWorldToGridIndex(position.clone().sub(this.#worldMap.position));
         x += (this.#worldMap.width - 1)/2;
         z += (this.#worldMap.length - 1)/2;
         return z*this.#worldMap.width + x;
@@ -372,7 +489,14 @@ export class MinionController{
      * @param {Foundation} islands
      */
     set worldMap(islands){
+        for(const island of islands){
+            printFoundationGrid(island.grid, island.width, island.length);
+        }
         this.#worldMap.setFromFoundations(islands);
+
+        for(const island of islands){
+            printFoundationGrid(island.grid, island.width, island.length);
+        }
 
         //TODO: move this somewhere else? if placed in foundation you wouldn't need to calculate the position of the nodes more than once
         for(let i = 0; i < this.#worldMap.grid.length; i++){
@@ -383,6 +507,7 @@ export class MinionController{
             if(!(island instanceof Island)) continue;
             const altar = island.getBuildingsByType("altar_building")[0];
             this.altars[island.team] = altar?.position ?? null;
+            console.log("altar position", this.altars[island.team])
         }
 
         for(const island of islands){
@@ -406,11 +531,41 @@ export class MinionController{
     }
 
     /**
-     * clean up the minions and remove them
+     * clean up the minions (ally and foe) and remove them
      */
     clearMinions(){
         this.minions.forEach((minion) => minion.dispose());
+        this.enemies.forEach((enemy) => enemy.dispose());
         this.minions = [];
+        this.enemies = [];
+    }
+
+    /**
+     * callback for minion delete event so that the controller can remove the minion from the list
+     * @param {{detail: {model: Minion}}} event - delete event from Minion
+     */
+    clearMinion(event){
+        const minion = this.minions.find((minion) => minion.id === event.detail.model.id);
+        if(minion){
+            console.log("minion deleted from controller");
+            minion.removeEventListener("delete", this.deleteCallbacks.get("minion"));
+            minion.dispose();
+            this.minions = this.minions.filter((minion) => minion.id !== event.detail.model.id);
+        }
+    }
+
+    /**
+     * callback for minion delete event so that the controller can remove the Enemy from the list
+     * @param {{detail: {model: Minion}}} event - delete event from Minion
+     */
+    clearEnemy(event){
+        const enemy = this.enemies.find((enemy) => enemy.id === event.detail.model.id);
+        if(enemy){
+            console.log("enemy deleted from controller");
+            enemy.removeEventListener("delete", this.deleteCallbacks.get("enemy"));
+            enemy.dispose();
+            this.enemies = this.enemies.filter((enemy) => enemy.id !== event.detail.model.id);
+        }
     }
 
     /**

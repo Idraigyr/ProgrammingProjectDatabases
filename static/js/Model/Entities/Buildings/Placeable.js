@@ -8,35 +8,121 @@ import {popUp} from "../../../external/LevelUp.js";
  * Base class for the placeable model
  */
 export class Placeable extends Entity{
+    #stats;
+    #statMultipliers;
     constructor(params) {
         super(params);
         this.id = params?.id ?? null;
         this.level = params?.level ?? 0;
+        this.maxLevel = 4;
+        this.upgradable = false;
         this.rotation = params?.rotation ??  0;
         this.gemSlots = params?.gemSlots ?? 0;
-        this.levelUpTime = params?.levelUpTime ?? 0;
+        this.upgradeCost = params?.upgradeCost ?? 10;
+        this.upgradeTime = params?.upgradeTime ?? 10;
         this.gems = [];
+        this.#stats = new Map();
+        //TODO: add stats
+        this.#statMultipliers = new Map();
+        //TODO: set stat multipliers (defaults to 1)
         this.ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
     }
 
     /**
-     * adds a gem to the building
-     * @param gemId
+     * get the stats of the building (multipliers applied)
+     * @return {Map}
      */
-    addGem(gemId){
+    getStats(){
+        const stats = new Map();
+        this.#stats.forEach((value, key) => {
+            stats.set(key, this.#statMultipliers.get(key) ?? 1 * value);
+        });
+        return stats;
+    }
+
+    /**
+     * add a stat to the building
+     * @param {string} key
+     * @param {number} value
+     */
+    addStat(key, value){
+        this.#stats.set(key, value);
+        this.#statMultipliers.set(key, 1);
+    }
+
+    /**
+     * change stats of the building
+     * @param {Map} stats
+     */
+    setStats(stats){
+        stats.forEach((value, key) => {
+            if(this.#stats.has(key)){
+                this.#stats.set(key, value);
+            } else {
+                throw new Error("Invalid stat");
+            }
+        });
+    }
+
+    //TODO: do we want a separate class for managing stats and multipliers?
+
+    /**
+     * set the stat multipliers of the building
+     * @param multipliers
+     */
+    addStatMultipliers(multipliers){
+        multipliers.forEach((value, key) => {
+            if(this.#statMultipliers.has(key)){
+                const newValue = this.#statMultipliers.get(key) * value;
+                this.#statMultipliers.set(key, newValue);
+            } else {
+                console.log("stat multiplier not applicable to building");
+            }
+        });
+    }
+
+    /**
+     * remove stat multipliers from the building (by subtracting the value from the current value, but not below 1)
+     * @param multipliers
+     */
+    removeStatMultipliers(multipliers){
+        multipliers.forEach((value, key) => {
+            if(this.#statMultipliers.has(key)){
+                const newValue = this.#statMultipliers.get(key) / value;
+                this.#statMultipliers.set(key, newValue >= 1 ? newValue : 1);
+            } else {
+                console.log("stat multiplier not applicable to building");
+            }
+        });
+    }
+
+    /**
+     * adds a gem to the building
+     * @param {Gem} gem
+     */
+    addGem(gem){
         if(this.gems.length === this.gemSlots) throw new Error("Building already has the maximum amount of gems");
-        this.gems.push(gemId);
+        this.addStatMultipliers(gem.getAttributes());
+        console.log("adding gem: ", this.gems);
+        this.gems.push(gem.id);
+        console.log(this.gems);
     }
 
     /**
      * removes a gem from the building
-     * @param gemId
+     * @param {Gem} gem
      */
-    removeGem(gemId){
-        if(!this.gems.includes(gemId)) throw new Error("Building does not have the gem");
-        this.gems = this.gems.filter(gem => gem !== gemId);
+    removeGem(gem){
+        if(!this.gems.includes(gem.id)) throw new Error("Building does not have the gem");
+        this.removeStatMultipliers(gem.getAttributes());
+        console.log("removing gem: ", this.gems);
+        this.gems = this.gems.filter(gemId => {
+            console.log(`${gemId} !== ${gem.id}: ${gemId !== gem.id}`);
+            return gemId !== gem.id;
+        });
+        console.log(this.gems);
     }
 
     /**

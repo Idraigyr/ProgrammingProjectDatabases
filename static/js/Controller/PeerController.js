@@ -7,10 +7,11 @@ export class PeerController{
     }
 
     /**
-     * updates state of peer. will be used for 2 stateUpdate events: 1) for state change 2) for position and rotation change
+     * updates state of peer. will be used for 3 seperate stateUpdate events: 1) for state change 2) for position and rotation change 3) for health change
      * @param data
      */
     update(data){
+        if(!this.peer) return;
         if(data.state){
             this.peer.fsm.setState(data.state);
             return;

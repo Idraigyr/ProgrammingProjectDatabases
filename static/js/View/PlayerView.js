@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import {IAnimatedView} from "./View.js";
+import {CharacterView} from "./Characters/CharacterView.js";
 
 /**
  * Player view
  */
-export class Player extends IAnimatedView{
+export class Player extends CharacterView{
     constructor(params) {
         super(params);
         this.boundingBox.setFromObject(this.charModel);

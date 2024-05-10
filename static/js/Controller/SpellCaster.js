@@ -24,8 +24,10 @@ export class SpellCaster extends Subject{
         //TODO: maybe move this to somewhere else?
         this.manaBar = document.getElementsByClassName("ManaAmount")[0];
         this.chargeTimer = 0;
-        this.#currentObject = null;
         this.previousSelectedPosition = null;
+        this.camera = params.camera;
+        this.previousRotation = null;
+        this.currentObject = null;
     }
 
     /**
@@ -44,6 +46,7 @@ export class SpellCaster extends Subject{
     set currentObject(object){
         this.#currentObject = object;
         this.previousSelectedPosition = object?.position.clone();
+        this.previousRotation = object?.rotation;
     }
 
     /**
@@ -139,7 +142,7 @@ export class SpellCaster extends Subject{
      */
     getSpellCastPosition(spell){
         //TODO: change
-        return this.#wizard.position.clone().add(new THREE.Vector3(0,2,0));
+        return this.camera.position.clone().addScaledVector(new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion), 6); //TODO: change scalar depending on camera distance from character
     }
 
     /**
@@ -153,8 +156,14 @@ export class SpellCaster extends Subject{
         if(this.currentObject){
             this.currentObject.position = this.previousSelectedPosition;
             this.currentObject.ready = true;
+            if(this.previousRotation){
+                this.currentObject.rotation = this.previousRotation;
+                this.currentObject.rotate(0);
+            }
+            // this.raycaster.collisionDetector.generateColliderOnWorker();
         }
         this.previousSelectedPosition = null;
+        this.previousRotation = null;
         this.currentObject = null;
     }
 
@@ -213,7 +222,8 @@ export class SpellCaster extends Subject{
      * @return {*|null}
      */
     checkRaycaster(){
-        const hit = this.raycaster.getFirstHitWithWorld(this.getSpellCastPosition(this.#wizard.getCurrentSpell()), new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation));
+        // const hit = this.raycaster.getFirstHitWithWorld(this.getSpellCastPosition(this.#wizard.getCurrentSpell()), new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation));
+        const hit = this.raycaster.getFirstHitWithWorld(this.camera.position, new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion));
         if(hit.length > 0){
             return hit[0].point.clone();
         }
@@ -239,7 +249,7 @@ export class SpellCaster extends Subject{
                     position: castPosition,
                     horizontalRotation: this.#wizard.phi*180/Math.PI + 90,
                     //TODO: base direction on camera not on player direction
-                    direction: new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation),
+                    direction: new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion), //new THREE.Vector3(1, 0, 0).applyQuaternion(this.#wizard.rotation)
                     team: this.#wizard.team,
                     playerID: this.#wizard.id
                 }));

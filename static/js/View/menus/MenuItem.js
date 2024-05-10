@@ -2,6 +2,7 @@ export class MenuItem{
     constructor(params) {
         this.id = params.id;
         this.name = params.name;
+        this.display = "block";
         this.belongsIn = params.belongsIn;
         this.icon = new Image(params.icon.width,params.icon.height);
         this.icon.src = params.icon.src;
@@ -9,7 +10,7 @@ export class MenuItem{
     }
 
     render(){
-        this.element.style.display = "block";
+        this.element.style.display = this.display;
     }
 
     hide(){
@@ -29,29 +30,17 @@ export class MenuItem{
         const description = document.createElement("div");
         const descriptionName = document.createElement("p");
         const descriptionText = document.createElement("p");
-        const descriptionPlaceableText = document.createElement("p");
         description.classList.add("menu-item-description");
         descriptionName.classList.add("menu-item-description-name");
         descriptionText.classList.add("menu-item-description-text");
-        descriptionPlaceableText.classList.add("menu-item-description-placeableText")
         description.appendChild(descriptionName);
         description.appendChild(descriptionText);
-        description.appendChild(descriptionPlaceableText)
         element.id = this.id;
         element.classList.add("menu-item");
         element.draggable = true;
         element.appendChild(this.icon);
         element.appendChild(description);
         descriptionName.innerText = this.name;
-        // If there is this.extra.cost, add it to the name
-        if(params?.extra?.cost) descriptionName.innerText += ` 💎 ${params.extra.cost}`;
-        // If there is this.extra.buildTime, add it to the name
-        if(params?.extra?.buildTime) descriptionName.innerText += ` ⌛ ${params.extra.buildTime}`;
-        if(params?.extra?.buildingThreshold){
-            if(params?.extra?.buildingAvailable >= 0){
-                descriptionPlaceableText.innerText = `${params.extra.buildingAvailable} / ${params.extra.buildingThreshold}`;
-            }
-        }
         descriptionText.innerText = params?.description ?? "placeholder description";
         return element;
     }
@@ -65,6 +54,7 @@ export class SpellItem extends MenuItem{
     constructor(params) {
         super(params);
         this.unlocked = false;
+        this.display = "flex";
     }
 
     render() {
@@ -85,8 +75,15 @@ export class SpellItem extends MenuItem{
 export class GemItem extends MenuItem{
     constructor(params) {
         super(params);
-        this.equipped = false;
-        this.slot = null;
+        this.equipped = params?.equipped ?? false;
+        this.slot = params?.slot ?? null;
+    }
+
+    createElement(params) {
+        const element =  super.createElement(params);
+        console.log("gem menuitem:", params);
+        if(params?.equipped) element.style.opacity = "0.5";
+        return element;
     }
 
     get type(){
@@ -99,6 +96,24 @@ export class BuildingItem extends MenuItem{
         super(params);
         this.element.classList.add("building-item");
         this.element.draggable = false;
+    }
+
+    createElement(params) {
+        const element = super.createElement(params);
+        const descriptionName = element.querySelector(".menu-item-description-name");
+        const descriptionText = element.querySelector(".menu-item-description-text");
+        const placedDescription = document.createElement("p");
+        placedDescription.classList.add("menu-item-description-placed");
+        element.querySelector(".menu-item-description").appendChild(placedDescription);
+        let description = "";
+        // If there is this.extra.cost, add it to the name
+        if(params?.extra?.cost) description += ` 💎 ${params.extra.cost}`;
+        // If there is this.extra.buildTime, add it to the name
+        if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
+        descriptionName.innerText += description;
+        descriptionText.innerText = params?.description ?? "placeholder description";
+        placedDescription.innerText = "placed: 0/0";
+        return element;
     }
 
     get type(){
@@ -143,8 +158,8 @@ export class StatItem extends MenuItem{
     constructor(params) {
         super(params);
         this.element.draggable = false;
+        this.display = "flex";
         this.value = 0;
-        this.name = "";
     }
 
     get type(){

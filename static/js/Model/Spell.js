@@ -148,6 +148,10 @@ class InstantDamage extends Effect{
         super(params);
         this.damage = params.damage;
     }
+
+    apply(target){
+        target.takeDamage(this.damage)
+    }
 }
 
 /**
@@ -265,6 +269,16 @@ class ConcreteSpell{
     applyEffects(target){
         this.effects.forEach((effect) => effect.apply(target));
     }
+
+    /**
+     * Apply harmless effects to the target (harmless = no influence on health)
+     * @param target
+     */
+    applyHarmlessEffects(target){
+        console.log("applying harmless effects");
+        this.effects.filter((effect) => !effect.damage).forEach((effect) => effect.apply(target));
+
+    }
 }
 
 /**
@@ -307,7 +321,7 @@ export class Fireball extends ConcreteSpell{
             }),
             effects: [
                 new InstantDamage({
-                    damage: 0
+                    damage: 10
             }), new DoT({
                     damage: 0,
                     interval: 0,

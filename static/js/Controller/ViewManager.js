@@ -17,7 +17,8 @@ export class ViewManager extends Subject{
             island: [],
             player: [],
             character: [],
-            spellEntity: []
+            spellEntity: [],
+            proxy: []
         };
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
@@ -103,16 +104,16 @@ export class ViewManager extends Subject{
      * @param {number} id
      * @return {Wizard|*}
      */
-    getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager
+    getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager; is player model id unique across all characters?
+        console.log("retrieving player model by id: ", id)
         if(this.pairs.player[0].model.id === id){
             return this.pairs.player[0].model;
         } else {
             const char = this.pairs.character.find((pair) => {
-                if(pair.model instanceof Model.Wizard && pair.model.id === id){
-                    return true;
-                }
-                return false;
+                console.log(pair.model.id);
+                return pair.model instanceof Model.Character && pair.model.id === id;
             });
+            console.log(char);
             if(char){
                 return char.model;
             }
@@ -220,5 +221,11 @@ export class ViewManager extends Subject{
             });
         }
         this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime));
+    }
+
+    updateProxys(deltaTime){
+        this.pairs.proxy.forEach((pair) => {
+            pair.view.update(deltaTime);
+        });
     }
 }

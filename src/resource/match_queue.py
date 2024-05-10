@@ -107,7 +107,7 @@ class MatchQueueResource(Resource):
                 current_app.db.session.commit()
 
                 # Unique id based on the two player ids
-                match_id = target_user_id + 31 * opponent.user_profile_id
+                match_id = f'{target_user_id}-{opponent.user_profile_id}'
 
                 # Send a message to the players through the websocket
                 current_app.socketio.emit('match_found', {'player1': target_player.user_profile_id, 'player2': opponent.user_profile_id, 'match_id': match_id}, namespace='/forward')

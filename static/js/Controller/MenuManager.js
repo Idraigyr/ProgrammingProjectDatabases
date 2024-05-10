@@ -1,12 +1,25 @@
 import {
     AltarMenu,
     BaseMenu,
-    BuildMenu, CollectMenu, CombatBuildingsMenu, DecorationsMenu, FusionTableMenu, GemInsertMenu, GemsMenu, FuseInputMenu,
+    BuildMenu,
+    CollectMenu,
+    CombatBuildingsMenu,
+    DecorationsMenu,
+    FusionTableMenu,
+    GemInsertMenu,
+    GemsMenu,
+    FuseInputMenu,
     HotbarMenu,
-    ListMenu, MineMenu,
-    PageMenu, ResourceBuildingsMenu,
+    ListMenu,
+    MineMenu,
+    PageMenu,
+    ResourceBuildingsMenu,
     SlotMenu,
-    SpellsMenu, StakesMenu, StatsMenu, TowerMenu
+    SpellsMenu,
+    StakesMenu,
+    StatsMenu,
+    TowerMenu,
+    BuildingMenu
 } from "../View/menus/IMenu.js";
 import {
     BuildingItem,
@@ -18,9 +31,7 @@ import {
     StatItem
 } from "../View/menus/MenuItem.js";
 import {Subject} from "../Patterns/Subject.js";
-import {API_URL, blueprintURI, playerProfileURI, playerURI} from "../configs/EndpointConfigs.js";
-import {PlayerInfo} from "./PlayerInfo.js";
-import {Level} from "../configs/LevelConfigs.js";
+import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 
 // loading bar
 
@@ -34,7 +45,7 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null}} params
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -42,10 +53,12 @@ export class MenuManager extends Subject{
         this.container = params.container;
         this.blockInputCallback = params.blockInputCallback;
         this.matchMakeCallback = params.matchMakeCallback;
+        this.checkStakesCallback = params?.checkStakesCallback ?? null;
         this.items = {};
         this.menus = {};
 
         this.menusEnabled = true;
+        this.matchmaking = false;
         this.currentMenu = null;
         this.dragElement = null;
         this.isSlotItem = false;
@@ -71,8 +84,17 @@ export class MenuManager extends Subject{
 
         this.container.addEventListener("dragstart", this.drag.bind(this));
         this.container.addEventListener("dragend", this.dragend.bind(this));
-        this.playerInfo = new PlayerInfo();
+    }
 
+
+    /**
+     * method for adding callbacks to the menuManager in case they could not be added in the constructor/ they need to be changed
+     * @param {{blockInputCallback: {block: function, activate: function} | null, matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
+     */
+    addCallbacks(callbacks){
+        if(callbacks.blockInputCallback) this.blockInputCallback = callbacks.blockInputCallback;
+        if(callbacks.matchMakeCallback) this.matchMakeCallback = callbacks.matchMakeCallback;
+        if(callbacks.checkStakesCallback) this.checkStakesCallback = callbacks.checkStakesCallback;
     }
 
     // TODO: remove this
@@ -100,8 +122,13 @@ export class MenuManager extends Subject{
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
         }
+        if(menu instanceof BuildingMenu){
+            menu.element.querySelector(".lvl-up-button").addEventListener("click", this.dispatchLvlUpEvent.bind(this));
+        }
         if(menu instanceof AltarMenu){
-            menu.element.querySelector(".play-button").addEventListener("click", () => this.matchMakeCallback());
+            menu.element.querySelector(".play-button").addEventListener("click", (event) => {
+                this.matchMakeCallback();
+            });
         }
         if(menu instanceof FusionTableMenu){
             menu.element.querySelector(".fuse-button").addEventListener("click", () => this.FusionClicked());
@@ -127,6 +154,42 @@ export class MenuManager extends Subject{
         if(menu instanceof FuseInputMenu){
             menu.element.querySelector(".add-button").addEventListener("click", this.dispatchAddEvent.bind(this));
             menu.element.querySelector(".remove-button").addEventListener("click", this.dispatchRemoveEvent.bind(this));
+        }
+        if(menu instanceof StakesMenu){
+            menu.element.addEventListener("drop", (event) => {
+                this.checkStakes();
+            });
+        }
+        if(menu instanceof GemsMenu){
+             menu.element.addEventListener("drop", (event) => {
+                this.checkStakes();
+            });
+        }
+    }
+
+    checkStakes(){
+        const gemsIds = [];
+        this.menus["GemsMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
+        if(this.checkStakesCallback(gemsIds)){
+            this.container.querySelector(".play-button-container").classList.remove("inactive");
+            this.container.querySelector(".play-button-container").classList.add("active");
+        }else {
+            this.container.querySelector(".play-button-container").classList.remove("active");
+            this.container.querySelector(".play-button-container").classList.add("inactive");
+        }
+    }
+
+    /**
+     * toggle the matchmaking button and if gems are allowed to be dragged and dropped
+     * @param {{detail: {matchmaking: boolean}}} event
+     */
+    toggleMatchMaking(event){
+        this.matchmaking = event.detail.matchmaking;
+        const element = this.menus["AltarMenu"].element.querySelector(".play-button-container");
+        if(this.matchmaking){
+            element.classList.add("pressed");
+        } else {
+            element.classList.remove("pressed");
         }
     }
 
@@ -169,6 +232,7 @@ export class MenuManager extends Subject{
 
     // Function to start or stop the fusing arrow animation based on condition
     toggleAnimation(condition) {
+        console.log(condition);
         if (condition) {
             this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.add('move-right');
         } else {
@@ -180,7 +244,7 @@ export class MenuManager extends Subject{
      * exit the current menu
      */
     exitMenu(){
-        this.hideMenu(this.currentMenu);
+        this.#hideMenu(this.currentMenu);
     }
 
     /**
@@ -202,7 +266,6 @@ export class MenuManager extends Subject{
      * @return {CustomEvent<{id: number | null}>}
      */
     createAddGemEvent(){
-        console.log("Adding gem to building: ", this.dragElement);
         return new CustomEvent("addGem", {
             detail: {
                 id: this.dragElement,
@@ -261,6 +324,13 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * creates a custom lvl up event
+     */
+    dispatchLvlUpEvent(){
+        this.dispatchEvent(new CustomEvent("lvlUp"));
+    }
+
+    /**
      * dispatches a build event
      * @param {{target: HTMLElement}} event
      */
@@ -286,9 +356,9 @@ export class MenuManager extends Subject{
      * dispatches a add event
      * @param event
      */
-    dispatchAddEvent(event){
+    dispatchAddEvent(event){ //TODO: check first if you have enough crystals for this
         if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
-            console.log("Adding 10 crystals to fuse stakes");
+            console.log("Adding 10 crystals of fuse stakes");
             this.inputCrystalParams.current += 10;
             this.dispatchEvent(this.createRemoveEvent());
         }
@@ -315,6 +385,7 @@ export class MenuManager extends Subject{
      * @param event
      */
     drag(event){
+        if(this.matchmaking) return;
         let id = event.target.id;
         this.isSlotItem = event.target.classList.contains("slot-item")
         if(this.isSlotItem) {
@@ -520,7 +591,9 @@ export class MenuManager extends Subject{
     #createMenuItem(item){
         if(item.belongsIn === "SpellsMenu"){
             return new SpellItem(item);
-        } else if (item.belongsIn === "GemsMenu"){
+        } else if (item.belongsIn === "GemsMenu" || item.belongsIn === "StakesMenu"){
+            item.equipped = item.extra?.equipped ?? false;
+            item.slot = item.extra?.slot ?? null;
             return new GemItem(item);
         } else if (item.belongsIn === "StatsMenu"){
             return new StatItem(item);
@@ -538,9 +611,56 @@ export class MenuManager extends Subject{
      * create stat menu items
      */
     #createStatMenuItems(){
-        const stats = [];
-        for(const stat in stats){
-            this.items[stat.id] = new StatItem(stat);
+        //TODO: remove and make dynamic
+        const stats = ["fortune", "speed", "damage", "capacity"];
+        const descriptions = [
+            "placeholder description",
+            "placeholder description",
+            "placeholder description",
+            "placeholder description"
+        ];
+        let items = [];
+        for (let i = 0; i < stats.length; i++){
+            items.push({
+                item: {belongsIn: "StatsMenu", getItemId: () => stats[i], getDisplayName: () => stats[i]},
+                icon: {src: '/static/assets/images/menu/' + stats[i] + '.png', width: 50, height: 50},
+                description: descriptions[i]
+            });
+        }
+        this.addItems(items);
+    }
+
+    /**
+     * arrange stat menu items
+     * @param {{name: string, stats: Map}} params
+     */
+    #arrangeStatMenuItems(params){
+        console.log("inside arrangeItems:",  params.stats);
+        //TODO: remove and make dynamic
+        const stats = ["fortune", "speed", "damage", "capacity"];
+        for(const stat of stats){
+            if(params.stats.has(stat)){
+                this.items[stat].element.style.display = this.items[stat].display;
+                //TODO: change the text based on the type of building
+                console.log(params.stats.get(stat));
+                let name = `${stat}: ${Math.round(params.stats.get(stat))}`;
+                let text = `placeholder description`;
+                this.items[stat].element.querySelector(".menu-item-description-name").innerText = name;
+                this.items[stat].element.querySelector(".menu-item-description-text").innerText = text;
+            } else {
+                this.items[stat].element.style.display = "none";
+            }
+        }
+    }
+
+    /**
+     * updates the buildings placed and total buildings placed in the buildingItems based on the params
+     * @param {{building: string, placed: number, total: number}[]} params
+     */
+    #updateBuildingItems(params){
+        console.log("inside updateBuildingItems:", params);
+        for(const param of params){
+            this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
         }
     }
 
@@ -559,74 +679,46 @@ export class MenuManager extends Subject{
 
         const items = [
             {
-                item: {name: "tower", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "setUserTower", getDisplayName: () => "Tower"},
+                item: {belongsIn: "CombatBuildingsMenu", getItemId: () => "Tower", getDisplayName: () => "Tower"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[towerName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[towerName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime}
             },
             {
-                item: {name: "wall", id: 0, belongsIn: "CombatBuildingsMenu", getItemId: () => "Wall", getDisplayName: () => "Wall"},
+                item: {belongsIn: "CombatBuildingsMenu", getItemId: () => "Wall", getDisplayName: () => "Wall"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[wallName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[wallName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime}
             },
             {
-                item: {name: "tree", id: 1, belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
+                item: {belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[treeName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[treeName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.buildTime}
             },
             {
-                item: {name: "bush", id: 2, belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "Bush"},
+                item: {belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "Bush"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[bushName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[bushName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.buildTime}
             },
             {
-                item: {name: "mine", id: 3, belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "Mine"},
+                item: {belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "Mine"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[mineName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[mineName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.buildTime}
             },
             {
-                item: {name: "fusion table", id: 4, belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "Fusion table"},
+                item: {belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "Fusion table"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[fusionTableName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[fusionTableName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.buildTime}
             },
             {
-                item: {name: "warrior hut", id: 5, belongsIn: "CombatBuildingsMenu", getItemId: () => "WarriorHut", getDisplayName: () => "Warrior hut"},
+                item: {belongsIn: "CombatBuildingsMenu", getItemId: () => "WarriorHut", getDisplayName: () => "Warrior hut"},
                 icon: {src: "https://via.placeholder.com/50", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.description,
-                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.cost,
-                    buildTime: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.buildTime,
-                    buildingThreshold: this.playerInfo.buildingsThreshold[warriorHutName],
-                    buildingAvailable: this.playerInfo.buildingsPlaced[warriorHutName]
-                }
+                extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.buildTime}
             }
         ];
 
@@ -686,7 +778,8 @@ export class MenuManager extends Subject{
      * create menus and menu items
      */
     createMenus(){
-        this.#createMenus([SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, AltarMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
+        //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
@@ -699,9 +792,8 @@ export class MenuManager extends Subject{
      * @param {{name: string}} params
      */
     renderMenu(params){
-        console.log(params)
         if(!params.name || !this.menusEnabled) return;
-        if(this.currentMenu) this.hideMenu(this.currentMenu);
+        if(this.currentMenu) this.#hideMenu(this.currentMenu);
         this.blockInputCallback.block();
         this.container.style.display = "block";
         this.currentMenu = params.name;
@@ -713,17 +805,32 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * updates the current menu with the given params
+     * currently only necessary for stats and BuildingItems
+     * @param {Object} params
+     */
+    updateMenu(params){
+        if(!params.name || !this.menusEnabled) return;
+        if(!this.currentMenu) throw new Error("No menu is currently active");
+        switch (params.name){
+            case "TowerMenu":
+            case "MineMenu":
+            case "FusionTableMenu":
+                this.#arrangeStatMenuItems(params);
+                break;
+            case "BuildMenu":
+                this.#updateBuildingItems(params.buildings);
+                break;
+        }
+    }
+
+    /**
      * hide the current menu and call the blockInputCallback.activate function
      * @param {string} name
      */
-    hideMenu(name = this.currentMenu){
+    #hideMenu(name = this.currentMenu){
         if(!name || !this.menusEnabled) return;
         this.container.style.display = "none";
-        if(name === "AltarMenu"){
-            this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
-                    this.items[item.id].attachTo(this.menus["GemsMenu"]);
-            });
-        }
         if(name === "MineMenu"){
             clearInterval(this.collectInterval);
             this.collectInterval = null;
@@ -745,6 +852,15 @@ export class MenuManager extends Subject{
         this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
     }
 
+    /**
+     * move all gems from the StakesMenu to the GemsMenu
+     */
+    unstakeGems(){
+        this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
+            const gem = this.items[item.id];
+            this.items[item.id].attachTo(this.menus["GemsMenu"]);
+        });
+    }
 
     /**
      * creates slot icons for the GemInsertMenu (basically just takes the icon of the gem and puts it in a slot)
@@ -771,9 +887,9 @@ export class MenuManager extends Subject{
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu" | "BuildMenu"} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[]} | {name: "MineMenu", gemIds: String[], crystals: number, maxCrystals: number, rate: number}} params
+     * @param {{name: "AltarMenu"} | {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} | {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map}} params
      */
-    #arrangeMenus(params){
+    #arrangeMenus(params){ //TODO: for mine put maxCrysals and rate as stats (capacity and mineSpeed)
         // arrange the menus in the container
         const icons = [];
         switch (params.name){
@@ -782,42 +898,51 @@ export class MenuManager extends Subject{
                 this.#moveMenu("GemsMenu", "AltarMenu", "afterbegin");
                 this.#moveMenu("HotbarMenu", "AltarMenu", "afterbegin");
                 this.#moveMenu("SpellsMenu", "AltarMenu", "afterbegin");
+                this.checkStakes();
                 break;
             case "TowerMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
+                this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "TowerMenu", "afterbegin");
                 // show correct Gems based on received params
+                this.menus["GemInsertMenu"].renderSlots(params.slots);
                 this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus["TowerMenu"].updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "TowerMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "TowerMenu", "afterbegin");
                 break;
             case "MineMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
+                this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
                 this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
                 this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
-
+                this.menus["MineMenu"].updateLvlUpButton(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
                 this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
+                this.menus["GemInsertMenu"].renderSlots(params.slots);
                 this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
             case "FusionTableMenu":
+                this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
                 // show correct Gems based on received params
+                this.menus["GemInsertMenu"].renderSlots(params.slots);
                 this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus["FusionTableMenu"].updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");
                 break;
             case "BuildMenu":
-
+                this.#updateBuildingItems(params.buildings);
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("ResourceBuildingsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");
@@ -848,9 +973,5 @@ export class MenuManager extends Subject{
         } catch (e){
             console.error("Error in MenuManager: ", e);
         }
-    }
-
-    async setPlayerInfo(playerInfo) {
-        this.playerInfo = playerInfo;
     }
 }

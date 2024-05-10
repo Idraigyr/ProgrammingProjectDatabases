@@ -53,3 +53,11 @@ export const minionSpeedMultiplier = 200;
 export const powerScaling = 0.5;
 
 export const fusionTime = 2;
+
+//-- multiplayer --//
+export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?
+    1: 1,
+    2: 1,
+    3: 1,
+    4: 1,
+};
