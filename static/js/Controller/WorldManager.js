@@ -531,12 +531,12 @@ export class WorldManager{
     }
 
     async addCrystals(){
-        console.log("added 10 crystals");
+        this.world.getBuildingByPosition(this.currentPos).removeInputCrystals();
         this.playerInfo.changeCrystals(10);
     }
 
     async removeCrystals(){
-        console.log("removed 10 crystals");
+        this.world.getBuildingByPosition(this.currentPos).addInputCrystals();
         this.playerInfo.changeCrystals(-10);
     }
 

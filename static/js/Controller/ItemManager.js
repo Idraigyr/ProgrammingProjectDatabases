@@ -396,8 +396,10 @@ export class ItemManager {
      * @param {number} fusionLevel
      */
     createGem(fusionLevel){
+        console.log("Fusion level: ", fusionLevel);
         // Push item with params
         let power = this.#generatePowerNumber(this.playerInfo.level, fusionLevel);
+        console.log("Power: ", power)
         const viewType = Math.floor(Math.random() * gemTypes.getSize);
         const params = {
             power: power,
