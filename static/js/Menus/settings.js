@@ -1,5 +1,5 @@
 // all variables for game settings
-import { API_URL } from "../configs/EndpointConfigs.js";
+import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths} from "../configs/ViewConfigs.js";
 let volume = 50;
@@ -59,16 +59,10 @@ export class Settings {
      */
     async logOut() {
         console.log("Log out button clicked")
-        var currentUrl = window.location.href;
-
-        // Append '/logout' to the current URL
-        var logoutUrl = currentUrl + '/logout';
-
         // Send logout info to the backend
         await this.playerInfo.logout();
-
         // Redirect the user to the logout URL
-        window.location.href = logoutUrl;
+        window.location.href = `${API_URL}/logout`;
     }
 
     async respawn() {

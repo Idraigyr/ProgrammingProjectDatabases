@@ -116,6 +116,7 @@ class ForwardingNamespace(Namespace):
             self.clients[user_id] = sid
         else:
             self._log.error(f"player is already logged in", exc_info=True)
+            self.emit('already_connected', room=sid)
             #TODO: send error message to client that they are already connected
 
     # Remove clients when they disconnect

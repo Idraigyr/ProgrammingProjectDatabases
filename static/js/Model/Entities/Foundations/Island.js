@@ -125,6 +125,15 @@ export class Island extends Foundation{
     }
 
     /**
+     * returns all proxys on the island that are of the given type
+     * @param type
+     * @return {*[]}
+     */
+    getProxysByType(type){
+        return this.proxys.filter(proxy => proxy.type === type);
+    }
+
+    /**
      * Get a building by its world position
      * @param position - world position of the building
      * @returns {*} - the building

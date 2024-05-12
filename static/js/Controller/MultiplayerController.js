@@ -205,9 +205,15 @@ export class MultiplayerController extends Subject{
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
 
+        progressBar.labels[0].innerText = "creating proxys for buildings...";
+        this.worldManager.generateProxys();
+        progressBar.value = 80;
+
         progressBar.labels[0].innerText = "creating paths for minions...";
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
+        progressBar.value = 90;
+
         this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
         this.worldManager.generateSpellSpawners({
             spell: {
@@ -223,10 +229,6 @@ export class MultiplayerController extends Subject{
         this.worldManager.world.spawners.spells.forEach(spawner => {
             spawner.addEventListener("spawn", this.updateEvents.get("createSpellEntity"));
         });
-        progressBar.value = 85;
-
-        progressBar.labels[0].innerText = "creating proxys for buildings...";
-        this.worldManager.generateProxys();
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);

@@ -1,6 +1,6 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI, islandURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI, timeURI, islandURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
