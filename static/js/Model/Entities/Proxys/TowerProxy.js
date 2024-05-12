@@ -9,7 +9,9 @@ export class TowerProxy extends ProxyEntity{
     /**
      * Function for when the tower dies
      */
-    die() {
+    dies() {
         //TODO: Implement tower exploding/dissapearing?
+        console.log("TowerProxy dies");
+        super.dispose();
     }
 }

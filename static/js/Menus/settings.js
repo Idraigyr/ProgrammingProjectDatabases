@@ -69,7 +69,7 @@ export class Settings {
         console.log("Respawn button clicked")
 
         // Send respawn info to the backend
-        await this.playerInfo.respawn();
+        await this.playerInfo.reload();
     }
 
     /**

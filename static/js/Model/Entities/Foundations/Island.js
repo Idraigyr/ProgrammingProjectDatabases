@@ -38,6 +38,10 @@ export class Island extends Foundation{
      * @param proxy - proxy to add
      */
     addProxy(proxy) {
+        proxy.addEventListener("delete", (event) => {
+            console.log("Proxy deleted from island");
+            this.proxys = this.proxys.filter(proxy => proxy !== event.model);
+        });
         this.proxys.push(proxy);
     }
 
@@ -133,7 +137,7 @@ export class Island extends Foundation{
      * @return {*[]}
      */
     getProxysByType(type){
-        return this.proxys.filter(proxy => proxy.type === type);
+        return this.proxys.filter(proxy => proxy.dbType === type);
     }
 
     /**

@@ -163,11 +163,12 @@ export class Projectile extends SpellEntity{
         super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
-            //TODO: is there a better way to do this?
+            //TODO: is there a better way to do this? maybe a boolean canMove?
             if (!(character  instanceof ProxyEntity)){
                   launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, 1, 20, deltaTime);
             }
             this.timer += this.duration;
+            console.log("Projectile hit something, deleting")
             this.dispatchEvent(this.createDeleteEvent());
         }
     }

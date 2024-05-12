@@ -43,6 +43,18 @@ export class World{
     }
 
     /**
+     * Get all proxys in the world
+     * @return {ProxyEntity[]}
+     */
+    getProxys(){
+        let proxys = [];
+        this.islands.forEach((island) => {
+            if(island instanceof Island) proxys = proxys.concat(island.proxys);
+        });
+        return proxys;
+    }
+
+    /**
      * Remove all proxys from the islands
      */
     removeProxys(){

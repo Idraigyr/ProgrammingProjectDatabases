@@ -511,9 +511,6 @@ export class MinionController extends Subject{
             if(!(island instanceof Island)) continue;
             for(const WarriorHut of island.getBuildingsByType("warrior_hut")){
                 if(!this.altars[island.team === 0 ? 1 : 0]) break; //This is for singleplayer where the other team might not have an altar
-                console.log("calculating path from warrior hut to altar");
-                console.log("warrior hut index", this.calculateIndexFromPosition(WarriorHut.position));
-                console.log("altar index", this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0]));
                 this.paths[island.team][WarriorHut.id] = this.#calculatePath(
                     this.#worldMap.grid[this.calculateIndexFromPosition(WarriorHut.position)],
                     this.#worldMap.grid[this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0].position)]

@@ -29,8 +29,6 @@ export class Placeable extends Entity{
         this.ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
-        console.log(this.#stats);
-        console.log(this.#statMultipliers);
     }
 
     /**
@@ -109,7 +107,6 @@ export class Placeable extends Entity{
         if(this.gems.length === this.gemSlots) throw new Error("Building already has the maximum amount of gems");
         this.addStatMultipliers(gem.getAttributes());
         this.gems.push(gem.id);
-        console.log(this.gems);
     }
 
     /**
@@ -119,12 +116,9 @@ export class Placeable extends Entity{
     removeGem(gem){
         if(!this.gems.includes(gem.id)) throw new Error("Building does not have the gem");
         this.removeStatMultipliers(gem.getAttributes());
-        console.log("removing gem: ", this.gems);
         this.gems = this.gems.filter(gemId => {
-            console.log(`${gemId} !== ${gem.id}: ${gemId !== gem.id}`);
             return gemId !== gem.id;
         });
-        console.log(this.gems);
     }
 
     /**
@@ -176,7 +170,6 @@ export class Placeable extends Entity{
             // gems: []
 
         };
-        console.log(this.rotation/90);
         for(const gem of this.gems){
             //obj.gems.push(gem.formatPOSTData(playerInfo));
         }

@@ -294,7 +294,11 @@ export class PlayerInfo extends Subject{
             return 100000;
         }
     }
-    respawn(){
+
+    /**
+     * Relaods the world and sets the player position to the spawn position
+     */
+    reload(){
         this.playerPosition.x = playerSpawn.x;
         this.playerPosition.y = playerSpawn.y;
         this.playerPosition.z = playerSpawn.z;

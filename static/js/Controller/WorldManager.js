@@ -155,6 +155,27 @@ export class WorldManager{
     }
 
     /**
+     * returns a proxy corresponding to the building with the given id
+     * @param {number} buildingID
+     * @return {ProxyEntity | null}
+     */
+    getProxyByBuildingID(buildingID){
+        let proxy = null;
+        this.world.islands.find((island) => {
+            if(island instanceof Island){
+                proxy = island.proxys.find((proxy) => {
+                    return proxy.building.id === buildingID;
+                });
+                if(proxy){
+                    return true;
+                }
+            }
+            return false;
+        });
+        return proxy ?? null;
+    }
+
+    /**
      * calculates the position, width, and length of a bridge between two islands, positions of islands must be even, width and length of islands must be odd
      * @param {Foundation} island1
      * @param {Foundation} island2
@@ -240,8 +261,6 @@ export class WorldManager{
     }
 
     async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
-        console.log("importing island island:", this.world.islands[0]);
-        console.log("importing island player", this.world.player);
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
@@ -507,6 +526,7 @@ export class WorldManager{
                     const proxy = this.factory.createProxy({
                         position: building.position,
                         team: building.team,
+                        buildingName: building.constructor.name,
                         building: building
                     });
                     island.addProxy(proxy);

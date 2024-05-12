@@ -69,7 +69,7 @@ export class ForwardingNameSpace {
 
     /**
      * Send a message to the server that the player has won the match
-     * @param matchId
+     * @param {number} matchId
      */
     sendAltarDestroyedEvent(matchId) { //TODO: maybe add the time of destruction otherwise event that reaches the server first will be the winner
         this.socket.emit('altar_destroyed', {'match_id': matchId});

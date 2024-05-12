@@ -23,7 +23,6 @@ export class Factory{
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
         this.#currentTime = null;
-        this.playerInfo = params.playerInfo;
     }
 
     /**
@@ -117,7 +116,6 @@ export class Factory{
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         player.addEventListener("updateHealth",view.OnHealth_.bind(view));
-        player.addEventListener("playerDied",this.playerInfo.respawn.bind(this.playerInfo));
 
         this.viewManager.addPair(player, view);
         return player;
@@ -298,30 +296,22 @@ export class Factory{
     }
 
     createProxy(params) {
+        console.log("createProxy", params)
         const asset = this.assetManager.getAsset(params.buildingName);
         let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
 
-        let model = null;
         //TODO: get health from a variable, so it is impacted by gems and level?
-        if (params.buildingName === "Altar") {
-            model = new Model.AltarProxy({
+        let model = new Model[`${params.buildingName}Proxy`]({
                 spawnPoint: currentPos,
                 position: currentPos,
                 team: params.team,
                 health: 100,
-                maxHealth: 100
+                maxHealth: 100,
+                buildingName: params.buildingName,
+                building: params.building
             });
 
-        }
-        if (params.buildingName === "Tower") {
-            model = new Model.TowerProxy({
-            spawnPoint: currentPos,
-            position: currentPos,
-            team: params.team,
-            health: 100,
-            maxHealth: 100
-        });
-        }
+        console.log("model", model);
 
         let view = new View.ProxyView({
             position: currentPos,
@@ -329,7 +319,7 @@ export class Factory{
             scene: this.scene,
             camera: this.camera
         });
-        if (params.buildingName === "Altar") {
+        if (params.buildingName === "Altar") { //TODO: make more dynamic
             const height = 9;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(4,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(4.2,height,0.5)));
         }
@@ -342,7 +332,7 @@ export class Factory{
         this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
-        model.addEventListener("healthChange",view.OnHealth_.bind(view));
+        model.addEventListener("updateHealth",view.OnHealth_.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(model, view);

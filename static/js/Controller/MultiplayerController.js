@@ -39,6 +39,8 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("playerHealthUpdate", this.sendPlayerHealthUpdate.bind(this));
         this.updateEvents.set("minionDeath", this.enemyDeathEvent.bind(this));
         this.updateEvents.set("playerDeath", this.sendPlayerDeathEvent.bind(this));
+        this.updateEvents.set("proxyHealthUpdate", this.sendProxyHealthUpdate.bind(this));
+        this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
 
         this.stats = new Map();
         this.stats.set("playerKills", 0);
@@ -233,9 +235,6 @@ export class MultiplayerController extends Subject{
             },
             interval: 5
         });
-        this.worldManager.world.spawners.spells.forEach(spawner => {
-            spawner.addEventListener("spawn", this.updateEvents.get("createSpellEntity"));
-        });
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);
@@ -322,7 +321,7 @@ export class MultiplayerController extends Subject{
 
     /**
      * Process the received state from the server
-     * @param {{sender: number, target: number, player: Object, playerHealth: Object, spellEvent: Object, minions: Object}} data - check send methods for more info about what data can contain
+     * @param {{sender: number, target: number, player: Object, playerHealth: Object, proxy: Object, spellEvent: Object, minions: Object}} data - check send methods for more info about what data can contain
      * in general: data can contain player which is the peer's state, playerHealth which is your own player's health (peer's front-end is responsible for updating your team's health), spellEvent which is the event that creates a spell (of peer),
      * minions which can contain create, update, state (all for enemey minions) and healthUpdate (for friendly minions)
      * @return {Promise<void>}
@@ -378,6 +377,14 @@ export class MultiplayerController extends Subject{
 
             if(data.minions.healthUpdate){
                 this.minionController.updateFriendlyState(data.minions.healthUpdate);
+            }
+        }
+        if(data.proxy){
+            if(data.proxy.healthUpdate){
+
+                const proxy = this.worldManager.getProxyByBuildingID(data.proxy.healthUpdate.id);
+                if(proxy) proxy.takeDamage(data.proxy.healthUpdate.previous - data.proxy.healthUpdate.current);
+                else throw new Error("Proxy not found");
             }
         }
 
@@ -485,13 +492,49 @@ export class MultiplayerController extends Subject{
         });
     }
 
+    /**
+     * Send the proxy health update to the opponent
+     * @param event
+     */
+    sendProxyHealthUpdate(event){
+        console.log("proxy health update")
+        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+            proxy: {
+                healthUpdate: event.detail
+            }
+        });
+    }
 
+    /**
+     * removes event listeners from proxy object
+     * @param event
+     */
+    proxyDeathEvent(event){
+        event.detail.model.removeEventListener("updateHealth", this.updateEvents.get("minionHealthUpdate"));
+        event.detail.model.removeEventListener("delete", this.updateEvents.get("minionDeath"));
+        if(event.detail.model.dbType === "altar_building" && event.detail.model.team !== 0){
+            console.log("altar destroyed");
+            this.forwardingNameSpace.sendAltarDestroyedEvent(this.matchId);
+        } else {
+            console.log("a proxy destroyed");
+        }
+    }
+
+
+    /**
+     * Starts sending state updates to the server
+     * @param {number} opponentId
+     */
     startSendingStateUpdates(opponentId){
-        //send created objects (minions, spells)
-            // => how to do this? do we
-            // A) just send state of all objects,
-            // B) send a list of all objects created since the last update so that opponent can create them as well
         this.peerController.peer.addEventListener("updateHealth", this.updateEvents.get("playerHealthUpdate"));
+        //TODO: attach event listeners to all proxy objects (buildings) and send their health updates to the opponent
+        this.worldManager.world.getProxys().forEach(proxy => {
+            proxy.addEventListener("updateHealth", this.updateEvents.get("proxyHealthUpdate"));
+            proxy.addEventListener("delete", this.updateEvents.get("proxyDeath"));
+        });
+        this.worldManager.world.spawners.spells.forEach(spawner => {
+            spawner.addEventListener("spawn", this.updateEvents.get("createSpellEntity"));
+        });
         this.spellCaster.addEventListener("createSpellEntity", this.updateEvents.get("createSpellEntity"));
         this.worldManager.world.player.addEventListener("updatedState", this.updateEvents.get("updatedState"));
         this.minionController.addEventListener("minionAdded", this.updateEvents.get("createMinion"));
