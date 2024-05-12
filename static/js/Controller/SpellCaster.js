@@ -262,7 +262,7 @@ export class SpellCaster extends Subject{
                     position: castPosition,
                     rotation: mapDegreesToNearestQuarter(this.#wizard.phi*180/Math.PI)
                 }));
-                if(!this.currentObject){
+                if(this.currentObject){
                     this.#wizard.cooldownSpell();
                 }
             }

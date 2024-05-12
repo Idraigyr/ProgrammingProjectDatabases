@@ -488,13 +488,24 @@ class App {
         this.menuManager.addEventListener("remove", this.worldManager.removeCrystals.bind(this.worldManager));
 
         this.menuManager.addEventListener("build", (event) => {
-            this.menuManager.exitMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
             // TODO: move things from menuManager, because otherwise you have to use the following code:
             // Get the price of the building
             let nameInDB = this.menuManager.ctorToDBName(ctorName);
             const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            // Check if you have enough mana
+            const mana = this.playerInfo.mana;
+            this.worldManager.world.player.cooldownSpell();
+            const mana2 = this.playerInfo.mana;
+            if (mana === mana2 || mana2 < 0) {
+                console.log("Not enough mana");
+                this.worldManager.world.player.mana = mana;
+                this.playerInfo.mana = mana;
+                this.hud.updateManaBar({detail: {current: this.playerInfo.mana, total: this.playerInfo.maxMana}});
+                console.log("mana: " + this.playerInfo.mana, "Hud: " + this.hud.manaBar.textContent);
+                return;
+            }
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
                 console.log("Not enough crystals");
@@ -505,6 +516,7 @@ class App {
                 if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){
                     this.playerInfo.changeCrystals(-price) ;
                 }
+                this.menuManager.exitMenu();
             }
 
         }); //build building with event.detail.id on selected Position;

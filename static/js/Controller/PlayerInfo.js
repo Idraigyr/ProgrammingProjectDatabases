@@ -266,6 +266,7 @@ export class PlayerInfo extends Subject{
                 dataType: 'json',
                 error: (e) => {
                     console.error(e);
+                    console.error("MAna: ", this.mana);
                 }
             });
         } catch (err){
