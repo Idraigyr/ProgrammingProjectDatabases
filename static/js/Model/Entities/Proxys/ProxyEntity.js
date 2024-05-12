@@ -5,8 +5,13 @@ import * as THREE from "three";
  * Base class for the proxy model
  */
 export class ProxyEntity extends Entity {
+    /**
+     * Constructor for the proxy entity
+     * @param {{building: Placeable, health: number | undefined, maxHealth: number | undefined }} params
+     */
     constructor(params) {
         super(params);
+        this.building = params.building;
         this.health = params?.health ?? 100;
         this.maxHealth = params?.maxHealth ?? 100;
 
@@ -29,12 +34,10 @@ export class ProxyEntity extends Entity {
     }
 
     /**
-     * @returns {string}
+     * Getter for the type of the building
+     * @returns {string} the type of the building
      */
     get type() {
-        return "proxy";
+        return this.building.dbType;
     }
-
-
-
 }

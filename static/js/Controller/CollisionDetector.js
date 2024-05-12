@@ -116,7 +116,7 @@ export class CollisionDetector extends Subject{
         if(typeof Worker === 'undefined' || this.startUp || true){
             //show loading screen
             document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
-            document.querySelector('.loading-animation').style.display = 'visible';
+            document.querySelector('.loading-animation').style.display = 'block';
             this.collider = this.generateCollider();
             document.querySelector('.loading-animation').style.display = 'none';
         } else {
@@ -226,9 +226,12 @@ export class CollisionDetector extends Subject{
     /**
      * gets the closest enemy to a character
      * @param {Character} character
+     * @param {string[]} targets - which types of entities to consider, default is players and characters, order is important (put the targets with the highest priority at the end)
+     * possible targets: "player", "character", "proxy", "spellEntity"
      * @return {{closestEnemy: Character, closestDistance: number}}
      */
-    getClosestEnemy(character){
+    getClosestEnemy(character, targets = ["player", "character"]){
+        //TODO: maybe add something so you can differentiate targets within the "proxy" group (i.e. different buildings can have different priorities)?
         let closestEnemy = null;
         let closestDistance = Infinity;
         const algo = (otherCharacter) => {
@@ -240,8 +243,10 @@ export class CollisionDetector extends Subject{
                 }
             }
         }
-        this.viewManager.pairs.character.forEach(algo);
-        this.viewManager.pairs.player.forEach(algo);
+        //order of target array is important!
+        targets.forEach((target) => {
+            this.viewManager.pairs[target].forEach(algo);
+        });
         return {closestEnemy, closestDistance};
     }
 

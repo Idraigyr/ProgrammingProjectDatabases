@@ -182,8 +182,15 @@ class App {
 
         this.menuManager.addEventListener("startFusion", (event) => {
             const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
-            this.timerManager.createTimer(fusionTime, [() => {
-                const gem = this.itemManager.createGem(fusionLevel);
+            // get stats from fusion table
+            const stats = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).getStats();
+            const inputCrystals = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).inputCrystals;
+            this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).resetInputCrystals();
+            let speed = stats.get("speed");
+            let fortune = stats.get("fortune");
+            console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
+            this.timerManager.createTimer(fusionTime/speed, [() => {
+                const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune));
                 // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);

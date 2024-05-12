@@ -24,10 +24,13 @@ export class Placeable extends Entity{
         this.#stats = new Map();
         //TODO: add stats
         this.#statMultipliers = new Map();
+        this.inputCrystals = 0; // input for fusion
         //TODO: set stat multipliers (defaults to 1)
         this.ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
+        console.log(this.#stats);
+        console.log(this.#statMultipliers);
     }
 
     /**
@@ -122,6 +125,27 @@ export class Placeable extends Entity{
             return gemId !== gem.id;
         });
         console.log(this.gems);
+    }
+
+    /**
+     * add 10 crystals to the input
+     */
+    addInputCrystals(){
+        this.inputCrystals += 10;
+    }
+
+    /**
+     * removes 10 from input crystals
+     */
+    removeInputCrystals(){
+        this.inputCrystals -= 10;
+    }
+
+    /**
+     * reset input crystals
+     */
+    resetInputCrystals(){
+        this.inputCrystals = 0;
     }
 
     /**

@@ -498,27 +498,19 @@ export class WorldManager{
      *  this is used to check for collisions with spells, and to display the health of the towers and altars
      */
     generateProxys(){
+        const proxyList = ["altar_building", "tower_building"];
         //TODO: rewrite this to be more generic
         this.world.islands.forEach((island) => {
             if(!(island instanceof Island)) return;
-            island.getBuildingsByType("altar_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Altar"
-
+            proxyList.forEach((type) => {
+                island.getBuildingsByType(type).forEach((building) => {
+                    const proxy = this.factory.createProxy({
+                        position: building.position,
+                        team: building.team,
+                        building: building
+                    });
+                    island.addProxy(proxy);
                 });
-                island.addProxy(proxy);
-            });
-
-            island.getBuildingsByType("tower_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Tower"
-
-                });
-                island.addProxy(proxy);
             });
         });
     }
@@ -572,12 +564,12 @@ export class WorldManager{
     }
 
     async addCrystals(){
-        console.log("added 10 crystals");
+        this.world.getBuildingByPosition(this.currentPos).removeInputCrystals();
         this.playerInfo.changeCrystals(10);
     }
 
     async removeCrystals(){
-        console.log("removed 10 crystals");
+        this.world.getBuildingByPosition(this.currentPos).addInputCrystals();
         this.playerInfo.changeCrystals(-10);
     }
 

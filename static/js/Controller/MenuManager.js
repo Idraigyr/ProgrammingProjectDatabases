@@ -636,9 +636,19 @@ export class MenuManager extends Subject{
      * @param {{name: string, stats: Map}} params
      */
     #arrangeStatMenuItems(params){
+        console.log("params: ");
+        console.log(params);
         console.log("inside arrangeItems:",  params.stats);
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
+        // update stats for according to the building
+        if (params.name === "MineMenu"){
+            params.stats.set("capacity", params.stats.get("capacity")*1000);
+        }
+        if (params.name === "TowerMenu"){
+            params.stats.set("capacity", params.stats.get("capacity")*100);
+            params.stats.set("damage", params.stats.get("damage")*5);
+        }
         for(const stat of stats){
             if(params.stats.has(stat)){
                 this.items.get(stat).element.style.display = this.items.get(stat).display;

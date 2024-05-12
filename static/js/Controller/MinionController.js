@@ -311,16 +311,17 @@ export class MinionController extends Subject{
         let targetPosition = new THREE.Vector3().copy(minion.position);
         //TODO: update movement based on state
         //if altar is close enough, attack altar
-        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0]) <= gridCellSize*0.5){ //TODO: find out why this is gridCellSize is too close
+        if(minion.position.distanceTo(this.altars[minion.team === 0 ? 1 : 0].position) <= gridCellSize*0.5){ //TODO: find out why this is gridCellSize is too close
             // console.log("attacking altar; minion position: ", minion.position, "altar position: ", this.altars[minion.team === 0 ? 1 : 0]);
             //attack altar
             //set attack state & at the end of the attack animation, deal damage
             minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
             minion.lastAction = "AttackEnemy";
+            minion.target = this.altars[minion.team === 0 ? 1 : 0];
             // console.log("attacking altar");
             //TODO: put proxy as minion.target
         } else {
-            const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion);
+            const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion, ["player", "character", "proxy"]);
             if(closestDistance < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //attack character
                 //set attack state & at the end of the attack animation, deal damage
@@ -501,9 +502,9 @@ export class MinionController extends Subject{
 
         for(const island of islands){
             if(!(island instanceof Island)) continue;
-            const altar = island.getBuildingsByType("altar_building")[0];
-            this.altars[island.team] = altar?.position ?? null;
-            console.log("altar position", this.altars[island.team])
+            const altar = island.getProxysByType("altar_building")[0];
+            this.altars[island.team] = altar ?? null;
+            console.log("altar proxy", this.altars[island.team])
         }
 
         for(const island of islands){
@@ -515,7 +516,7 @@ export class MinionController extends Subject{
                 console.log("altar index", this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0]));
                 this.paths[island.team][WarriorHut.id] = this.#calculatePath(
                     this.#worldMap.grid[this.calculateIndexFromPosition(WarriorHut.position)],
-                    this.#worldMap.grid[this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0])]
+                    this.#worldMap.grid[this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0].position)]
                 );
                 if(!this.paths[island.team][WarriorHut.id]) throw new Error("no path found");
             }

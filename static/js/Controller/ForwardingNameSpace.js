@@ -1,4 +1,6 @@
 // Initiate the socket connection to the server, under the '/forward' namespace
+import {API_URL} from "../configs/EndpointConfigs.js";
+
 export class ForwardingNameSpace {
 
     constructor() {
@@ -18,7 +20,15 @@ export class ForwardingNameSpace {
         this.socket.on('match_abort', (data) => params.handleMatchAbort(data));
         this.socket.on('forwarded', (data) =>params.processReceivedState(data));
         this.socket.on('match_timer', (data) => params.updateMatchTimer(data));
+        this.socket.on('already_connected', this.alreadyConnected.bind(this));
+    }
 
+    /**
+     * Redirect the player to the logout page when the player is already connected
+     * @param data
+     */
+     alreadyConnected(data) {
+        window.location.href = `${API_URL}/logout`;
     }
 
     handleForwardedMessage(data) {
