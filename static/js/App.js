@@ -50,7 +50,8 @@ class App {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        const texture = new THREE.TextureLoader().load( "../static/assets/images/background-landing.jpg" );
+        this.scene.background = texture; // add sky
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
 
         //OrbitControls -- DEBUG STATEMENTS --
@@ -397,6 +398,17 @@ class App {
         this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
         this.cameraManager.camera.updateProjectionMatrix();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
+        // Scale the background image
+        if(!this.scene.background) return;
+        const targetAspect = window.innerWidth / window.innerHeight;
+        const imageAspect = 1920 / 1280;
+        const factor = imageAspect / targetAspect;
+        // When factor larger than 1, that means texture 'wilder' than target。
+        // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
+        this.scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
+        this.scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
+        this.scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
+        this.scene.background.repeat.y = factor > 1 ? 1 : factor;
     }
 
     /**
