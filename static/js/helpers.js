@@ -14,6 +14,25 @@ export const assert = function(condition, message) {
 
 }
 
+/**
+ * performance meter to measure execution time for possibly multiple intervals at the same time
+ * @type {{start: function, end: function}}
+ * both start and end take a key as argument to identify the interval
+ */
+export const performanceMeter = (function(){
+    let start = new Map();
+    return {
+        start: function(key){
+            start.set(key, performance.now());
+        },
+        end: function(key){
+            const end = performance.now();
+            console.log(`Performance of ${key}: ${end - start.get(key)} ms`);
+            start.delete(key);
+        }
+    }
+})();
+
 function padLeadingZeros(num, size) {
     return num.toString().padStart(size, "0");
 }
@@ -40,8 +59,8 @@ export const timeDifferenceInSeconds = function(time1, time2){
 }
 
 /**
- * Get the distance between two points
- * @param geometry - the geometry to get the distance of
+ * set the index attribute of a geometry
+ * @param geometry - the geometry to set the index attribute of
  */
 export const setIndexAttribute = function(geometry){
     const numVertices = geometry.attributes.position.count;
@@ -66,6 +85,32 @@ export const returnMultipliedString = function(string, length){
     return str;
 }
 
+export const getBuildingNumberColor = function(number){
+    if(number === 0){
+        return "color: black;";
+    } else if(number === 1){
+        return "color: white;";
+    } else if(number === 2){
+        return "color: dimgray;";
+    } else if(number === 3){
+        return "color: aqua;";
+    } else if(number === 4){
+        return "color: grey;";
+    } else if(number === 5){
+        return "color: red;";
+    } else if(number === 6){
+        return "color: fuchsia;";
+    } else if(number === 7){
+        return "color: darkviolet;";
+    } else if(number === 8){
+        return "color: orange;";
+    } else if(number === 9){
+        return "color: brown;";
+    }
+    return null;
+
+}
+
 /**
  * Print the foundation grid
  * @param grid - the grid to print
@@ -73,22 +118,25 @@ export const returnMultipliedString = function(string, length){
  * @param length - the length of the grid
  * @param oneline - whether to print the grid on one line
  */
-export const printFoundationGrid = function(grid, width, length, oneline=false){
+export const printFoundationGrid = function(grid, width, length){
     console.log(returnMultipliedString("*", width));
-    let arr = "";
-    if(oneline){
-        for(let i = 0; i < grid.length; i++){
-            arr += grid[i] + " ";
-        }
-    } else {
-        for(let i = 0; i < length; i++){
-            for(let j = 0; j < width; j++){
-                arr += grid[i*width + j] + " ";
+    for(let i = 0; i < length; i++){
+        let currentRow = "";
+        const rowColor = [];
+        for(let j = 0; j < width; j++){
+            currentRow += "%c" + grid[i*width + j] + " ";
+            const color = getBuildingNumberColor(grid[i*width + j]);
+            if(color){
+                rowColor.push(color);
+                continue;
             }
-            arr += "\n";
+            rowColor.push("color: white; font-weight: bold;");
         }
+        if(i % 2 === 0){
+            currentRow += " ";
+        }
+        console.log(currentRow, ...rowColor);
     }
-    console.log(arr);
     console.log(returnMultipliedString("*", width));
 }
 
@@ -103,25 +151,31 @@ export const printFoundationGrid = function(grid, width, length, oneline=false){
 export const printGridPath = function(grid, path, width, length, currentNode = null){
     console.log(returnMultipliedString("*", width));
     for(let i = 0; i < length; i++){
-            let currentRow = "";
-            const rowColor = [];
-            for(let j = 0; j < width; j++){
-                currentRow += "%c" + grid[i*width + j] + " ";
-                if(currentNode === i*width + j){
-                    rowColor.push("color: red;");
-                    continue;
-                }
-                if(path.includes(i*width + j)){
-                    rowColor.push("color: green;");
-                    continue;
-                }
-                rowColor.push("color: white;");
+        let currentRow = "";
+        const rowColor = [];
+        for(let j = 0; j < width; j++){
+            currentRow += "%c" + grid[i*width + j] + " ";
+            if(currentNode === i*width + j){
+                rowColor.push("color: red;");
+                continue;
             }
-            if(i % 2 === 0){
-                currentRow += " ";
+            if(path.includes(i*width + j)){
+                rowColor.push("color: green;");
+                continue;
             }
-            console.log(currentRow, ...rowColor);
+
+            const color = getBuildingNumberColor(grid[i*width + j]);
+            if(color){
+                rowColor.push(color);
+                continue;
+            }
+            rowColor.push("color: white; font-weight: bold;");
         }
+        if(i % 2 === 0){
+            currentRow += " ";
+        }
+        console.log(currentRow, ...rowColor);
+    }
     console.log(returnMultipliedString("*", width));
 }
 
@@ -347,7 +401,7 @@ export function correctRitualPosition(object) {
  * @param building THREE.Object3D
  * @returns {*[]} array of the occupied cells
  */
-export function getOccupiedCells(building){
+export function getOccupiedCells(building){ //TODO @Daria: what was this used for? can we remove it?
     let cells = [];
     // Create bounding box
     const boundingBox = new THREE.Box3().setFromObject(building);

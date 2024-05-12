@@ -123,13 +123,13 @@ export class Factory{
         return player;
     }
 
-    createOpponent(params){
+    createPeer(params){
         // let sp = new THREE.Vector3(-8,15,12);
         let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, team: params?.team ?? 0});
+        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, health: params.health, maxHealth: params.maxHealth, team: params?.team ?? 0});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
@@ -178,7 +178,7 @@ export class Factory{
      * @returns {Island} model of the island
      */
     createIsland(params){
-        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length, team: params.team});
+        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, team: params.team});
 
         let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1}); //TODO: remove magic numbers
         //TODO: island asset?
@@ -193,6 +193,8 @@ export class Factory{
         islandModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.#addBuildings(islandModel, params.buildingsList);
+
+        islandModel.rotation = params.rotation;
 
         this.viewManager.addPair(islandModel, view);
         return islandModel;
@@ -214,8 +216,8 @@ export class Factory{
         //TODO: remove and make dynamic
         if(params.stats){
             for(const stat of params.stats){
-            model.addStat(stat.name, stat.value);
-        }
+                model.addStat(stat.name, stat.value);
+            }
         }
 
         if(params.gems){

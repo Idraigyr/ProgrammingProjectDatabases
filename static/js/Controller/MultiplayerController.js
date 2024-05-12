@@ -106,17 +106,14 @@ export class MultiplayerController extends Subject{
         //TODO: refactor; is pretty confusing because menuManager (play-buton is pressed) => this method => menuManager update the view
         //matchmake = do we want to matchmake or not?
         const matchmake = bool ?? !this.matchmaking;
-        console.log(" I want to matchmake: ", matchmake)
         if(bool === this.matchmaking ?? false) return;
         if(matchmake){
-            //TODO: only start matchmaking if player has a warrior hut?
             if(!this.itemManager.checkStakedGems()) return;
             try{
                 await this.startMatchMaking();
             } catch (err){
-                //TODO: handle pathfinding error (no path to altar) => show error message to player
                 console.error(err);
-                await this.endMatchMaking();
+                //TODO: handle pathfinding error (no path to altar) => show error message to player
             }
         } else {
             await this.endMatchMaking();
@@ -126,7 +123,12 @@ export class MultiplayerController extends Subject{
 
     async startMatchMaking(){
         //TODO: first test if path is available to altar if not throw error
-
+        const connectionPoint = this.worldManager.getIslandConnectionPoint();
+        if(this.worldManager.world.getBuildingByPosition(connectionPoint)) throw new Error("Connection point is occupied by a building");
+        const altarPosition = this.worldManager.getAltarPosition();
+        console.log("connection point: ", connectionPoint);
+        console.log("altar position: ", altarPosition);
+        if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("No path from connection point to altar");
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
         console.log(response);
@@ -200,7 +202,12 @@ export class MultiplayerController extends Subject{
         await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID < this.opponentInfo.userID);
         progressBar.value = 75;
         // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
-        const opponent = this.worldManager.addOpponent({position: new THREE.Vector3(0,0,0), mana: 100, maxMana: 100, team: 1});
+        const opponent = this.worldManager.addOpponent({
+            position: this.opponentInfo.playerPosition,
+            health: this.opponentInfo.maxHealth,
+            maxHealth: this.opponentInfo.maxHealth,
+            team: 1
+        });
         opponent.setId({entity: {player_id: this.opponentInfo.userID}});
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
@@ -245,7 +252,7 @@ export class MultiplayerController extends Subject{
     }
 
     /**
-     * Ends the match and shows the win/lose/draw screen
+     * Ends the match and shows the win/lose/draw screen (is called when the server sends the match end event)
      * @param data
      */
     async endMatch(data){
@@ -272,24 +279,23 @@ export class MultiplayerController extends Subject{
         this.menuManager.addItems(this.itemManager.updateGems(await this.playerInfo.retrieveGems()));
         //wait for player to click on continue button
         //send event to server that player is leaving match
-        this.leaveMatch();
+        this.unloadMatch();
     }
 
     /**
-     * Leaves the match => sets the game state back to single player
+     * sets the game state back to single player
      */
-    leaveMatch(){
+    unloadMatch(){
         console.log("leaving match");
         const progressBar = document.getElementById('progress-bar');
         progressBar.labels[0].innerText = "leaving match...";
         document.querySelector('.loading-animation').style.display = 'block';
         this.togglePhysicsUpdates();
 
-        this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
         this.spellCaster.multiplayer = false;
         //stop sending state updates to server & remove event listeners
         this.stopSendingStateUpdates();
-        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView
+        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
         //remove island from world and remove spawners
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.peerController.peer = null;
@@ -303,8 +309,13 @@ export class MultiplayerController extends Subject{
         console.log("done leaving match");
     }
 
-    abortMatch(){
-
+    /**
+     * sends a message to the server that the player is leaving the match
+     */
+    leaveMatch(){
+        if (confirm("Are you sure you want to leave the match?\nYou will lose your stakes!")) {
+            this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
+        }
     }
 
     /**

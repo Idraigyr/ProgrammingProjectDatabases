@@ -9,8 +9,8 @@ export class Wizard extends Character{
         this.spells = [null,null,null,null,null];
         this.spellCooldowns = [0,0,0,0,0];
         this.currentSpell = 0;
-        this.mana = params?.mana ?? 100;
         this.maxMana = params?.maxMana ?? 100;
+        this.mana = params?.mana ?? this.maxMana;
         this.id = params?.id ?? null;
     }
 
@@ -191,6 +191,18 @@ export class Wizard extends Character{
         console.log("Player died")
         this.dispatchEvent(new CustomEvent("playerDied"));
 
+    }
+
+    /**
+     * Function that gets called when the player respawns
+     * @param {THREE.Vector3} position - position to respawn at
+     * @param {boolean} refillHealth - if the health should be refilled
+     * @param {boolean} refillMana - if the mana should be refilled
+     */
+    respawn(position = null, refillHealth = true, refillMana = true) {
+        this.position = this._position.copy(position ?? this.spawnPoint);
+        if(refillHealth) this.changeCurrentHealth(this.maxHealth);
+        if(refillMana) this.changeCurrentMana(this.maxMana);
     }
 
 

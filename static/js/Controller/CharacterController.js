@@ -115,7 +115,6 @@ export class CharacterController extends Subject{
         }
 
         if ( this._character.position.y < - 50 || this._character.position.y > 2000) {
-            console.log("Player fell off the island, y was: ", this._character.position.y);
             //TODO: respawn function for player which can be reused for death by enemies, add funny message
             //You fell of the island
             //you were catapulted to the stratosphere

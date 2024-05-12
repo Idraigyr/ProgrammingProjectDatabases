@@ -81,7 +81,6 @@ export class GemItem extends MenuItem{
 
     createElement(params) {
         const element =  super.createElement(params);
-        console.log("gem menuitem:", params);
         if(params?.equipped) element.style.opacity = "0.5";
         return element;
     }

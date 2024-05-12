@@ -212,6 +212,14 @@ class ForwardingNamespace(Namespace):
         :param data: message from the client
         :return:
         """
+        try:
+            user_id = self.get_user_from_sid(request.sid)
+            match_id = self.playing[user_id]
+            self.end_match(match_id, self.matches[match_id]['players'][0] if
+                                     self.matches[match_id]['players'][0] != user_id else
+                                     self.matches[match_id]['players'][1])
+        except Exception:
+            self._log.error(f"Could not leave match: {data}", exc_info=True)
 
 
     def on_match_found(self, player1: int, player2: int):

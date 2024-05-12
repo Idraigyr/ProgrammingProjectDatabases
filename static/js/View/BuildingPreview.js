@@ -23,9 +23,10 @@ export class BuildingPreview extends IView{
     /**
      * Check if building preview is not dead
      * @param deltaTime time passed since last update
+     * @param camera camera to update view
      * @returns {boolean} true if building preview is not dead
      */
-    isNotDead(deltaTime){
+    isNotDead(deltaTime, camera){
         if(this.timer.finished){
             // if(!this.particleSystem.isNotDead(deltaTime)){
             //     this.cleanUp();

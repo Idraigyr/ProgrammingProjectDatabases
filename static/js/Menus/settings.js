@@ -16,12 +16,12 @@ keyBinds.set('open-inventory', 'e');
 keyBinds.set('eat', 'q');
 
 export class Settings {
-    constructor(inputManager, playerInfo) {
+    constructor(inputManager, playerInfo, callbacks) {
         this.map = null;
         this.inputManager = inputManager;
         this.playerInfo = playerInfo;
 
-        inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
+        inputManager.addLeaveMatchButtonListener(callbacks.leaveMatch);
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
         inputManager.addRespawnButtonListener(this.respawn.bind(this));
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))

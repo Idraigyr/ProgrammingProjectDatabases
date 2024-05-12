@@ -2,7 +2,7 @@ import {Subject} from "../Patterns/Subject.js";
 import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
-import {convertWorldToGridPosition} from "../helpers.js";
+import {assert, convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 import {Model} from "../Model/ModelNamespace.js";
 
@@ -12,6 +12,7 @@ import {Model} from "../Model/ModelNamespace.js";
 export class ViewManager extends Subject{
     constructor(params) {
         super(params);
+        this.camera = params?.camera ?? null;
         this.pairs = {
             building: [],
             island: [],
@@ -22,6 +23,14 @@ export class ViewManager extends Subject{
         };
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
+    }
+
+    /**
+     * Set the camera of the manager
+     * @param {THREE.Camera} camera
+     */
+    setCamera(camera){
+        this.camera = camera;
     }
 
     /**
@@ -105,7 +114,6 @@ export class ViewManager extends Subject{
      * @return {Wizard|*}
      */
     getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager; is player model id unique across all characters?
-        console.log("retrieving player model by id: ", id)
         if(this.pairs.player[0].model.id === id){
             return this.pairs.player[0].model;
         } else {
@@ -204,28 +212,15 @@ export class ViewManager extends Subject{
      * @param deltaTime time difference
      */
     updateAnimatedViews(deltaTime){
-        this.spellPreview.update(deltaTime);
+        assert(this.camera, "Camera not set in ViewManager");
+        this.spellPreview.update(deltaTime, this.camera);
         for(const type in this.pairs){
             this.pairs[type].forEach((pair) => {
-                if(pair.view instanceof IAnimatedView) {
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof View.Fireball){ //TODO: make new superclass for 1 else if instanceof SpellView
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof View.ThunderCloud){
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof View.Shield){
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof RitualSpell){
-                    pair.view.update(deltaTime);
+                if(pair.view.hasUpdates) { //TODO: make new superclass for 1 else if instanceof SpellView
+                    pair.view.update(deltaTime, this.camera);
                 }
             });
         }
-        this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime));
-    }
-
-    updateProxys(deltaTime){
-        this.pairs.proxy.forEach((pair) => {
-            pair.view.update(deltaTime);
-        });
+        this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime, this.camera));
     }
 }

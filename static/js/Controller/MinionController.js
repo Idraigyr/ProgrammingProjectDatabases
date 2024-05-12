@@ -20,6 +20,7 @@ import {MinionDefaultAttackState} from "../Model/States/MinionStates.js";
  * Class for a node in a path
  */
 class PathNode{
+    #accessibleCells;
     /**
      * PathNode constructor
      * @param {{index: number, value: *, position: THREE.Vector3, worldMap: Foundation}} params
@@ -32,6 +33,7 @@ class PathNode{
         this.hCost = 0;
         this.worldMap = params.worldMap;
         this.parent = null;
+        this.#accessibleCells = [buildTypes.getNumber("empty"), buildTypes.getNumber("bridge"), buildTypes.getNumber("altar_building")]; //TODO: maybe add a parameter for accessible cells (put it somewhere where it is more readable/easier to augment)
     }
 
     /**
@@ -41,43 +43,35 @@ class PathNode{
     get neighbours(){
         let neighbors = [];
         if(this.index % this.worldMap.width > 0 &&
-            (this.worldMap.grid[this.index - 1].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index - 1].value === buildTypes.getNumber("altar_building")) ) {
+            this.#accessibleCells.includes(this.worldMap.grid[this.index - 1].value)) {
             neighbors.push(this.worldMap.grid[this.index - 1])
         } //has left neighbour
         if(this.index % this.worldMap.width < this.worldMap.width - 1 &&
-            (this.worldMap.grid[this.index + 1].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index + 1].value === buildTypes.getNumber("altar_building"))) {
+            this.#accessibleCells.includes(this.worldMap.grid[this.index + 1].value)) {
             neighbors.push(this.worldMap.grid[this.index + 1])
         } //has right neighbour
-        if(this.index >= this.worldMap.width &&
-            (this.worldMap.grid[this.index - this.worldMap.width].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index - this.worldMap.width].value === buildTypes.getNumber("altar_building"))) {
+        if(this.index >= this.worldMap.width && this.#accessibleCells.includes(this.worldMap.grid[this.index - this.worldMap.width].value)) {
             neighbors.push(this.worldMap.grid[this.index - this.worldMap.width])
         } // has top neighbour
         if(this.index < this.worldMap.width*(this.worldMap.length - 1) &&
-            (this.worldMap.grid[this.index + this.worldMap.width].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index + this.worldMap.width].value === buildTypes.getNumber("altar_building"))) {
+            this.#accessibleCells.includes(this.worldMap.grid[this.index + this.worldMap.width].value)) {
             neighbors.push(this.worldMap.grid[this.index + this.worldMap.width])
         } // has bottom neighbour
         if(this.index % this.worldMap.width > 0 && this.index >= this.worldMap.width &&
-            (this.worldMap.grid[this.index - 1 - this.worldMap.width].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index - 1 - this.worldMap.width].value === buildTypes.getNumber("altar_building"))){
+            this.#accessibleCells.includes(this.worldMap.grid[this.index - 1 - this.worldMap.width].value)) {
             neighbors.push(this.worldMap.grid[this.index - 1 - this.worldMap.width]);
         } //top left
         if(this.index % this.worldMap.width < this.worldMap.width - 1 && this.index >= this.worldMap.width &&
-            (this.worldMap.grid[this.index + 1 - this.worldMap.width].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index + 1 - this.worldMap.width].value === buildTypes.getNumber("altar_building"))){
+            this.#accessibleCells.includes(this.worldMap.grid[this.index + 1 - this.worldMap.width].value)) {
             neighbors.push(this.worldMap.grid[this.index + 1 - this.worldMap.width]);
         } //top right
         if(this.index % this.worldMap.width > 0 && this.index < this.worldMap.width*(this.worldMap.length - 1) &&
-            (this.worldMap.grid[this.index - 1 + this.worldMap.width].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index - 1 + this.worldMap.width].value === buildTypes.getNumber("altar_building"))){
+            this.#accessibleCells.includes(this.worldMap.grid[this.index - 1 + this.worldMap.width].value)) {
             neighbors.push(this.worldMap.grid[this.index - 1 + this.worldMap.width]);
         } //bottom left
-        if(this.index % this.worldMap.width < this.worldMap.width - 1 && this.index < this.worldMap.width*(this.worldMap.length - 1) &&
-            (this.worldMap.grid[this.index + 1 + this.worldMap.width].value === buildTypes.getNumber("empty") ||
-                this.worldMap.grid[this.index + 1 + this.worldMap.width].value === buildTypes.getNumber("altar_building"))){
+        if(this.index % this.worldMap.width < this.worldMap.width - 1 &&
+            this.index < this.worldMap.width*(this.worldMap.length - 1) &&
+            this.#accessibleCells.includes(this.worldMap.grid[this.index + 1 + this.worldMap.width].value)) {
             neighbors.push(this.worldMap.grid[this.index + 1 + this.worldMap.width]);
         } //bottom right
         return neighbors;
@@ -417,7 +411,9 @@ export class MinionController extends Subject{
      * @param {PathNode} start - start node, needs to be in this.#worldMap.grid
      * @param {PathNode} end - end node, needs to be in this.#worldMap.grid
      */
-    calculatePath(start, end){
+    #calculatePath(start, end){
+        console.log("calculating path in following grid:")
+        printFoundationGrid(this.#worldMap.grid.map((node) => node.value), this.#worldMap.width, this.#worldMap.length);
         this.open = [];
         this.closed = [];
 
@@ -473,7 +469,7 @@ export class MinionController extends Subject{
     }
     //TODO: move this?
     /**
-     * calculate the index of a node in the grid from it's position
+     * calculate the index of a node in the grid from its position
      * @param {THREE.Vector3} position
      * @return {*}
      */
@@ -514,12 +510,35 @@ export class MinionController extends Subject{
             if(!(island instanceof Island)) continue;
             for(const WarriorHut of island.getBuildingsByType("warrior_hut")){
                 if(!this.altars[island.team === 0 ? 1 : 0]) break; //This is for singleplayer where the other team might not have an altar
-                this.paths[island.team][WarriorHut.id] = this.calculatePath(
+                console.log("calculating path from warrior hut to altar");
+                console.log("warrior hut index", this.calculateIndexFromPosition(WarriorHut.position));
+                console.log("altar index", this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0]));
+                this.paths[island.team][WarriorHut.id] = this.#calculatePath(
                     this.#worldMap.grid[this.calculateIndexFromPosition(WarriorHut.position)],
                     this.#worldMap.grid[this.calculateIndexFromPosition(this.altars[island.team === 0 ? 1 : 0])]
                 );
+                if(!this.paths[island.team][WarriorHut.id]) throw new Error("no path found");
             }
         }
+    }
+
+    testPath(islands, start, end){
+        console.log("testing path, islands:", islands);
+        printFoundationGrid(islands[0].grid, islands[0].width, islands[0].length);
+
+        //test if there is a path from start to end (return null if not)
+        this.#worldMap.setFromFoundations(islands);
+
+        console.log("worldmap set from islands:");
+        printFoundationGrid(this.#worldMap.grid, this.#worldMap.width, this.#worldMap.length);
+
+        for(let i = 0; i < this.#worldMap.grid.length; i++){
+            this.#worldMap.grid[i] = new PathNode({index: i, position: this.calculateNodePosition(i), value: this.#worldMap.grid[i], worldMap: this.#worldMap});
+        }
+        return this.#calculatePath(
+            this.#worldMap.grid[this.calculateIndexFromPosition(start)],
+            this.#worldMap.grid[this.calculateIndexFromPosition(end)]
+        );
     }
 
     /**

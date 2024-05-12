@@ -120,14 +120,16 @@ class App {
             target: null,
             raycaster: this.raycastController,
             //visualise axes -- DEBUG STATEMENTS --
-            // axisHelper: new Cursor({})
+            axisHelper: new Cursor({})
             //visualise axes -- DEBUG STATEMENTS --
         });
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
 
+        this.viewManager.setCamera(this.cameraManager.camera);
+
         //visualise axes -- DEBUG STATEMENTS --
-        // this.scene.add(this.cameraManager.axisHelper.charModel);
+        this.scene.add(this.cameraManager.axisHelper.charModel);
         //visualise axes -- DEBUG STATEMENTS --
 
         this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
@@ -138,7 +140,7 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.settings = new Settings(this.inputManager, this.playerInfo)
+        this.settings = new Settings(this.inputManager, this.playerInfo, {leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)});
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -306,6 +308,7 @@ class App {
         this.spellCaster.addEventListener("interact", async (event) => {
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
+            console.log(building)
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
@@ -329,7 +332,6 @@ class App {
                 params.level = building.level;
                 // params.maxLevel = building.maxLevel; //TODO: implement maxLevel?
                 params.slots = building.gemSlots;
-                console.log("rendering slots: ", params.slots);
             }
 
             if(building?.upgradable){
@@ -356,6 +358,7 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
+
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
@@ -372,7 +375,6 @@ class App {
             handleMatchFound: this.multiplayerController.loadMatch.bind(this.multiplayerController),
             handleMatchStart: this.multiplayerController.startMatch.bind(this.multiplayerController),
             handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
-            handleMatchAbort: this.multiplayerController.abortMatch.bind(this.multiplayerController),
             processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
             updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
         });
@@ -383,10 +385,6 @@ class App {
         //     this.scene.add(this.cameraManager.collisionLine);
         // });
         //visualise camera line -- DEBUG STATEMENTS --
-    }
-
-    createRandomGem(){
-
     }
 
     /**
@@ -475,6 +473,13 @@ class App {
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
+
+
+        this.inputManager.addKeyDownEventListener("KeyP", () => {
+           this.worldManager.world.islands[0].rotation
+        });
+
+
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
@@ -597,9 +602,6 @@ class App {
         this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
-
-        //TODO: should only be done in multiplayer @Flynn
-        this.viewManager.updateProxys(this.deltaTime);
 
 
         this.renderer.render( this.scene, this.cameraManager.camera );

@@ -105,7 +105,6 @@ export class Placeable extends Entity{
     addGem(gem){
         if(this.gems.length === this.gemSlots) throw new Error("Building already has the maximum amount of gems");
         this.addStatMultipliers(gem.getAttributes());
-        console.log("adding gem: ", this.gems);
         this.gems.push(gem.id);
         console.log(this.gems);
     }

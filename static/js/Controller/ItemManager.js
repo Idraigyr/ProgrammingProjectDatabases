@@ -157,7 +157,6 @@ export class ItemManager {
             gem.staked = !gem.staked;
             this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["staked"]);
         });
-        console.log("powerStaked:", powerStaked)
         return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
     }
 

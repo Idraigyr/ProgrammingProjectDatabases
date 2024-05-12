@@ -9,6 +9,7 @@ import {gridCellSize} from "../configs/ViewConfigs.js";
 import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
+import {printFoundationGrid} from "../helpers.js";
 
 
 /**
@@ -36,6 +37,11 @@ export class WorldManager{
         this.persistent = true;
     }
 
+    /**
+     * imports an island from the database
+     * @param {number} islandID
+     * @return {Promise<{characters: *[], island: {buildings: *[], rotation: number, position: {x: number, y: number, z: number}}}>}
+     */
     async importIsland(islandID){
         let island = {
             buildings: [],
@@ -53,23 +59,33 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
-                console.log("imported building", building.blueprint.name);
-                let gems = [];
-                if(building.gems){
-                    for(const gem of building.gems){
-                    gems.push(this.itemManager.getGemById(gem.id));
-                }
-                }
-                console.log("imported building", building);
-                island.buildings.push({
+                const buildingParams = {
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: building.rotation*90,
                     id: building.placeable_id,
-                    gems: gems,
                     stats: buildingStats.getStats(building.blueprint.name),
                     task: building.task
-                });
+                };
+                let gems = [];
+                //used only for adding gem ids and stat multipliers to building
+                if(building.gems){ //normal adding of gems to buildings
+                    for(const gem of building.gems){
+                        gems.push({
+                            id: gem.id,
+                            getAttributes: () => {
+                                const attributes = new Map();
+                                gem.attributes.forEach(attribute => {
+                                    attributes.set(attribute.gem_attribute_type, attribute.multiplier);
+                                });
+                                return attributes;
+                            }
+                        });
+                    }
+                    buildingParams.gems = gems;
+                }
+                console.log(`importing building ${building.blueprint.name} at position ${building.x}, ${building.z}`);
+                island.buildings.push(buildingParams);
             }
 
             //Remove?
@@ -120,6 +136,22 @@ export class WorldManager{
      */
     calculateIslandOffset(){
         return new THREE.Vector3((15+3)*gridCellSize, 0, 0);
+    }
+
+    /**
+     * returns the middle position of the edge that will connect the islands
+     * @return {THREE.Vector3} - the middle position of the edge that will connect the islands
+     */
+    getIslandConnectionPoint(){
+        return this.world.islands[0].position.clone().add(new THREE.Vector3(7*gridCellSize, 0, 0));
+    }
+
+    /**
+     * returns the position of the altar on the first island
+     * @return {THREE.Vector3}
+     */
+    getAltarPosition(){
+        return this.world.islands[0].getBuildingsByType("altar_building")[0].position;
     }
 
     /**
@@ -197,12 +229,12 @@ export class WorldManager{
 
     /**
      * Adds an enemy player to the world
-     * @param params
+     * @param {Object} params - params for the createOpponent method in the factory
      * @return {Wizard}
      */
     addOpponent(params){
         if(params.team === this.world.player.team) throw new Error("cannot add opponent with same team as player");
-        const opponent = this.factory.createOpponent(params);
+        const opponent = this.factory.createPeer(params);
         this.world.addEntity(opponent);
         return opponent;
     }
@@ -214,7 +246,6 @@ export class WorldManager{
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
         const rotation = 180;
-        console.log("offset", offset);
         if(currentIslandIsCenter){
             console.log("%ccurrent island is center", "color: green; font-size: 20px");
             islandPosition.add(offset);
@@ -233,24 +264,26 @@ export class WorldManager{
         this.collisionDetector.generateColliderOnWorker();
     }
 
-
-    addSpellSpawners(){
-        this.world.addSpellSpawners();
-    }
-
     /**
      * Moves the current island and player to the new position, BE AWARE: this method does not call generateColliderOnWorker
      * @param {THREE.Vector3} translation - the translation to apply to the island
      * @param {number} rotation - the new rotation of the island in degrees
      */
     moveCurrentIsland(translation, rotation){
+        console.log("moving island")
         const island = this.world.islands[0];
         island.position = island.position.add(translation);
-        island.rotation = rotation;
-        //TODO: make sure these 2 lines work correctly
+
+        //--DEBUG--
+        console.log("original island:")
+        printFoundationGrid(island.grid, island.width, island.length);
+        //--DEBUG--
+
+        console.log("rotation:", rotation);
+        island.rotation += rotation;
         console.log("I moved myself with the island", this.world.player.position);
         this.world.player.spawnPoint = this.world.player.spawnPoint.add(translation);
-        this.world.player.position = this.world.player.spawnPoint;
+        this.world.player.position = this.world.player.spawnPoint; //TODO: fix this currently the player is not moved
     }
 
     /**
@@ -259,8 +292,10 @@ export class WorldManager{
      * @param {number} team
      */
     resetWorldState(currentIslandIsCenter = true){
+        console.log("resetting world state: currentIslandIsCenter:", currentIslandIsCenter);
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
+        this.world.removeProxys();
         if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
         this.collisionDetector.generateColliderOnWorker();
         console.log("reset world state island:", this.world.islands[0]);
@@ -281,7 +316,6 @@ export class WorldManager{
         }else{ //TODO: if i'm not mistaken, this is unneccesary because it already happens in the playerInfo
             playerPosition = {x: playerSpawn.x, y: playerSpawn.y, z: playerSpawn.z};
         }
-        console.log("Player position from database: ", playerPosition);
         const player = {position: {
                 x: playerPosition.x,
                 y: playerPosition.y,
@@ -296,6 +330,13 @@ export class WorldManager{
         this.factory.currentTime = new Date(await this.playerInfo.getCurrentTime());
         this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
         this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+
+        //--DEBUG--
+        console.log("importing island:")
+        const island1 = this.world.islands[0];
+        printFoundationGrid(island1.grid, island1.width, island1.length);
+        //--DEBUG--
+
         this.world.setPlayer(this.factory.createPlayer(player));
         // Set default values for the inventory slots
         // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function

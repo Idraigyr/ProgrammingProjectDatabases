@@ -33,12 +33,21 @@ export class World{
             return true;
         });
 
-        this.islands.filter((island) => {
+        this.islands = this.islands.filter((island) => {
             if(island.team === team || island instanceof Bridge){
                 island.dispose();
                 return false;
             }
             return true;
+        });
+    }
+
+    /**
+     * Remove all proxys from the islands
+     */
+    removeProxys(){
+        this.islands.forEach((island) => {
+            if(island instanceof Island) island.disposeProxys();
         });
     }
 

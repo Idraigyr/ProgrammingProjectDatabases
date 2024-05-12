@@ -13,6 +13,7 @@ export class IView {
         this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
+        this.hasUpdates = false;
 
         this.boxHelper.visible = true; // TODO: set in env
     }
@@ -51,8 +52,9 @@ export class IView {
     /**
      * Update the view
      * @param deltaTime - time since last update
+     * @param camera - camera to update view
      */
-    update(deltaTime) {}
+    update(deltaTime, camera) {}
 
     /**
      * Update position of the view
@@ -84,6 +86,7 @@ export class IView {
 export class IAnimatedView extends IView{
     constructor(params) {
         super(params);
+        this.hasUpdates = true;
         this.mixer = new THREE.AnimationMixer(params.charModel);
         this.animations = {};
     }
@@ -103,8 +106,9 @@ export class IAnimatedView extends IView{
     /**
      * Update animations
      * @param deltaTime time since last update
+     * @param camera camera to update view
      */
-    update(deltaTime) {
+    update(deltaTime, camera) {
         if(this.mixer) this.mixer.update(deltaTime);
     }
 

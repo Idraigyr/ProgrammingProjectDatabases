@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {Entity} from "../Entity.js";
 import {buildTypes} from "../../../configs/Enums.js";
 import {gridCellSize} from "../../../configs/ViewConfigs.js";
-import {assert, printFoundationGrid, returnWorldToGridIndex} from "../../../helpers.js";
+import {assert, getBuildingNumberColor, printFoundationGrid, returnWorldToGridIndex} from "../../../helpers.js";
 
 /**
  * model of foundation which is a grid based plane with a center-square, meaning both width and length are uneven
@@ -24,8 +24,6 @@ export class Foundation extends Entity{
         if(params instanceof Array){
             this.setFromFoundations(params);
         } else {
-            this.rotation = params.rotation;
-
             this.width = params?.width ?? 15;
             this.width = this.width % 2 === 0 ? this.width + 1 : this.width;
 
@@ -42,6 +40,10 @@ export class Foundation extends Entity{
             this.max = new THREE.Vector3(extreme.x, 0, extreme.z);
 
             this.grid = new Array(this.width*this.length).fill(buildTypes.getNumber("empty"));
+
+            if(params?.rotation) {
+                this.rotation = params.rotation;
+            }
         }
     }
 
@@ -97,7 +99,9 @@ export class Foundation extends Entity{
 
     //TODO: might be convenient/necessary that 0,0 is the center of the new foundation
     setFromFoundations(foundations){
+        console.log("setFromFoundations");
         const {width, length, min, max} = this.#calculateWidthAndLength(foundations);
+        console.log("width", width, "length", length, "min", min, "max", max);
         this.width = width;
         this.length = length;
         this.min = min;
@@ -122,37 +126,37 @@ export class Foundation extends Entity{
         for(const foundation of foundations){
             const xMin = (foundation.min.x - min.x)/gridCellSize + 0.5;
             const zMin = (foundation.min.z - min.z)/gridCellSize + 0.5;
-            //works but mirrored
-            // for(let z = 0; z < foundation.length; z++){
-            //     for(let x = 0; x < foundation.width; x++){
-            //         let xIndex = Math.floor(xMin + x);
-            //         let zIndex = Math.floor(zMin + z);
-            //         let worldIndex = zIndex*width + xIndex;
-            //         let foundationIndex = z*foundation.width + x;
-            //
-            //         if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
-            //             console.error("islands overlap/invalid access");
-            //             return null;
-            //         }
-            //         worldMap[worldIndex] = foundation.grid[foundationIndex];
-            //     }
-            // }
-
-            for(let x = 0; x < foundation.width; x++){
-                for(let z = 0; z < foundation.length; z++){
+            // works but mirrored
+            for(let z = 0; z < foundation.length; z++){
+                for(let x = 0; x < foundation.width; x++){
                     let xIndex = Math.floor(xMin + x);
                     let zIndex = Math.floor(zMin + z);
                     let worldIndex = zIndex*width + xIndex;
-                    let foundationIndex = x*foundation.length + z;
+                    let foundationIndex = z*foundation.width + x;
 
                     if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
                         console.error("islands overlap/invalid access");
-                        return worldMap;
-                        // return null;
+                        return null;
                     }
                     worldMap[worldIndex] = foundation.grid[foundationIndex];
                 }
             }
+
+            // for(let x = 0; x < foundation.width; x++){
+            //     for(let z = 0; z < foundation.length; z++){
+            //         let xIndex = Math.floor(xMin + x);
+            //         let zIndex = Math.floor(zMin + z);
+            //         let worldIndex = zIndex*width + xIndex;
+            //         let foundationIndex = x*foundation.length + z;
+            //
+            //         if(worldMap[worldIndex] !== buildTypes.getNumber("void")) {
+            //             console.error("islands overlap/invalid access");
+            //             return worldMap;
+            //             // return null;
+            //         }
+            //         worldMap[worldIndex] = foundation.grid[foundationIndex];
+            //     }
+            // }
 
         }
         return worldMap;
@@ -186,6 +190,18 @@ export class Foundation extends Entity{
     }
 
     /**
+     * calculates an index for a 1D array based on 2D coordinates where the center of the foundation is 0,0
+     * (i.e. x and z can be negative)
+     * @param {number} x
+     * @param {number} z
+     * @return {number}
+     * @protected
+     */
+    _calculate1DIndex(x, z){
+        return (z + (this.length -1)/2)*this.width + (x + (this.width - 1)/2);
+    }
+
+    /**
      * Returns the type of the cell at the worldPosition
      * @param worldPosition - position in world coordinates
      * @returns {any} - type of the cell
@@ -193,7 +209,7 @@ export class Foundation extends Entity{
     checkCell(worldPosition){
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
         // return buildTypes.getName(this.grid[x + 7][z + 7]);
-        return this.grid[(x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2)];
+        return this.grid[this._calculate1DIndex(x, z)];
     }
 
 
@@ -201,7 +217,8 @@ export class Foundation extends Entity{
     occupyCell(worldPosition, char){
         //check if parameter of returnWorldToGridIndex is correct
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
-        const index = (x + (this.width - 1)/2)*this.width + (z + (this.length -1)/2);
+        console.log("Occupying cell: x", x, "z", z);
+        const index = this._calculate1DIndex(x, z);
         // this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
         this.grid[index] = char;
         return index;
@@ -231,20 +248,64 @@ export class Foundation extends Entity{
         return super.position;
     }
 
+    /**
+     * helper function to rotate a grid by 90 degrees
+     * @param {Array} grid
+     * @param {number} width
+     * @param {number} length
+     * @return {Array}
+     */
+    _rotateGrid90Deg(grid, width, length) {
+        let rotatedGrid = new Array(length*width).fill(0);
+        for(let x = 0; x < length; x++){
+            for(let z = 0; z < width; z++){
+                let index = x*width + z;
+                let newIndex = (width - z - 1) * length + x;
+                rotatedGrid[newIndex] = this.grid[index];
+            }
+        }
+        return rotatedGrid;
+    }
+
+    /**
+     * Get rotation of the foundation in degrees +-(0, 90, 180, 270)
+     * @return {number}
+     */
+    get rotation(){
+        return this.#rotation;
+    }
+
 
     /**
      * Set rotation of the foundation, also updates width and length
-     * @param value
+     * @param {number} value - rotation in degrees +-(0, 90, 180, 270)
      */
     set rotation(value){
-        if([0,180,-0,-180].includes(value%360)) return;
-        if([90,270,-90,-270].includes(value%360)){
-            // this.#rotation = value;
-            // const temp = this.width;
-            // this.width = this.length;
-            // this.length = temp;
-            //TODO: rotate min & max;
-            //TODO: rotate grid
+        console.log("setter rotation: new rotation:", value, "current rotation:", this.#rotation);
+        if([0, -0, 90,180,270,-90,-180,-270].includes(value%360)){
+            console.log("setter rotation", value)
+            const rotateAmount = value - this.#rotation;
+            this.#rotation = value;
+            const temp = this.width;
+            this.width = this.length;
+            this.length = temp;
+
+            for(let i = 0; i < (rotateAmount + 360)%360/90; i++){
+                this.grid = this._rotateGrid90Deg(this.grid, this.width, this.length);
+                //--DEBUG--
+                console.log("rotated grid");
+                printFoundationGrid(this.grid, this.width, this.length);
+                //--DEBUG--
+            }
+
+            let extreme = this.calculateExtreme(this.position, this.width, this.length);
+            this.min.set(extreme.x, 0, extreme.z);
+
+            extreme = this.calculateExtreme(this.position, this.width, this.length, false);
+            this.max.set(extreme.x, 0, extreme.z);
+        } else {
+            console.error("rotation needs to be a multiple of 90 degrees");
         }
+        console.log("setter rotation is done: current rotation:", this.#rotation)
     }
 }

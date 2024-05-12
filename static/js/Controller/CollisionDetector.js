@@ -6,7 +6,7 @@ import {Subject} from "../Patterns/Subject.js";
 export class CollisionDetector extends Subject{
     /**
      * Constructor for the collision detector
-     * @param {{scene: THREE.Scene, viewManager: ViewManager}} params
+     * @param {{scene: THREE.Scene, viewManager: ViewManager, raycastController: RaycastController | undefined}} params
      */
     constructor(params) {
         super(params);
@@ -19,7 +19,7 @@ export class CollisionDetector extends Subject{
 
         //for preventing phasing through ground
         this.pointBelow = null;
-        this.raycastController = null;
+        this.raycastController = params?.raycastController ?? null;
 
         this.worker = null;
         this.loader = new THREE.BufferGeometryLoader();
@@ -128,7 +128,6 @@ export class CollisionDetector extends Subject{
             this.viewManager.getColliderModels(this.charModel);
             this.worker.postMessage(this.stringifyCharModel());
         }
-        console.log("generating done")
         this.startUp = false;
     }
 

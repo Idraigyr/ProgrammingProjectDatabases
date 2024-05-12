@@ -54,8 +54,8 @@ export class MenuManager extends Subject{
         this.blockInputCallback = params.blockInputCallback;
         this.matchMakeCallback = params.matchMakeCallback;
         this.checkStakesCallback = params?.checkStakesCallback ?? null;
-        this.items = {};
-        this.menus = {};
+        this.items = new Map();
+        this.menus = new Map();
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -169,7 +169,7 @@ export class MenuManager extends Subject{
 
     checkStakes(){
         const gemsIds = [];
-        this.menus["GemsMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
+        this.menus.get("GemsMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
         if(this.checkStakesCallback(gemsIds)){
             this.container.querySelector(".play-button-container").classList.remove("inactive");
             this.container.querySelector(".play-button-container").classList.add("active");
@@ -185,7 +185,7 @@ export class MenuManager extends Subject{
      */
     toggleMatchMaking(event){
         this.matchmaking = event.detail.matchmaking;
-        const element = this.menus["AltarMenu"].element.querySelector(".play-button-container");
+        const element = this.menus.get("AltarMenu").element.querySelector(".play-button-container");
         if(this.matchmaking){
             element.classList.add("pressed");
         } else {
@@ -199,8 +199,8 @@ export class MenuManager extends Subject{
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
           this.inputCrystalParams.current = 0;
-          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+          this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+          this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
 
           /*
           // loading bar + reset features to be removed
@@ -234,9 +234,9 @@ export class MenuManager extends Subject{
     toggleAnimation(condition) {
         console.log(condition);
         if (condition) {
-            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.add('move-right');
+            this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.add('move-right');
         } else {
-            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.remove('move-right');
+            this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.remove('move-right');
         }
     }
 
@@ -252,11 +252,11 @@ export class MenuManager extends Subject{
      * @param {{target: HTMLElement}} event
      */
     switchPage(event){
-        this.menus[this.currentMenu].allows.forEach(child => {
+        this.menus.get(this.currentMenu).allows.forEach(child => {
             if(child === event.target.dataset.name){
-                this.menus[child].render();
+                this.menus.get(child).render();
             } else {
-                this.menus[child].hide();
+                this.menus.get(child).hide();
             }
         });
     }
@@ -346,9 +346,9 @@ export class MenuManager extends Subject{
      */
     dispatchCollectEvent(event){
         console.log("Collecting resources");
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = "0%";
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
         this.dispatchEvent(this.createCollectEvent());
     }
 
@@ -362,8 +362,8 @@ export class MenuManager extends Subject{
             this.inputCrystalParams.current += 10;
             this.dispatchEvent(this.createRemoveEvent());
         }
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -376,8 +376,8 @@ export class MenuManager extends Subject{
             this.inputCrystalParams.current -= 10;
             this.dispatchEvent(this.createAddEvent());
         }
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -394,10 +394,10 @@ export class MenuManager extends Subject{
         }
 
         event.dataTransfer.clearData();
-        event.dataTransfer.setDragImage(this.items[id].icon, 0, 0);
+        event.dataTransfer.setDragImage(this.items.get(id).icon, 0, 0);
 
-        if(!this.isSlotItem && this.items[id]?.equipped) return;
-        this.items[id].element.style.opacity = 0.5;
+        if(!this.isSlotItem && this.items.get(id)?.equipped) return;
+        this.items.get(id).element.style.opacity = 0.5;
         this.dragElement = id;
     }
 
@@ -407,8 +407,8 @@ export class MenuManager extends Subject{
      */
     dragend(event){
         if(!this.dragElement) return;
-        if (!this.isSlotItem && !this.items[this.dragElement]?.equipped) {
-            this.items[this.dragElement].element.style.opacity = 1;
+        if (!this.isSlotItem && !this.items.get(this.dragElement)?.equipped) {
+            this.items.get(this.dragElement).element.style.opacity = 1;
         }
         this.dragElement = null;
         this.dropElement = null;
@@ -442,7 +442,7 @@ export class MenuManager extends Subject{
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "list-menu").id;
         if(!(this.dropElement)) return;
-        if(this.menus[this.dropElement].allows.includes(this.items[this.dragElement].type)) {
+        if(this.menus.get(this.dropElement).allows.includes(this.items.get(this.dragElement).type)) {
             event.preventDefault();
         }
     }
@@ -455,13 +455,13 @@ export class MenuManager extends Subject{
         event.preventDefault();
         if(this.isSlotItem){
             this.dispatchEvent(this.createRemoveGemEvent());
-            this.menus["GemInsertMenu"].element.querySelector(`#slot-${this.slot}`).innerHTML = "";
-            this.items[this.dragElement].equipped = false;
-            this.items[this.dragElement].slot = null;
-            this.items[this.dragElement].element.style.opacity = 1;
+            this.menus.get("GemInsertMenu").element.querySelector(`#slot-${this.slot}`).innerHTML = "";
+            this.items.get(this.dragElement).equipped = false;
+            this.items.get(this.dragElement).slot = null;
+            this.items.get(this.dragElement).element.style.opacity = 1;
             this.slot = null;
         }
-        this.items[this.dragElement].attachTo(this.menus[this.dropElement]);
+        this.items.get(this.dragElement).attachTo(this.menus.get(this.dropElement));
     }
 
     /**
@@ -471,8 +471,8 @@ export class MenuManager extends Subject{
     dragoverSlot(event){
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "slot-menu").id;
-        if(this.items[this.dragElement]?.equipped) return;
-        if(this.menus[this.dropElement].allows.includes(this.items[this.dragElement].type) && event.target.classList.contains("slot")){
+        if(this.items.get(this.dragElement)?.equipped) return;
+        if(this.menus.get(this.dragElement).allows.includes(this.items.get(this.dragElement).type) && event.target.classList.contains("slot")){
             event.preventDefault();
             this.slot = event.target.id.substring(event.target.id.lastIndexOf("-")+1);
         }
@@ -500,14 +500,14 @@ export class MenuManager extends Subject{
      */
     dropInSlot(event){
         event.preventDefault();
-        this.menus[this.dropElement].addIcon(this.slot, this.createSlotIcon({
+        this.menus.get(this.dropElement).addIcon(this.slot, this.createSlotIcon({
             id: `slot-icon-${this.slot}`,
-            itemId: this.items[this.dragElement].id,
-            src: this.items[this.dragElement].icon.src
+            itemId: this.items.get(this.dragElement).id,
+            src: this.items.get(this.dragElement).icon.src
         }));
-        this.items[this.dragElement].element.style.opacity = 0.5;
-        this.items[this.dragElement].equipped = true;
-        this.items[this.dragElement].slot = this.slot;
+        this.items.get(this.dragElement).element.style.opacity = 0.5;
+        this.items.get(this.dragElement).equipped = true;
+        this.items.get(this.dragElement).slot = this.slot;
         this.slot = null;
         this.dispatchEvent(this.createAddGemEvent());
     }
@@ -540,7 +540,7 @@ export class MenuManager extends Subject{
         }
 
         this.#addItemToMenu(menuItem);
-        this.items[params.item.getItemId()] = menuItem;
+        this.items.set(params.item.getItemId(), menuItem);
     }
 
     /**
@@ -548,27 +548,28 @@ export class MenuManager extends Subject{
      * @param {MenuItem} item
      */
     #addItemToMenu(item){
-        this.menus[item.belongsIn].addChild("afterbegin", item);
+        this.menus.get(item.belongsIn).addChild("afterbegin", item);
     }
 
     //untested
     removeItem(itemId){
-        this.items = this.items.filter(i => {
-            if(i.id === itemId){
-                i.detach();
-                return false;
-            }
-            return true;
-        });
+        const item = this.items.get(itemId);
+        if(item){
+            item.detach();
+            this.items.delete(itemId);
+        } else {
+            console.error("Cannot remove MenuItem; not found");
+        }
     }
 
     //untested - should not be necessary
     moveItem(itemId, fromMenu, toMenu){
-        this.items.forEach(i => {
-            if(i.id === itemId){
-                i.attachTo(toMenu);
-            }
-        });
+        const item = this.items.get(itemId);
+        if(item){
+            item.attachTo(this.menus.get(toMenu));
+        } else {
+            console.error("Cannot move MenuItem; not found");
+        }
     }
 
     /**
@@ -580,7 +581,7 @@ export class MenuManager extends Subject{
      */
     #moveMenu(child, parent, position){
         if(position !== "afterbegin" && position !== "beforeend") return false;
-        this.menus[parent].addChild(position, this.menus[child]);
+        this.menus.get(parent).addChild(position, this.menus.get(child));
     }
 
     /**
@@ -640,15 +641,15 @@ export class MenuManager extends Subject{
         const stats = ["fortune", "speed", "damage", "capacity"];
         for(const stat of stats){
             if(params.stats.has(stat)){
-                this.items[stat].element.style.display = this.items[stat].display;
+                this.items.get(stat).element.style.display = this.items.get(stat).display;
                 //TODO: change the text based on the type of building
                 console.log(params.stats.get(stat));
                 let name = `${stat}: ${Math.round(params.stats.get(stat))}`;
                 let text = `placeholder description`;
-                this.items[stat].element.querySelector(".menu-item-description-name").innerText = name;
-                this.items[stat].element.querySelector(".menu-item-description-text").innerText = text;
+                this.items.get(stat).element.querySelector(".menu-item-description-name").innerText = name;
+                this.items.get(stat).element.querySelector(".menu-item-description-text").innerText = text;
             } else {
-                this.items[stat].element.style.display = "none";
+                this.items.get(stat).element.style.display = "none";
             }
         }
     }
@@ -660,7 +661,7 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
         }
     }
 
@@ -756,12 +757,12 @@ export class MenuManager extends Subject{
      */
     #createMenu(ctor){
         const menu = new ctor({parent: this});
-        if(this.menus[menu.name]) return false;
+        if(this.menus.get(menu.name)) return false;
 
         this.#addMenuCallbacks(menu);
 
-        this.menus[menu.name] = menu;
-        this.container.appendChild(this.menus[menu.name].element);
+        this.menus.set(menu.name, menu);
+        this.container.appendChild(this.menus.get(menu.name).element);
         return true;
     }
 
@@ -780,7 +781,7 @@ export class MenuManager extends Subject{
     createMenus(){
         //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
         this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
-        this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
+        this.collectParams.meter = this.menus.get("CollectMenu").element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
         this.#createSpellItems();
@@ -798,10 +799,10 @@ export class MenuManager extends Subject{
         this.container.style.display = "block";
         this.currentMenu = params.name;
         this.#arrangeMenus(params);
-        this.menus[params.name].allows.forEach(child => {
-            this.menus[child].render();
+        this.menus.get(params.name).allows.forEach(child => {
+            this.menus.get(child).render();
         });
-        this.menus[params.name].render();
+        this.menus.get(params.name).render();
     }
 
     /**
@@ -836,9 +837,9 @@ export class MenuManager extends Subject{
             this.collectInterval = null;
         }
         this.currentMenu = null;
-        this.menus[name].hide();
-        this.menus[name].allows.forEach(child => {
-            this.menus[child].hide();
+        this.menus.get(name).hide();
+        this.menus.get(name).allows.forEach(child => {
+            this.menus.get(child).hide();
         });
         this.blockInputCallback.activate();
     }
@@ -849,16 +850,16 @@ export class MenuManager extends Subject{
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
     }
 
     /**
      * move all gems from the StakesMenu to the GemsMenu
      */
     unstakeGems(){
-        this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
-            const gem = this.items[item.id];
-            this.items[item.id].attachTo(this.menus["GemsMenu"]);
+        this.menus.get("StakesMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
+            const gem = this.items.get(item.id);
+            this.items.get(item.id).attachTo(this.menus.get("GemsMenu"));
         });
     }
 
@@ -882,7 +883,7 @@ export class MenuManager extends Subject{
      * @return {MenuItem[]}
      */
     #getMenuItemsById(ids){
-        return ids.map(id => this.items[id]);
+        return ids.map(id => this.items.get(id));
     }
 
     /**
@@ -905,9 +906,9 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "TowerMenu", "afterbegin");
                 // show correct Gems based on received params
-                this.menus["GemInsertMenu"].renderSlots(params.slots);
-                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
-                this.menus["TowerMenu"].updateLvlUpButton(params);
+                this.menus.get("GemInsertMenu").renderSlots(params.slots);
+                this.menus.get("GemInsertMenu").addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus.get("TowerMenu").updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "TowerMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "TowerMenu", "afterbegin");
                 break;
@@ -916,17 +917,17 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
-                this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
-                this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
-                this.menus["MineMenu"].updateLvlUpButton(params);
+                this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
+                this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
+                this.menus.get("MineMenu").updateLvlUpButton(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
                 this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
-                this.menus["GemInsertMenu"].renderSlots(params.slots);
-                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus.get("GemInsertMenu").renderSlots(params.slots);
+                this.menus.get("GemInsertMenu").addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
@@ -934,9 +935,9 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
                 // show correct Gems based on received params
-                this.menus["GemInsertMenu"].renderSlots(params.slots);
-                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
-                this.menus["FusionTableMenu"].updateLvlUpButton(params);
+                this.menus.get("GemInsertMenu").renderSlots(params.slots);
+                this.menus.get("GemInsertMenu").addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus.get("FusionTableMenu").updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");

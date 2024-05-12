@@ -87,7 +87,6 @@ export class Gem extends Item{
         this.equippedIn = params?.equippedIn ?? null; // Building id
         this.slot = params?.slot ?? null;
         this.belongsIn = (params?.staked ?? false) ? "StakesMenu" : "GemsMenu";
-        console.log("created gem:", this);
     }
     get type(){
         return "Gem";
