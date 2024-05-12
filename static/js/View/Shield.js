@@ -121,4 +121,7 @@ export class Shield extends IView{
         shield.scale.multiplyScalar(0.2);
         return shield;
     }
+    loseShield(event){
+        this.charModel.children[event.detail.shields].material.uniforms.glowColor.value = new THREE.Color(0xff0000);
+    }
 }

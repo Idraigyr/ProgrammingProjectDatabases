@@ -147,9 +147,11 @@ export class SpellFactory{
             camera: this.camera,
             position: details.params.position
         });
-
+        target.shields = 3;
+        target.addEventListener("shieldLost", view.loseShield.bind(view));
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", target.resetShields.bind(this.viewManager));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
         return model;
