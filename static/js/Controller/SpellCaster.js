@@ -235,7 +235,7 @@ export class SpellCaster extends Subject{
      * cast spell on left click down
      */
     onLeftClickDown(){
-        if (this.#wizard.canCast()) {
+        if (this.#wizard.canCast() || (this.#wizard.getCurrentSpell() instanceof BuildSpell && !this.multiplayer && this.currentObject)) {
 
             let castPosition = this.getSpellCastPosition(this.#wizard.getCurrentSpell());
 

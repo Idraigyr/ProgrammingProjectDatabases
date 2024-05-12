@@ -213,7 +213,7 @@ class App {
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
             // If the selected cell is empty
-            if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
+            if ((buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject)) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
                 // Get selected building
@@ -223,13 +223,6 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
-                // // Get if the cell is occupied
-                // let buildOnCell = island.getCellIndex(pos);
-                // if (buildOnCell !== building.cellIndex){// TODO!!!!
-                //     let cell = island.checkCell(pos);
-                //     // Check if the cell is occupied
-                //     if(cell !== buildTypes.getNumber("empty")) return;
-                // }
                 island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
                 // Occupy cell
                 building.cellIndex = island.occupyCell(pos, building.dbType);
