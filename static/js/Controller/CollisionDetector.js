@@ -228,7 +228,7 @@ export class CollisionDetector extends Subject{
      * @param {Character} character
      * @param {string[]} targets - which types of entities to consider, default is players and characters, order is important (put the targets with the highest priority at the end)
      * possible targets: "player", "character", "proxy", "spellEntity"
-     * @return {{closestEnemy: Character, closestDistance: number}}
+     * @return {{closestEnemy: Object, closestDistance: number}} - closestEnemy type depends on the target array
      */
     getClosestEnemy(character, targets = ["player", "character"]){
         //TODO: maybe add something so you can differentiate targets within the "proxy" group (i.e. different buildings can have different priorities)?

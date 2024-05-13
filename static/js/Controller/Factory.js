@@ -335,10 +335,12 @@ export class Factory{
         if (params.buildingName === "Altar") { //TODO: make more dynamic
             const height = 9;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(4,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(4.2,height,0.5)));
+            model.radius = Math.sqrt(4*4 + 0.5*0.5) + 0.5;
         }
         if (params.buildingName === "Tower") {
             const height = 33;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(3,0,3)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(3,height,3)));
+            model.radius = Math.sqrt(3*3 + 3*3) + 0.5;
         }
 
         this.scene.add(view.healthBar);
