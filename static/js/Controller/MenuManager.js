@@ -174,6 +174,63 @@ export class MenuManager extends Subject{
         }
     }
 
+    /**
+     * creates a confetti div with random size and falling animation
+     * @param {number} id
+     * @return {HTMLDivElement}
+     */
+    createConfetti(id) {
+        const colours = ["#ffbf00", "#ff0000", "#00ff00", "#0000ff", "#ff00ff", "#00ffff"];
+
+        let confetti = document.createElement("div");
+        const w = Math.random() * 8;
+        const l = Math.random() * 100;
+        confetti.classList.add("confetti");
+        confetti.style.width = `${w}px`;
+        confetti.style.height = `${w*0.4}px`;
+        confetti.style.backgroundColor = colours[Math.floor(Math.random()*colours.length)];
+        confetti.style.top = "-20%";
+        confetti.style.left = `${l}%`;
+        confetti.style.opacity = `${Math.max((Math.random() + 0.5), 1)}`;
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confetti.animate([
+            {
+                top: "-20%",
+                left: `${l}%`
+            },
+            {
+                top: "110%",
+                left: `${Math.random() * 15 + l}%`
+            }
+
+        ],
+            {
+                duration: Math.random()*2000+2000,
+                iterations: Infinity
+            });
+        confetti.id = `confetti-${id}`;
+        return confetti;
+    }
+
+    /**
+     * generate confetti on the screen
+     * @param {number} amount - amount of confetti to generate
+     */
+    startConfetti(amount) {
+        for(let i = 0; i < amount; i++) {
+            this.container.appendChild(this.createConfetti(i));
+        }
+    }
+
+    /**
+     * remove all confetti from the screen
+     */
+    stopConfetti() {
+        this.container.querySelectorAll(".confetti").forEach(confetti => {
+            confetti.remove();
+        });
+    }
+
     checkStakes(){
         const gemsIds = [];
         this.menus.get("GemsMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
@@ -857,6 +914,7 @@ export class MenuManager extends Subject{
             this.menus.get("MultiplayerGemsMenu").querySelectorAll(".menu-item").forEach(item => {
                 this.moveItem(item.id, "GemsMenu");
             });
+            this.stopConfetti();
         }
         this.currentMenu = null;
         this.menus.get(name).hide();
@@ -975,6 +1033,7 @@ export class MenuManager extends Subject{
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");
                 break;
             case "MultiplayerMenu":
+                if(params.result === "win") this.startConfetti(150);
                 this.menus.get("MultiplayerGemsMenu").setTitle(params.result);
                 this.menus.get("MultiplayerStatsMenu").setStats(params.stats);
                 this.menus.get("MultiplayerStatsMenu").toggleStats({target: this.menus.get("MultiplayerStatsMenu").element.querySelector("#multiplayer-match-button")});

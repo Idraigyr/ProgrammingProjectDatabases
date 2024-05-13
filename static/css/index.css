@@ -31,6 +31,11 @@
     user-select: none; /* Standard syntax */
 }
 
+[class|="confetti"] {
+  position: absolute;
+    z-index: 666;
+}
+
 .prevent-select {
   -webkit-user-select: none; /* Safari */
   user-select: none; /* Standard syntax */
