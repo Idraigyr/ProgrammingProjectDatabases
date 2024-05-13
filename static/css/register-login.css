@@ -74,6 +74,13 @@ input[type="submit"]:hover {
     color: #888;
 }
 
+.text {
+    text-align: center;
+    margin-top: 20px;
+    font-family: "Eras Light ITC", sans-serif;
+    color: #888;
+}
+
 
 
 
