@@ -120,7 +120,6 @@ class PlayerResource(Resource):
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The player profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.response(200, description='Success, returns the player profile in JSON format', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
-    @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @summary('Get the player profile by id')
     @jwt_required()
     def get(self):
@@ -147,7 +146,7 @@ class PlayerResource(Resource):
              ' spells (by ids), blueprints (by ids), friends (by ids), last_login, last_logout, xp, mana and crystals')
     @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
-    @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not owner of the given id', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -203,7 +202,6 @@ class PlayerListResource(Resource):
     @swagger.tags('player')
     @summary('Get all player profiles')
     @swagger.response(200, description='Success, returns a list of all player profiles in JSON format', schema=PlayerSchema)
-    @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @jwt_required()
     def get(self):
         """

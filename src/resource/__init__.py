@@ -1,7 +1,12 @@
-from flask import Flask
+from typing import Optional, Tuple
+
+from flask import Flask,  current_app
+from flask_jwt_extended import get_jwt_identity
 from flask_restful_swagger_3 import Api
 from markupsafe import escape
 from deepmerge import always_merger
+
+from src.schema import ErrorSchema
 
 openapi_dict = dict()
 
@@ -126,3 +131,15 @@ def clean_dict_input(d: dict) -> dict:
             d[escape(key)] = clean_dict_input(val)
 
     return d
+
+def check_admin() -> Optional[Tuple[ErrorSchema, int]]:
+    """
+    Check if the current user is an admin
+    :return: None if the user is an admin, otherwise a 403 response
+    """
+    userid = get_jwt_identity()
+    from src.model.user_profile import UserProfile # local import to prevent circular imports
+    user: UserProfile = current_app.db.session.query(UserProfile).get(userid)
+    if not user or not user.admin:
+        return ErrorSchema('Unauthorized access'), 403
+    return None
