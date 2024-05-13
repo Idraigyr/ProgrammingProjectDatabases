@@ -384,6 +384,19 @@
     gap: 10px;
 }
 
+.multiplayer-stats-menu-container{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+}
+
 .multiplayer-gems-menu {
     position: relative;
     background-color: #f9f3d2;

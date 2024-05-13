@@ -596,7 +596,6 @@ export class MultiplayerStatsMenu extends IMenu{
         buttonContainer.appendChild(lifetimeButton);
         buttonContainer.addEventListener("click", this.toggleStats.bind(this));
         statsDiv.appendChild(buttonContainer);
-        element.appendChild(statsDiv);
         for(const property in multiplayerStats){
             const statElement = document.createElement("li");
             statElement.id = property;
@@ -604,7 +603,8 @@ export class MultiplayerStatsMenu extends IMenu{
             statElement.innerText = `${property}: ${multiplayerStats[property]}`;
             list.appendChild(statElement);
         }
-        element.appendChild(list);
+        element.appendChild(statsDiv);
+        statsDiv.appendChild(list);
         element.id = this.name;
         params.classes.forEach(c => element.classList.add(c));
         element.style.display = "none";

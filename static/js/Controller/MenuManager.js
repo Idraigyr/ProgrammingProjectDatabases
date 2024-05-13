@@ -911,7 +911,7 @@ export class MenuManager extends Subject{
             this.collectInterval = null;
         }
         if(name === "MultiplayerMenu"){
-            this.menus.get("MultiplayerGemsMenu").querySelectorAll(".menu-item").forEach(item => {
+            this.menus.get("MultiplayerGemsMenu").element.querySelectorAll(".menu-item").forEach(item => {
                 this.moveItem(item.id, "GemsMenu");
             });
             this.stopConfetti();
