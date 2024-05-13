@@ -185,6 +185,10 @@ export class Wizard extends Character{
         return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
     }
 
+    /**
+     * resets the shields of the player to 0 (used when shield spell runs out)
+     */
+
     resetShields(){
         this.shields = 0;
     }
