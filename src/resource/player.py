@@ -75,7 +75,6 @@ class PlayerSchema(Schema):
             'description': 'The gem inventory of the player',
             'items': GemSchema
         },
-        'blueprints': IntArraySchema,
         'entity': PlayerEntitySchema,
         'last_login': {
             'type': 'string',
@@ -101,7 +100,6 @@ class PlayerSchema(Schema):
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
-                             blueprints=[blueprint.id for blueprint in player.blueprints],
                              username=player.user_profile.username,
                              friends=[friend.user_profile_id for friend in player.friends],
                              **kwargs)

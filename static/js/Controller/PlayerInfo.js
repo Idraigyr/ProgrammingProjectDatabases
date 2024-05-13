@@ -112,7 +112,6 @@ export class PlayerInfo extends Subject{
 
 
             this.islandID = response.entity.island_id;
-            this.unclockedBuildings = response.blueprints;
             this.gems = response.gems;
             console.log(response);
             this.crystals = response.crystals;
