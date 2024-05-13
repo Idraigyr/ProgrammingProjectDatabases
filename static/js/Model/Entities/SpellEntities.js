@@ -180,6 +180,9 @@ export class Projectile extends SpellEntity{
 export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
+        this.timeSinceLastEffect = 2; //time since last effect was applied, I start at 2 to apply the first effect immediately, we can change it to 0 if we want to wait before applying the first effect
+        this.effectInterval = 1; //time between damage ticks, adjust when balancing the game
+
     }
     /**
      * Function to handle collision with world
@@ -192,11 +195,22 @@ export class Immobile extends SpellEntity{
      * Function to handle collision with characters
      * @param deltaTime - time since last update
      * @param character - character to check collision with
-     * @param characterBBox - bounding box of character
-     * @param spellBBox - bounding box of spell
      */
-    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
-        super.onCharacterCollision(deltaTime, character);
+    onCharacterCollision(deltaTime, character){
+        this.timeSinceLastEffect += deltaTime;
+        if(this.effectInterval < this.timeSinceLastEffect) {
+            if (this.team !== character.team) {
+                if (this.canDamage) {
+                    this.spellType.applyEffects(character);
+                } else {
+                    this.spellType.applyHarmlessEffects(character);
+                }
+                this.hitSomething = true;
+                character.hit = true;
+            }
+            console.log("Immobile hit something, applying effects")
+            this.timeSinceLastEffect = 0;
+        }
     }
 }
 

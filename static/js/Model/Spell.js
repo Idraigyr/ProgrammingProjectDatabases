@@ -378,11 +378,11 @@ export class ThunderCloud extends ConcreteSpell{
         super({
             spell: new Cloud({
                 duration: 20,
-                cooldown: 1.34, //TODO: need animations that last equally long
+                cooldown: 10, //TODO: need animations that last equally long
                 castTime: 0,
             }),
             effects: [new InstantDamage({
-                damage: 0
+                damage: 10 //adjust when balancing the game
             })]
         });
         this.name = "thundercloud";
