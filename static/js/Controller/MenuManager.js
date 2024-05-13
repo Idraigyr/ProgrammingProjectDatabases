@@ -19,7 +19,7 @@ import {
     StakesMenu,
     StatsMenu,
     TowerMenu,
-    BuildingMenu
+    BuildingMenu, MultiplayerMenu, MultiplayerStatsMenu, MultiplayerGemsMenu
 } from "../View/menus/IMenu.js";
 import {
     BuildingItem,
@@ -45,7 +45,9 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function},
+     * matchMakeCallback: function, checkStakesCallback: function | null,
+     * closedMultiplayerMenuCallback: function}} params
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -54,6 +56,7 @@ export class MenuManager extends Subject{
         this.blockInputCallback = params.blockInputCallback;
         this.matchMakeCallback = params.matchMakeCallback;
         this.checkStakesCallback = params?.checkStakesCallback ?? null;
+        this.closedMultiplayerMenuCallback = params?.closedMultiplayerMenuCallback;
         this.items = new Map();
         this.menus = new Map();
 
@@ -89,7 +92,8 @@ export class MenuManager extends Subject{
 
     /**
      * method for adding callbacks to the menuManager in case they could not be added in the constructor/ they need to be changed
-     * @param {{blockInputCallback: {block: function, activate: function} | null, matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
+     * @param {{blockInputCallback: {block: function, activate: function} | null,
+     * matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
      */
     addCallbacks(callbacks){
         if(callbacks.blockInputCallback) this.blockInputCallback = callbacks.blockInputCallback;
@@ -164,6 +168,9 @@ export class MenuManager extends Subject{
              menu.element.addEventListener("drop", (event) => {
                 this.checkStakes();
             });
+        }
+        if(menu instanceof MultiplayerMenu){
+            menu.element.querySelector(".close-button").addEventListener("click", this.closedMultiplayerMenuCallback);
         }
     }
 
@@ -563,7 +570,7 @@ export class MenuManager extends Subject{
     }
 
     //untested - should not be necessary
-    moveItem(itemId, fromMenu, toMenu){
+    moveItem(itemId, toMenu){
         const item = this.items.get(itemId);
         if(item){
             item.attachTo(this.menus.get(toMenu));
@@ -790,7 +797,7 @@ export class MenuManager extends Subject{
      */
     createMenus(){
         //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
-        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu, MultiplayerStatsMenu, MultiplayerGemsMenu, MultiplayerMenu]);
         this.collectParams.meter = this.menus.get("CollectMenu").element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
@@ -800,7 +807,7 @@ export class MenuManager extends Subject{
 
     /**
      * render a menu and call the blockInputCallback.block function
-     * @param {{name: string}} params
+     * @param {{name: string}} params - needs to contain the name of the menu to render + additional params for the arrangement of the menu (see menuManager.#arrangeMenus)
      */
     renderMenu(params){
         if(!params.name || !this.menusEnabled) return;
@@ -846,6 +853,11 @@ export class MenuManager extends Subject{
             clearInterval(this.collectInterval);
             this.collectInterval = null;
         }
+        if(name === "MultiplayerMenu"){
+            this.menus.get("MultiplayerGemsMenu").querySelectorAll(".menu-item").forEach(item => {
+                this.moveItem(item.id, "GemsMenu");
+            });
+        }
         this.currentMenu = null;
         this.menus.get(name).hide();
         this.menus.get(name).allows.forEach(child => {
@@ -868,7 +880,6 @@ export class MenuManager extends Subject{
      */
     unstakeGems(){
         this.menus.get("StakesMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
-            const gem = this.items.get(item.id);
             this.items.get(item.id).attachTo(this.menus.get("GemsMenu"));
         });
     }
@@ -898,7 +909,12 @@ export class MenuManager extends Subject{
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu"} | {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} | {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map}} params
+     * @param {{name: "AltarMenu"} |
+     * {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} |
+     * {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} |
+     * {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map} |
+     * {name: "MultiplayerMenu", gemIds: String[], result: "win" | "lose" | "draw", stats: {current: {name: string, value: number}[],
+     * lifetime: {name: string, value: number}[]}}} params
      */
     #arrangeMenus(params){ //TODO: for mine put maxCrysals and rate as stats (capacity and mineSpeed)
         // arrange the menus in the container
@@ -957,6 +973,16 @@ export class MenuManager extends Subject{
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("ResourceBuildingsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");
+                break;
+            case "MultiplayerMenu":
+                this.menus.get("MultiplayerGemsMenu").setTitle(params.result);
+                this.menus.get("MultiplayerStatsMenu").setStats(params.stats);
+                this.menus.get("MultiplayerStatsMenu").toggleStats({target: this.menus.get("MultiplayerStatsMenu").element.querySelector("#multiplayer-match-button")});
+                params.gemIds.forEach(id => {
+                    this.moveItem(id, "MultiplayerGemsMenu");
+                });
+                this.#moveMenu("MultiplayerGemsMenu", "MultiplayerMenu", "afterbegin");
+                this.#moveMenu("MultiplayerStatsMenu", "MultiplayerMenu", "afterbegin");
                 break;
         }
     }

@@ -21,7 +21,10 @@ export class Settings {
         this.inputManager = inputManager;
         this.playerInfo = playerInfo;
 
-        inputManager.addLeaveMatchButtonListener(callbacks.leaveMatch);
+        inputManager.addLeaveMatchButtonListener((e) => {
+            callbacks.leaveMatch();
+            this.exitSettingsMenu();
+        });
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
         inputManager.addRespawnButtonListener(this.respawn.bind(this));
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))

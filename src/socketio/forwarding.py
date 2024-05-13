@@ -158,6 +158,9 @@ class ForwardingNamespace(Namespace):
         """
         try:
             targetId = int(data['target'])
+            if targetId not in self.playing:
+                self._log.error(f"Player is not in a match: {targetId}. Dropping message.")
+                return
             if targetId not in self.clients:
                 self._log.error(f"Client not found: {targetId}. Dropping message.")
                 return

@@ -5,6 +5,7 @@ import {Controller} from "./Controller.js";
 import {Fireball, spellTypes} from "../Model/Spell.js";
 import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
+import {multiplayerStats} from "../configs/ControllerConfigs.js";
 
 /**
  * MultiplayerController class
@@ -27,6 +28,8 @@ export class MultiplayerController extends Subject{
         //for remembering the interval for sending state updates
         this.matchmaking = false;
         this.inMatch = false;
+        this.result = null;
+        this.stakedGems = [];
         this.opponentInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
 
@@ -43,13 +46,9 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
 
         this.stats = new Map();
-        this.stats.set("playerKills", 0);
-        this.stats.set("minionsKilled", 0);
-        this.stats.set("deaths", 0);
-        this.stats.set("damageDealt", 0);
-        this.stats.set("damageTaken", 0);
-        this.stats.set("manaSpent", 0);
-        this.stats.set("spellCasts", 0);
+        for(const property in multiplayerStats){
+            this.stats.set(property, 0);
+        }
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -258,29 +257,67 @@ export class MultiplayerController extends Subject{
      */
     async endMatch(data){
         console.log(`match ended, winner: ${data.winner_id}`); //TODO: let backend also send won or lost gem ids
+        this.stopSendingStateUpdates();
+        this.result = "draw";
+
+        //get staked gems and add new gems (if won)
+        this.stakedGems = this.itemManager.getStakedGems();
+        this.menuManager.unstakeGems();
+        const newGemViews = this.itemManager.updateGems(await this.playerInfo.retrieveGems());
+        this.menuManager.addItems(newGemViews);
+
+        //update stats
+        this.stats.set("gemsWon", this.stats.get("gemsWon") + newGemViews.length);
+        this.stats.set("gamesPlayed", this.stats.get("gamesPlayed") + 1);
+
+        //fill params for results screen
+        const renderGems = [];
+        const currentStats = [];
+        const lifetimeStats = [];
+        this.stats.forEach((value, key) => {
+            currentStats.push({name: key, value: value});
+            multiplayerStats[key] += value;
+        });
+        for(const property in multiplayerStats){
+            lifetimeStats.push({name: property, value: multiplayerStats[property]});
+        }
+
         if(data.winner_id === this.playerInfo.userID){
             //show win screen
-            //TODO: add new gems to player's inventory
-            for(const gem of this.itemManager.getStakedGems()) {
+            this.result = "win";
+            for(const gem of this.stakedGems) {
                 gem.staked = false;
             }
+            newGemViews.forEach(gemView => {
+                renderGems.push(gemView.item.getItemId());
+            });
+            this.stats.set("gamesWon", this.stats.get("gamesWon") + 1);
             console.log("you win");
         } else if (data.winner_id === this.opponentInfo.userID){
             //show lose screen
-            for(const gem of this.itemManager.getStakedGems()) {
-                this.itemManager.deleteGem(gem);
-                this.menuManager.removeItem(gem.getItemId());
-            }
+            this.result = "lose";
+            this.stats.set("gemsLost", this.stats.get("gemsLost") + this.stakedGems.length);
+            this.stakedGems.forEach(gem => {
+                renderGems.push(gem.getItemId());
+            });
             console.log("you lose");
         } else {
             //show draw screen
+            this.stakedGems.forEach(gem => {
+                renderGems.push(gem.getItemId());
+            });
             console.log("draw");
         }
-        this.menuManager.unstakeGems();
-        this.menuManager.addItems(this.itemManager.updateGems(await this.playerInfo.retrieveGems()));
-        //wait for player to click on continue button
-        //send event to server that player is leaving match
-        this.unloadMatch();
+        this.menuManager.renderMenu({
+            name: "MultiplayerMenu",
+            result: this.result,
+            gemIds: renderGems,
+            stats: {
+                current: currentStats,
+                lifetime: lifetimeStats
+            }
+        });
+        //wait for player to click on close button
     }
 
     /**
@@ -288,6 +325,14 @@ export class MultiplayerController extends Subject{
      */
     unloadMatch(){
         console.log("leaving match");
+        if(this.result === "lose"){
+            for(const gem of this.stakedGems) {
+                this.itemManager.deleteGem(gem);
+                this.menuManager.removeItem(gem.getItemId());
+            }
+            this.stakedGems = [];
+        }
+        this.result = null;
         const progressBar = document.getElementById('progress-bar');
         progressBar.labels[0].innerText = "leaving match...";
         document.querySelector('.loading-animation').style.display = 'block';
@@ -295,7 +340,7 @@ export class MultiplayerController extends Subject{
 
         this.spellCaster.multiplayer = false;
         //stop sending state updates to server & remove event listeners
-        this.stopSendingStateUpdates();
+        // this.stopSendingStateUpdates(); => moved to leaveMatch
         this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
         //remove island from world and remove spawners
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)

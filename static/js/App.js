@@ -147,7 +147,8 @@ class App {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
             },
-            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController),
+            closedMultiplayerMenuCallback: this.multiplayerController.unloadMatch.bind(this.multiplayerController)
         });
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
         this.menuManager.addCallbacks({
