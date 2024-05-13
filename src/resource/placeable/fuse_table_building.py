@@ -2,7 +2,7 @@ from flask import request, Blueprint, Flask, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.model.placeable.buildings import FuseTableBuilding
 from src.resource.placeable.building import BuildingResource, BuildingSchema
 from src.schema import ErrorSchema
@@ -83,6 +83,9 @@ class FuseTableBuildingResource(BuildingResource):
             if not fuse_table_building:
                 return ErrorSchema(f'Fuse table with id {id} not found'), 404
 
+            r = check_data_ownership(fuse_table_building.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the existing fuse table building
             fuse_table_building.update(data)
 
@@ -133,6 +136,9 @@ class FuseTableBuildingResource(BuildingResource):
 
             # Create the new fuse table building
             fuse_table_building = FuseTableBuilding(**data)
+            r = check_data_ownership(fuse_table_building.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(fuse_table_building)
             current_app.db.session.commit()
             return FuseTableBuildingSchema(fuse_table_building), 200

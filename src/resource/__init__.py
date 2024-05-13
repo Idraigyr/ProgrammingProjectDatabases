@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Tuple
 
 from flask import Flask,  current_app
@@ -142,4 +143,18 @@ def check_admin() -> Optional[Tuple[ErrorSchema, int]]:
     user: UserProfile = current_app.db.session.query(UserProfile).get(userid)
     if not user or not user.admin:
         return ErrorSchema('Unauthorized access'), 403
+    return None
+
+def check_data_ownership(owner_id: int) -> Optional[Tuple[ErrorSchema, int]]:
+    """
+    Check if the current user is the owner of the data
+    :param data: The data to check for ownership
+    :return: None if the user is the owner, otherwise a 403 response
+    """
+    userid = get_jwt_identity()
+    if owner_id != userid and check_admin():
+        if current_app.config.get('CHECK_DATA_OWNERSHIP', 'true') == 'true':
+            return ErrorSchema('Unauthorized access'), 403
+        else:
+            logging.getLogger(__name__).warning(f"Data ownership check disabled but user {userid} tried to access data of user {owner_id}")
     return None

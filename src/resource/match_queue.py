@@ -15,7 +15,7 @@ from typing import Optional
 from markupsafe import escape
 from flask_restful_swagger_3 import Resource, swagger, Api
 
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.swagger_patches import Schema, summary
 
 class MatchQueueSchema(Schema):
@@ -69,6 +69,9 @@ class MatchQueueResource(Resource):
         target_player: Optional[Player] = Player.query.get(target_user_id)
         if not target_player:
             return ErrorSchema(f"Player {target_user_id} not found"), 404
+
+        r = check_data_ownership(target_user_id)  # Check the target player is the one invoking it - only admins can add other players
+        if r: return r
 
         try:
             # Validate the input
@@ -155,6 +158,9 @@ class MatchQueueResource(Resource):
         player: Optional[Player] = Player.query.get(target_user_id)
         if not player:
             return ErrorSchema(f"Player {target_user_id} not found"), 404
+
+        r = check_data_ownership(target_user_id)  # Check the target player is the one invoking it - only admins can remove other players
+        if r: return r
 
         try:
             # Validate the input

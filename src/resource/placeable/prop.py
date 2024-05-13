@@ -4,7 +4,7 @@ from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.blueprint import Blueprint as BlueprintModel
 from src.model.placeable.prop import Prop
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.resource.placeable.placeable import PlaceableSchema
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -77,6 +77,9 @@ class PropResource(Resource):
             if prop is None:
                 return ErrorSchema("Prop id not found"), 404
 
+            r = check_data_ownership(prop.island_id)  # island_id == owner_id
+            if r: return r
+
             prop.update(data)
 
             current_app.db.session.commit()
@@ -137,6 +140,10 @@ class PropResource(Resource):
 
 
             prop = Prop(**data, blueprint_id=blueprint_id)
+
+            r = check_data_ownership(prop.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(prop)
             current_app.db.session.commit()
 

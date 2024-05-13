@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
 
 from src.model.placeable.buildings import AltarBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import summary
@@ -84,6 +84,9 @@ class AltarBuildingResource(Resource):
         altar_building = AltarBuilding.query.get(id)
         if altar_building is None:
             return ErrorSchema(f"Altar building {id} not found"), 404
+
+        r = check_data_ownership(altar_building.island_id)  # island_id == owner_id
+        if r: return r
 
         altar_building.update(data)
 

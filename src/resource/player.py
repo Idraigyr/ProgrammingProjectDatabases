@@ -12,7 +12,7 @@ from src.resource.gems import GemSchema
 from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
 from src.model.player import Player
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 
 """
 This module contains the PlayerResource, which is a resource/api endpoint that allows for the retrieval and modification of player profiles
@@ -154,12 +154,19 @@ class PlayerResource(Resource):
         Defaults to the current user id (by JWT)
         :return: The player profile in JSON format
         """
-        user_id = get_jwt_identity()
 
         data = request.get_json()
         data = clean_dict_input(data)
-        data['user_profile_id'] = user_id # overwritten unconditionally
         try:
+            if 'user_profile_id' in data:
+                user_id = int(data['user_profile_id'])
+                r = check_data_ownership(
+                    user_id)  # Check the target player is the one invoking it - only admins can change other players
+                if r: return r
+            else:
+                user_id = get_jwt_identity()
+
+
             if 'gems' in data:
                 # Gems are not updated directly, but through the gem resource
                 data.pop('gems')

@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.gems import GemAttributeAssociation, Gem, GemAttribute
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.schema import ErrorSchema, ArraySchema
 from src.swagger_patches import Schema, summary
 
@@ -166,6 +166,9 @@ class GemResource(Resource):
             if gem is None:
                 return ErrorSchema(f'Unknown gem id {id}'), 404
 
+            r = check_data_ownership(gem.player_id) # Check the owner id
+            if r: return r
+
             gem.update(data)
             current_app.db.session.commit()
 
@@ -211,6 +214,9 @@ class GemResource(Resource):
 
             gem = Gem(**data)
 
+            r = check_data_ownership(gem.player_id) # Check the owner id
+            if r: return r
+
             current_app.db.session.add(gem)
             current_app.db.session.commit() # This is necessary to get the gem id
 
@@ -243,6 +249,9 @@ class GemResource(Resource):
         gem = Gem.query.get(id)
         if gem is None:
             return ErrorSchema(f'Gem {id} not found'), 404
+
+        r = check_data_ownership(gem.player_id)  # Check the owner id
+        if r: return r
 
         current_app.db.session.delete(gem)
         current_app.db.session.commit()

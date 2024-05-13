@@ -2,7 +2,7 @@ from flask import request, current_app, Flask, Blueprint
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
-from src.resource import add_swagger
+from src.resource import add_swagger, check_data_ownership
 from src.schema import SuccessSchema, ErrorSchema
 from src.model.entity import Entity
 from src.swagger_patches import Schema, summary
@@ -91,6 +91,9 @@ class EntityResource(Resource):
         entity = Entity.query.get(id)
         if entity is None:
             return ErrorSchema(f'Entity {id} not found'), 404
+
+        r = check_data_ownership(entity.island_id)  # island_id == owner_id
+        if r: return r
 
         current_app.db.session.delete(entity)
         current_app.db.session.commit()

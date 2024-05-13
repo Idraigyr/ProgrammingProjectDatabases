@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
 from src.model.placeable.buildings import TowerBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -90,6 +90,9 @@ class TowerBuildingResource(BuildingResource):
             if not tower:
                 return ErrorSchema(f'Tower building with id {id} not found'), 404
 
+            r = check_data_ownership(tower.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the tower building
             tower.update(data)
 
@@ -136,6 +139,9 @@ class TowerBuildingResource(BuildingResource):
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
 
             tower = TowerBuilding(**data)
+
+            r = check_data_ownership(tower.island_id)  # island_id == owner_id
+            if r: return r
 
             current_app.db.session.add(tower)
             current_app.db.session.commit()

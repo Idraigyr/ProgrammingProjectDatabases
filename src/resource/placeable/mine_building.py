@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
 
 from src.model.placeable.buildings import MineBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.gems import GemSchema
 from src.resource.placeable.building import BuildingSchema
 from src.schema import ErrorSchema
@@ -107,6 +107,9 @@ class MineBuildingResource(Resource):
                 data["last_collected"] = data["last_collected"].split(".")[0]
                 data['last_collected'] = datetime.datetime.strptime(data['last_collected'], '%Y-%m-%d %H:%M:%S')
 
+            r = check_data_ownership(mine.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the mine building
             mine.update(data)
 
@@ -153,6 +156,9 @@ class MineBuildingResource(Resource):
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
 
             mine = MineBuilding(**data)
+
+            r = check_data_ownership(mine.island_id)  # island_id == owner_id
+            if r: return r
 
             current_app.db.session.add(mine)
             current_app.db.session.commit()

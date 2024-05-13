@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
 from src.model.placeable.buildings import WarriorHutBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -84,6 +84,9 @@ class WarriorHutBuildingResource(BuildingResource):
             if not warrior_hut_building:
                 return ErrorSchema(f'Warrior hut with id {id} not found'), 404
 
+            r = check_data_ownership(warrior_hut_building.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the warrior hut building
             warrior_hut_building.update(data)
 
@@ -129,6 +132,10 @@ class WarriorHutBuildingResource(BuildingResource):
                 data.pop('placeable_id')  # let SQLAlchemy initialize the id
 
             warrior_hut_building = WarriorHutBuilding(**data)
+
+            r = check_data_ownership(warrior_hut_building.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(warrior_hut_building)
             current_app.db.session.commit()
 

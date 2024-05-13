@@ -4,7 +4,7 @@ from flask_restful_swagger_3 import swagger, Api
 
 from src.model.island import Island
 from src.model.builder_minion import BuilderMinion
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.resource.entity import EntitySchema, EntityResource
 from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import summary
@@ -109,6 +109,10 @@ class BuilderMinionResource(EntityResource):
 
 
         builder_minion = BuilderMinion(**data)
+
+        r = check_data_ownership(builder_minion.island_id)  # island_id == owner_id
+        if r: return r
+
         island = Island.query.get(builder_minion.island_id)
         if island is None:
             return ErrorSchema(f"Island with id {builder_minion.island_id} not found"), 400
@@ -159,6 +163,9 @@ class BuilderMinionResource(EntityResource):
                 island = Island.query.get(int(data['island_id']))
                 if island is None:
                     return ErrorSchema(f"Island with id {data['island_id']} not found"), 400
+
+            r = check_data_ownership(minion.island_id)  # island_id == owner_id
+            if r: return r
 
             minion.update(data)
 

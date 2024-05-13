@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.upgrade_task import BuildingUpgradeTask
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.resource.task import TaskSchema, TaskResource
 from src.schema import IntArraySchema, ErrorSchema
 from src.swagger_patches import summary
@@ -93,6 +93,11 @@ class BuildingUpgradeTaskResource(Resource):
             data.pop('handeled')
 
         task = BuildingUpgradeTask(**data)
+
+        r = check_data_ownership(
+            task.island_id)  # island_id == owner_id
+        if r: return r
+
         current_app.db.session.add(task)
         current_app.db.session.commit()
 
@@ -128,6 +133,10 @@ class BuildingUpgradeTaskResource(Resource):
         r = TaskResource.parse_task_data(data, False)
         if r is not None:
             return r
+
+        r = check_data_ownership(
+            task.island_id)  # island_id == owner_id
+        if r: return r
 
         task.update(data)
         current_app.db.session.commit()

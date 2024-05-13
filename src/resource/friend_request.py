@@ -6,7 +6,7 @@ from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.player import Player
 from src.model.friend_request import FriendRequest
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.schema import ErrorSchema
 from src.swagger_patches import Schema, summary
 
@@ -114,6 +114,10 @@ class FriendRequestResource(Resource):
         # Check if the sender and receiver exist
         sender: Player = current_app.db.session.query(Player).get(int(data['sender_id']))
         receiver: Player = current_app.db.session.query(Player).get(int(data['receiver_id']))
+
+        r = check_data_ownership(sender.user_profile_id)  # Only the sender can send a friend request to someone else
+        if r: return r
+
         if sender is None:
             return ErrorSchema(f"Sender {data['sender_id']} not found"), 404
         if receiver is None:
@@ -160,6 +164,9 @@ class FriendRequestResource(Resource):
             if friend_request is None:
                 return ErrorSchema(f'Friend request {id} not found'), 404
 
+            r = check_data_ownership(friend_request.receiver_id)  # Only the receiver can accept or reject the friend request
+            if r: return r
+
             if 'status' in data:
                 if data['status'] == 'accepted':
                     logging.debug(f"Accepting friend request {friend_request.id} ({friend_request.sender_id} -> {friend_request.receiver_id})")
@@ -200,6 +207,10 @@ class FriendRequestResource(Resource):
         friend_request = FriendRequest.query.get(id)
         if friend_request is None:
             return ErrorSchema('Friend request not found'), 404
+
+        r = check_data_ownership(
+            friend_request.receiver_id)  # Only the receiver can accept or reject the friend request
+        if r: return r
 
         current_app.db.session.delete(friend_request)
         current_app.db.session.commit()

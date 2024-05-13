@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.task import Task
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import Schema, summary
 
@@ -139,6 +139,11 @@ class TaskResource(Resource):
                 return r
 
             task = Task(**data)
+
+            r = check_data_ownership(
+                task.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(task)
             current_app.db.session.commit()
 
@@ -174,6 +179,10 @@ class TaskResource(Resource):
             if r is not None:
                 return r
 
+            r = check_data_ownership(
+                task.island_id)  # island_id == owner_id
+            if r: return r
+
             task.update(data)
             current_app.db.session.commit()
 
@@ -201,6 +210,10 @@ class TaskResource(Resource):
         task = Task.query.get(id)
         if task is None:
             return ErrorSchema(message='Task not found'), 404
+
+        r = check_data_ownership(
+            task.island_id)  # island_id == owner_id
+        if r: return r
 
         current_app.db.session.delete(task)
         current_app.db.session.commit()
