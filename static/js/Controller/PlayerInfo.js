@@ -138,7 +138,7 @@ export class PlayerInfo extends Subject{
                 }
             }
 
-
+            this.setLevelStats();
             this.advertiseCurrentCondition();
 
         } catch (err){
@@ -354,7 +354,7 @@ export class PlayerInfo extends Subject{
      * @param increase - True if the level should be increased, false if it should be set to 0
      * @returns {boolean} - True if the level was changed, false otherwise
      */
-    changeLevel(amount=0, increase=false){
+    changeLevel(amount=0, increase=false){ //TODO: refactor this, increase is obsolete, just use amount
         if(amount === 0){
             if(increase){
                 let old = this.level;
