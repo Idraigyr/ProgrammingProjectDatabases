@@ -114,7 +114,10 @@ export class CharacterController extends Subject{
             this._character.velocity.y = 0;
         }
 
-        if ( this._character.position.y < - 50 ) {
+        if ( this._character.position.y < - 50 || this._character.position.y > 2000) {
+            //TODO: respawn function for player which can be reused for death by enemies, add funny message
+            //You fell of the island
+            //you were catapulted to the stratosphere
             //respawn
             this._character.velocity.set(0,0,0);
             this.lastMovementVelocity.set(0,0,0);

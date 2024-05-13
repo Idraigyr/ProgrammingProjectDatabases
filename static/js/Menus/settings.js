@@ -1,5 +1,5 @@
 // all variables for game settings
-import { API_URL } from "../configs/EndpointConfigs.js";
+import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths} from "../configs/ViewConfigs.js";
 let volume = 50;
@@ -16,12 +16,15 @@ keyBinds.set('open-inventory', 'e');
 keyBinds.set('eat', 'q');
 
 export class Settings {
-    constructor(inputManager, playerInfo) {
+    constructor(inputManager, playerInfo, callbacks) {
         this.map = null;
         this.inputManager = inputManager;
         this.playerInfo = playerInfo;
 
-        inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
+        inputManager.addLeaveMatchButtonListener((e) => {
+            callbacks.leaveMatch();
+            this.exitSettingsMenu();
+        });
         inputManager.addLogoutButtonListener(this.logOut.bind(this))
         inputManager.addRespawnButtonListener(this.respawn.bind(this));
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
@@ -59,23 +62,17 @@ export class Settings {
      */
     async logOut() {
         console.log("Log out button clicked")
-        var currentUrl = window.location.href;
-
-        // Append '/logout' to the current URL
-        var logoutUrl = currentUrl + '/logout';
-
         // Send logout info to the backend
         await this.playerInfo.logout();
-
         // Redirect the user to the logout URL
-        window.location.href = logoutUrl;
+        window.location.href = `${API_URL}/logout`;
     }
 
     async respawn() {
         console.log("Respawn button clicked")
 
         // Send respawn info to the backend
-        await this.playerInfo.respawn();
+        await this.playerInfo.reload();
     }
 
     /**

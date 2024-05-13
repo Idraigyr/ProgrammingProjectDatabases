@@ -33,12 +33,33 @@ export class World{
             return true;
         });
 
-        this.islands.filter((island) => {
+        this.islands = this.islands.filter((island) => {
             if(island.team === team || island instanceof Bridge){
                 island.dispose();
                 return false;
             }
             return true;
+        });
+    }
+
+    /**
+     * Get all proxys in the world
+     * @return {ProxyEntity[]}
+     */
+    getProxys(){
+        let proxys = [];
+        this.islands.forEach((island) => {
+            if(island instanceof Island) proxys = proxys.concat(island.proxys);
+        });
+        return proxys;
+    }
+
+    /**
+     * Remove all proxys from the islands
+     */
+    removeProxys(){
+        this.islands.forEach((island) => {
+            if(island instanceof Island) island.disposeProxys();
         });
     }
 
@@ -71,6 +92,9 @@ export class World{
      * @param {MinionSpawner} spawner
      */
     addMinionSpawner(spawner){
+        spawner.addEventListener("delete", (event) => {
+            this.spawners.spells = this.spawners.spells.filter((spawner) => spawner !== event.detail.model);
+        });
         this.spawners.minions.push(spawner);
     }
 
@@ -79,6 +103,9 @@ export class World{
      * @param {SpellSpawner} spawner
      */
     addSpellSpawner(spawner){
+        spawner.addEventListener("delete", (event) => {
+            this.spawners.spells = this.spawners.spells.filter((spawner) => spawner !== event.detail.model);
+        });
         this.spawners.spells.push(spawner);
     }
 
@@ -86,6 +113,7 @@ export class World{
      * Clear all minion spawners
      */
     clearMinionSpawners(){
+        this.spawners.minions.forEach((spawner) => spawner.dispose());
         this.spawners.minions = [];
     }
 
@@ -93,6 +121,7 @@ export class World{
      * Clear all spell spawners
      */
     clearSpellSpawners(){
+        this.spawners.spells.forEach((spawner) => spawner.dispose());
         this.spawners.spells = [];
     }
 
@@ -143,7 +172,7 @@ export class World{
     /**
      *
      * @param buildingName
-     * @param {THREE.Vector3} position - needs to be in world/grid coordinates
+     * @param {THREE.Vector3} position - needs to be in world-grid coordinates (=world coordinates rounded to grid cell size)
      * @param {Number} rotation - 0, 90, 180, 270
      * @param {Boolean} withTimer
      * @return {Building || null} - the building that was added to the world

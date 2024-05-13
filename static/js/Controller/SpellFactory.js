@@ -26,7 +26,6 @@ export class SpellFactory{
      * @param event event with spell details
      */
     createSpell(event){
-        console.log("SpellFactory: createSpell", event.detail.type);
         let entityModel = null;
         switch (event.detail.type){
             case Fireball:

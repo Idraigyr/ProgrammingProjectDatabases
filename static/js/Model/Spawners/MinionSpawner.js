@@ -9,7 +9,7 @@ export class MinionSpawner extends Spawner{
         this.counter = 0;
         this.maxSpawn = params?.maxSpawn ?? 1;
         this.team = params?.team ?? 0;
-        this.types = ["SkeletonMinion", "SkeletonWarrior", "SkeletonMage", "SkeletonRogue"];
+        this.types = ["SkeletonMinion", "SkeletonWarrior", "SkeletonMage", "SkeletonRogue"]; //TODO: more dynamic?
     }
 
     /**

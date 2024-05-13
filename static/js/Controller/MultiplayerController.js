@@ -5,6 +5,7 @@ import {Controller} from "./Controller.js";
 import {Fireball, spellTypes} from "../Model/Spell.js";
 import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
+import {multiplayerStats} from "../configs/ControllerConfigs.js";
 
 /**
  * MultiplayerController class
@@ -27,6 +28,8 @@ export class MultiplayerController extends Subject{
         //for remembering the interval for sending state updates
         this.matchmaking = false;
         this.inMatch = false;
+        this.result = null;
+        this.stakedGems = [];
         this.opponentInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
 
@@ -39,15 +42,13 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("playerHealthUpdate", this.sendPlayerHealthUpdate.bind(this));
         this.updateEvents.set("minionDeath", this.enemyDeathEvent.bind(this));
         this.updateEvents.set("playerDeath", this.sendPlayerDeathEvent.bind(this));
+        this.updateEvents.set("proxyHealthUpdate", this.sendProxyHealthUpdate.bind(this));
+        this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
 
         this.stats = new Map();
-        this.stats.set("playerKills", 0);
-        this.stats.set("minionsKilled", 0);
-        this.stats.set("deaths", 0);
-        this.stats.set("damageDealt", 0);
-        this.stats.set("damageTaken", 0);
-        this.stats.set("manaSpent", 0);
-        this.stats.set("spellCasts", 0);
+        for(const property in multiplayerStats){
+            this.stats.set(property, 0);
+        }
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -106,17 +107,14 @@ export class MultiplayerController extends Subject{
         //TODO: refactor; is pretty confusing because menuManager (play-buton is pressed) => this method => menuManager update the view
         //matchmake = do we want to matchmake or not?
         const matchmake = bool ?? !this.matchmaking;
-        console.log(" I want to matchmake: ", matchmake)
         if(bool === this.matchmaking ?? false) return;
         if(matchmake){
-            //TODO: only start matchmaking if player has a warrior hut?
             if(!this.itemManager.checkStakedGems()) return;
             try{
                 await this.startMatchMaking();
             } catch (err){
-                //TODO: handle pathfinding error (no path to altar) => show error message to player
                 console.error(err);
-                await this.endMatchMaking();
+                //TODO: handle pathfinding error (no path to altar) => show error message to player
             }
         } else {
             await this.endMatchMaking();
@@ -126,7 +124,12 @@ export class MultiplayerController extends Subject{
 
     async startMatchMaking(){
         //TODO: first test if path is available to altar if not throw error
-
+        const connectionPoint = this.worldManager.getIslandConnectionPoint();
+        if(this.worldManager.world.getBuildingByPosition(connectionPoint)) throw new Error("Connection point is occupied by a building");
+        const altarPosition = this.worldManager.getAltarPosition();
+        console.log("connection point: ", connectionPoint);
+        console.log("altar position: ", altarPosition);
+        if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("No path from connection point to altar");
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
         console.log(response);
@@ -200,14 +203,25 @@ export class MultiplayerController extends Subject{
         await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID < this.opponentInfo.userID);
         progressBar.value = 75;
         // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
-        const opponent = this.worldManager.addOpponent({position: new THREE.Vector3(0,0,0), mana: 100, maxMana: 100, team: 1});
+        const opponent = this.worldManager.addOpponent({
+            position: this.opponentInfo.playerPosition,
+            health: this.opponentInfo.maxHealth,
+            maxHealth: this.opponentInfo.maxHealth,
+            team: 1
+        });
         opponent.setId({entity: {player_id: this.opponentInfo.userID}});
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
 
+        progressBar.labels[0].innerText = "creating proxys for buildings...";
+        this.worldManager.generateProxys();
+        progressBar.value = 80;
+
         progressBar.labels[0].innerText = "creating paths for minions...";
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
+        progressBar.value = 90;
+
         this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
         this.worldManager.generateSpellSpawners({
             spell: {
@@ -218,15 +232,8 @@ export class MultiplayerController extends Subject{
                     duration: 4,
                 }
             },
-            interval: 5
+            interval: 1
         });
-        this.worldManager.world.spawners.spells.forEach(spawner => {
-            spawner.addEventListener("spawn", this.updateEvents.get("createSpellEntity"));
-        });
-        progressBar.value = 85;
-
-        progressBar.labels[0].innerText = "creating proxys for buildings...";
-        this.worldManager.generateProxys();
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.opponentInfo.userID);
@@ -245,51 +252,96 @@ export class MultiplayerController extends Subject{
     }
 
     /**
-     * Ends the match and shows the win/lose/draw screen
+     * Ends the match and shows the win/lose/draw screen (is called when the server sends the match end event)
      * @param data
      */
     async endMatch(data){
         console.log(`match ended, winner: ${data.winner_id}`); //TODO: let backend also send won or lost gem ids
+        this.stopSendingStateUpdates();
+        this.result = "draw";
+
+        //get staked gems and add new gems (if won)
+        this.stakedGems = this.itemManager.getStakedGems();
+        this.menuManager.unstakeGems();
+        const newGemViews = this.itemManager.updateGems(await this.playerInfo.retrieveGems());
+        this.menuManager.addItems(newGemViews);
+
+        //update stats
+        this.stats.set("gemsWon", this.stats.get("gemsWon") + newGemViews.length);
+        this.stats.set("gamesPlayed", this.stats.get("gamesPlayed") + 1);
+
+        //fill params for results screen
+        const renderGems = [];
+        const currentStats = [];
+        const lifetimeStats = [];
+        this.stats.forEach((value, key) => {
+            currentStats.push({name: key, value: value});
+            multiplayerStats[key] += value;
+        });
+        for(const property in multiplayerStats){
+            lifetimeStats.push({name: property, value: multiplayerStats[property]});
+        }
+
         if(data.winner_id === this.playerInfo.userID){
             //show win screen
-            //TODO: add new gems to player's inventory
-            for(const gem of this.itemManager.getStakedGems()) {
+            this.result = "win";
+            for(const gem of this.stakedGems) {
                 gem.staked = false;
             }
+            newGemViews.forEach(gemView => {
+                renderGems.push(gemView.item.getItemId());
+            });
+            this.stats.set("gamesWon", this.stats.get("gamesWon") + 1);
             console.log("you win");
         } else if (data.winner_id === this.opponentInfo.userID){
             //show lose screen
-            for(const gem of this.itemManager.getStakedGems()) {
-                this.itemManager.deleteGem(gem);
-                this.menuManager.removeItem(gem.getItemId());
-            }
+            this.result = "lose";
+            this.stats.set("gemsLost", this.stats.get("gemsLost") + this.stakedGems.length);
+            this.stakedGems.forEach(gem => {
+                renderGems.push(gem.getItemId());
+            });
             console.log("you lose");
         } else {
             //show draw screen
+            this.stakedGems.forEach(gem => {
+                renderGems.push(gem.getItemId());
+            });
             console.log("draw");
         }
-        this.menuManager.unstakeGems();
-        this.menuManager.addItems(this.itemManager.updateGems(await this.playerInfo.retrieveGems()));
-        //wait for player to click on continue button
-        //send event to server that player is leaving match
-        this.leaveMatch();
+        this.menuManager.renderMenu({
+            name: "MultiplayerMenu",
+            result: this.result,
+            gemIds: renderGems,
+            stats: {
+                current: currentStats,
+                lifetime: lifetimeStats
+            }
+        });
+        //wait for player to click on close button
     }
 
     /**
-     * Leaves the match => sets the game state back to single player
+     * sets the game state back to single player
      */
-    leaveMatch(){
+    unloadMatch(){
         console.log("leaving match");
+        if(this.result === "lose"){
+            for(const gem of this.stakedGems) {
+                this.itemManager.deleteGem(gem);
+                this.menuManager.removeItem(gem.getItemId());
+            }
+            this.stakedGems = [];
+        }
+        this.result = null;
         const progressBar = document.getElementById('progress-bar');
         progressBar.labels[0].innerText = "leaving match...";
         document.querySelector('.loading-animation').style.display = 'block';
         this.togglePhysicsUpdates();
 
-        this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
         this.spellCaster.multiplayer = false;
         //stop sending state updates to server & remove event listeners
-        this.stopSendingStateUpdates();
-        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView
+        // this.stopSendingStateUpdates(); => moved to leaveMatch
+        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
         //remove island from world and remove spawners
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.peerController.peer = null;
@@ -303,13 +355,18 @@ export class MultiplayerController extends Subject{
         console.log("done leaving match");
     }
 
-    abortMatch(){
-
+    /**
+     * sends a message to the server that the player is leaving the match
+     */
+    leaveMatch(){
+        if (confirm("Are you sure you want to leave the match?\nYou will lose your stakes!")) {
+            this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
+        }
     }
 
     /**
      * Process the received state from the server
-     * @param {{sender: number, target: number, player: Object, playerHealth: Object, spellEvent: Object, minions: Object}} data - check send methods for more info about what data can contain
+     * @param {{sender: number, target: number, player: Object, playerHealth: Object, proxy: Object, spellEvent: Object, minions: Object}} data - check send methods for more info about what data can contain
      * in general: data can contain player which is the peer's state, playerHealth which is your own player's health (peer's front-end is responsible for updating your team's health), spellEvent which is the event that creates a spell (of peer),
      * minions which can contain create, update, state (all for enemey minions) and healthUpdate (for friendly minions)
      * @return {Promise<void>}
@@ -365,6 +422,14 @@ export class MultiplayerController extends Subject{
 
             if(data.minions.healthUpdate){
                 this.minionController.updateFriendlyState(data.minions.healthUpdate);
+            }
+        }
+        if(data.proxy){
+            if(data.proxy.healthUpdate){
+
+                const proxy = this.worldManager.getProxyByBuildingID(data.proxy.healthUpdate.id);
+                if(proxy) proxy.takeDamage(data.proxy.healthUpdate.previous - data.proxy.healthUpdate.current);
+                else throw new Error("Proxy not found");
             }
         }
 
@@ -472,13 +537,50 @@ export class MultiplayerController extends Subject{
         });
     }
 
+    /**
+     * Send the proxy health update to the opponent
+     * @param event
+     */
+    sendProxyHealthUpdate(event){
+        console.log("proxy health update")
+        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+            proxy: {
+                healthUpdate: event.detail
+            }
+        });
+    }
 
+    /**
+     * removes event listeners from proxy object
+     * @param event
+     */
+    proxyDeathEvent(event){
+        event.detail.model.removeEventListener("updateHealth", this.updateEvents.get("proxyHealthUpdate"));
+        event.detail.model.removeEventListener("delete", this.updateEvents.get("proxyDeath"));
+        if(event.detail.model.dbType === "altar_building" && event.detail.model.team !== 0){
+            console.log("altar destroyed");
+            this.forwardingNameSpace.sendAltarDestroyedEvent(this.matchId);
+        } else {
+            console.log("a proxy destroyed");
+        }
+    }
+
+
+    /**
+     * Starts sending state updates to the server
+     * @param {number} opponentId
+     */
     startSendingStateUpdates(opponentId){
-        //send created objects (minions, spells)
-            // => how to do this? do we
-            // A) just send state of all objects,
-            // B) send a list of all objects created since the last update so that opponent can create them as well
         this.peerController.peer.addEventListener("updateHealth", this.updateEvents.get("playerHealthUpdate"));
+        //TODO: attach event listeners to all proxy objects (buildings) and send their health updates to the opponent
+        this.worldManager.world.getProxys().forEach(proxy => {
+            if(proxy.team === 0) return;
+            proxy.addEventListener("updateHealth", this.updateEvents.get("proxyHealthUpdate"));
+            proxy.addEventListener("delete", this.updateEvents.get("proxyDeath"));
+        });
+        this.worldManager.world.spawners.spells.forEach(spawner => {
+            spawner.addEventListener("spawn", this.updateEvents.get("createSpellEntity"));
+        });
         this.spellCaster.addEventListener("createSpellEntity", this.updateEvents.get("createSpellEntity"));
         this.worldManager.world.player.addEventListener("updatedState", this.updateEvents.get("updatedState"));
         this.minionController.addEventListener("minionAdded", this.updateEvents.get("createMinion"));

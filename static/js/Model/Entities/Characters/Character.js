@@ -25,8 +25,8 @@ export class Character extends Entity{
         this.onCollidable = false;
         this.hit = false;
         this.#fsm = null;
-        this.health = params?.health ?? 100;
-        this.maxHealth = params?.health ?? 100;
+        this.maxHealth = params?.maxHealth ?? 100;
+        this.health = params?.health ?? this?.maxHealth;
         this.height = params.height;
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);

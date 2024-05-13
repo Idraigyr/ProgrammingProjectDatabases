@@ -106,11 +106,8 @@ class MatchQueueResource(Resource):
                 current_app.db.session.delete(entry)
                 current_app.db.session.commit()
 
-                # Unique id based on the two player ids
-                match_id = f'{target_user_id}-{opponent.user_profile_id}'
-
                 # Send a message to the players through the websocket
-                current_app.socketio.emit('match_found', {'player1': target_player.user_profile_id, 'player2': opponent.user_profile_id, 'match_id': match_id}, namespace='/forward')
+                current_app.socketio.forwarding_namespace.on_match_found(target_user_id, opponent.user_profile_id)
 
                 logging.getLogger(__name__).info(f"Match found between {target_user_id} (level={target_player.entity.level}) and {opponent.user_profile_id} (level={opponent.entity.level})")
                 return MatchQueueSchema(matchmake=True), 200

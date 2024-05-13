@@ -5,6 +5,7 @@ export class MenuItem{
         this.display = "block";
         this.belongsIn = params.belongsIn;
         this.icon = new Image(params.icon.width,params.icon.height);
+        this.icon.classList.add("menu-item-icon");
         this.icon.src = params.icon.src;
         this.element = this.createElement(params);
     }
@@ -81,7 +82,6 @@ export class GemItem extends MenuItem{
 
     createElement(params) {
         const element =  super.createElement(params);
-        console.log("gem menuitem:", params);
         if(params?.equipped) element.style.opacity = "0.5";
         return element;
     }

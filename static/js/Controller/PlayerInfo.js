@@ -1,6 +1,6 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI, islandURI} from "../configs/EndpointConfigs.js";
+import {API_URL, playerProfileURI, playerURI, timeURI, islandURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
@@ -138,7 +138,7 @@ export class PlayerInfo extends Subject{
                 }
             }
 
-
+            this.setLevelStats();
             this.advertiseCurrentCondition();
 
         } catch (err){
@@ -294,7 +294,11 @@ export class PlayerInfo extends Subject{
             return 100000;
         }
     }
-    respawn(){
+
+    /**
+     * Relaods the world and sets the player position to the spawn position
+     */
+    reload(){
         this.playerPosition.x = playerSpawn.x;
         this.playerPosition.y = playerSpawn.y;
         this.playerPosition.z = playerSpawn.z;
@@ -350,7 +354,7 @@ export class PlayerInfo extends Subject{
      * @param increase - True if the level should be increased, false if it should be set to 0
      * @returns {boolean} - True if the level was changed, false otherwise
      */
-    changeLevel(amount=0, increase=false){
+    changeLevel(amount=0, increase=false){ //TODO: refactor this, increase is obsolete, just use amount
         if(amount === 0){
             if(increase){
                 let old = this.level;

@@ -1,4 +1,5 @@
 import {assert} from "../../helpers.js";
+import {multiplayerStats} from "../../configs/ControllerConfigs.js";
 
 export class IMenu {
     constructor(params) {
@@ -386,6 +387,43 @@ export class GemsMenu extends ListMenu{
     }
 }
 
+export class MultiplayerGemsMenu extends GemsMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("multiplayer-gems-menu") : params.classes = ["multiplayer-gems-menu"];
+        super(params);
+    }
+
+    get name(){
+        return "MultiplayerGemsMenu";
+    }
+
+    /**
+     * Set the title of the menu based on the result of the match
+     * @param {"win" | "lose" | "draw"} result
+     */
+    setTitle(result){
+        console.log("setting title:", result)
+        if(result === "win"){
+            this.getTitleBar().innerText = "Won";
+        } else if(result === "lose"){
+            this.getTitleBar().innerText = "Lost";
+        } else if(result === "draw"){
+            this.getTitleBar().innerText = "Got back";
+        }
+
+    }
+
+    hide(){
+        this.element.style.display = "none";
+        this.getTitleBar().innerText = this.title;
+    }
+
+    get title(){
+        return "Gems";
+    }
+
+}
+
 export class StakesMenu extends ListMenu{
     constructor(params) {
         super(params);
@@ -505,6 +543,117 @@ export class BaseMenu extends IMenu{
         return "Base";
     }
 
+}
+
+export class MultiplayerMenu extends BaseMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("multiplayer-menu") : params.classes = ["multiplayer-menu"];
+        super(params);
+        this.allows = ["MultiplayerStatsMenu", "MultiplayerGemsMenu"];
+    }
+
+    get name(){
+        return "MultiplayerMenu";
+    }
+
+    get title(){
+        return "Results";
+
+    }
+}
+
+export class MultiplayerStatsMenu extends IMenu{
+    #stats;
+    constructor(params) {
+        params.classes ? params.classes.push("multiplayer-stats-menu") : params.classes = ["multiplayer-stats-menu"];
+        super(params);
+        this.allows = [];
+        this.#stats = {
+            current: null,
+            lifetime: null
+        }
+    }
+
+    createElement(params){
+        const element = document.createElement("div");
+        const statsDiv = document.createElement("div");
+        const buttonContainer = document.createElement("div");
+        const matchButton = document.createElement("button");
+        const lifetimeButton = document.createElement("button");
+        const list = document.createElement("ul");
+        buttonContainer.classList.add("multiplayer-stats-menu-button-container");
+        matchButton.classList.add("multiplayer-stats-menu-button");
+        lifetimeButton.classList.add("multiplayer-stats-menu-button");
+        statsDiv.classList.add("multiplayer-stats-menu-container");
+        list.classList.add("multiplayer-stats-menu-ul");
+        matchButton.innerText = "Match";
+        lifetimeButton.innerText = "Lifetime";
+        list.dataset.menu = this.name;
+        matchButton.id = "multiplayer-match-button";
+        lifetimeButton.id = "multiplayer-lifetime-button";
+        list.id = `${this.name}-list`
+        buttonContainer.appendChild(matchButton);
+        buttonContainer.appendChild(lifetimeButton);
+        buttonContainer.addEventListener("click", this.toggleStats.bind(this));
+        statsDiv.appendChild(buttonContainer);
+        for(const property in multiplayerStats){
+            const statElement = document.createElement("li");
+            statElement.id = property;
+            statElement.classList.add("multiplayer-stats-menu-li");
+            statElement.innerText = `${property}: ${multiplayerStats[property]}`;
+            list.appendChild(statElement);
+        }
+        element.appendChild(statsDiv);
+        statsDiv.appendChild(list);
+        element.id = this.name;
+        params.classes.forEach(c => element.classList.add(c));
+        element.style.display = "none";
+        element.draggable = false;
+        return element;
+    }
+
+    /**
+     * Set the stats of the menu
+     * @param {{current: {name: string, value, number}[], lifetime: {name: string, value, number}[]}} stats
+     */
+    setStats(stats){
+
+        this.#stats.current = stats.current;
+        this.#stats.lifetime = stats.lifetime;
+    }
+
+    /**
+     * callback for the button click event to toggle between match and lifetime stats
+     * @param {{target: HTMLElement}} e
+     */
+    toggleStats(e){
+        console.log("toggling stats")
+        const matchButton = this.element.querySelector("#multiplayer-match-button");
+        const lifetimeButton = this.element.querySelector("#multiplayer-lifetime-button");
+        let stats = null;
+        if(e.target === matchButton) {
+            matchButton.classList.add("active");
+            lifetimeButton.classList.remove("active");
+            stats = this.#stats.current;
+        } else if (e.target === lifetimeButton){
+            lifetimeButton.classList.add("active");
+            matchButton.classList.remove("active");
+            stats = this.#stats.lifetime;
+        }
+        for(const stat of stats){
+                const list = this.element.querySelector(".multiplayer-stats-menu-ul");
+                const statElement = list.querySelector(`#${stat.name}`);
+                statElement.innerText = `${stat.name}: ${stat.value}`;
+            }
+    }
+
+    get name(){
+        return "MultiplayerStatsMenu";
+    }
+
+    get title(){
+        return "Stats";
+    }
 }
 
 export class BuildingMenu extends BaseMenu{

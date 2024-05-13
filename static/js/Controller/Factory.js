@@ -4,6 +4,7 @@ import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {displayViewBoxHelper} from "../configs/ViewConfigs.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -23,7 +24,6 @@ export class Factory{
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
         this.#currentTime = null;
-        this.playerInfo = params.playerInfo;
     }
 
     /**
@@ -75,7 +75,9 @@ export class Factory{
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         view.loadAnimations(this.assetManager.getAnimations(params.type));
 
@@ -108,7 +110,9 @@ export class Factory{
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(currentPos.clone().sub(new THREE.Vector3(0.5,0,0.5)), currentPos.clone().add(new THREE.Vector3(0.5,height,0.5)));
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
 
@@ -117,19 +121,18 @@ export class Factory{
         player.addEventListener("updateRotation",view.updateRotation.bind(view));
         player.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         player.addEventListener("updateHealth",view.OnHealth_.bind(view));
-        player.addEventListener("playerDied",this.playerInfo.respawn.bind(this.playerInfo));
 
         this.viewManager.addPair(player, view);
         return player;
     }
 
-    createOpponent(params){
+    createPeer(params){
         // let sp = new THREE.Vector3(-8,15,12);
         let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, team: params?.team ?? 0});
+        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, health: params.health, maxHealth: params.maxHealth, team: params?.team ?? 0});
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
@@ -138,7 +141,9 @@ export class Factory{
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
 
@@ -164,7 +169,9 @@ export class Factory{
 
         this.scene.add(view.initScene());
         view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         bridgeModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
@@ -178,7 +185,7 @@ export class Factory{
      * @returns {Island} model of the island
      */
     createIsland(params){
-        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), rotation: params.rotation, width: params.width, length: params.length, team: params.team});
+        let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, team: params.team});
 
         let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1}); //TODO: remove magic numbers
         //TODO: island asset?
@@ -186,13 +193,17 @@ export class Factory{
         this.scene.add(view.initScene());
 
         view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));
         islandModel.addEventListener("updateRotation",view.updateRotation.bind(view));
         islandModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.#addBuildings(islandModel, params.buildingsList);
+
+        islandModel.rotation = params.rotation;
 
         this.viewManager.addPair(islandModel, view);
         return islandModel;
@@ -214,8 +225,8 @@ export class Factory{
         //TODO: remove and make dynamic
         if(params.stats){
             for(const stat of params.stats){
-            model.addStat(stat.name, stat.value);
-        }
+                model.addStat(stat.name, stat.value);
+            }
         }
 
         if(params.gems){
@@ -234,7 +245,9 @@ export class Factory{
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         this.viewManager.addPair(model, view);
 
@@ -296,30 +309,22 @@ export class Factory{
     }
 
     createProxy(params) {
+        console.log("createProxy", params)
         const asset = this.assetManager.getAsset(params.buildingName);
         let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
 
-        let model = null;
         //TODO: get health from a variable, so it is impacted by gems and level?
-        if (params.buildingName === "Altar") {
-            model = new Model.AltarProxy({
+        let model = new Model[`${params.buildingName}Proxy`]({
                 spawnPoint: currentPos,
                 position: currentPos,
                 team: params.team,
                 health: 100,
-                maxHealth: 100
+                maxHealth: 100,
+                buildingName: params.buildingName,
+                building: params.building
             });
 
-        }
-        if (params.buildingName === "Tower") {
-            model = new Model.TowerProxy({
-            spawnPoint: currentPos,
-            position: currentPos,
-            team: params.team,
-            health: 100,
-            maxHealth: 100
-        });
-        }
+        console.log("model", model);
 
         let view = new View.ProxyView({
             position: currentPos,
@@ -327,20 +332,24 @@ export class Factory{
             scene: this.scene,
             camera: this.camera
         });
-        if (params.buildingName === "Altar") {
+        if (params.buildingName === "Altar") { //TODO: make more dynamic
             const height = 9;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(4,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(4.2,height,0.5)));
+            model.radius = Math.sqrt(4*4 + 0.5*0.5) + 0.5;
         }
         if (params.buildingName === "Tower") {
             const height = 33;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(3,0,3)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(3,height,3)));
+            model.radius = Math.sqrt(3*3 + 3*3) + 0.5;
         }
 
         this.scene.add(view.healthBar);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
-        model.addEventListener("healthChange",view.OnHealth_.bind(view));
+        model.addEventListener("updateHealth",view.OnHealth_.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
         this.viewManager.addPair(model, view);

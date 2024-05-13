@@ -26,7 +26,6 @@ void main() {
 export class CharacterView extends IAnimatedView{
     constructor(params) {
         super(params);
-        this.camera = params.camera;
         this.healthBar = null;
         this.iniHealthBar();
 
@@ -84,7 +83,7 @@ export class CharacterView extends IAnimatedView{
 
         this.realHealth_ = healthPercent;
       }
-      update(deltaTime) {
+      update(deltaTime, camera) {
         const t = 1.0 - Math.pow(0.001, deltaTime);
 
         this.animHealth_ = t * (this.realHealth_ - this.animHealth_) + this.animHealth_;
@@ -96,7 +95,7 @@ export class CharacterView extends IAnimatedView{
 
         this.material_.uniforms.health.value = this.animHealth_;
         this.material_.uniforms.colour.value = c;
-        this.healthBar.quaternion.copy(this.camera.quaternion);
+        this.healthBar.quaternion.copy(camera.quaternion);
 
         if(this.mixer) this.mixer.update(deltaTime);
       }

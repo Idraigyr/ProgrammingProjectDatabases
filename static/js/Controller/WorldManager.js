@@ -9,6 +9,7 @@ import {gridCellSize} from "../configs/ViewConfigs.js";
 import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
+import {printFoundationGrid} from "../helpers.js";
 
 
 /**
@@ -36,6 +37,11 @@ export class WorldManager{
         this.persistent = true;
     }
 
+    /**
+     * imports an island from the database
+     * @param {number} islandID
+     * @return {Promise<{characters: *[], island: {buildings: *[], rotation: number, position: {x: number, y: number, z: number}}}>}
+     */
     async importIsland(islandID){
         let island = {
             buildings: [],
@@ -53,23 +59,33 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
-                console.log("imported building", building.blueprint.name);
-                let gems = [];
-                if(building.gems){
-                    for(const gem of building.gems){
-                    gems.push(this.itemManager.getGemById(gem.id));
-                }
-                }
-                console.log("imported building", building);
-                island.buildings.push({
+                const buildingParams = {
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
                     rotation: building.rotation*90,
                     id: building.placeable_id,
-                    gems: gems,
                     stats: buildingStats.getStats(building.blueprint.name),
                     task: building.task
-                });
+                };
+                let gems = [];
+                //used only for adding gem ids and stat multipliers to building
+                if(building.gems){ //normal adding of gems to buildings
+                    for(const gem of building.gems){
+                        gems.push({
+                            id: gem.id,
+                            getAttributes: () => {
+                                const attributes = new Map();
+                                gem.attributes.forEach(attribute => {
+                                    attributes.set(attribute.gem_attribute_type, attribute.multiplier);
+                                });
+                                return attributes;
+                            }
+                        });
+                    }
+                    buildingParams.gems = gems;
+                }
+                console.log(`importing building ${building.blueprint.name} at position ${building.x}, ${building.z}`);
+                island.buildings.push(buildingParams);
             }
 
             //Remove?
@@ -120,6 +136,43 @@ export class WorldManager{
      */
     calculateIslandOffset(){
         return new THREE.Vector3((15+3)*gridCellSize, 0, 0);
+    }
+
+    /**
+     * returns the middle position of the edge that will connect the islands
+     * @return {THREE.Vector3} - the middle position of the edge that will connect the islands
+     */
+    getIslandConnectionPoint(){
+        return this.world.islands[0].position.clone().add(new THREE.Vector3(7*gridCellSize, 0, 0));
+    }
+
+    /**
+     * returns the position of the altar on the first island
+     * @return {THREE.Vector3}
+     */
+    getAltarPosition(){
+        return this.world.islands[0].getBuildingsByType("altar_building")[0].position;
+    }
+
+    /**
+     * returns a proxy corresponding to the building with the given id
+     * @param {number} buildingID
+     * @return {ProxyEntity | null}
+     */
+    getProxyByBuildingID(buildingID){
+        let proxy = null;
+        this.world.islands.find((island) => {
+            if(island instanceof Island){
+                proxy = island.proxys.find((proxy) => {
+                    return proxy.building.id === buildingID;
+                });
+                if(proxy){
+                    return true;
+                }
+            }
+            return false;
+        });
+        return proxy ?? null;
     }
 
     /**
@@ -197,24 +250,21 @@ export class WorldManager{
 
     /**
      * Adds an enemy player to the world
-     * @param params
+     * @param {Object} params - params for the createOpponent method in the factory
      * @return {Wizard}
      */
     addOpponent(params){
         if(params.team === this.world.player.team) throw new Error("cannot add opponent with same team as player");
-        const opponent = this.factory.createOpponent(params);
+        const opponent = this.factory.createPeer(params);
         this.world.addEntity(opponent);
         return opponent;
     }
 
     async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
-        console.log("importing island island:", this.world.islands[0]);
-        console.log("importing island player", this.world.player);
         const {island, characters} = await this.importIsland(islandID);
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
         const rotation = 180;
-        console.log("offset", offset);
         if(currentIslandIsCenter){
             console.log("%ccurrent island is center", "color: green; font-size: 20px");
             islandPosition.add(offset);
@@ -233,24 +283,26 @@ export class WorldManager{
         this.collisionDetector.generateColliderOnWorker();
     }
 
-
-    addSpellSpawners(){
-        this.world.addSpellSpawners();
-    }
-
     /**
      * Moves the current island and player to the new position, BE AWARE: this method does not call generateColliderOnWorker
      * @param {THREE.Vector3} translation - the translation to apply to the island
      * @param {number} rotation - the new rotation of the island in degrees
      */
     moveCurrentIsland(translation, rotation){
+        console.log("moving island")
         const island = this.world.islands[0];
         island.position = island.position.add(translation);
-        island.rotation = rotation;
-        //TODO: make sure these 2 lines work correctly
+
+        //--DEBUG--
+        console.log("original island:")
+        printFoundationGrid(island.grid, island.width, island.length);
+        //--DEBUG--
+
+        console.log("rotation:", rotation);
+        island.rotation += rotation;
         console.log("I moved myself with the island", this.world.player.position);
         this.world.player.spawnPoint = this.world.player.spawnPoint.add(translation);
-        this.world.player.position = this.world.player.spawnPoint;
+        this.world.player.position = this.world.player.spawnPoint; //TODO: fix this currently the player is not moved
     }
 
     /**
@@ -259,8 +311,10 @@ export class WorldManager{
      * @param {number} team
      */
     resetWorldState(currentIslandIsCenter = true){
+        console.log("resetting world state: currentIslandIsCenter:", currentIslandIsCenter);
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
+        this.world.removeProxys();
         if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
         this.collisionDetector.generateColliderOnWorker();
         console.log("reset world state island:", this.world.islands[0]);
@@ -281,7 +335,6 @@ export class WorldManager{
         }else{ //TODO: if i'm not mistaken, this is unneccesary because it already happens in the playerInfo
             playerPosition = {x: playerSpawn.x, y: playerSpawn.y, z: playerSpawn.z};
         }
-        console.log("Player position from database: ", playerPosition);
         const player = {position: {
                 x: playerPosition.x,
                 y: playerPosition.y,
@@ -296,6 +349,13 @@ export class WorldManager{
         this.factory.currentTime = new Date(await this.playerInfo.getCurrentTime());
         this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
         this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+
+        //--DEBUG--
+        console.log("importing island:")
+        const island1 = this.world.islands[0];
+        printFoundationGrid(island1.grid, island1.width, island1.length);
+        //--DEBUG--
+
         this.world.setPlayer(this.factory.createPlayer(player));
         // Set default values for the inventory slots
         // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
@@ -337,7 +397,7 @@ export class WorldManager{
 
     /**
      * Places a building in the world
-     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
+     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world-grid coordinates (=world coordinates rounded to grid cell size)
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
@@ -433,17 +493,20 @@ export class WorldManager{
     generateSpellSpawners(params){
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
-            const towers = island.getBuildingsByType("tower_building");
-            towers.forEach((tower) => {
-                const position = tower.position;
+            const towerProxies = island.getProxysByType("tower_building");
+            towerProxies.forEach((towerProxy) => {
+                const position = towerProxy.position;
                 position.y += 40;
                 const spawner = new SpellSpawner({
                     position: position,
-                    buildingID: tower.id,
+                    buildingID: towerProxy.building.id,
                     interval: params.interval,
                     spell: params.spell,
                     team: 0,
                     collisionDetector: this.collisionDetector
+                });
+                towerProxy.addEventListener("delete", (event) => {
+                    spawner.dispose();
                 });
                 spawner.addEventListener("spawn", (event) => {
                     this.spellFactory.createSpell(event);
@@ -455,29 +518,23 @@ export class WorldManager{
 
     /** adds proxy models and view to the island of towers and altars
      *  this is used to check for collisions with spells, and to display the health of the towers and altars
+     *  @param {number | null} team - for which team to generate the proxys (default is null, which generates for all teams)
      */
-    generateProxys(){
-        //TODO: rewrite this to be more generic
+    generateProxys(team= null){
+        const proxyList = ["altar_building", "tower_building"];
         this.world.islands.forEach((island) => {
             if(!(island instanceof Island)) return;
-            island.getBuildingsByType("altar_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Altar"
-
+            if(team && island.team !== team) return;
+            proxyList.forEach((type) => {
+                island.getBuildingsByType(type).forEach((building) => {
+                    const proxy = this.factory.createProxy({
+                        position: building.position,
+                        team: building.team,
+                        buildingName: building.constructor.name,
+                        building: building
+                    });
+                    island.addProxy(proxy);
                 });
-                island.addProxy(proxy);
-            });
-
-            island.getBuildingsByType("tower_building").forEach((building) => {
-                const proxy = this.factory.createProxy({
-                    position: building.position,
-                    team: building.team,
-                    buildingName: "Tower"
-
-                });
-                island.addProxy(proxy);
             });
         });
     }
@@ -491,16 +548,16 @@ export class WorldManager{
     }
 
     /**
-     * Adds a new island to the world to spawn minions (single player only)
+     * Adds an island with enemy buildings to the world to test front-end multiplayer aspects without the server
      */
-    addSpawningIsland(){
+    addEnemyTestIsland(){
         //TODO: get a random position for the island which lies outside of the main island
-        let position = {x: -9, y: 0, z: -8};
+        let position = {x: -11, y: 0, z: 0};
         convertGridIndexToWorldPosition(position)
         //TODO: if the new island is not connected to the main island, add a bridge that connects the two islands
 
         //create an island
-        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 3, length: 3, team: 1});
+        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 5, length: 5, team: 1});
         // //create a bridge
         // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
 
@@ -509,10 +566,14 @@ export class WorldManager{
         // this.world.islands.push(bridge);
 
         //add a enemy warrior hut to the island
-        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: position, withTimer: false, id: 999});
+        const hutPosition = {x: position.x, y: 0, z: position.z-gridCellSize};
+        const towerPosition = {x: position.x, y: 0, z: position.z+gridCellSize};
+        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: hutPosition, withTimer: false, id: 999, team: 1});
+        let tower = this.factory.createBuilding({buildingName: "Tower", position: towerPosition, withTimer: false, id: 1000, team: 1});
         island.addBuilding(hut);
-        // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
-        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(position.x, 15, position.z), buildingID: hut.id, interval: 4}));
+        island.addBuilding(tower);
+        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(hutPosition.x, 15, hutPosition.z), buildingID: hut.id, interval: 4}));
+        this.generateProxys(1);
         this.collisionDetector.generateColliderOnWorker();
     }
 
@@ -531,12 +592,12 @@ export class WorldManager{
     }
 
     async addCrystals(){
-        console.log("added 10 crystals");
+        this.world.getBuildingByPosition(this.currentPos).removeInputCrystals();
         this.playerInfo.changeCrystals(10);
     }
 
     async removeCrystals(){
-        console.log("removed 10 crystals");
+        this.world.getBuildingByPosition(this.currentPos).addInputCrystals();
         this.playerInfo.changeCrystals(-10);
     }
 

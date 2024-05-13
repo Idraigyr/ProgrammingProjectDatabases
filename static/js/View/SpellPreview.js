@@ -83,8 +83,9 @@ export class SpellPreview extends IView{
     /**
      * Update position of the preview object
      * @param deltaTime
+     * @param camera
      */
-    update(deltaTime) {
+    update(deltaTime, camera) {
         this.charModel.material.uniforms.time.value += deltaTime*2;
     }
 

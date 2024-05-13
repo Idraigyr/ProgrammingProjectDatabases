@@ -24,6 +24,7 @@ export class Placeable extends Entity{
         this.#stats = new Map();
         //TODO: add stats
         this.#statMultipliers = new Map();
+        this.inputCrystals = 0; // input for fusion
         //TODO: set stat multipliers (defaults to 1)
         this.ready = true;
         this.cellIndex = null;
@@ -105,9 +106,7 @@ export class Placeable extends Entity{
     addGem(gem){
         if(this.gems.length === this.gemSlots) throw new Error("Building already has the maximum amount of gems");
         this.addStatMultipliers(gem.getAttributes());
-        console.log("adding gem: ", this.gems);
         this.gems.push(gem.id);
-        console.log(this.gems);
     }
 
     /**
@@ -117,12 +116,30 @@ export class Placeable extends Entity{
     removeGem(gem){
         if(!this.gems.includes(gem.id)) throw new Error("Building does not have the gem");
         this.removeStatMultipliers(gem.getAttributes());
-        console.log("removing gem: ", this.gems);
         this.gems = this.gems.filter(gemId => {
-            console.log(`${gemId} !== ${gem.id}: ${gemId !== gem.id}`);
             return gemId !== gem.id;
         });
-        console.log(this.gems);
+    }
+
+    /**
+     * add 10 crystals to the input
+     */
+    addInputCrystals(){
+        this.inputCrystals += 10;
+    }
+
+    /**
+     * removes 10 from input crystals
+     */
+    removeInputCrystals(){
+        this.inputCrystals -= 10;
+    }
+
+    /**
+     * reset input crystals
+     */
+    resetInputCrystals(){
+        this.inputCrystals = 0;
     }
 
     /**
@@ -153,7 +170,6 @@ export class Placeable extends Entity{
             // gems: []
 
         };
-        console.log(this.rotation/90);
         for(const gem of this.gems){
             //obj.gems.push(gem.formatPOSTData(playerInfo));
         }

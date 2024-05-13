@@ -6,12 +6,11 @@ import * as THREE from "three";
 export class RaycastController{
     /**
      * Constructs raycaster with the given parameters
-     * @param params parameters (with viewManager)
+     * @param params parameters
      */
     constructor(params) {
         this.raycaster = new THREE.Raycaster();
         this.raycaster.firstHitOnly = true;
-        this.viewManager = params.viewManager;
         this.collisionDetector = params.collisionDetector;
         document.addEventListener('updateCameraPosition', this.updatePosition.bind(this));
     }

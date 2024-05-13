@@ -111,6 +111,7 @@ class App {
 
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new Controller.RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
+        this.collisionDetector.setRaycastController(this.raycastController);
         this.inputManager = new Controller.InputManager({canvas: canvas});
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -119,14 +120,16 @@ class App {
             target: null,
             raycaster: this.raycastController,
             //visualise axes -- DEBUG STATEMENTS --
-            // axisHelper: new Cursor({})
+            axisHelper: new Cursor({})
             //visualise axes -- DEBUG STATEMENTS --
         });
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
 
+        this.viewManager.setCamera(this.cameraManager.camera);
+
         //visualise axes -- DEBUG STATEMENTS --
-        // this.scene.add(this.cameraManager.axisHelper.charModel);
+        this.scene.add(this.cameraManager.axisHelper.charModel);
         //visualise axes -- DEBUG STATEMENTS --
 
         this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
@@ -137,14 +140,15 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.settings = new Settings(this.inputManager, this.playerInfo)
+        this.settings = new Settings(this.inputManager, this.playerInfo, {leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)});
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
             },
-            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController),
+            closedMultiplayerMenuCallback: this.multiplayerController.unloadMatch.bind(this.multiplayerController)
         });
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
         this.menuManager.addCallbacks({
@@ -179,8 +183,15 @@ class App {
 
         this.menuManager.addEventListener("startFusion", (event) => {
             const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
-            this.timerManager.createTimer(fusionTime, [() => {
-                const gem = this.itemManager.createGem(fusionLevel);
+            // get stats from fusion table
+            const stats = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).getStats();
+            const inputCrystals = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).inputCrystals;
+            this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).resetInputCrystals();
+            let speed = stats.get("speed");
+            let fortune = stats.get("fortune");
+            console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
+            this.timerManager.createTimer(fusionTime/speed, [() => {
+                const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune));
                 // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);
@@ -303,9 +314,9 @@ class App {
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
-            this.togglePhysicsUpdates(false);
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
+            console.log(building)
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
@@ -329,7 +340,6 @@ class App {
                 params.level = building.level;
                 // params.maxLevel = building.maxLevel; //TODO: implement maxLevel?
                 params.slots = building.gemSlots;
-                console.log("rendering slots: ", params.slots);
             }
 
             if(building?.upgradable){
@@ -356,11 +366,11 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
+
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
             this.worldManager.currentRotation = event.detail.rotation;
-            this.togglePhysicsUpdates(true);
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
@@ -373,7 +383,6 @@ class App {
             handleMatchFound: this.multiplayerController.loadMatch.bind(this.multiplayerController),
             handleMatchStart: this.multiplayerController.startMatch.bind(this.multiplayerController),
             handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
-            handleMatchAbort: this.multiplayerController.abortMatch.bind(this.multiplayerController),
             processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
             updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
         });
@@ -384,10 +393,6 @@ class App {
         //     this.scene.add(this.cameraManager.collisionLine);
         // });
         //visualise camera line -- DEBUG STATEMENTS --
-    }
-
-    createRandomGem(){
-
     }
 
     /**
@@ -424,7 +429,9 @@ class App {
      */
     togglePhysicsUpdates(bool = null){
         this.simulatePhysics = bool ?? !this.simulatePhysics;
-        if(this.simulatePhysics) this.clock.getDelta();
+        if(this.simulatePhysics) {
+            this.clock.getDelta();
+        }
     }
 
     /**
@@ -474,6 +481,13 @@ class App {
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
+
+
+        this.inputManager.addKeyDownEventListener("KeyP", () => {
+           this.worldManager.world.islands[0].rotation
+        });
+
+
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
@@ -551,15 +565,11 @@ class App {
      */
     start(){
         if ( WebGL.isWebGLAvailable()) {
-            //TODO: remove this is test //
-            // this.worldManager.addSpawningIsland();
-            // this.minionController.worldMap = this.worldManager.world.islands;
-            // this.worldManager.world.spawners["minions"][0].addEventListener("spawn", (event) => {
-            //    this.minionController.addMinion(this.factory.createMinion(event.detail));
-            // });
-            //TODO: remove this is test //
-
             this.initScene();
+
+            //TODO: testing purposes - remove when done
+            // this.worldManager.addEnemyTestIsland();
+            //TODO: testing purposes - remove when done
 
 
             document.querySelector('.loading-animation').style.display = 'none';
@@ -596,9 +606,6 @@ class App {
         this.cameraManager.update(this.deltaTime);
         //...
         this.viewManager.updateAnimatedViews(this.deltaTime);
-
-        //TODO: should only be done in multiplayer @Flynn
-        this.viewManager.updateProxys(this.deltaTime);
 
 
         this.renderer.render( this.scene, this.cameraManager.camera );
