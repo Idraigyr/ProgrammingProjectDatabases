@@ -12,7 +12,7 @@ from src.resource.gems import GemSchema
 from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
 from src.model.player import Player
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 
 """
 This module contains the PlayerResource, which is a resource/api endpoint that allows for the retrieval and modification of player profiles
@@ -75,7 +75,6 @@ class PlayerSchema(Schema):
             'description': 'The gem inventory of the player',
             'items': GemSchema
         },
-        'blueprints': IntArraySchema,
         'entity': PlayerEntitySchema,
         'last_login': {
             'type': 'string',
@@ -101,7 +100,6 @@ class PlayerSchema(Schema):
                              spells=[spell.id for spell in player.spells],
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
-                             blueprints=[blueprint.id for blueprint in player.blueprints],
                              username=player.user_profile.username,
                              friends=[friend.user_profile_id for friend in player.friends],
                              **kwargs)
@@ -122,7 +120,6 @@ class PlayerResource(Resource):
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The player profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.response(200, description='Success, returns the player profile in JSON format', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
-    @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @summary('Get the player profile by id')
     @jwt_required()
     def get(self):
@@ -149,7 +146,10 @@ class PlayerResource(Resource):
              ' spells (by ids), blueprints (by ids), friends (by ids), last_login, last_logout, xp, mana and crystals')
     @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
-    @swagger.response(401, description='Caller is not owner of the given id or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not owner of the given id', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -157,12 +157,19 @@ class PlayerResource(Resource):
         Defaults to the current user id (by JWT)
         :return: The player profile in JSON format
         """
-        user_id = get_jwt_identity()
 
         data = request.get_json()
         data = clean_dict_input(data)
-        data['user_profile_id'] = user_id # overwritten unconditionally
         try:
+            if 'user_profile_id' in data:
+                user_id = int(data['user_profile_id'])
+                r = check_data_ownership(
+                    user_id)  # Check the target player is the one invoking it - only admins can change other players
+                if r: return r
+            else:
+                user_id = get_jwt_identity()
+
+
             if 'gems' in data:
                 # Gems are not updated directly, but through the gem resource
                 data.pop('gems')
@@ -205,7 +212,6 @@ class PlayerListResource(Resource):
     @swagger.tags('player')
     @summary('Get all player profiles')
     @swagger.response(200, description='Success, returns a list of all player profiles in JSON format', schema=PlayerSchema)
-    @swagger.response(401, description='Invalid JWT token', schema=ErrorSchema)
     @jwt_required()
     def get(self):
         """

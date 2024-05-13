@@ -2,7 +2,7 @@ from flask import request, Blueprint, Flask, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.model.placeable.buildings import WallBuilding
 from src.resource.placeable.building import BuildingResource, BuildingSchema
 from src.schema import ErrorSchema
@@ -31,6 +31,7 @@ class WallBuildingSchema(BuildingSchema):
 class WallBuildingResource(BuildingResource):
     """
     A resource/api endpoint that allows the retrieval and modification of a Wall Building
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -64,6 +65,7 @@ class WallBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The wall building has been updated. The up-to-date object is returned", schema=WallBuildingSchema)
     @swagger.response(response_code=404, description='Wall with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -83,6 +85,9 @@ class WallBuildingResource(BuildingResource):
             if not wall_building:
                 return ErrorSchema(f'Wall with id {id} not found'), 404
 
+            r = check_data_ownership(wall_building.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the existing fuse table building
             wall_building.update(data)
 
@@ -97,6 +102,7 @@ class WallBuildingResource(BuildingResource):
     @swagger.expected(schema=WallBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The fuse table building has been created. The new object is returned", schema=WallBuildingSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -127,6 +133,10 @@ class WallBuildingResource(BuildingResource):
 
             # Create the new fuse table building
             wall_building = WallBuilding(**data)
+
+            r = check_data_ownership(wall_building.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(wall_building)
             current_app.db.session.commit()
             return WallBuildingSchema(wall_building), 200

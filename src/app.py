@@ -254,6 +254,10 @@ def setup(app: Flask):
         from src.socketio import attach_namespaces
         attach_namespaces(app)
 
+        # Annoy user when data ownership is not strictly enforced
+        if app.config.get('CHECK_DATA_OWNERSHIP', 'true') != 'true':
+            logging.warning("Data ownership checks will not block requests (they will log a warning).")
+
         # Generate documentation
         from documentation import generate_pdoc
         generate_pdoc(generate=app.config.get('APP_GENERATE_DOCS', 'false') == 'true')  # to generate documentation set parameter to true: generate_pdoc(True)

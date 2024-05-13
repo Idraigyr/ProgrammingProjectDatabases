@@ -61,6 +61,15 @@ registered in the `resource/island.py` file. Entity schema's should be added to 
 in the `_resolve_building_schema_for_type()` method. This is necessary for the `island` class to parse the entities and buildings to JSON values to pass
 on to the frontend.
 
+#### A special note on grouped objects
+Grouped objects such as `placeble` and `entity` have all a common `DELETE` endpoint (`/api/placeable` for placeables, `/api/entity` for entities). This endpoint will delete all objects that are related to the object that is being deleted. No specification of the subclass / type of object is needed.
+
+## Access constraints
+All non-GET endpoints (POST, PUT, DELETE) must be invoked by either an admin or the user that owns the object (= the user/player that has said object associated with himself or the island it owns). Failure will result in a 403 error.
+GET endpoints are not subject to this constraint because they are read-only and do not modify the database.
+
+Disabling this constraint can be done by setting the `CHECK_DATA_OWNERSHIP` environment variable to `false`. This will however still log a warning to the server console.
+
 ## Data constraints
 The following variables have certain constraints on their values. It is safe to assume these names are unique across the application (therefore these constraints are applicable accorss all variables with said name).
 - `level`: `value` >= 0 (entities & buildings)
