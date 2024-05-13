@@ -201,7 +201,7 @@ export const convertWorldToGridPosition = function (position){
 
 /**
  * Convert the grid position to the world position assuming the grid is centered around 0,0,0
- * @param position - the grid position
+ * @param {THREE.Vector3 | {x: number, y: number, z: number}} position - the grid position (is mutated)
  * @returns {*} the world position
  */
 export const convertGridIndexToWorldPosition = function (position){

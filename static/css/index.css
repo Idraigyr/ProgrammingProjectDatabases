@@ -709,6 +709,10 @@
     gap: 10px;
 }
 
+.menu-item-icon{
+    pointer-events: none;
+}
+
 .menu-item-description{
     position: relative;
     width: 100%;

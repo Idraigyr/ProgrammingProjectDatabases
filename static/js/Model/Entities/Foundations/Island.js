@@ -40,7 +40,7 @@ export class Island extends Foundation{
     addProxy(proxy) {
         proxy.addEventListener("delete", (event) => {
             console.log("Proxy deleted from island");
-            this.proxys = this.proxys.filter(proxy => proxy !== event.model);
+            this.proxys = this.proxys.filter(proxy => proxy !== event.detail.model);
         });
         this.proxys.push(proxy);
     }

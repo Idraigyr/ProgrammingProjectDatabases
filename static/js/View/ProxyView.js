@@ -86,13 +86,10 @@ export class ProxyView extends IView{
 
     }
 
-
-      OnHealth_(event) {
-        const healthPercent = (event.detail.health / event.detail.maxHealth);
-
-        this.realHealth_ = healthPercent;
-      }
-      update(deltaTime, camera) {
+    OnHealth_(event) {
+        this.realHealth_ = (event.detail.current / event.detail.total);
+    }
+    update(deltaTime, camera) {
         const t = 1.0 - Math.pow(0.001, deltaTime);
 
         this.animHealth_ = t * (this.realHealth_ - this.animHealth_) + this.animHealth_;
@@ -108,7 +105,7 @@ export class ProxyView extends IView{
         //TODO: adjust if needed, maybe do it with a variabele based on the type of building?
         this.healthBar.position.y += 10;
         this.healthBar.quaternion.copy(camera.quaternion);
-      }
+    }
 
 
     GenerateBuffers_() {

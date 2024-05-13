@@ -4,6 +4,7 @@ import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {displayViewBoxHelper} from "../configs/ViewConfigs.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -74,7 +75,9 @@ export class Factory{
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         view.loadAnimations(this.assetManager.getAnimations(params.type));
 
@@ -107,7 +110,9 @@ export class Factory{
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(currentPos.clone().sub(new THREE.Vector3(0.5,0,0.5)), currentPos.clone().add(new THREE.Vector3(0.5,height,0.5)));
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
 
@@ -136,7 +141,9 @@ export class Factory{
 
         //view.boundingBox.setFromObject(view.charModel.children[0].children[0]);
         view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(0.5,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(0.5,height,0.5)));
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         view.loadAnimations(this.assetManager.getAnimations("Player"));
 
@@ -162,7 +169,9 @@ export class Factory{
 
         this.scene.add(view.initScene());
         view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         bridgeModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
 
@@ -184,7 +193,9 @@ export class Factory{
         this.scene.add(view.initScene());
 
         view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));
         islandModel.addEventListener("updateRotation",view.updateRotation.bind(view));
@@ -234,7 +245,9 @@ export class Factory{
         this.scene.add(view.charModel);
 
         view.boundingBox.setFromObject(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
 
         this.viewManager.addPair(model, view);
 
@@ -329,7 +342,9 @@ export class Factory{
         }
 
         this.scene.add(view.healthBar);
-        this.scene.add(view.boxHelper);
+        if(displayViewBoxHelper){
+            this.scene.add(view.boxHelper);
+        }
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("updateHealth",view.OnHealth_.bind(view));

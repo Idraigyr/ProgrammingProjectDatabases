@@ -10,6 +10,18 @@ export class Spawner extends Subject{
         this.buildingID = params?.buildingID ?? null;
     }
 
+    dispose() {
+        this.dispatchEvent(this.createDeleteEvent());
+    }
+
+    createDeleteEvent() {
+        return new CustomEvent("delete", {
+            detail: {
+                model: this
+            }
+        });
+    }
+
     update(deltaTime) {
 
     }

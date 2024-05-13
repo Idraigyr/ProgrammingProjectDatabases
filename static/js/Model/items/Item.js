@@ -1,5 +1,3 @@
-import {amountOfGemIcons} from "../../configs/ViewConfigs.js";
-
 export class Item{
     constructor(params) {
         this.id = params?.id ?? null;

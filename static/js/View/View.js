@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import {displayViewBoxHelper} from "../configs/ViewConfigs.js";
 
 /**
  * View base class
@@ -6,16 +7,17 @@ import * as THREE from "three";
 export class IView {
     constructor(params) {
         this.position = params?.position ?? new THREE.Vector3(0,0,0);
-        this.charModel = params?.charModel;
+        this.charModel = params?.charModel  ?? null;
         if(this.charModel) this.charModel.position.copy(this.position);
         this.boundingBox = new THREE.Box3();
         //only for visualisation
-        this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
+        this.boxHelper = null;
+        if(displayViewBoxHelper){
+            this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
+        }
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
         this.hasUpdates = false;
-
-        this.boxHelper.visible = true; // TODO: set in env
     }
 
     /**

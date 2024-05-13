@@ -70,4 +70,4 @@ export const islandWidth = 15;
 
 export const islandLength = 15;
 
-export const amountOfGemIcons = 10;
+export const displayViewBoxHelper = true;

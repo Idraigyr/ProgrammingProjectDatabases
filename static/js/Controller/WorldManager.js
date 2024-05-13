@@ -397,7 +397,7 @@ export class WorldManager{
 
     /**
      * Places a building in the world
-     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
+     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world-grid coordinates (=world coordinates rounded to grid cell size)
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
@@ -493,17 +493,20 @@ export class WorldManager{
     generateSpellSpawners(params){
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
-            const towers = island.getBuildingsByType("tower_building");
-            towers.forEach((tower) => {
-                const position = tower.position;
+            const towerProxies = island.getProxysByType("tower_building");
+            towerProxies.forEach((towerProxy) => {
+                const position = towerProxy.position;
                 position.y += 40;
                 const spawner = new SpellSpawner({
                     position: position,
-                    buildingID: tower.id,
+                    buildingID: towerProxy.building.id,
                     interval: params.interval,
                     spell: params.spell,
                     team: 0,
                     collisionDetector: this.collisionDetector
+                });
+                towerProxy.addEventListener("delete", (event) => {
+                    spawner.dispose();
                 });
                 spawner.addEventListener("spawn", (event) => {
                     this.spellFactory.createSpell(event);
@@ -515,12 +518,13 @@ export class WorldManager{
 
     /** adds proxy models and view to the island of towers and altars
      *  this is used to check for collisions with spells, and to display the health of the towers and altars
+     *  @param {number | null} team - for which team to generate the proxys (default is null, which generates for all teams)
      */
-    generateProxys(){
+    generateProxys(team= null){
         const proxyList = ["altar_building", "tower_building"];
-        //TODO: rewrite this to be more generic
         this.world.islands.forEach((island) => {
             if(!(island instanceof Island)) return;
+            if(team && island.team !== team) return;
             proxyList.forEach((type) => {
                 island.getBuildingsByType(type).forEach((building) => {
                     const proxy = this.factory.createProxy({
@@ -544,16 +548,16 @@ export class WorldManager{
     }
 
     /**
-     * Adds a new island to the world to spawn minions (single player only)
+     * Adds an island with enemy buildings to the world to test front-end multiplayer aspects without the server
      */
-    addSpawningIsland(){
+    addEnemyTestIsland(){
         //TODO: get a random position for the island which lies outside of the main island
-        let position = {x: -9, y: 0, z: -8};
+        let position = {x: -11, y: 0, z: 0};
         convertGridIndexToWorldPosition(position)
         //TODO: if the new island is not connected to the main island, add a bridge that connects the two islands
 
         //create an island
-        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 3, length: 3, team: 1});
+        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 5, length: 5, team: 1});
         // //create a bridge
         // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
 
@@ -562,10 +566,14 @@ export class WorldManager{
         // this.world.islands.push(bridge);
 
         //add a enemy warrior hut to the island
-        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: position, withTimer: false, id: 999});
+        const hutPosition = {x: position.x, y: 0, z: position.z-gridCellSize};
+        const towerPosition = {x: position.x, y: 0, z: position.z+gridCellSize};
+        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: hutPosition, withTimer: false, id: 999, team: 1});
+        let tower = this.factory.createBuilding({buildingName: "Tower", position: towerPosition, withTimer: false, id: 1000, team: 1});
         island.addBuilding(hut);
-        // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
-        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(position.x, 15, position.z), buildingID: hut.id, interval: 4}));
+        island.addBuilding(tower);
+        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(hutPosition.x, 15, hutPosition.z), buildingID: hut.id, interval: 4}));
+        this.generateProxys(1);
         this.collisionDetector.generateColliderOnWorker();
     }
 

@@ -233,7 +233,7 @@ export class MultiplayerController extends Subject{
                     duration: 4,
                 }
             },
-            interval: 5
+            interval: 1
         });
 
         //start sending state updates to server
@@ -510,8 +510,8 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     proxyDeathEvent(event){
-        event.detail.model.removeEventListener("updateHealth", this.updateEvents.get("minionHealthUpdate"));
-        event.detail.model.removeEventListener("delete", this.updateEvents.get("minionDeath"));
+        event.detail.model.removeEventListener("updateHealth", this.updateEvents.get("proxyHealthUpdate"));
+        event.detail.model.removeEventListener("delete", this.updateEvents.get("proxyDeath"));
         if(event.detail.model.dbType === "altar_building" && event.detail.model.team !== 0){
             console.log("altar destroyed");
             this.forwardingNameSpace.sendAltarDestroyedEvent(this.matchId);
@@ -529,6 +529,7 @@ export class MultiplayerController extends Subject{
         this.peerController.peer.addEventListener("updateHealth", this.updateEvents.get("playerHealthUpdate"));
         //TODO: attach event listeners to all proxy objects (buildings) and send their health updates to the opponent
         this.worldManager.world.getProxys().forEach(proxy => {
+            if(proxy.team === 0) return;
             proxy.addEventListener("updateHealth", this.updateEvents.get("proxyHealthUpdate"));
             proxy.addEventListener("delete", this.updateEvents.get("proxyDeath"));
         });

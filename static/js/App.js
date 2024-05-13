@@ -564,15 +564,11 @@ class App {
      */
     start(){
         if ( WebGL.isWebGLAvailable()) {
-            //TODO: remove this is test //
-            // this.worldManager.addSpawningIsland();
-            // this.minionController.worldMap = this.worldManager.world.islands;
-            // this.worldManager.world.spawners["minions"][0].addEventListener("spawn", (event) => {
-            //    this.minionController.addMinion(this.factory.createMinion(event.detail));
-            // });
-            //TODO: remove this is test //
-
             this.initScene();
+
+            //TODO: testing purposes - remove when done
+            // this.worldManager.addEnemyTestIsland();
+            //TODO: testing purposes - remove when done
 
 
             document.querySelector('.loading-animation').style.display = 'none';
