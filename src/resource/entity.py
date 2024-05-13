@@ -79,6 +79,9 @@ class EntityResource(Resource):
     @swagger.response(200, description='Success, the entity was deleted', schema=SuccessSchema)
     @swagger.response(404, description='Unknown entity id', schema=ErrorSchema)
     @swagger.response(400, description='No entity id found', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """

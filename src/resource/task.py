@@ -122,6 +122,9 @@ class TaskResource(Resource):
     @swagger.response(response_code=200, description='Task object', schema=TaskSchema)
     @swagger.response(response_code=400, description='Unknown building id (when provided) or invalid task data', schema=ErrorSchema)
     @swagger.response(response_code=409, description='Placeable is already being worked on', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (by island_id) (or admin)',
+                      schema=ErrorSchema)
     @swagger.expected(TaskSchema, required=True)
     @jwt_required()
     def post(self):
@@ -158,6 +161,9 @@ class TaskResource(Resource):
     @swagger.response(response_code=400, description='Unknown building id (when provided) or invalid task data', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Task not found', schema=ErrorSchema)
     @swagger.response(response_code=409, description='Placeable is already being worked on', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @swagger.expected(TaskSchema, required=True)
     @jwt_required()
     def put(self):
@@ -197,6 +203,9 @@ class TaskResource(Resource):
     @swagger.response(response_code=200, description='Task object', schema=SuccessSchema)
     @swagger.response(response_code=404, description='Task not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No task id provided', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """

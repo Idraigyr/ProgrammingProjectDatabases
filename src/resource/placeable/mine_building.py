@@ -50,6 +50,7 @@ class MineBuildingResource(Resource):
     """
     A resource / api endpoint that allows for the retrieval and modification of
     new and existing mines.
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -82,6 +83,7 @@ class MineBuildingResource(Resource):
     @swagger.response(response_code=200, description="The mine building has been updated. The up-to-date object is returned", schema=MineBuildingSchema)
     @swagger.response(response_code=404, description='Mine building not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -124,6 +126,7 @@ class MineBuildingResource(Resource):
     @swagger.expected(schema=MineBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The mine building has been created. The new object is returned", schema=MineBuildingSchema)
     @swagger.response(response_code=400, description="Invalid input", schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """

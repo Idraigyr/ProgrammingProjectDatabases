@@ -87,6 +87,7 @@ class PlaceableResource(Resource):
     @swagger.response(200, 'Success. Placeable has been deleted', schema=SuccessSchema)
     @swagger.response(404, 'Placeable not found', schema=ErrorSchema)
     @swagger.response(400, 'No placeable_id found', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """

@@ -86,6 +86,9 @@ class FriendRequestResource(Resource):
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Sender or receiver not found', schema=ErrorSchema)
     @swagger.response(response_code=409, description='Friend request already exists or sender & reciever are already friends', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not the sender of the friend request (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -147,6 +150,9 @@ class FriendRequestResource(Resource):
     @swagger.response(response_code=200, description='Friend request updated', schema=FriendRequestSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Friend request not found', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not the receiver of the friend request (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -194,6 +200,9 @@ class FriendRequestResource(Resource):
     @swagger.response(response_code=200, description='Friend request deleted', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
     @swagger.response(response_code=404, description='Friend request not found', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not the receiver of the friend request (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """

@@ -110,6 +110,9 @@ class UserSettingsResource(Resource):
     @swagger.response(200, description='Settings updated', schema=UserSettingsSchema)
     @swagger.response(404, description='The player does not exist', schema=ErrorSchema)
     @swagger.response(400, description='Player id absent', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @swagger.expected(UserSettingsSchema, required=True)
     @jwt_required()
     def put(self):

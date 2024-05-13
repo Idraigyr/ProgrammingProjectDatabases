@@ -38,6 +38,7 @@ class TowerBuildingSchema(BuildingSchema):
 class TowerBuildingResource(BuildingResource):
     """
     A resource / api endpoint that allows for the retrieval and modification of new and existing towers.
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -71,6 +72,7 @@ class TowerBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The tower building has been updated. The up-to-date object is returned", schema=TowerBuildingSchema)
     @swagger.response(response_code=404, description='Tower building not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -108,6 +110,7 @@ class TowerBuildingResource(BuildingResource):
     @swagger.expected(schema=TowerBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The tower building has been created. The new object is returned", schema=TowerBuildingSchema)
     @swagger.response(response_code=400, description="Invalid input", schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """

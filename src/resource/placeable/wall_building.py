@@ -31,6 +31,7 @@ class WallBuildingSchema(BuildingSchema):
 class WallBuildingResource(BuildingResource):
     """
     A resource/api endpoint that allows the retrieval and modification of a Wall Building
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -64,6 +65,7 @@ class WallBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The wall building has been updated. The up-to-date object is returned", schema=WallBuildingSchema)
     @swagger.response(response_code=404, description='Wall with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -100,6 +102,7 @@ class WallBuildingResource(BuildingResource):
     @swagger.expected(schema=WallBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The fuse table building has been created. The new object is returned", schema=WallBuildingSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """

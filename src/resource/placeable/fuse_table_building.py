@@ -31,6 +31,7 @@ class FuseTableBuildingSchema(BuildingSchema):
 class FuseTableBuildingResource(BuildingResource):
     """
     A resource/api endpoint that allows the retrieval and modification of a Fuse Table Building
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -64,6 +65,7 @@ class FuseTableBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The fuse table building has been updated. The up-to-date object is returned", schema=FuseTableBuildingSchema)
     @swagger.response(response_code=404, description='Fuse table with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -100,6 +102,7 @@ class FuseTableBuildingResource(BuildingResource):
     @swagger.expected(schema=FuseTableBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The fuse table building has been created. The new object is returned", schema=FuseTableBuildingSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """

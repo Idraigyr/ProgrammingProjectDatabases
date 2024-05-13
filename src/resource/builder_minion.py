@@ -71,6 +71,9 @@ class BuilderMinionResource(EntityResource):
     @swagger.expected(schema=BuilderMinionSchema, required=True)
     @swagger.response(response_code=200, description='Builder minion created', schema=BuilderMinionSchema)
     @swagger.response(response_code=400, description='builds_on building id not found (when provided), island_id not found, or invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -128,6 +131,9 @@ class BuilderMinionResource(EntityResource):
     @swagger.response(200, description='Builder minion successfully updated. The up-to-date object is returned', schema=BuilderMinionSchema)
     @swagger.response(404, description="Builder minion not found", schema=ErrorSchema)
     @swagger.response(400, description="Invalid input", schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """

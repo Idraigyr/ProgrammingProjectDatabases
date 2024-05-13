@@ -149,6 +149,9 @@ class GemResource(Resource):
     @swagger.response(200, description='Success, returns the updated gem in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no gem id', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -183,6 +186,9 @@ class GemResource(Resource):
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the created gem in JSON format', schema=GemSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -236,6 +242,9 @@ class GemResource(Resource):
     @swagger.response(200, description='Success', schema=ErrorSchema)
     @swagger.response(404, description='Gem not found', schema=ErrorSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """

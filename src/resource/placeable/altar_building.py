@@ -33,6 +33,7 @@ class AltarBuildingResource(Resource):
     A resource/api endpoint that allows the retrieval and modification of an Altar Building
     This would be most commonly be used to move its position or change it's level.
     No new altar can be made as only one may exist on an island. Therefore, no POST endpoint exits
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -65,6 +66,7 @@ class AltarBuildingResource(Resource):
     @swagger.response(response_code=200, description="Success schema", schema=SuccessSchema)
     @swagger.response(response_code=404, description='Altar table with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """

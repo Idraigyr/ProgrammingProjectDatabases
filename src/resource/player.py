@@ -147,6 +147,9 @@ class PlayerResource(Resource):
     @swagger.response(200, description='Succesfully updated the player profile', schema=PlayerSchema)
     @swagger.response(404, description='Unknown player id', schema=ErrorSchema)
     @swagger.response(403, description='Caller is not owner of the given id', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """

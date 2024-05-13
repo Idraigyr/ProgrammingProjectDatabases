@@ -33,6 +33,7 @@ class PropSchema(PlaceableSchema):
 class PropResource(Resource):
     """
     A resource that allows for the retrieval and modification of props
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('placeable')
@@ -62,6 +63,7 @@ class PropResource(Resource):
     @swagger.response(200, 'Success', schema=PropSchema)
     @swagger.response(404, 'Prop not found', schema=ErrorSchema)
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -95,6 +97,7 @@ class PropResource(Resource):
     @swagger.expected(schema=PropSchema, required=True)
     @swagger.response(200, 'Success', schema=PropSchema)
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """

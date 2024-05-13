@@ -53,6 +53,9 @@ class MatchQueueResource(Resource):
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
     @swagger.response(404, 'player not found', schema=ErrorSchema)
     @swagger.response(409, 'player already / not in the queue', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not the target user (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -142,6 +145,9 @@ class MatchQueueResource(Resource):
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
     @swagger.response(404, 'player not found', schema=ErrorSchema)
     @swagger.response(409, 'player not in the queue', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """

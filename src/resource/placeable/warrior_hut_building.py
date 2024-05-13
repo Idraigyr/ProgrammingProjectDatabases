@@ -32,6 +32,7 @@ class WarriorHutBuildingSchema(BuildingSchema):
 class WarriorHutBuildingResource(BuildingResource):
     """
     A resource/api endpoint that allows the retrieval and modification of a Warrior Hut Buildings
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -64,6 +65,7 @@ class WarriorHutBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The updated warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
     @swagger.response(response_code=404, description='Warrior hut with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -101,6 +103,7 @@ class WarriorHutBuildingResource(BuildingResource):
     @swagger.expected(schema=WarriorHutBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The created warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """

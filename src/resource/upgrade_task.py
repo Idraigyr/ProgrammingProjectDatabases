@@ -63,6 +63,9 @@ class BuildingUpgradeTaskResource(Resource):
     @swagger.response(200, description='Building upgrade task object', schema=BuildingUpgradeTaskSchema)
     @swagger.response(400, description='Invalid task data (eg unknown building id)', schema=ErrorSchema)
     @swagger.response(response_code=409, description='Building is already being worked on', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (by island_id) (or admin)',
+                      schema=ErrorSchema)
     @swagger.expected(BuildingUpgradeTaskSchema, required=True)
     @jwt_required()
     def post(self):
@@ -109,6 +112,9 @@ class BuildingUpgradeTaskResource(Resource):
     @swagger.response(200, description='Success', schema=BuildingUpgradeTaskSchema)
     @swagger.response(400, description='No task id provided', schema=ErrorSchema)
     @swagger.response(404, description='Unknown task id', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @swagger.expected(BuildingUpgradeTaskSchema, required=True)
     @jwt_required()
     def put(self):
