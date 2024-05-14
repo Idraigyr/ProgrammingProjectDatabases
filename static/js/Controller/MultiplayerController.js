@@ -16,6 +16,7 @@ export class MultiplayerController extends Subject{
     itemManager;
     spellCaster;
     spellFactory;
+    settings;
     factory;
     minionController;
     forwardingNameSpace;
@@ -232,6 +233,8 @@ export class MultiplayerController extends Subject{
         this.startSendingStateUpdates(this.opponentInfo.userID);
         //announce to the server that the player is ready to start the match
         this.forwardingNameSpace.sendPlayerReadyEvent(this.matchId);
+        // Time for settings
+        this.settings.toggleGrass({target: {checked: this.settings.grassOn}});
     }
 
     /**

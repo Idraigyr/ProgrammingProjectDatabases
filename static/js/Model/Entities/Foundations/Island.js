@@ -157,4 +157,12 @@ export class Island extends Foundation{
         return this.buildings.find(building => building.cellIndex === index);
     }
 
+    /**
+     * Toggle the grass of the island
+     * @param grassOn - true if the grass should be turned on, false if it should be turned off
+     */
+    toggleGrass(grassOn) {
+        // Dispatch event to toggle grass
+        this.dispatchEvent(new CustomEvent("toggleGrass", {detail: {grassOn: grassOn}}));
+    }
 }

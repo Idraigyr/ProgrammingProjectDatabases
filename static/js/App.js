@@ -138,7 +138,8 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.settings = new Settings(this.inputManager, this.playerInfo)
+        this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
+        this.multiplayerController.settings = this.settings;
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -230,7 +231,6 @@ class App {
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
                 this.spellCaster.previousRotation = null;
-                //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -456,6 +456,7 @@ class App {
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
+        this.settings.worldManager = this.worldManager;
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;

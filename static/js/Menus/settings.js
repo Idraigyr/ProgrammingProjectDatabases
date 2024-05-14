@@ -16,20 +16,30 @@ keyBinds.set('open-inventory', 'e');
 keyBinds.set('eat', 'q');
 
 export class Settings {
-    constructor(inputManager, playerInfo) {
+    grassOn = true;
+    constructor(params) {
         this.map = null;
-        this.inputManager = inputManager;
-        this.playerInfo = playerInfo;
+        this.inputManager = params.inputManager;
+        this.worldManager = params.worldManager;
+        this.playerInfo = params.playerInfo;
 
-        inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
-        inputManager.addLogoutButtonListener(this.logOut.bind(this))
-        inputManager.addRespawnButtonListener(this.respawn.bind(this));
-        inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
-        inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
+        this.inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
+        this.inputManager.addLogoutButtonListener(this.logOut.bind(this))
+        this.inputManager.addRespawnButtonListener(this.respawn.bind(this));
+        this.inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
+        this.inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
+        this.inputManager.addGrassToggleListener(this.toggleGrass.bind(this));
         const button = document.getElementById('applyButton');
         button.addEventListener('click', this.applySettings.bind(this));
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
+    }
+
+    toggleGrass(event) {
+        console.log("Grass toggle button clicked ", event);
+        this.grassOn = !!event.target.checked;
+        // Dispatch event to toggle grass
+        this.worldManager.toggleGrass(this.grassOn);
     }
 
     loadCursors() {

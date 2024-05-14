@@ -191,6 +191,7 @@ export class Factory{
         islandModel.addEventListener("updatePosition",view.updatePosition.bind(view));
         islandModel.addEventListener("updateRotation",view.updateRotation.bind(view));
         islandModel.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        islandModel.addEventListener("toggleGrass",view.toggleGrassField.bind(view));
 
         this.#addBuildings(islandModel, params.buildingsList);
 
