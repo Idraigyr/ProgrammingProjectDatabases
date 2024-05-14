@@ -13,7 +13,7 @@ from src.model.match_queue import MatchQueueEntry
 
 # Set this to True if you want to broadcast forwarded the message to the sender as well
 # It will ignore the original sender session, but will broadcast to all other sessions
-BROADCAST_TO_SELF: bool = False
+# BROADCAST_TO_SELF: bool = False
 MAX_PLAYERS: int = 2
 MATCH_TIME: int = 10*60  # 10 minutes
 
@@ -167,9 +167,9 @@ class ForwardingNamespace(Namespace):
             target_sids = [self.clients[targetId]]
             senderId = self.get_user_from_sid(request.sid)
 
-            if BROADCAST_TO_SELF:
-                # also send the message to the other sender sessions
-                target_sids.append(request.sid)
+            # if BROADCAST_TO_SELF:
+            #     # also send the message to the other sender sessions
+            #     target_sids.append(request.sid)
 
             # self._log.debug(f"Forwarding message to user_id = {targetId}: {data}")
             data['sender'] = senderId
@@ -243,4 +243,28 @@ class ForwardingNamespace(Namespace):
             self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player1])
         except Exception:
             self._log.error(f"Could not send match found message: {match_id} between {player1} and {player2}", exc_info=True)
+
+
+    def on_island_visit(self, data):
+        """
+        forwards the island_visit event
+        :param data: message from the client
+        :return:
+        """
+        try:
+            targetId = int(data['target'])
+            message = data['request']
+            if targetId not in self.clients:
+                self._log.error(f"Client not found: {targetId}. Dropping message.")
+                return
+            target_sids = [self.clients[targetId]]
+            senderId = self.get_user_from_sid(request.sid)
+
+            data['sender'] = senderId
+            # TODO: add a visit request to the db (also make an endpoint to get the requests, this will be called on game load)
+
+            for sid in target_sids:
+                self.emit('island_visit', data, room=sid)
+        except Exception:
+            self._log.error(f"Could not forward message: {data}", exc_info=True)
 

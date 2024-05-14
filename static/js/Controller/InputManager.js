@@ -178,7 +178,7 @@ export class InputManager extends Subject{
      */
     onClickEvent(event){
         if(this.blockedInput) return;
-        this.#callbacks["mousedown"][event.button].forEach((callback) => callback(event));
+        this.#callbacks["mousedown"][event.button]?.forEach((callback) => callback(event));
     }
 
     /**

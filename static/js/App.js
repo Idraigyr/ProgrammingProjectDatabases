@@ -46,6 +46,8 @@ class App {
      * @param {object} params
      */
     constructor(params) {
+        this.abort = false;
+
         this.simulatePhysics = false;
         this.clock = new THREE.Clock();
 
@@ -164,6 +166,11 @@ class App {
         // Setup chat SocketIO namespace
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
+
+        // setup abort signal for when the player is already connected
+        this.forwardingNameSpace.addEventListener("abort", () => {
+            this.abort = true;
+        });
 
         this.multiplayerController.addEventListener("toggleMatchMaking", this.menuManager.toggleMatchMaking.bind(this.menuManager));
 
@@ -385,6 +392,7 @@ class App {
             handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
             processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
             updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
+            processIslandVisitEvent: this.multiplayerController.processIslandVisitEvent.bind(this.multiplayerController)
         });
 
         //visualise camera line -- DEBUG STATEMENTS --
@@ -436,7 +444,7 @@ class App {
 
     /**
      * Loads the assets, creates the worldManager, the playerController and sets the cameraManager target to the player
-     * @returns {Promise<void>} - a promise that resolves when the assets are loaded
+     * @returns {Promise<boolean>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
         console.log( await this.playerInfo.getCurrentTime());
@@ -444,13 +452,25 @@ class App {
         //TODO: try to remove awaits? what can we complete in parallel?
         progressBar.labels[0].innerText = "retrieving user info...";
         await this.playerInfo.retrieveInfo();
+
+        if(this.abort) return false;
+
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
         this.settings.loadCursors();
         await this.assetManager.loadViews();
+
+        if(this.abort) return false;
+
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
+
+        if(this.abort) return false;
+
         await this.itemManager.retrieveGemAttributes();
+
+        if(this.abort) return false;
+
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
@@ -459,6 +479,9 @@ class App {
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
         await this.worldManager.importWorld(this.playerInfo.islandID);
+
+        if(this.abort) return false;
+
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
         progressBar.labels[0].innerText = "generating collision mesh...";
@@ -471,7 +494,7 @@ class App {
             collisionDetector: this.collisionDetector
         });
         progressBar.labels[0].innerText = "last touches...";
-        this.playerInfo.login();
+
         progressBar.value = 100;
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
@@ -540,10 +563,14 @@ class App {
         });
 
         progressBar.labels[0].innerText = "Last touches...";
+
+        if(this.abort) return false;
+
         await this.playerInfo.login();
 
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();
+        return true;
     }
 
     initScene(){
@@ -617,5 +644,9 @@ class App {
 }
 
 const app = new App({});
-await app.loadAssets();
-app.start();
+if(await app.loadAssets()){
+    app.start();
+} else {
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.labels[0].innerText = "already logged in, Stopped loading";
+}

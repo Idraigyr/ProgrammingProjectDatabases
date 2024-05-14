@@ -22,16 +22,22 @@ export class MultiplayerController extends Subject{
     forwardingNameSpace;
     peerController;
     updateInterval;
-    matchId = null;
+    #matchId = null;
     constructor(params) {
         super(params);
-        //for remembering the interval for sending state updates
+        this.canMatchmake = true;
         this.matchmaking = false;
         this.inMatch = false;
         this.result = null;
         this.stakedGems = [];
-        this.opponentInfo = new PlayerInfo();
+        this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
+
+        //Friend visit properties
+        this.pendingVisitRequest = null;
+        this.notificationContainer = document.getElementById("friends-notification-container");
+        this.friendsMenu = document.getElementById("Friends");
+        document.querySelector("#listFriend").addEventListener("click", this.#toggleVisitRequest.bind(this));
 
         this.updateEvents = new Map();
         this.updateEvents.set("updatedState", this.sendPlayerStateUpdate.bind(this));
@@ -45,6 +51,7 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("proxyHealthUpdate", this.sendProxyHealthUpdate.bind(this));
         this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
 
+        this.countStats = false;
         this.stats = new Map();
         for(const property in multiplayerStats){
             this.stats.set(property, 0);
@@ -137,6 +144,7 @@ export class MultiplayerController extends Subject{
         //when opponent found, get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
         //start the match
         this.matchmaking = true;
+        this.countStats = true;
     }
 
     async endMatchMaking(){
@@ -144,6 +152,7 @@ export class MultiplayerController extends Subject{
         const response = await this.sendMatchMakingRequest(false);
         console.log(response);
         this.matchmaking = false;
+        this.countStats = false;
     }
 
     /**
@@ -173,7 +182,7 @@ export class MultiplayerController extends Subject{
      */
     async loadMatch(matchInfo){
         console.log("loading match...");
-        this.matchId = matchInfo['match_id'];
+        this.#matchId = matchInfo['match_id'];
         this.matchmaking = false;
         this.dispatchEvent(this.createMatchmakingEvent());
         this.togglePhysicsUpdates();
@@ -191,7 +200,7 @@ export class MultiplayerController extends Subject{
         document.querySelector('.loading-animation').style.display = 'block';
 
         //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
-        await this.opponentInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1']);
+        await this.peerInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1']);
         progressBar.value = 50;
 
         progressBar.labels[0].innerText = "importing Opponent's island...";
@@ -200,16 +209,16 @@ export class MultiplayerController extends Subject{
         // the other island is rotated 180 degrees around the y-axis and translated from center of main island
 
         //construct 2nd player object and island object and add to world
-        await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID < this.opponentInfo.userID);
+        await this.worldManager.addImportedIslandToWorld(this.peerInfo.islandID, this.playerInfo.userID < this.peerInfo.userID);
         progressBar.value = 75;
         // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
         const opponent = this.worldManager.addOpponent({
-            position: this.opponentInfo.playerPosition,
-            health: this.opponentInfo.maxHealth,
-            maxHealth: this.opponentInfo.maxHealth,
+            position: this.peerInfo.playerPosition,
+            health: this.peerInfo.maxHealth,
+            maxHealth: this.peerInfo.maxHealth,
             team: 1
         });
-        opponent.setId({entity: {player_id: this.opponentInfo.userID}});
+        opponent.setId({entity: {player_id: this.peerInfo.userID}});
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
 
@@ -236,9 +245,9 @@ export class MultiplayerController extends Subject{
         });
 
         //start sending state updates to server
-        this.startSendingStateUpdates(this.opponentInfo.userID);
+        this.startSendingStateUpdates(this.peerInfo.userID);
         //announce to the server that the player is ready to start the match
-        this.forwardingNameSpace.sendPlayerReadyEvent(this.matchId);
+        this.forwardingNameSpace.sendPlayerReadyEvent(this.#matchId);
     }
 
     /**
@@ -267,8 +276,10 @@ export class MultiplayerController extends Subject{
         this.menuManager.addItems(newGemViews);
 
         //update stats
-        this.stats.set("gemsWon", this.stats.get("gemsWon") + newGemViews.length);
-        this.stats.set("gamesPlayed", this.stats.get("gamesPlayed") + 1);
+        if(this.countStats){
+            this.stats.set("gemsWon", this.stats.get("gemsWon") + newGemViews.length);
+            this.stats.set("gamesPlayed", this.stats.get("gamesPlayed") + 1);
+        }
 
         //fill params for results screen
         const renderGems = [];
@@ -291,12 +302,12 @@ export class MultiplayerController extends Subject{
             newGemViews.forEach(gemView => {
                 renderGems.push(gemView.item.getItemId());
             });
-            this.stats.set("gamesWon", this.stats.get("gamesWon") + 1);
+            if(this.countStats) this.stats.set("gamesWon", this.stats.get("gamesWon") + 1);
             console.log("you win");
-        } else if (data.winner_id === this.opponentInfo.userID){
+        } else if (data.winner_id === this.peerInfo.userID){
             //show lose screen
             this.result = "lose";
-            this.stats.set("gemsLost", this.stats.get("gemsLost") + this.stakedGems.length);
+            if(this.countStats) this.stats.set("gemsLost", this.stats.get("gemsLost") + this.stakedGems.length);
             this.stakedGems.forEach(gem => {
                 renderGems.push(gem.getItemId());
             });
@@ -346,7 +357,7 @@ export class MultiplayerController extends Subject{
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.peerController.peer = null;
         this.minionController.clearMinions();
-        this.worldManager.resetWorldState(this.playerInfo.userID < this.opponentInfo.userID);
+        this.worldManager.resetWorldState(this.playerInfo.userID < this.peerInfo.userID);
         //stop receiving state updates from server
         document.querySelector('.loading-animation').style.display = 'none';
         this.toggleTimer(false);
@@ -360,7 +371,7 @@ export class MultiplayerController extends Subject{
      */
     leaveMatch(){
         if (confirm("Are you sure you want to leave the match?\nYou will lose your stakes!")) {
-            this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
+            this.forwardingNameSpace.sendPlayerLeavingEvent(this.#matchId);
         }
     }
 
@@ -378,7 +389,7 @@ export class MultiplayerController extends Subject{
             this.peerController.update(data.player);
         }
         if(data.playerHealth){
-            this.stats.set("damageTaken", this.stats.get("damageTaken") + data.playerHealth.previous - data.playerHealth.current);
+            if(this.countStats) this.stats.set("damageTaken", this.stats.get("damageTaken") + data.playerHealth.previous - data.playerHealth.current);
             this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
         }
         if(data.spellEvent) {
@@ -392,7 +403,7 @@ export class MultiplayerController extends Subject{
                 );
             }
             data.spellEvent.params.team = 1;
-            data.spellEvent.params.playerID = this.opponentInfo.userID;
+            data.spellEvent.params.playerID = this.peerInfo.userID;
             this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
         }
         if(data.minions){
@@ -443,7 +454,7 @@ export class MultiplayerController extends Subject{
     sendCreateSpellEntityEvent(event){
 
         event.detail.type = event.detail.type.name;
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             spellEvent: event.detail
         });
     }
@@ -458,7 +469,7 @@ export class MultiplayerController extends Subject{
             spawn: event.detail.minion.spawnPoint,
             id: event.detail.minion.id,
         }
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 create: createParams
             }
@@ -471,7 +482,7 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {id: number, position: THREE.Vector3, phi: number, health: number}}} event - phi = in degrees
      */
     sendMinionsStateUpdate(event){
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 state: event.detail
             }
@@ -483,8 +494,8 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {health: number, id: number}}} event
      */
     sendEnemyHealthUpdate(event){
-        this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        if(this.countStats) this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 healthUpdate: {health: event.detail.current, id: event.detail.id}
             }
@@ -496,7 +507,7 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {state: {position: THREE.Vector3, phi: number, health}}}} event - phi = in degrees
      */
     sendPlayerStateUpdate(event){
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             player: {
                 state: event.detail.state
             }
@@ -508,8 +519,8 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {health: number}}} event
      */
     sendPlayerHealthUpdate(event){
-        this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        if(this.countStats) this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             playerHealth: event.detail
         });
     }
@@ -519,7 +530,7 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     enemyDeathEvent(event){
-        this.stats.set("minionsKilled", this.stats.get("minionsKilled") + 1);
+        if(this.countStats) this.stats.set("minionsKilled", this.stats.get("minionsKilled") + 1);
         event.detail.model.removeEventListener("updatedHealth", this.updateEvents.get("minionHealthUpdate"));
         event.detail.model.removeEventListener("delete", this.updateEvents.get("minionDeath"));
     }
@@ -529,8 +540,8 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     sendPlayerDeathEvent(event){
-        this.stats.set("playerKills", this.stats.get("playerKills") + 1);
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        if(this.countStats) this.stats.set("playerKills", this.stats.get("playerKills") + 1);
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             player: {
                 death: event.detail
             }
@@ -543,7 +554,7 @@ export class MultiplayerController extends Subject{
      */
     sendProxyHealthUpdate(event){
         console.log("proxy health update")
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             proxy: {
                 healthUpdate: event.detail
             }
@@ -559,7 +570,7 @@ export class MultiplayerController extends Subject{
         event.detail.model.removeEventListener("delete", this.updateEvents.get("proxyDeath"));
         if(event.detail.model.dbType === "altar_building" && event.detail.model.team !== 0){
             console.log("altar destroyed");
-            this.forwardingNameSpace.sendAltarDestroyedEvent(this.matchId);
+            this.forwardingNameSpace.sendAltarDestroyedEvent(this.#matchId);
         } else {
             console.log("a proxy destroyed");
         }
@@ -620,5 +631,219 @@ export class MultiplayerController extends Subject{
             spawner.removeEventListener("spawn", this.updateEvents.get("createSpellEntity"));
         });
         this.minionController.removeEventListener("minionAdded", this.updateEvents.get("addMinionStateListener"));
+    }
+
+    /**
+     * Processes the island visit event
+     * @param {{request: "accept" | "reject" | "visit" | "leave" | "kick" | "cancel"}} data
+     */
+    processIslandVisitEvent(data){
+        // if(this.pendingVisitRequest === this.peerInfo.userID) this.pendingVisitRequest = null;
+        switch (data.request) {
+            case "accept": //your friend accepted your visit request
+                //TODO: load friends' island
+                this.loadFriendIsland();
+                break;
+            case "reject": //your friend rejected your visit request
+                this.#addFriendNotification(`${this.peerInfo.username} rejected your visit request`, data.request);
+                //TODO: set pendingVisitRequest to null
+                this.friendsMenu.querySelector(`#friend-${this.peerInfo.userID}`).querySelector(".View-Island").innerText = "Visit Island";
+                this.cancelIslandVisitRequest();
+                break;
+            case "kick": //your friend kicked you out of his/her island
+                //TODO: unload friend's island
+                this.unloadFriendIsland();
+                break;
+            case "leave": // your friend left your island
+                //TODO: unload friend
+                this.unloadFriend();
+                break;
+            case "visit": //your friend requested to visit your island
+                //TODO: add notification to notification bell and show request message when friendsmenu is opened
+                this.#addFriendNotification(`'FriendName' requested to visit your island`, data.request);
+                break;
+            case "cancel": //your friend cancelled his/her visit request
+                this.#addFriendNotification(`'FriendName' cancelled his/her visit request`, data.request)
+                //TODO: reset state that was augmented when the visit request was processed
+                break;
+
+        }
+    }
+
+    /**
+     * callback for the visit island button of friendsmenu
+     * @param {Event} event
+     * @return {Promise<void>}
+     */
+    async #toggleVisitRequest(event) {
+            if(event.target.classList.contains("View-Island")){
+                let userId = event.target.parentNode.id;
+                userId = parseInt(userId.substring(userId.indexOf("-") + 1));
+                if(this.pendingVisitRequest === userId){ //cancel request
+                    this.cancelIslandVisitRequest();
+                    event.target.innerText = "Visit Island";
+                } else if(this.pendingVisitRequest) { // send a different request + cancel the current one
+                    const friendElement = this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest}`);
+                    this.cancelIslandVisitRequest();
+                    friendElement.querySelector(".View-Island").innerText = "Visit Island";
+                    await this.requestIslandVisit(userId);
+                    event.target.innerText = "Cancel Request";
+                } else { // send a request
+                    await this.requestIslandVisit(userId);
+                    event.target.innerText = "Cancel Request";
+                }
+            }
+        }
+
+    /**
+     * Sends a request to the server to visit your friend's island
+     */
+    async requestIslandVisit(userId){
+        await this.peerInfo.retrieveInfo(userId);
+        this.canMatchmake = false;
+        this.pendingVisitRequest = userId;
+        this.forwardingNameSpace.sendIslandVisitEvent(userId, "visit");
+    }
+
+    /**
+     * Cancels a request to the server to visit your friend's island
+     */
+    cancelIslandVisitRequest(){
+        this.canMatchmake = true;
+        this.pendingVisitRequest = null;
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "cancel");
+    }
+
+    /**
+     * accepts the visit request from your friend
+     * @param event
+     */
+    acceptIslandVisit(event){
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "accept");
+        this.loadFriend();
+    }
+
+    /**
+     * rejects the visit request from your friend
+     */
+    rejectIslandVisit() {
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "reject");
+    }
+
+    /**
+     * removes your friend from your island (kick him out)
+     */
+    removeFriendFromIsland(){
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "kick");
+        this.unloadFriend();
+    }
+
+    /**
+     * leave your friend's island
+     */
+    leaveFriendIsland(){
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "leave");
+        this.unloadFriendIsland();
+    }
+
+    /**
+     * loads your friend's island (and unloads your own island)
+     */
+    loadFriendIsland(){
+
+    }
+
+    /**
+     * loads your friend on your island
+     */
+    loadFriend(){
+
+    }
+
+    /**
+     * unloads your friend's island (and loads your own island)
+     */
+    unloadFriendIsland(){
+
+    }
+
+    /**
+     * removes your friend from your island
+     */
+    unloadFriend(){
+
+    }
+
+    /**
+     * adds a message to the mailbox
+     * @param {string} message
+     * @param {string} type - type of notification (visit, cancel, ...)
+     */
+    #addMessageToMailbox(message, type){
+        const notification = document.createElement("div");
+        const notificationText = document.createElement("p");
+        const notificationButtonsContainer = document.createElement("div");
+        const acceptButton = document.createElement('button');
+        const rejectButton = document.createElement('button');
+        notificationText.innerText = message;
+        notificationButtonsContainer.classList.add("request-buttons-container");
+        acceptButton.classList.add('Accept-Request');
+        rejectButton.classList.add('Reject-Request');
+        notificationText.classList.add('request-text');
+        notification.classList.add('request');
+
+
+        notification.appendChild(notificationText);
+        notification.appendChild(notificationButtonsContainer);
+
+
+        switch (type) {
+            case "visit":
+                acceptButton.addEventListener("click", () =>{
+                    this.acceptIslandVisit();
+                    this.#removeFriendNotification();
+                    notification.remove();
+                });
+                rejectButton.addEventListener("click", () =>{
+                    this.rejectIslandVisit();
+                    this.#removeFriendNotification();
+                    notification.remove();
+                });
+                notificationButtonsContainer.appendChild(acceptButton);
+                notificationButtonsContainer.appendChild(rejectButton);
+                break;
+            case "cancel":
+                rejectButton.addEventListener("click", () =>{
+                    this.#removeFriendNotification();
+                    notification.remove();
+                });
+                notificationButtonsContainer.appendChild(rejectButton);
+                break;
+
+        }
+        this.friendsMenu.querySelector("#listRequests").appendChild(notification);
+    }
+
+    /**
+     * adds a notification to the notification bell and puts the message in your mailbox
+     * @param {string} message
+     * @param {string} type - type of notification (visit, cancel, ...)
+     */
+    #addFriendNotification(message, type){
+        const notificationCount = this.notificationContainer.querySelector(".notification-count");
+        notificationCount.innerText = parseInt(notificationCount.innerText) + 1;
+        this.#addMessageToMailbox(message, type);
+        this.notificationContainer.style.display = "block";
+    }
+
+    /**
+     * callback to subtract a notification from the notification bell (and make it disappear if there are no notifications left)
+     */
+    #removeFriendNotification(){
+        const notificationCount = this.notificationContainer.querySelector(".notification-count");
+        const newCount = parseInt(notificationCount.innerText) - 1;
+        if(newCount < 0) throw new Error("notification count cannot be negative");
+        notificationCount.innerText = newCount;
+        if(newCount === 0) this.notificationContainer.style.display = "none";
     }
 }

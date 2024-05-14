@@ -1,15 +1,19 @@
 // Initiate the socket connection to the server, under the '/forward' namespace
 import {API_URL} from "../configs/EndpointConfigs.js";
+import {Subject} from "../Patterns/Subject.js";
 
-export class ForwardingNameSpace {
+export class ForwardingNameSpace extends Subject{
 
     constructor() {
+        super();
         this.socket = io('/forward');
     }
 
     /**
      * Register the handlers for the socket events
-     * @param {{handleMatchFound: function, handleMatchStart: function, handleMatchAbort: function, processReceivedState: function, updateMatchTimer: function, handleMatchEnd: function}} params - The object containing the handlers
+     * @param {{handleMatchFound: function, handleMatchStart: function, handleMatchAbort: function,
+     * processReceivedState: function, updateMatchTimer: function, handleMatchEnd: function, processIslandVisitEvent: function,
+     * alreadyConnected: function}} params - The object containing the handlers
      * @param params
      */
     registerHandlers(params) {
@@ -20,15 +24,15 @@ export class ForwardingNameSpace {
         this.socket.on('match_abort', (data) => params.handleMatchAbort(data));
         this.socket.on('forwarded', (data) =>params.processReceivedState(data));
         this.socket.on('match_timer', (data) => params.updateMatchTimer(data));
-        this.socket.on('already_connected', this.alreadyConnected.bind(this));
+        this.socket.on('already_connected', this.dispatchAbortSignal.bind(this));
+        this.socket.on('island_visit', (data) => params.processIslandVisitEvent(data));
     }
 
     /**
-     * Redirect the player to the logout page when the player is already connected
-     * @param data
+     * is called when the server fires the 'already_connected' event
      */
-     alreadyConnected(data) {
-        window.location.href = `${API_URL}/logout`;
+    dispatchAbortSignal(){
+        this.dispatchEvent(new CustomEvent('abort'));
     }
 
     handleForwardedMessage(data) {
@@ -73,5 +77,15 @@ export class ForwardingNameSpace {
      */
     sendAltarDestroyedEvent(matchId) { //TODO: maybe add the time of destruction otherwise event that reaches the server first will be the winner
         this.socket.emit('altar_destroyed', {'match_id': matchId});
+    }
+
+    /**
+     * Send a message to the server that the player wants to visit/leave a friend's island or accept/reject that friend's visit request
+     * or kick out a friend that is visiting the player's island
+     * @param {number} userId
+     * @param {"accept" | "reject" | "visit" | "leave" | "kick" | "cancel"} request
+     */
+    sendIslandVisitEvent(userId, request) {
+        this.socket.emit('island_visit', {'target': userId, 'request': request});
     }
 }
