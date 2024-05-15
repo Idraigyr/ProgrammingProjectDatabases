@@ -363,6 +363,7 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
+            params.playerCrystals = this.playerInfo.crystals;
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;

@@ -66,6 +66,7 @@ export class MenuManager extends Subject{
         this.slot = null;
         this.infoFromDatabase = {};
         this.#ctorToDBNameList = this.#createCtorToDBNameList();
+        this.playerCrystals = 0;
 
         this.collectParams = {
             meter: null,
@@ -356,14 +357,17 @@ export class MenuManager extends Subject{
      * dispatches a add event
      * @param event
      */
-    dispatchAddEvent(event){ //TODO: check first if you have enough crystals for this
-        if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
-            console.log("Adding 10 crystals of fuse stakes");
-            this.inputCrystalParams.current += 10;
-            this.dispatchEvent(this.createRemoveEvent());
+    dispatchAddEvent(event){
+        if (this.playerCrystals > 10 ) {
+            if (this.inputCrystalParams.current + 10 <= this.inputCrystalParams.max && this.loadingprogress === 0) {
+                console.log("Adding 10 crystals of fuse stakes");
+                this.inputCrystalParams.current += 10;
+                this.playerCrystals -= 10;
+                this.dispatchEvent(this.createRemoveEvent());
+            }
+            this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+            this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
         }
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -374,6 +378,7 @@ export class MenuManager extends Subject{
         if(this.inputCrystalParams.current-10 >= 0 && this.loadingprogress === 0){
             console.log("Removing 10 crystals of fuse stakes");
             this.inputCrystalParams.current -= 10;
+            this.playerCrystals += 10;
             this.dispatchEvent(this.createAddEvent());
         }
         this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
@@ -811,6 +816,7 @@ export class MenuManager extends Subject{
         this.menus[params.name].allows.forEach(child => {
             this.menus[child].render();
         });
+        this.playerCrystals = params.playerCrystals;
         this.menus[params.name].render();
     }
 
