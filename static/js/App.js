@@ -1,5 +1,8 @@
-import WebGL from "three-WebGL";
+global.THREE = require('three');
 import * as THREE from "three";
+
+
+import WebGL from "three-WebGL";
 import {Controller} from "./Controller/Controller.js";
 import {cameraPosition, fusionTime, physicsSteps} from "./configs/ControllerConfigs.js";
 import {CharacterController} from "./Controller/CharacterController.js";

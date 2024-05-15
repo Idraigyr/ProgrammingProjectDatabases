@@ -13,25 +13,30 @@
     <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r79/three.min.js"></script>#}
+
+
 
     <script type="importmap">
       {
         "imports": {
-          "three": "https://unpkg.com/three@0.162.0/build/three.module.js",
-          "three-GLTFLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/GLTFLoader.js",
-          "three-DRACOLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/DRACOLoader.js",
-          "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",
-          "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",
-          "three-FontLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FontLoader.js",
-          "three-TextGeometry": "https://unpkg.com/three@0.162.0/examples/jsm/geometries/TextGeometry.js",
-          "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",
-          "three-BufferGeometryUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/BufferGeometryUtils.js",
-          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",
-          "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/src/index.js",
-          "three-orbitControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/OrbitControls.js"
+          "three": "https://unpkg.com/three@0.162.0/build/three.module.js"
+{#          "three-GLTFLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/GLTFLoader.js",#}
+{#          "three-DRACOLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/DRACOLoader.js",#}
+{#          "three-FBXLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FBXLoader.js",#}
+{#          "three-TextureLoader": "https://unpkg.com/three@0.162.0/src/loaders/TextureLoader.js",#}
+{#          "three-FontLoader": "https://unpkg.com/three@0.162.0/examples/jsm/loaders/FontLoader.js",#}
+{#          "three-TextGeometry": "https://unpkg.com/three@0.162.0/examples/jsm/geometries/TextGeometry.js",#}
+{#          "three-SkeletonUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/SkeletonUtils.js",#}
+{#          "three-BufferGeometryUtils": "https://unpkg.com/three@0.162.0/examples/jsm/utils/BufferGeometryUtils.js",#}
+{#          "three-WebGL": "https://unpkg.com/three@0.162.0/examples/jsm/capabilities/WebGL.js",#}
+{#          "three-mesh-bvh": "https://unpkg.com/three-mesh-bvh@0.7.3/src/index.js",#}
+{#          "three-orbitControls": "https://unpkg.com/three@0.162.0/examples/jsm/controls/OrbitControls.js"#}
         }
       }
     </script>
+    <script>window.THREE = THREE;</script>
+
     <script src="{{ url_for('static', filename='js/stats/buildStats/stats.min.js') }}"></script>
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
@@ -44,8 +49,11 @@
     <div id="container">
     </div>
     <!-- Load App -->
-    <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
+{#    <script type="module" src="{{ url_for('static', filename='js/main.bundle.js') }}"></script>#}
+<script defer="defer" src="static/js/runtime.bundle.js">
 
+</script><script defer="defer" src="static/js/vendors.bundle.js"></script>
+    <script defer="defer" src="static/js/main.bundle.js"></script>
 {#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
 
     <script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetModels.js') }}"></script>
