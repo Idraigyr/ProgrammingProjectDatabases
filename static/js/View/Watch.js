@@ -104,6 +104,7 @@ export class Timer3D extends IView{
         for(const key in this.charCounter){
             for(let i = 0; i < this.charCounter[key].count; i++){
                 this.charAccess.getIndex(key, this.charCounter[key].indices[i]);
+                this.charAccess.freeAssets();
                 console.log(`removing count for ${key} with index ${this.charCounter[key].indices[i]}:`);
             }
         }

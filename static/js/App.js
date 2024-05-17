@@ -55,7 +55,9 @@ class App {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        // this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        this.scene.background = new THREE.CubeTextureLoader().setPath( './static/assets/images/skybox/' ).load( [
+            'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png']);
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
 
         //OrbitControls -- DEBUG STATEMENTS --
@@ -112,7 +114,7 @@ class App {
         }}])});
 
         this.scene.add(this.viewManager.spellPreview.charModel);
-        this.scene.add(this.viewManager.spellPreview.boxHelper);
+        if(this.viewManager.spellPreview) this.scene.add(this.viewManager.spellPreview.boxHelper);
 
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new Controller.RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});

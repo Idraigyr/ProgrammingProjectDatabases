@@ -67,7 +67,7 @@ export const charsReservedForTimer = {
     ":": 2
 }
 
-const Maxbuilders = 3;
+const Maxbuilders = 8;
 export const minCharCount = {
     "0": charsReservedForTimer["0"]*Maxbuilders,
     "1": charsReservedForTimer["1"]*Maxbuilders,
@@ -99,4 +99,4 @@ export const islandWidth = 15;
 
 export const islandLength = 15;
 
-export const displayViewBoxHelper = true;
+export const displayViewBoxHelper = false;
