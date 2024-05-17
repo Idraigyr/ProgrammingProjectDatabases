@@ -53,6 +53,35 @@ export const buildingAssetsKeys = Object.freeze([
     "Tree",
 ]);
 
+export const charsReservedForTimer = {
+    "0": 6,
+    "1": 6,
+    "2": 6,
+    "3": 6,
+    "4": 6,
+    "5": 6,
+    "6": 6,
+    "7": 6,
+    "8": 6,
+    "9": 6,
+    ":": 2
+}
+
+const Maxbuilders = 3;
+export const minCharCount = {
+    "0": charsReservedForTimer["0"]*Maxbuilders,
+    "1": charsReservedForTimer["1"]*Maxbuilders,
+    "2": charsReservedForTimer["2"]*Maxbuilders,
+    "3": charsReservedForTimer["3"]*Maxbuilders,
+    "4": charsReservedForTimer["4"]*Maxbuilders,
+    "5": charsReservedForTimer["5"]*Maxbuilders,
+    "6": charsReservedForTimer["6"]*Maxbuilders,
+    "7": charsReservedForTimer["7"]*Maxbuilders,
+    "8": charsReservedForTimer["8"]*Maxbuilders,
+    "9": charsReservedForTimer["9"]*Maxbuilders,
+    ":": charsReservedForTimer[":"]*Maxbuilders,
+}
+
 export const cursorImgPaths = Object.freeze({
     aim: "./static/assets/images/crosshairs/aim.png",
     cross: "./static/assets/images/crosshairs/cross.png",

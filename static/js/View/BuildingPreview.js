@@ -8,7 +8,8 @@ import {ParticleSystem} from "./ParticleSystem.js";
 export class BuildingPreview extends IView{
     constructor(params) {
         super(params);
-        this.timer = params.timer;
+        this.timerModel = params.timerModel;
+        this.hasUpdates = true;
         // this.particleSystem = new ParticleSystem(params);
 
         //TODO: everything for view itself;
@@ -20,6 +21,14 @@ export class BuildingPreview extends IView{
 
     }
 
+    hide(){
+        this.charModel.visible = false;
+    }
+
+    show(){
+        this.charModel.visible = true;
+    }
+
     /**
      * Check if building preview is not dead
      * @param deltaTime time passed since last update
@@ -27,15 +36,15 @@ export class BuildingPreview extends IView{
      * @returns {boolean} true if building preview is not dead
      */
     isNotDead(deltaTime, camera){
-        if(this.timer.finished){
-            // if(!this.particleSystem.isNotDead(deltaTime)){
-            //     this.cleanUp();
-            //     return false;
-            // }
+        if(!this.timerModel.isNotDead(deltaTime, camera)){
             this.dispose();
             return false;
         }
         return true;
+    }
+
+    update(deltaTime, camera) {
+        super.update(deltaTime, camera);
     }
 
 

@@ -21,18 +21,6 @@ export class IView {
     }
 
     /**
-     * First update of the view
-     */
-    firstUpdate() {
-        try {
-            this.updatePosition({detail: {position: params.position}});
-            this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
-        } catch (err){
-            console.log(err);
-        }
-    }
-
-    /**
      * Update bounding box
      */
     updateBoundingBox(){

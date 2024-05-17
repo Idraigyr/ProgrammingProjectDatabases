@@ -231,7 +231,7 @@ export class MultiplayerController extends Subject{
         this.minionController.worldMap = this.worldManager.world.islands;
         progressBar.value = 90;
 
-        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 10});
         this.worldManager.generateSpellSpawners({
             spell: {
                 type: new Fireball({}),

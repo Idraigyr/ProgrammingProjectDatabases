@@ -18,12 +18,15 @@ import {
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey} from "./configs/Keybinds.js";
-import {gridCellSize} from "./configs/ViewConfigs.js";
+import {gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
 import {buildTypes, gemTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/socketio.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
+
+
+import { TextGeometry } from 'three-TextGeometry';
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -53,7 +56,7 @@ class App {
 
         this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
-        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
+        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
 
         //OrbitControls -- DEBUG STATEMENTS --
         // orbitControls = new OrbitControls( orbitCam, this.renderer.domElement );
@@ -459,6 +462,7 @@ class App {
         progressBar.labels[0].innerText = "loading assets...";
         this.settings.loadCursors();
         await this.assetManager.loadViews();
+        this.assetManager.createTimerViews(minCharCount, "SurabanglusFont", this.scene);
 
         if(this.abort) return false;
 
@@ -632,10 +636,12 @@ class App {
         this.timerManager.update(this.deltaTime);
         this.cameraManager.update(this.deltaTime);
         //...
+
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
-
         this.renderer.render( this.scene, this.cameraManager.camera );
+
+        this.assetManager.resetCharCounts();
         //OrbitControls -- DEBUG STATEMENTS --
         // this.renderer.render( this.scene, orbitCam );
         //OrbitControls -- DEBUG STATEMENTS --
