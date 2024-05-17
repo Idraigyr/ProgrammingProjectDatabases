@@ -288,9 +288,9 @@ export class Factory{
                 position: pos,
                 timerModel: new Timer3D({
                     time: model.timeToBuild,
-                    charWidth: gridCellSize/5,
-                    position: pos.clone().setY(pos.y + 10),
-                    charAccess: this.assetManager.requestTimerAssets()
+                    charWidth: gridCellSize/25,
+                    position: pos.clone().setY(pos.y + gridCellSize/1.5),
+                    charAccess: this.assetManager.requestTimerAssets(),
                 })
             });
             this.viewManager.dyingViews.push(buildingPreview);
