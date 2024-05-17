@@ -176,6 +176,10 @@ class App {
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
+        this.menuManager.addEventListener("mineGem", (event) => {
+            console.log("Mining gem");
+            const gem = this.itemManager.createGem((3));
+        });
 
         this.menuManager.addEventListener("startFusion", (event) => {
             const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
@@ -353,8 +357,8 @@ class App {
                 params.maxCrystals = building.maxCrystals;
                 params.rate = building.productionRate;
 
-                // params.maxCrystals = params.stats.get("capacity");
-                // params.rate = params.stats.get("mineSpeed");
+                //params.maxCrystals = params.stats.get("capacity");
+                //params.rate = params.stats.get("mineSpeed");
             }
             if(buildingNumber === buildTypes.getNumber("tower_building")){
                 // tower stats for Lucas

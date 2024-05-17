@@ -75,6 +75,7 @@ export class MenuManager extends Subject{
             rate: 0
         };
         this.collectInterval = null;
+        this.fortune = 0;
 
         this.inputCrystalParams = {
             meter: null,
@@ -229,6 +230,10 @@ export class MenuManager extends Subject{
 
     createFuseEvent() {
         return new CustomEvent("startFusion");
+    }
+
+    createMineGemEvent() {
+        return new CustomEvent("mineGem");
     }
 
     // Function to start or stop the fusing arrow animation based on condition
@@ -867,6 +872,11 @@ export class MenuManager extends Subject{
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
         this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        if(Math.random()*100 < this.fortune*10){    // fortune times 10 for testing purposes
+            console.log("Gem mined!");
+            this.dispatchEvent(this.createMineGemEvent());
+
+        }
     }
 
     /**
@@ -937,9 +947,10 @@ export class MenuManager extends Subject{
                 this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
                 this.menus["MineMenu"].updateLvlUpButton(params);
                 this.collectParams.current = params.crystals;
-                this.collectParams.max = params.maxCrystals;
-                this.collectParams.rate = params.rate;
+                this.collectParams.max = Math.ceil(params.stats.get("capacity"));
+                this.collectParams.rate = Math.ceil(params.stats.get("speed"))*10;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
+                this.fortune = params.stats.get("fortune");
 
                 // show correct Gems based on received params
                 this.menus["GemInsertMenu"].renderSlots(params.slots);
