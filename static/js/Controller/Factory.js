@@ -249,6 +249,35 @@ export class Factory{
             // Get if the timer is already finished
             console.log("currentTime: ", this.currentTime, "starttime:", params.task.starttime, "endtime: ", params.task.endtime,  "endtime in date: ", new Date(params.task.endtime));
             const timeEnd = new Date(params.task.endtime);
+            // Start of black magic
+            const offsetRegex = /([+-]\d{2}):(\d{2})$/;
+            const match = params.task.starttime.match(offsetRegex);
+            let sign, hours, minutes;
+            if (match) {
+                sign = match[1][0]; // + or -
+                hours = match[1].slice(1); // hours part
+                minutes = match[2]; // minutes part
+                let formattedOffset = `${sign}${hours}:${minutes}`;
+
+                console.log(`Time offset: ${formattedOffset}`);
+            } else {
+                console.log("No offset found in the string");
+            }
+            // Alright, now we have sign, hours and minutes of the server offset
+            // Now we have to convert them to milliseconds
+            let offset = 0;
+            if (sign === "+") {
+                offset = (parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
+            }else if (sign === "-") {
+                offset = -(parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
+            }
+            // Let's compare offset of the local time and the server time
+            let localOffset = new Date().getTimezoneOffset() * 60 * 1000;
+            let offsetDif = offset + localOffset;
+            console.log(`Offset difference: ${offsetDif}`, `Local offset: ${localOffset}`, `Server offset: ${offset}`);
+            // Fix timeEnd
+            timeEnd.setTime(timeEnd.getTime() - offsetDif);
+            // End of black magic
             if(timeEnd < this.currentTime){
                 return model;
             }
