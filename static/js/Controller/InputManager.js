@@ -310,4 +310,8 @@ export class InputManager extends Subject{
         const deleteAccountButton = document.querySelector('.deleteAccountButton');
         deleteAccountButton.addEventListener('click', callback);
     }
+    addGrassToggleListener(callback) {
+        const grassToggle = document.getElementById('grass-toggle');
+        grassToggle.addEventListener('change', callback);
+    }
 }

@@ -266,6 +266,7 @@ export class PlayerInfo extends Subject{
                 dataType: 'json',
                 error: (e) => {
                     console.error(e);
+                    console.error("MAna: ", this.mana);
                 }
             });
         } catch (err){
@@ -341,7 +342,7 @@ export class PlayerInfo extends Subject{
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
             this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
-
+            console.log(this.buildingsThreshold);
         }
     }
     /**

@@ -50,7 +50,8 @@ class App {
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        const texture = new THREE.TextureLoader().load( "../static/assets/images/background-landing.jpg" );
+        this.scene.background = texture; // add sky
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
 
         //OrbitControls -- DEBUG STATEMENTS --
@@ -137,7 +138,8 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.settings = new Settings(this.inputManager, this.playerInfo)
+        this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
+        this.multiplayerController.settings = this.settings;
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -212,7 +214,7 @@ class App {
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
             // If the selected cell is empty
-            if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
+            if ((buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject)) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
                 // Get selected building
@@ -222,13 +224,6 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
-                // // Get if the cell is occupied
-                // let buildOnCell = island.getCellIndex(pos);
-                // if (buildOnCell !== building.cellIndex){// TODO!!!!
-                //     let cell = island.checkCell(pos);
-                //     // Check if the cell is occupied
-                //     if(cell !== buildTypes.getNumber("empty")) return;
-                // }
                 island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
                 // Occupy cell
                 building.cellIndex = island.occupyCell(pos, building.dbType);
@@ -236,7 +231,6 @@ class App {
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
                 this.spellCaster.previousRotation = null;
-                //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -397,6 +391,17 @@ class App {
         this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
         this.cameraManager.camera.updateProjectionMatrix();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
+        // Scale the background image
+        if(!this.scene.background) return;
+        const targetAspect = window.innerWidth / window.innerHeight;
+        const imageAspect = 1920 / 1280;
+        const factor = imageAspect / targetAspect;
+        // When factor larger than 1, that means texture 'wilder' than target。
+        // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
+        this.scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
+        this.scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
+        this.scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
+        this.scene.background.repeat.y = factor > 1 ? 1 : factor;
     }
 
     /**
@@ -451,6 +456,7 @@ class App {
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
+        this.settings.worldManager = this.worldManager;
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
@@ -488,13 +494,24 @@ class App {
         this.menuManager.addEventListener("remove", this.worldManager.removeCrystals.bind(this.worldManager));
 
         this.menuManager.addEventListener("build", (event) => {
-            this.menuManager.exitMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
             // TODO: move things from menuManager, because otherwise you have to use the following code:
             // Get the price of the building
             let nameInDB = this.menuManager.ctorToDBName(ctorName);
             const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            // Check if you have enough mana
+            const mana = this.playerInfo.mana;
+            this.worldManager.world.player.cooldownSpell();
+            const mana2 = this.playerInfo.mana;
+            if (mana === mana2 || mana2 < 0) {
+                console.log("Not enough mana");
+                this.worldManager.world.player.mana = mana;
+                this.playerInfo.mana = mana;
+                this.hud.updateManaBar({detail: {current: this.playerInfo.mana, total: this.playerInfo.maxMana}});
+                console.log("mana: " + this.playerInfo.mana, "Hud: " + this.hud.manaBar.textContent);
+                return;
+            }
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
                 console.log("Not enough crystals");
@@ -505,6 +522,7 @@ class App {
                 if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){
                     this.playerInfo.changeCrystals(-price) ;
                 }
+                this.menuManager.exitMenu();
             }
 
         }); //build building with event.detail.id on selected Position;

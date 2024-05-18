@@ -626,7 +626,7 @@ export class FusionTableMenu extends BuildingMenu{
         const fuseButton = document.createElement("button");
         fuseButtonDiv.classList.add("fuse-button-container");
         fuseButton.classList.add("fuse-button");
-        //fuseButton.innerText = "Fuse";
+        fuseButton.innerText = "Fuse ✨";
         fuseButtonDiv.appendChild(fuseButton);
         const headerDiv = element.querySelector(".menu-header");
         headerDiv.insertAdjacentElement("afterend", fuseButtonDiv);

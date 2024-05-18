@@ -20,6 +20,8 @@ https://www.shutterstock.com/video/clip-32550625-beige-low-poly-background-wavin
 PNG images
 https://www.pngall.com
 https://pnghq.com/
+Exit button:
+<a href='https://pngtree.com/freepng/exit-close-for-game-user-interface-icon_7572173.html'>png image from pngtree.com/</a>
 -----------------------------------
 3d models:
 Floating island landing page:
@@ -44,6 +46,8 @@ skeleton minion models:
 https://kaylousberg.itch.io/kaykit-skeletons
 icewall block model:
 https://poly.pizza/bundle/Crystal-Pack-AywAG7aywi
+Blue crystals:
+https://sketchfab.com/3d-models/gem-pack-d040fbbea3f441c5b2ba3cb1ecc9eb6c
 -----------------------------------
 Scripts:
 Grass shader:

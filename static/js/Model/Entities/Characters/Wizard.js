@@ -93,10 +93,10 @@ export class Wizard extends Character{
     }
 
     updateMaxManaAndHealth(event){
-        this.mana = event.detail.maxMana;
-        this.maxMana = event.detail.maxMana;
-        this.health = event.detail.maxHealth;
-        this.maxHealth = event.detail.maxHealth;
+        this.maxMana = event.detail.maxMana? event.detail.maxMana : this.maxMana;
+        this.mana = event.detail.mana? event.detail.mana : this.mana? this.mana : this.maxMana;
+        this.maxHealth = event.detail.maxHealth? event.detail.maxHealth : this.maxHealth;
+        this.health = event.detail.health? event.detail.health : this.maxHealth;
         this.advertiseCurrentCondition();
     }
 

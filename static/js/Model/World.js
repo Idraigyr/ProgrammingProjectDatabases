@@ -189,4 +189,14 @@ export class World{
         this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
     }
+
+    /**
+     * Toggle the grass on the islands
+     * @param grassOn - boolean to toggle grass on or off
+     */
+    toggleGrass(grassOn){
+        this.islands.forEach((island) => {
+            island.toggleGrass(grassOn);
+        });
+    }
 }
