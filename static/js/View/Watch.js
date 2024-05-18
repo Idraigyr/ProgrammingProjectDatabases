@@ -56,8 +56,6 @@ export class Watch extends IView{
             return;
         }
         this.#previousTime = time;
-        console.log('Time: ', Math.floor(this.#previousTime), Math.floor(time));
-        console.log('Time: ', this.#previousTime, time);
         // Transform seconds to hours, minutes and seconds string
         let hours = Math.floor(time / 3600);
         let minutes = Math.floor((time % 3600) / 60);

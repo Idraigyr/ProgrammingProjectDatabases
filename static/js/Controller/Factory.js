@@ -247,6 +247,7 @@ export class Factory{
         if (params.task){
             console.log("task", params.task);
             // Get if the timer is already finished
+            console.log("currentTime: ", this.currentTime, "starttime:", params.task.starttime, "endtime: ", params.task.endtime,  "endtime in date: ", new Date(params.task.endtime));
             const timeEnd = new Date(params.task.endtime);
             if(timeEnd < this.currentTime){
                 return model;
