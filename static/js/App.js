@@ -114,7 +114,7 @@ class App {
         }}])});
 
         this.scene.add(this.viewManager.spellPreview.charModel);
-        if(this.viewManager.spellPreview) this.scene.add(this.viewManager.spellPreview.boxHelper);
+        if(this.viewManager.spellPreview.boxHelper) this.scene.add(this.viewManager.spellPreview.boxHelper);
 
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new Controller.RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
