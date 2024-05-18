@@ -141,7 +141,7 @@ export class Island extends IView{
         // old implementation
         // group.add(this.createGrassField());
         // new implementation
-        group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
+        group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position, chunks: 15*15}));// TODO: normal parameter to change this
         this.charModel = plane;
         return group;
     }

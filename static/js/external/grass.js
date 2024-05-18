@@ -132,6 +132,9 @@ function createGrassMetrics (params) {
   let generateCoordsParams = [];
 
   let bladeCount = 0;
+  // Let's calculate how many blades we need
+  const chunkNumber = params.chunks? params.chunks : 15*15;
+  let toGenerate = null;
   //TODO: fix; currently also just gives a square
   if (params.type === 'circle') {
     bladeCount = Math.floor(AVG_BLADE_COUNT_PER_SQUARE * Math.PI * Math.pow(params.radius, 2)*1.28);
@@ -146,17 +149,21 @@ function createGrassMetrics (params) {
     }
   } else if (params.type === 'square') {
     bladeCount = Math.floor(AVG_BLADE_COUNT_PER_SQUARE * params.width * params.length);
-    generateCoordsParams = [params.position, params.width, params.length];
-    surfaceMinX = params.position.x - params.width / 2;
-    surfaceMaxX = params.position.x + params.width / 2;
-    surfaceMinZ = params.position.z - params.length / 2;
-    surfaceMaxZ = params.position.z + params.length / 2;
+    toGenerate = bladeCount / chunkNumber;
+    console.log("To generate: ", toGenerate);
+    const chunkWidth = params.width / Math.sqrt(chunkNumber);
+    const chunkLength = params.length / Math.sqrt(chunkNumber);
+    generateCoordsParams = [params.position, chunkWidth, chunkLength];
+    surfaceMinX = params.position.x - chunkWidth / 2;
+    surfaceMaxX = params.position.x + chunkWidth / 2;
+    surfaceMinZ = params.position.z - chunkLength / 2;
+    surfaceMaxZ = params.position.z + chunkLength / 2;
 
     generateCoords = (position, width, length) => {
         return {x: Math.random() * width - width / 2 + position.x, z: Math.random() * length - length / 2 + position.z}
     }
   }
-  for (let i = 0; i < bladeCount; i++) {
+  for (let i = 0; i < toGenerate; i++) {
     const {x, z} = generateCoords(...generateCoordsParams);
 
     const pos = new THREE.Vector3(x, 0, z);
@@ -189,8 +196,42 @@ export function generateGrassField ( scene, params) {
   geom.computeVertexNormals();
   geom.computeVertexNormals();
 
-  const mesh = new THREE.Mesh(geom, grassMaterial);
-  scene.add(mesh);
+  if (params.type === 'circle')  {
+    const mesh = new THREE.Mesh(geom, grassMaterial);
+    scene.add(mesh);
+    return;
+  }
+  const numChunks = params.chunks ? params.chunks : 15 * 15;
+const mesh = new THREE.InstancedMesh(geom, grassMaterial, numChunks);
+
+// Calculate the dimensions of each chunk
+const chunkCount = Math.sqrt(numChunks);
+const chunkWidth = params.width / chunkCount;
+const chunkLength = params.length / chunkCount;
+console.log("Chunk width: ", chunkWidth, "Chunk length: ", chunkLength, "Mesh count: ", numChunks);
+
+// Create a matrix to apply transformations
+const dummy = new THREE.Mesh();
+// Set position for each chunk
+for (let i = 0; i < numChunks; i++) {
+    const x = i % chunkCount;
+    const z = Math.floor(i / chunkCount);
+    const position = {
+        x: chunkWidth * x - params.width / 2 + chunkWidth / 2,
+        z: chunkLength * z - params.length / 2 + chunkLength / 2
+    };
+    console.log("Position: ", position);
+    dummy.position.x = position.x;
+    dummy.position.y = 0;
+    dummy.position.z = position.z;
+    dummy.updateMatrix();
+    // Update the transformation matrix for each instance
+    mesh.setMatrixAt(i, dummy.matrix);
+}
+
+mesh.instanceMatrix.needsUpdate = true; // Ensure the instance matrix is updated
+scene.add(mesh);
+
 }
 
 function generateBlade (center, vArrOffset, uv) {
