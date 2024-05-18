@@ -321,7 +321,7 @@ export class MinionController extends Subject{
             // console.log("attacking altar");
             //TODO: put proxy as minion.target
         } else {
-            const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion, ["player", "character", "proxy"]);
+            const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion, ["spellEntity", "player", "character", "proxy"]);
             if(closestDistance - closestEnemy.radius < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //attack character
                 //set attack state & at the end of the attack animation, deal damage

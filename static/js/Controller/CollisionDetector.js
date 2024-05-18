@@ -186,6 +186,11 @@ export class CollisionDetector extends Subject{
                     spellEntity.model.onCharacterCollision(deltaTime, character.model, spellEntity.view.boundingBox, character.view.boundingBox);
                 }
             });
+            this.viewManager.pairs.spellEntity.forEach((spell) => {
+                if(this.boxToBoxCollision(spellEntity.view.boundingBox, spell.view.boundingBox)){
+                    spellEntity.model.onCharacterCollision(deltaTime, spell.model, spellEntity.view.boundingBox, spell.view.boundingBox);
+                }
+            });
 
             //TODO: check for collision with other spellEntities (mainly collidables like icewall)
         }
@@ -235,7 +240,7 @@ export class CollisionDetector extends Subject{
         let closestEnemy = null;
         let closestDistance = Infinity;
         const algo = (otherCharacter) => {
-            if(character.team !== otherCharacter.model.team){
+            if(character.team !== otherCharacter.model.team && otherCharacter.model.targettable){
                 let distance = character.position.distanceTo(otherCharacter.model.position);
                 if(distance < closestDistance){
                     closestDistance = distance;

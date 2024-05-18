@@ -15,6 +15,8 @@ class SpellEntity extends Entity{
         this.canDamage = params?.canDamage ?? true;
         this.hitSomething = false;
         this.timer = 0;
+        this.targettable = params?.targettable ?? false;
+        this.canMove = false;
     }
 
     /**
@@ -52,6 +54,9 @@ class SpellEntity extends Entity{
             this.hitSomething = true;
             character.hit = true;
         }
+    }
+    takeDamage(damage){
+        //skip
     }
 }
 
@@ -163,9 +168,8 @@ export class Projectile extends SpellEntity{
         super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
-            //TODO: is there a better way to do this? maybe a boolean canMove?
-            if (!(character  instanceof ProxyEntity)){
-                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, 1, 20, deltaTime);
+            if (character.canMove){
+                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, character.box1Mass, character.box2Mass, deltaTime);
             }
             this.timer += this.duration;
             console.log("Projectile hit something, deleting")
@@ -235,10 +239,27 @@ export class FollowPlayer extends SpellEntity{
         super(params);
         this.target = params.target;
         this.offset = params?.offset ?? new THREE.Vector3(0,0,0);
+        this.targettable = true;
+        this.shields = 3;
     }
     update(deltaTime){
         super.update(deltaTime);
         this._position.copy(this.target.position);
         this.dispatchEvent(this._createUpdatePositionEvent());
+    }
+    takeDamage(damage) {
+        this.shields -= 1;
+        console.log("Shield hit, " + this.shields + " left");
+        if(this.shields > 0){
+            this.dispatchEvent(this.createShieldLostEvent());
+        }
+        else{
+            this.dispose();
+        }
+
+    }
+
+    createShieldLostEvent(){
+        return new CustomEvent("shieldLost");
     }
 }

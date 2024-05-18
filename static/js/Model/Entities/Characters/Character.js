@@ -31,6 +31,7 @@ export class Character extends Entity{
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
+        this.shielded = false;
 
         this.updateEvent = this.forwardStateUpdate.bind(this);
     }
@@ -165,6 +166,10 @@ export class Character extends Entity{
     get type(){
         // throw new Error("cannot get type of abstract class Character");
         return "character";
+    }
+
+    setShielded(bool){
+        this.shielded = bool;
     }
 
     /**

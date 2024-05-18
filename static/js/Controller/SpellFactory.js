@@ -146,12 +146,13 @@ export class SpellFactory{
             camera: this.camera,
             position: details.params.position
         });
-        target.shields = 3;
-        target.addEventListener("shieldLost", view.loseShield.bind(view));
+        target.setShielded(true);
+        model.addEventListener("shieldLost", view.loseShield.bind(view));
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
-        model.addEventListener("delete", target.resetShields.bind(this.viewManager));
+        model.addEventListener("delete", target.setShielded(false));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        view.boundingBox.set(details.params.position.clone().sub(new THREE.Vector3(1,0,1)), details.params.position.clone().add(new THREE.Vector3(1,3.5,1)));
         this.viewManager.addPair(model,view);
         return model;
     }

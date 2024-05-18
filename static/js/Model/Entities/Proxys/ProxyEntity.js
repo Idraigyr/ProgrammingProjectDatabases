@@ -15,6 +15,7 @@ export class ProxyEntity extends Entity {
         this.building = params.building;
         this.health = params?.health ?? 100;
         this.maxHealth = params?.maxHealth ?? 100;
+        this.canMove = false;
 
 
     }

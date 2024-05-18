@@ -13,7 +13,6 @@ export class Wizard extends Character{
         this.maxMana = params?.maxMana ?? 100;
         this.mana = params?.mana ?? this.maxMana;
         this.id = params?.id ?? null;
-        this.shields = 0;
     }
 
     setId(data) {
@@ -186,13 +185,8 @@ export class Wizard extends Character{
         return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
     }
 
-    /**
-     * resets the shields of the player to 0 (used when shield spell runs out)
-     */
 
-    resetShields(){
-        this.shields = 0;
-    }
+
 
     /**
      * Function to handle damage to the player
@@ -200,12 +194,7 @@ export class Wizard extends Character{
      */
 
     takeDamage(damage){
-        if(damage <= 0) return;
-        if (this.shields > 0){
-            this.shields -= 1;
-            this.dispatchEvent(new CustomEvent("shieldLost", {detail: {shields: this.shields}}));
-            return;
-        }
+        if(damage <= 0 || this.shielded) return;
         const prevHealth = this.health;
         this.health -= damage;
         this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
