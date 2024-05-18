@@ -2436,6 +2436,7 @@ a[data-tooltip][data-placement="right"]::after {
     padding: 10px; /* Optional: Add padding inside the div */
     border: solid black;
     border-radius: 10px;
+    overflow-y: auto;
     z-index: 1;
 }
 

@@ -1,154 +1,237 @@
 import * as AllFriends from "./Friends.js"
+import {getFriendRequestStatus} from "./Friends.js";
 
-document.addEventListener('DOMContentLoaded', (event) => {
-    let friendsButton = document.getElementById("FriendsButton");
+export class FriendsMenu {
 
-    let Friends = document.getElementById("Friends");
+    constructor() {
+        this.friendsButton = document.getElementById("FriendsButton");
 
-    let addFriendButton = document.getElementById("friendAddButton");
+        this.Friends = document.getElementById("Friends");
 
-    let requestFriendButton = document.getElementById("friendRequestButton");
+        this.addFriendButton = document.getElementById("friendAddButton");
 
-    let listFriendButton = document.getElementById("friendListButton");
+        this.requestFriendButton = document.getElementById("friendRequestButton");
 
-    let addFriend = document.getElementById("addFriend");
+        this.listFriendButton = document.getElementById("friendListButton");
 
-    let FriendList = document.getElementById("listFriend");
+        this.addFriend = document.getElementById("addFriend");
 
-    let requestList = document.getElementById("listRequests");
+        this.FriendList = document.getElementById("listFriend");
 
-    const sendRequestButton = document.getElementById('requestSubmit');
+        this.requestList = document.getElementById("listRequests");
 
-    const usernameFriend = document.getElementById("usernameFriend");
+        this.sendRequestButton = document.getElementById('requestSubmit');
+        this.usernameFriend = document.getElementById("usernameFriend");
 
-    const usernameExist = document.getElementById("UsernameExist");
+        this.usernameExist = document.getElementById("UsernameExist");
+
+        this.listFriend = document.getElementById('listFriend');
+
+        this.listRequest = document.getElementById('listRequests');
+
+        this.friends =  [];
+
+        this.requests = [];
+
+        this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
+        this.addFriendButton.onclick = this.toggleAddFriendButton.bind(this);
+        this.listFriendButton.onclick = this.toggleListFriendButton.bind(this);
+        this.requestFriendButton.onclick = this.toggleRequestFriendButton.bind(this);
+        this.sendRequestButton.onclick = this.toggleSendRequestButton.bind(this)
+        window.addEventListener('click', this.toggleWindowbutton.bind(this));
+    }
 
 
-    friendsButton.onclick = async function () {
-        if (Friends.style.display === "block") {
-            Friends.style.display = "none";
-            addFriendButton.style.display = "none";
-            listFriendButton.style.display = "none";
-            requestFriendButton.style.display = "none";
+    async toggleFriendsDisplay() {
+        if (this.Friends.style.display === "block") {
+            this.Friends.style.display = "none";
+            this.addFriendButton.style.display = "none";
+            this.listFriendButton.style.display = "none";
+            this.requestFriendButton.style.display = "none";
         } else {
-            FriendList.style.display = "none";
-            await populateFriends();
-            Friends.style.display = "block";
-            addFriendButton.style.display = "block";
-            listFriendButton.style.display = "block"
-            requestFriendButton.style.display = "block";
-            FriendList.style.display = "block";
+            this.FriendList.style.display = "none";
+            await this.populateFriends();
+            this.Friends.style.display = "block";
+            this.addFriendButton.style.display = "block";
+            this.listFriendButton.style.display = "block"
+            this.requestFriendButton.style.display = "block";
+            this.FriendList.style.display = "block";
         }
 
     }
 
-    addFriendButton.onclick = function () {
-        FriendList.style.display = "none";
-        requestList.style.display = "none";
-        addFriend.style.display = "block";
-        usernameExist.style.display = "none";
+    toggleAddFriendButton() {
+        this.FriendList.style.display = "none";
+        this.requestList.style.display = "none";
+        this.addFriend.style.display = "block";
+        this.usernameExist.style.display = "none";
     }
+    async toggleListFriendButton(){
+        this. FriendList.style.display = "none";
+        this.addFriend.style.display = "none";
+        this.requestList.style.display = "none";
+        await this.populateFriends();
+        this.FriendList.style.display = "block";
 
-
-    listFriendButton.onclick = async function () {
-        FriendList.style.display = "none";
-        addFriend.style.display = "none";
-        requestList.style.display = "none";
-        await populateFriends();
-        FriendList.style.display = "block";
     }
-
-    requestFriendButton.onclick = async function () {
-        addFriend.style.display = "none";
-        FriendList.style.display = "none";
-        await populateRequests();
-        requestList.style.display = "block";
+    async toggleRequestFriendButton(){
+        this.addFriend.style.display = "none";
+        this.FriendList.style.display = "none";
+        await this.populateRequests();
+        this.requestList.style.display = "block";
     }
-
-    sendRequestButton.onclick = async function () {
-        //check if the username exists
-        usernameExist.style.display = "none";
+    async toggleSendRequestButton() {
+        this.usernameExist.style.display = "none";
         let exists = false;
         await AllFriends.setPlayerList();
-        for(let player of AllFriends.playerList){
-            if(player.username === usernameFriend.value.trim()){
+        for (let player of AllFriends.playerList) {
+            if (player.username === this.usernameFriend.value.trim()) {
                 exists = true;
                 break;
             }
         }
-
-        if(exists){
-            let receiver_id = await AllFriends.getPlayerID(usernameFriend.value.trim());
-            AllFriends.sendRequest(receiver_id);
-            usernameFriend.value = '';
-        } else{
-            usernameExist.style.display = "block";
-            usernameFriend.value = '';
-
-        }
-
-    }
-
-    async function populateFriends() {
-
-        const listFriend = document.getElementById('listFriend');
-        listFriend.innerHTML = '';
-
-        let friendsList = await AllFriends.getFriends();
-
-        for (const friends of friendsList){
-            // add friend
-            const friend = document.createElement('div');
-            friend.id = friends;
-            friend.classList.add('friend');
-            friend.innerHTML = `${await AllFriends.getPlayerUsername(friends)}`;
-            const viewIsland = document.createElement('button');
-            viewIsland.id = "viewIsland";
-            viewIsland.innerHTML = `View Island`;
-            viewIsland.classList.add('View-Island');
-            friend.appendChild(viewIsland);
-            listFriend.appendChild(friend);
-        }
-    }
-
-    async function populateRequests() {
-        const listRequest = document.getElementById('listRequests');
-        listRequest.innerHTML = '';
-        let tempRequests = await AllFriends.getFriendRequests();
-        for (const request of tempRequests) {
-            let status = await AllFriends.getFriendRequestStatus(request.id);
-            if(status === "pending"){
-                const requestElement = document.createElement('div');
-                requestElement.id = "Request-bar"; // Assume each request has a unique sender ID
-                requestElement.classList.add('request');
-                requestElement.innerHTML = `${await AllFriends.getPlayerUsername(request.sender_id)}`;
-
-                const acceptButton = document.createElement('button');
-                acceptButton.classList.add('Accept-Request');
-                acceptButton.onclick = function (){
-                    AllFriends.acceptFriendRequest(request);
-                    requestElement.remove()
-                }
-
-                const rejectButton = document.createElement('button');
-                rejectButton.classList.add('Reject-Request');
-                rejectButton.onclick = function (){
-                    AllFriends.rejectFriendRequest(request.id);
-                    requestElement.remove()
-                }
-                requestElement.appendChild(acceptButton);
-                requestElement.appendChild(rejectButton);
-                listRequest.appendChild(requestElement);
+        let requestExists = false;
+        for (let request of this.requests){
+            if(request.sender_id === await AllFriends.getPlayerID(this.usernameFriend.value.trim())){
+                requestExists = true;
+                break;
             }
         }
-    }
 
-    window.onclick = function(event) {
-        if (!Friends.contains(event.target) && event.target !== friendsButton  && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')){
-            Friends.style.display = 'none';
+        if (exists && !requestExists) {
+            let receiver_id = await AllFriends.getPlayerID(this.usernameFriend.value.trim());
+            AllFriends.sendRequest(receiver_id);
+            this.usernameFriend.value = '';
+        }
+        else if(requestExists){
+            this.usernameExist.innerHTML = `Check incoming requests.`;
+            this.usernameExist.style.display = "block";
+            this.usernameFriend.value = '';
+
+        }
+        else {
+            this.usernameExist.style.display = "block";
+            this.usernameFriend.value = '';
+
         }
     }
 
 
 
-});
+    async populateFriends() {
+        let tempFriends = await AllFriends.getFriends();
+        if (this.friends.length !== tempFriends.length){
+            const unique = tempFriends.filter(element => !this.friends.includes(element));
+            for(let u of unique){
+                await this.addFriendMenu(u);
+            }
+            this.friends = tempFriends;
+            return true;
+        }
+        return false;
+    }
+
+
+    async populateRequests() {
+        let tempRequests = await AllFriends.getFriendRequests();
+        if (this.requests.length !== tempRequests.length){
+            const unique = this.findUniqueRequests(this.requests, tempRequests);
+            for(let r of unique){
+                await this.addRequestMenu(r);
+            }
+            this.requests = tempRequests;
+            return true;
+        }
+        return false;
+    }
+    async addFriendMenu(playerId) {
+        const friend = document.createElement('div');
+        friend.id = playerId;
+        friend.classList.add('friend');
+        friend.innerHTML = `${await AllFriends.getPlayerUsername(playerId)}`;
+        const viewIsland = document.createElement('button');
+        viewIsland.id = "viewIsland";
+        viewIsland.innerHTML = `View Island`;
+        viewIsland.classList.add('View-Island');
+        friend.appendChild(viewIsland);
+        this.listFriend.appendChild(friend);
+    }
+
+    async addRequestMenu(request){
+        let status = await AllFriends.getFriendRequestStatus(request.id);
+        if (status === "pending") {
+            const requestElement = document.createElement('div');
+            requestElement.id = "Request-bar"; // Assume each request has a unique sender ID
+            requestElement.classList.add('request');
+            requestElement.innerHTML = `${await AllFriends.getPlayerUsername(request.sender_id)}`;
+
+            const acceptButton = document.createElement('button');
+            acceptButton.classList.add('Accept-Request');
+            acceptButton.setAttribute('data-request-id', request.id);
+            acceptButton.onclick = async function () {
+                AllFriends.acceptFriendRequest(request.id);
+                this.requests = await AllFriends.getFriendRequests();
+                requestElement.remove()
+
+            }
+
+            const rejectButton = document.createElement('button');
+            rejectButton.classList.add('Reject-Request');
+            rejectButton.setAttribute('data-request-id', request.id);
+            rejectButton.onclick = async function () {
+                AllFriends.rejectFriendRequest(request.id);
+                this.requests = await AllFriends.getFriendRequests();
+                requestElement.remove()
+
+            }
+            requestElement.appendChild(acceptButton);
+            requestElement.appendChild(rejectButton);
+            this.listRequest.appendChild(requestElement);
+        }
+
+    }
+    toggleWindowbutton() {
+        if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {
+            this.Friends.style.display = 'none';
+        }
+    }
+
+    mapsAreEqual(obj1, obj2) {
+        const keys1 = Object.keys(obj1);
+        const keys2 = Object.keys(obj2);
+
+        // First, check if the objects have the same number of keys
+        if (keys1.length !== keys2.length) {
+            return false;
+        }
+
+        // Then, check if all keys and values are the same in both objects
+        for (let key of keys1) {
+            if (obj1[key] !== obj2[key]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+     findUniqueRequests(arrayA, arrayB) {
+        const uniqueMaps = [];
+
+        arrayB.forEach(mapB => {
+            let isUnique = true;
+
+            arrayA.forEach(mapA => {
+                if (this.mapsAreEqual(mapA, mapB)) {
+                    isUnique = false;
+                }
+            });
+
+            if (isUnique) {
+                uniqueMaps.push(mapB);
+            }
+        });
+
+        return uniqueMaps;
+    }
+}

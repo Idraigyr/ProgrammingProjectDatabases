@@ -424,7 +424,7 @@
 
         // Event listener for keydown to toggle FPS display
         document.addEventListener('keydown', function(e) {
-            if (document.activeElement === chatInput) {
+            if (document.activeElement === chatInput || document.activeElement ===  usernameFriend) {
                 return;
             }
             if (e.code === 'KeyF') {

@@ -9,7 +9,7 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/socketio.js"
 import "./external/chatBox.js"
 import "./external/LevelUp.js"
-import "./external/friendsMenu.js"
+import {FriendsMenu} from "./external/friendsMenu.js"
 import {OrbitControls} from "three-orbitControls";
 import {
     placeableURI,
@@ -162,6 +162,8 @@ class App {
         // Setup chat SocketIO namespace
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
+
+        this.friendsMenu = new FriendsMenu();
 
         this.multiplayerController.addEventListener("toggleMatchMaking", this.menuManager.toggleMatchMaking.bind(this.menuManager));
 
@@ -545,6 +547,7 @@ class App {
 
         progressBar.labels[0].innerText = "Last touches...";
         await this.playerInfo.login();
+        await this.friendsMenu.populateRequests();
 
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();

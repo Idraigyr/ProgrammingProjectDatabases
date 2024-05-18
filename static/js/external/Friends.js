@@ -3,10 +3,6 @@ import {userId} from "./socketio.js"
 
 export let playerList = [];
 
-export let friends = [];
-
-export let requests = [];
-
 $(document).ready(function(){
     try {
         $.ajax({url: `${API_URL}/api/player/list`, type: "GET"}).done(function(data){
@@ -101,24 +97,19 @@ export async function getFriendRequestStatus(friendRequestID){
     }
 }
 
-export function acceptFriendRequest(request) {
+export function acceptFriendRequest(request_id) {
         // Handle accepting a friend request here
         try {
             $.ajax({
                 url: `${API_URL}/api/friend_request`,
                 type: "PUT",
-                data: JSON.stringify(formatPUTFriend(request.id, "accepted")),
+                data: JSON.stringify(formatPUTFriend(request_id, "accepted")),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
                     console.error(e);
                 }
             })
-            for (let player in playerList){
-                if(playerList[player].user_profile_id === request.receiver_id){
-                    playerList[player].friends.push(request.sender_id);
-                }
-            }
         } catch (err){
             console.error(err);
         }
