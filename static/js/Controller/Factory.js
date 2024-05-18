@@ -276,7 +276,7 @@ export class Factory{
             let offsetDif = offset + localOffset;
             console.log(`Offset difference: ${offsetDif}`, `Local offset: ${localOffset}`, `Server offset: ${offset}`);
             // Fix timeEnd
-            timeEnd.setTime(timeEnd.getTime() - offsetDif);
+            timeEnd.setTime(timeEnd.getTime() + offsetDif);
             // End of black magic
             if(timeEnd < this.currentTime){
                 return model;
