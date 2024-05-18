@@ -8,6 +8,7 @@ export class Wizard extends Character{
         super(params);
         this.spells = [null,null,null,null,null];
         this.spellCooldowns = [0,0,0,0,0];
+        this.eatingCooldown = 3;
         this.currentSpell = 0;
         this.maxMana = params?.maxMana ?? 100;
         this.mana = params?.mana ?? this.maxMana;

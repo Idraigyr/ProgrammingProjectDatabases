@@ -480,7 +480,6 @@ class App {
         this.spellCaster.wizard = this.worldManager.world.player;
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
-        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
 
 
         this.inputManager.addKeyDownEventListener("KeyP", () => {

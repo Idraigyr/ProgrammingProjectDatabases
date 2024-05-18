@@ -254,6 +254,9 @@ export class InputManager extends Subject{
                 this.keys.spellSlot = 5;
                 this.dispatchEvent(this.createSpellSlotChangeEvent());
                 break;
+            case eatingKey:
+                this.keys.eating = bool;
+                break;
 
         }
     }

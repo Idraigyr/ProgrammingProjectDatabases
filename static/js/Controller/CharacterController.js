@@ -142,14 +142,10 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-       if (!(this._character.fsm.currentState instanceof EatingState) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
+       if ((this._character.eatingCooldown > 1.25 ) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
             this.dispatchEvent(this.createEatingEvent());
-            this.#inputManager.keys.eating = true;
+            this._character.eatingCooldown = 0;
         }
-       else
-         {
-              this.#inputManager.keys.eating = false;
-         }
     }
 
 
@@ -165,6 +161,8 @@ export class CharacterController extends Subject{
 
         this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
+
+        this._character.eatingCooldown += deltaTime;
 
 
         if (this._character.fsm.currentState.movementPossible) {
