@@ -1,5 +1,4 @@
 import * as AllFriends from "./Friends.js"
-import {API_URL} from "../configs/EndpointConfigs.js";
 
 document.addEventListener('DOMContentLoaded', (event) => {
     let friendsButton = document.getElementById("FriendsButton");
@@ -22,6 +21,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
     const usernameFriend = document.getElementById("usernameFriend");
 
+    const usernameExist = document.getElementById("UsernameExist");
+
 
     friendsButton.onclick = async function () {
         if (Friends.style.display === "block") {
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             addFriendButton.style.display = "block";
             listFriendButton.style.display = "block"
             requestFriendButton.style.display = "block";
+            FriendList.style.display = "block";
         }
 
     }
@@ -44,6 +46,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         FriendList.style.display = "none";
         requestList.style.display = "none";
         addFriend.style.display = "block";
+        usernameExist.style.display = "none";
     }
 
 
@@ -63,9 +66,27 @@ document.addEventListener('DOMContentLoaded', (event) => {
     }
 
     sendRequestButton.onclick = async function () {
-        let receiver_id = await AllFriends.getPlayerID(usernameFriend.value.trim());
-        AllFriends.sendRequest(receiver_id);
-        usernameFriend.value = '';
+        //check if the username exists
+        usernameExist.style.display = "none";
+        let exists = false;
+        await AllFriends.setPlayerList();
+        for(let player of AllFriends.playerList){
+            if(player.username === usernameFriend.value.trim()){
+                exists = true;
+                break;
+            }
+        }
+
+        if(exists){
+            let receiver_id = await AllFriends.getPlayerID(usernameFriend.value.trim());
+            AllFriends.sendRequest(receiver_id);
+            usernameFriend.value = '';
+        } else{
+            usernameExist.style.display = "block";
+            usernameFriend.value = '';
+
+        }
+
     }
 
     async function populateFriends() {
@@ -105,14 +126,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 const acceptButton = document.createElement('button');
                 acceptButton.classList.add('Accept-Request');
                 acceptButton.onclick = function (){
-                    acceptFriendRequest(request);
+                    AllFriends.acceptFriendRequest(request);
                     requestElement.remove()
                 }
 
                 const rejectButton = document.createElement('button');
                 rejectButton.classList.add('Reject-Request');
                 rejectButton.onclick = function (){
-                    rejectFriendRequest(request.id);
+                    AllFriends.rejectFriendRequest(request.id);
                     requestElement.remove()
                 }
                 requestElement.appendChild(acceptButton);
@@ -120,71 +141,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
                 listRequest.appendChild(requestElement);
             }
         }
-    }
-
-    function acceptFriendRequest(request) {
-        // Handle accepting a friend request here
-        try {
-            $.ajax({
-                url: `${API_URL}/api/friend_request`,
-                type: "PUT",
-                data: JSON.stringify(formatPUTFriend(request.id, "accepted")),
-                dataType: "json",
-                contentType: "application/json",
-                error: (e) => {
-                    console.error(e);
-                }
-            }).done( function (){
-                $.ajax({
-                    url: `${API_URL}/api/friend_request?id=${request.id}`,
-                    type: "DELETE",
-                    contentType: "application/json",
-                    error: (e) => {
-                        console.error(e);
-                    }
-                })
-
-            });
-            for (let player in AllFriends.playerList){
-                if(AllFriends.playerList[player].user_profile_id === request.receiver_id){
-                    AllFriends.playerList[player].friends.push(request.sender_id);
-                }
-            }
-        } catch (err){
-            console.error(err);
-        }
-
-    }
-
-    function rejectFriendRequest(requestID) {
-        // Handle rejecting a friend request here
-        try {
-            $.ajax({
-                url: `${API_URL}/api/friend_request`,
-                type: "PUT",
-                data: JSON.stringify(formatPUTFriend(requestID, "rejected")),
-                dataType: "json",
-                contentType: "application/json",
-                error: (e) => {
-                    console.error(e);
-                }
-            }).done( function (){
-                $.ajax({
-                    url: `${API_URL}/api/friend_request?id=${requestID}`,
-                    type: "DELETE",
-                    contentType: "application/json",
-                    error: (e) => {
-                        console.error(e);
-                    }
-                })
-            });
-        } catch (err){
-            console.error(err);
-        }
-    }
-
-    function formatPUTFriend(requestID, status) {
-        return {id: requestID, status: status};
     }
 
     window.onclick = function(event) {

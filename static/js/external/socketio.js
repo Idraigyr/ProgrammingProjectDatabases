@@ -91,8 +91,14 @@ export class ChatNamespace {
             } else if (message.match(regex["crystal"])) {
                 this.app.playerInfo.changeCrystals(Number(message.match(regex["crystal"])[1]));
             } else if (message.match(regex["health"])) {
-                this.app.playerInfo.changeHealth(Number(message.match(regex["health"])[1]));
-                this.app.worldManager.world.player.health = Number(message.match(regex["health"])[1]);
+                this.app.worldManager.updatePlayerStats({detail:
+                        {
+                            type: ["health"],
+                            params: {
+                                health: Number(message.match(regex["health"])[1])
+                            }
+                        }
+                })
             } else if (message.match(regex["position"])) {
                 this.app.playerController.tempPosition.x = Number(message.match(regex["position"])[1]);
                 this.app.playerController.tempPosition.y = Number(message.match(regex["position"])[3]);
