@@ -2,7 +2,7 @@ import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
-import {API_URL, buildingUpgradeURI, placeableURI} from "../configs/EndpointConfigs.js";
+import {API_URL, buildingUpgradeURI, placeableURI, taskURI} from "../configs/EndpointConfigs.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 
@@ -350,33 +350,23 @@ export class Factory{
                 console.log(data);
                 // TODO: or > to disallow downgrading
                 if (data.to_level !== model.level) {
+                    let data2Send = {
+                            placeable_id: model.id,
+                            level: data.to_level
+                        }
+                    if(model.dbType === "tower_building") {
+                        data2Send.tower_type = "magic";
+                    }
                     // Send put request to the server to level up the building
                     $.ajax({
                         url: `${API_URL}/${placeableURI}/${model.dbType}`,
                         type: "PUT",
                         contentType: "application/json",
-                        data: JSON.stringify({
-                            placeable_id: model.id,
-                            level: data.to_level
-                        }),
+                        data: JSON.stringify(
+                            data2Send),
                         success: (data) => {
+                            model.level = data.level;
                             console.log(data);
-                            model.level = data.to_level;
-                            // model.dispatchEvent("levelUp");
-                            // Now it's time to delete the task
-                            $.ajax({
-                                url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
-                                type: "DELETE",
-                                contentType: "application/json",
-                                success: (data) => {
-                                    console.log(data);
-                                    console.log("Building ", model.id, " with upgrade task id ", params.task.id, " has been leveled up successfully");
-                                },
-                                error: (xhr, status, error) => {
-                                    console.error(xhr.responseText);
-                                    console.log("Building ", model.id, " with upgrade task id ", params.task.id, " was upgraded, but the task was not deleted");
-                                }
-                            });
                         },
                         error: (xhr, status, error) => {
                             console.error(xhr.responseText);
