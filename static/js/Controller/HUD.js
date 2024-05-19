@@ -129,18 +129,18 @@ export class HUD {
         for (let i = 0; i < cooldowns.length; i++) {
             let spellSlotIndex = i;
             let spellCooldown = cooldowns[i];
-            const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex + 1}Cooldown`);
-            const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
-            const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
-            usedSpelIcon.classList.add('onCooldown');
+            const cooldownElement = document.querySelector(`#countdown-slot-${spellSlotIndex + 1}`);
+            const usedSpell = document.querySelector(`#spell-slot-${spellSlotIndex + 1}-container`);
+            const usedSpellIcon = document.querySelector(`#spell-icon-${spellSlotIndex + 1}`);
+            usedSpellIcon.classList.add('on-cooldown');
             if (spellCooldown <= 0) {
                 cooldownElement.textContent = ""; // Clear the cooldown display
-                usedSpel.parentElement.classList.remove('onCooldown');
-                usedSpelIcon.classList.remove('onCooldown');
+                usedSpell.parentElement.classList.remove('on-cooldown');
+                usedSpellIcon.classList.remove('on-cooldown');
             } else {
                 cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
-                usedSpel.parentElement.classList.add('onCooldown');
-                usedSpelIcon.classList.add('onCooldown');
+                usedSpell.parentElement.classList.add('on-cooldown');
+                usedSpellIcon.classList.add('on-cooldown');
             }
         }
     }

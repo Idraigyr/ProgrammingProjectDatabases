@@ -118,9 +118,9 @@ export class HitScanSpell extends Spell{
  * @class InstantSpell - class for instant spells
  */
 export class InstantSpell extends Spell{
-    constructor() {
-        super();
-        this.duration = 0;
+    constructor(params) {
+        params.duration = 0;
+        super(params);
     }
 
 }
@@ -362,8 +362,8 @@ export class IceWall extends ConcreteSpell{
 export class Zap extends ConcreteSpell{
     constructor() {
         super({
-            spell: new InstantSpell(),
-            effects: [new InstantDamage()]
+            spell: new InstantSpell({}),
+            effects: [new InstantDamage({})]
         });
         this.name = "zap";
         this.worldHitScan = true;
@@ -419,21 +419,42 @@ export class Shield extends ConcreteSpell{
 class Heal extends ConcreteSpell{
     constructor() {
         super({
-            spell: new InstantSpell(),
-            effects: [new HealEffect()]
+            spell: new InstantSpell({}),
+            effects: [new HealEffect({})]
         });
     }
 }
 
-export const spellTypes = Object.freeze({
-    Fireball: Fireball,
-    IceWall: IceWall,
-    Zap: Zap,
-    ThunderCloud: ThunderCloud,
-    Shield: Shield,
-    Heal: Heal,
-    Build: BuildSpell
-});
+export const spellTypes = (() => {
+    const ctors = {
+        Fireball: Fireball,
+        IceWall: IceWall,
+        Zap: Zap,
+        ThunderCloud: ThunderCloud,
+        Shield: Shield,
+        Heal: Heal,
+        BuildSpell: BuildSpell
+    }
+
+    const icons = {
+        Fireball: "./static/assets/images/spells/type2/fireSpell.png",
+        IceWall: "./static/assets/images/spells/type2/freezeSpell.png",
+        Zap: "./static/assets/images/spells/type1/thunderSpell.png",
+        ThunderCloud: "./static/assets/images/spells/type2/thunderSpell.png",
+        Shield: "./static/assets/images/spells/type2/shieldSpell.png",
+        Heal: "./static/assets/images/spells/type1/healSpell.png",
+        BuildSpell: "./static/assets/images/spells/type2/buildSpell.png"
+    }
+
+    return {
+        getCtor: function (name) {
+            return ctors[name];
+        },
+        getIcon: function (name) {
+            return icons[name];
+        }
+    }
+})();
 //spell ideas:
 //summon minion (self-explanatory)
 //heal over time (self-explanatory)

@@ -480,6 +480,7 @@ class App {
         if(this.abort) return false;
 
         await this.itemManager.retrieveGemAttributes();
+        await this.itemManager.retrieveSpells();
 
         if(this.abort) return false;
 

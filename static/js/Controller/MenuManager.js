@@ -807,7 +807,7 @@ export class MenuManager extends Subject{
         for (let i = 0; i < spells.length; i++){
             items.push({
                 item: {name: spells[i], id: i, belongsIn: "SpellsMenu", getItemId: () => spells[i], getDisplayName: () => names[i]},
-                icon: {src: '/static/assets/images/spells/' + spells[i] + '.png', width: 50, height: 50},
+                icon: {src: '/static/assets/images/spells/type1/' + spells[i] + '.png', width: 50, height: 50},
                 description: ""
             });
         }
@@ -818,7 +818,7 @@ export class MenuManager extends Subject{
         let buildSpell = {
             //TODO: SpellsMenu should be HotbarMenu but that gives an error
             item: {name: "buildSpell", id: 0, belongsIn: "SpellsMenu", getItemId: () => "buildSpell", getDisplayName: () => " Build"},
-            icon: {src: '/static/assets/images/spells/buildSpell.png', width: 50, height: 50},
+            icon: {src: '/static/assets/images/spells/type2/buildSpell.png', width: 50, height: 50},
             description: ""
         };
         this.addItem(buildSpell);
