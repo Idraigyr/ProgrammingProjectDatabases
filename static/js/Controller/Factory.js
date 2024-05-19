@@ -2,6 +2,7 @@ import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
+import {API_URL, buildingUpgradeURI, placeableURI} from "../configs/EndpointConfigs.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 
@@ -207,7 +208,7 @@ export class Factory{
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
-        const modelParams = {position: pos, id: params.id, team: params.team};
+        const modelParams = {position: pos, id: params.id, team: params.team, level: params.level};
 
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
@@ -279,6 +280,7 @@ export class Factory{
             timeEnd.setTime(timeEnd.getTime() + offsetDif);
             // End of black magic
             if(timeEnd < this.currentTime){
+                if(params.task.type === "building_upgrade_task" && model.level < 3) this._levelUpBuilding(params, model);
                 return model;
             }
             params.withTimer = true;
@@ -320,12 +322,75 @@ export class Factory{
                 this.scene.remove(watch.charModel);
                 model.ready = true;
                 this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
+                this.#checkIfBuildingHasUpgradeTask(params, model);
             }
             )
         }
         return model;
     }
 
+    #checkIfBuildingHasUpgradeTask(params, model){
+        // Send get request to the server to check if the model already have the correct level
+        $.ajax({
+            url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                // If there is a task, we have to upgrade the building
+                this._levelUpBuilding(params, model);
+            }});
+    }
+    async _levelUpBuilding(params, model){
+        // Send get request to the server to check if the model already have the correct level
+        await $.ajax({
+            url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                console.log(data);
+                // TODO: or > to disallow downgrading
+                if (data.to_level !== model.level) {
+                    // Send put request to the server to level up the building
+                    $.ajax({
+                        url: `${API_URL}/${placeableURI}/${model.dbType}`,
+                        type: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            placeable_id: model.id,
+                            level: data.to_level
+                        }),
+                        success: (data) => {
+                            console.log(data);
+                            model.level = data.to_level;
+                            // model.dispatchEvent("levelUp");
+                            // Now it's time to delete the task
+                            $.ajax({
+                                url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
+                                type: "DELETE",
+                                contentType: "application/json",
+                                success: (data) => {
+                                    console.log(data);
+                                    console.log("Building ", model.id, " with upgrade task id ", params.task.id, " has been leveled up successfully");
+                                },
+                                error: (xhr, status, error) => {
+                                    console.error(xhr.responseText);
+                                    console.log("Building ", model.id, " with upgrade task id ", params.task.id, " was upgraded, but the task was not deleted");
+                                }
+                            });
+                        },
+                        error: (xhr, status, error) => {
+                            console.error(xhr.responseText);
+                            console.log("Building ", model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
+                        }
+                    });
+                }
+            },
+            error: (xhr, status, error) => {
+                console.error(xhr.responseText);
+                console.log("Building with upgrade task id ", params.task.id, " is not found");
+            }
+        });
+    }
     createProxy(params) {
         const asset = this.assetManager.getAsset(params.buildingName);
         let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
@@ -381,7 +446,7 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[], task}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[], task, level}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
@@ -391,7 +456,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team, task: building.task}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team, task: building.task, level: building.level}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

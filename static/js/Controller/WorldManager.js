@@ -68,7 +68,8 @@ export class WorldManager{
                     id: building.placeable_id,
                     gems: gems,
                     stats: buildingStats.getStats(building.blueprint.name),
-                    task: building.task
+                    task: building.task,
+                    level: building.level,
                 });
             }
 
@@ -307,7 +308,7 @@ export class WorldManager{
         characters.forEach((characters) => {
 
         });
-        this.deleteOldTasks(); // TODO: or somewhere else?
+        await this.deleteOldTasks(); // TODO: or somewhere else?
     }
 
     async deleteOldTasks(){

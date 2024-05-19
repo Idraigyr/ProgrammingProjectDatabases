@@ -197,11 +197,13 @@ class App {
             this.itemManager.removeGem(event);
             this.menuManager.updateMenu({name: buildTypes.getMenuNameFromCtorName(event.detail.building.constructor.name), stats: event.detail.building.getStats()});
         });
-        this.menuManager.addEventListener("lvlUp", (event) => {
+        this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
             this.playerInfo.changeCrystals(-building.upgradeCost);
-            // building.levelUp(); TODO: implement levelUp method
+            await this.playerInfo.createLevelUpTask(building);
+            building.startUpgrade();
+            this.menuManager.exitMenu();
         });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
@@ -317,7 +319,7 @@ class App {
             }
 
             //TODO: move if statements into their own method of the placeable class' subclasses
-            if(building && building.gemSlots > 0){
+            if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0?
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
                 params.stats = building.getStats();
                 params.level = building.level;
