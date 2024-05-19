@@ -40,9 +40,10 @@ export class WorldManager{
     /**
      * imports an island from the database
      * @param {number} islandID
+     * @param {boolean} allowUnreadyBuildings - whether to place buildings that are not ready yet
      * @return {Promise<{characters: *[], island: {buildings: *[], rotation: number, position: {x: number, y: number, z: number}}}>}
      */
-    async importIsland(islandID){
+    async importIsland(islandID, allowUnreadyBuildings = true){
         let island = {
             buildings: [],
                 position: {
@@ -59,6 +60,7 @@ export class WorldManager{
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
+                if(!allowUnreadyBuildings && building.task) continue;
                 const buildingParams = {
                     type: building.blueprint.name,
                     position: new THREE.Vector3(building.x, 0, building.z),
@@ -249,19 +251,26 @@ export class WorldManager{
     }
 
     /**
-     * Adds an enemy player to the world
-     * @param {Object} params - params for the createOpponent method in the factory
+     * Adds a peer to the world
+     * @param {Object} params - params for the createPeer method in the factory
      * @return {Wizard}
      */
-    addOpponent(params){
+    addPeer(params){
         if(params.team === this.world.player.team) throw new Error("cannot add opponent with same team as player");
         const opponent = this.factory.createPeer(params);
         this.world.addEntity(opponent);
         return opponent;
     }
 
-    async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
+    async switchIslands(islandID){
+        this.world.removeIslands();
         const {island, characters} = await this.importIsland(islandID);
+        this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+        this.collisionDetector.generateColliderOnWorker();
+    }
+
+    async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
+        const {island, characters} = await this.importIsland(islandID, false);
         let islandPosition = new THREE.Vector3(0,0,0);
         const offset = this.calculateIslandOffset();
         const rotation = 180;
@@ -321,14 +330,10 @@ export class WorldManager{
         console.log("reset world state player", this.world.player);
     }
 
-
     /**
-     * Imports an island from the server and generates a player
-     * @param islandID - the id of the island to import
-     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     * adds the player
      */
-    async importWorld(islandID){
-        const {island, characters} = await this.importIsland(islandID);
+    createPlayer(){
         let playerPosition;
         if(this.playerInfo.playerPosition) {
             playerPosition = this.playerInfo.playerPosition;
@@ -346,6 +351,25 @@ export class WorldManager{
             maxMana: this.playerInfo.maxMana,
         };
 
+        this.world.setPlayer(this.factory.createPlayer(player));
+        // Set default values for the inventory slots
+        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
+        this.world.player.changeEquippedSpell(0,new BuildSpell({}));
+        this.world.player.changeEquippedSpell(1,new Fireball({}));
+        this.world.player.changeEquippedSpell(2,new ThunderCloud({}));
+        this.world.player.changeEquippedSpell(3,new Shield({}));
+        this.world.player.changeEquippedSpell(4,new IceWall({}));
+    }
+
+
+    /**
+     * Imports an island from the server and generates a player
+     * @param islandID - the id of the island to import
+     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     */
+    async importWorld(islandID){
+        const {island, characters} = await this.importIsland(islandID);
+
         this.factory.currentTime = new Date(await this.playerInfo.getCurrentTime());
         this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
         this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
@@ -355,19 +379,7 @@ export class WorldManager{
         const island1 = this.world.islands[0];
         printFoundationGrid(island1.grid, island1.width, island1.length);
         //--DEBUG--
-
-        this.world.setPlayer(this.factory.createPlayer(player));
-        // Set default values for the inventory slots
-        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
-        this.world.player.changeEquippedSpell(0,new BuildSpell({}));
-        this.world.player.changeEquippedSpell(1,new Fireball({}));
-        this.world.player.changeEquippedSpell(2,new ThunderCloud({}));
-        this.world.player.changeEquippedSpell(3,new Shield({}));
-        this.world.player.changeEquippedSpell(4,new IceWall({}));
-        characters.forEach((characters) => {
-
-        });
-        this.deleteOldTasks(); // TODO: or somewhere else?
+        await this.deleteOldTasks(); // TODO: or somewhere else?
     }
 
     async deleteOldTasks(){
@@ -477,6 +489,7 @@ export class WorldManager{
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const warriorHuts = island.getBuildingsByType("warrior_hut");
             warriorHuts.forEach((hut) => {
+                if(!hut.ready) return;
                 const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: params.interval, maxSpawn: params.maxSpawn, team: 0});
                 spawner.addEventListener("spawn", (event) => {
                    controller.addMinion(this.factory.createMinion(event.detail));
@@ -495,6 +508,7 @@ export class WorldManager{
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const towerProxies = island.getProxysByType("tower_building");
             towerProxies.forEach((towerProxy) => {
+                if(!towerProxy.building.ready) return;
                 const position = towerProxy.position;
                 position.y += 40;
                 const spawner = new SpellSpawner({
@@ -527,6 +541,7 @@ export class WorldManager{
             if(team && island.team !== team) return;
             proxyList.forEach((type) => {
                 island.getBuildingsByType(type).forEach((building) => {
+                    if(!building.ready) return;
                     const proxy = this.factory.createProxy({
                         position: building.position,
                         team: building.team,
@@ -611,7 +626,7 @@ export class WorldManager{
 
     /**
      * changes to resources of the player, when event removes crystals, crystals should always be the first key
-     * @param event
+     * @param {} event
      */
     updatePlayerStats(event){
         for(const key of event.detail.type){

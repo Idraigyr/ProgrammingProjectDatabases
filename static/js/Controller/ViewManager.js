@@ -26,6 +26,42 @@ export class ViewManager extends Subject{
     }
 
     /**
+     * used to hide/show building previews. If hidden, all building previews are shown and vice versa
+     */
+    toggleHideBuildingPreviews(){
+        if(this.hiddenViews){
+            this.hiddenViews.forEach((view) => {
+                view.show();
+                this.dyingViews.push(view);
+            });
+            delete this.hiddenViews;
+        } else {
+            this.hiddenViews = [];
+            this.dyingViews = this.dyingViews.filter((view) => {
+                if(view instanceof View.BuildingPreview){
+                    view.hide();
+                    this.hiddenViews.push(view);
+                    return false;
+                }
+                return true;
+            });
+        }
+    }
+
+    /**
+     * Remove all building previews from the manager (used when player is visiting a friend)
+     */
+    removeBuildingPreviews(){
+        this.dyingViews = this.dyingViews.filter((view) => {
+            if(view instanceof View.BuildingPreview){
+                view.dispose();
+                return false;
+            }
+            return true;
+        });
+    }
+
+    /**
      * Set the camera of the manager
      * @param {THREE.Camera} camera
      */

@@ -101,13 +101,7 @@ export class Timer3D extends IView{
         } catch (err){
             console.log("BoxHelper not added to scene.");
         }
-        for(const key in this.charCounter){
-            for(let i = 0; i < this.charCounter[key].count; i++){
-                this.charAccess.getIndex(key, this.charCounter[key].indices[i]);
-                this.charAccess.freeAssets();
-                console.log(`removing count for ${key} with index ${this.charCounter[key].indices[i]}:`);
-            }
-        }
+        this.charAccess.freeAssets();
     }
 
     /**
@@ -136,7 +130,6 @@ export class Timer3D extends IView{
         this.currentTime -= deltaTime;
         this.currentRotation += this.rotationSpeed * deltaTime;
         const timeString = this.#getTimerString(this.currentTime);
-        console.log("currentTime: ", timeString)
         let newCharCounter = {
             "0": 0,
             "1": 0,

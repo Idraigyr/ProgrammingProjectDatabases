@@ -55,6 +55,7 @@ export class SpellItem extends MenuItem{
     constructor(params) {
         super(params);
         this.unlocked = false;
+        this.element.draggable = false;
         this.display = "flex";
     }
 
@@ -64,8 +65,8 @@ export class SpellItem extends MenuItem{
 
     unlock(params){
         this.unlocked = true;
+        this.element.draggable = true;
         this.element.classList.add("unlocked");
-        //add drag and drop callbacks
     }
 
     get type(){

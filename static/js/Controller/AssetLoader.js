@@ -6,6 +6,7 @@ import {DRACOLoader} from "three-DRACOLoader";
 import * as THREE from "three";
 import {getFileExtension, setIndexAttribute} from "../helpers.js";
 import {AnimationMixer} from "three";
+import {shadowCasting} from "../configs/ViewConfigs.js";
 
 /**
  * Class to load assets
@@ -64,6 +65,7 @@ export class AssetLoader{
             charModel = gltf.scene;
             charModel.traverse(c => {
                 c.castShadow = true;
+                if(shadowCasting) c.receiveShadow = true;
             });
             if(gltf.animations.length > 0){
                 animations = gltf.animations;
@@ -94,6 +96,7 @@ export class AssetLoader{
                     setIndexAttribute(c.geometry);
                 }
                 c.castShadow = true;
+                if(shadowCasting) c.receiveShadow = true;
             });
             if(fbx.animations.length > 0){
                 animations = fbx.animations;

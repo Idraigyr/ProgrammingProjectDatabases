@@ -6,7 +6,7 @@ import {CharacterController} from "./Controller/CharacterController.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
 import {HUD} from "./Controller/HUD.js"
-import "./external/socketio.js"
+import "./external/ChatNamespace.js"
 import "./external/chatBox.js"
 import "./external/LevelUp.js"
 import "./external/friendsMenu.js"
@@ -18,9 +18,9 @@ import {
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey} from "./configs/Keybinds.js";
-import {gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
+import {shadowCasting, gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
 import {buildTypes, gemTypes} from "./configs/Enums.js";
-import {ChatNamespace} from "./external/socketio.js";
+import {ChatNamespace} from "./external/ChatNamespace.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
@@ -74,6 +74,12 @@ class App {
 
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
+
+        if(shadowCasting){
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            this.renderer.shadowMap.enabled = true;
+        }
+
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
 
@@ -485,6 +491,7 @@ class App {
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
         await this.worldManager.importWorld(this.playerInfo.islandID);
+        this.worldManager.createPlayer();
 
         if(this.abort) return false;
 
@@ -566,6 +573,7 @@ class App {
             spellFactory: this.spellFactory,
             factory: this.factory,
             itemManager: this.itemManager,
+            viewManager: this.viewManager,
         });
 
         progressBar.labels[0].innerText = "Last touches...";
@@ -583,12 +591,32 @@ class App {
         const group = new THREE.Group();
         const light = new THREE.AmbientLight( 0xFFFFFF, 2);
         light.position.set(0,3, 10);
-        light.castShadow = true;
+
         group.add(light);
 
         const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 10);
-        dirLight.position.set(0,100, 50);
+        dirLight.position.set(-100,50, 100);
         dirLight.castShadow = true;
+
+        if(shadowCasting){
+            //2048, 4096, 8192, 16384
+            //Set up shadow properties for the light
+            dirLight.shadow.mapSize.width = 8192;
+            dirLight.shadow.mapSize.height = 8192;
+            dirLight.shadow.camera.top = 100;
+            dirLight.shadow.camera.bottom = -100;
+            dirLight.shadow.camera.left = -100;
+            dirLight.shadow.camera.right = 300;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 500;
+            dirLight.shadow.bias = -0.0005;
+            dirLight.shadow.camera.position.set(-100,50, 100);
+            dirLight.shadow.camera.lookAt(0,0,0);
+
+            // const helper = new THREE.CameraHelper( dirLight.shadow.camera );
+            // this.scene.add( helper );
+        }
+
         group.add(dirLight);
         this.scene.add(group);
     }

@@ -279,13 +279,17 @@ export class Factory{
             // Create timer
             const timer = this.timerManager.createTimer(
                 model.timeToBuild,
-                [() => {
+                [() => { //callbacks: make view visible, set model ready and generate collider
                     view.charModel.visible = true;
+                    }, () => {
+                    model.ready = true;
+                    this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
                 }]
             );
             const buildingPreview = new View.BuildingPreview({
                 charModel: assetClone,
                 position: pos,
+                timer: timer,
                 timerModel: new Timer3D({
                     time: model.timeToBuild,
                     charWidth: gridCellSize/25,
@@ -295,18 +299,6 @@ export class Factory{
             });
             this.viewManager.dyingViews.push(buildingPreview);
             this.scene.add(buildingPreview.charModel);
-            // Create visible watch to see time left
-            // Add callback to update view with the up-to-date time
-            // timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
-            // Rotate the watch view each step
-            // timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
-            //     if(watch.charModel) watch.charModel.rotation.y += 2*deltaTime;
-            // });
-            // Remove make the building visible when the timer is finished & generate collider
-            timer.addCallback(() => {
-                model.ready = true;
-                this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
-            });
         }
         return model;
     }

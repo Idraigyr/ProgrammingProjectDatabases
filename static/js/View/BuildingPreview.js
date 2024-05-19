@@ -8,6 +8,8 @@ import {ParticleSystem} from "./ParticleSystem.js";
 export class BuildingPreview extends IView{
     constructor(params) {
         super(params);
+        this.hidden = false;
+        this.timer = params.timer;
         this.timerModel = params.timerModel;
         this.hasUpdates = true;
         // this.particleSystem = new ParticleSystem(params);
@@ -21,12 +23,23 @@ export class BuildingPreview extends IView{
 
     }
 
+    /**
+     * hides the building preview (hides charModel and pauses timer, timer charModel is automatically hidden at the end of every frame)
+     */
     hide(){
         this.charModel.visible = false;
+        this.timer.delayCallbacks = true;
+        this.hidden = true;
     }
 
+    /**
+     * shows the building preview (shows charModel and unpauses timer)
+     */
     show(){
         this.charModel.visible = true;
+        this.timer.delayCallbacks = false;
+        this.timerModel.currentTime = Math.max(0, this.timer.duration);
+        this.hidden = false;
     }
 
     /**

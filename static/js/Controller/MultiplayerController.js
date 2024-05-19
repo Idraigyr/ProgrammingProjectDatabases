@@ -15,6 +15,7 @@ export class MultiplayerController extends Subject{
     menuManager;
     worldManager;
     itemManager;
+    viewManager;
     spellCaster;
     spellFactory;
     factory;
@@ -83,7 +84,9 @@ export class MultiplayerController extends Subject{
 
     /**
      * add all the necessary controllers and managers to the MultiplayerController
-     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster, minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory, factory: Factory, itemManager: ItemManager}} params
+     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster,
+     * minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory,
+     * factory: Factory, itemManager: ItemManager, viewManager: ViewManager}} params
      */
     setUpProperties(params){
         this.playerInfo = params.playerInfo;
@@ -95,6 +98,7 @@ export class MultiplayerController extends Subject{
         this.spellFactory = params.spellFactory;
         this.factory = params.factory;
         this.itemManager = params.itemManager;
+        this.viewManager = params.viewManager;
     }
 
     /**
@@ -187,6 +191,7 @@ export class MultiplayerController extends Subject{
         this.dispatchEvent(this.createMatchmakingEvent());
         this.togglePhysicsUpdates();
         this.toggleTimer(true);
+        this.viewManager.toggleHideBuildingPreviews();
         const progressBar = document.getElementById('progress-bar');
 
         progressBar.labels[0].innerText = "retrieving Opponent info...";
@@ -212,7 +217,7 @@ export class MultiplayerController extends Subject{
         await this.worldManager.addImportedIslandToWorld(this.peerInfo.islandID, this.playerInfo.userID < this.peerInfo.userID);
         progressBar.value = 75;
         // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
-        const opponent = this.worldManager.addOpponent({
+        const opponent = this.worldManager.addPeer({
             position: this.peerInfo.playerPosition,
             health: this.peerInfo.maxHealth,
             maxHealth: this.peerInfo.maxHealth,
@@ -361,6 +366,7 @@ export class MultiplayerController extends Subject{
         //stop receiving state updates from server
         document.querySelector('.loading-animation').style.display = 'none';
         this.toggleTimer(false);
+        this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
         this.togglePhysicsUpdates();
         console.log("done leaving match");
@@ -635,24 +641,24 @@ export class MultiplayerController extends Subject{
 
     /**
      * Processes the island visit event
-     * @param {{request: "accept" | "reject" | "visit" | "leave" | "kick" | "cancel"}} data
+     * @param {{request: "accept" | "reject" | "visit" | "leave" | "kick" | "cancel", sender: number}} data
      */
-    processIslandVisitEvent(data){
+    async processIslandVisitEvent(data){
         // if(this.pendingVisitRequest === this.peerInfo.userID) this.pendingVisitRequest = null;
         switch (data.request) {
             case "accept": //your friend accepted your visit request
                 //TODO: load friends' island
-                this.loadFriendIsland();
+                await this.loadFriendIsland(data.sender);
                 break;
             case "reject": //your friend rejected your visit request
-                this.#addFriendNotification(`${this.peerInfo.username} rejected your visit request`, data.request);
+                this.#addFriendNotification(`${this.peerInfo.username} rejected your visit request`, data.request, data.sender);
                 //TODO: set pendingVisitRequest to null
                 this.friendsMenu.querySelector(`#friend-${this.peerInfo.userID}`).querySelector(".View-Island").innerText = "Visit Island";
                 this.cancelIslandVisitRequest();
                 break;
             case "kick": //your friend kicked you out of his/her island
                 //TODO: unload friend's island
-                this.unloadFriendIsland();
+                await this.unloadFriendIsland();
                 break;
             case "leave": // your friend left your island
                 //TODO: unload friend
@@ -660,10 +666,12 @@ export class MultiplayerController extends Subject{
                 break;
             case "visit": //your friend requested to visit your island
                 //TODO: add notification to notification bell and show request message when friendsmenu is opened
-                this.#addFriendNotification(`'FriendName' requested to visit your island`, data.request);
+                //TODO: get friend name from friendslist
+                this.#addFriendNotification(`'FriendName' requested to visit your island`, data.request, data.sender);
                 break;
             case "cancel": //your friend cancelled his/her visit request
-                this.#addFriendNotification(`'FriendName' cancelled his/her visit request`, data.request)
+                //TODO: get friend name from friendslist
+                this.#addFriendNotification(`'FriendName' cancelled his/her visit request`, data.request, data.sender)
                 //TODO: reset state that was augmented when the visit request was processed
                 break;
 
@@ -716,18 +724,19 @@ export class MultiplayerController extends Subject{
 
     /**
      * accepts the visit request from your friend
-     * @param event
+     * @param userId - id of the user that sent the visit request
      */
-    acceptIslandVisit(event){
-        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "accept");
-        this.loadFriend();
+    async acceptIslandVisit(userId){
+        this.forwardingNameSpace.sendIslandVisitEvent(userId, "accept");
+        await this.loadFriend(userId);
     }
 
     /**
      * rejects the visit request from your friend
+     * @param userId - id of the user that sent the visit request
      */
-    rejectIslandVisit() {
-        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "reject");
+    rejectIslandVisit(userId) {
+        this.forwardingNameSpace.sendIslandVisitEvent(userId, "reject");
     }
 
     /**
@@ -741,45 +750,106 @@ export class MultiplayerController extends Subject{
     /**
      * leave your friend's island
      */
-    leaveFriendIsland(){
+    async leaveFriendIsland(){
         this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "leave");
-        this.unloadFriendIsland();
+        await this.unloadFriendIsland();
     }
 
     /**
      * loads your friend's island (and unloads your own island)
+     * @param {number} userId - id of the user that sent the visit request
      */
-    loadFriendIsland(){
+    async loadFriendIsland(userId){
+        //TODO: remove own island and load friend's island
+        console.log("loading friend's island...");
+        this.togglePhysicsUpdates();
+        this.viewManager.removeBuildingPreviews();
+        const progressBar = document.getElementById('progress-bar');
 
+        progressBar.labels[0].innerText = "teleporting friend to your island...";
+
+        this.menuManager.exitMenu();
+        this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
+        this.spellCaster.multiplayer = true;
+        //TODO: totally block input and don't allow recapture of pointerlock for the duration of this method
+
+        document.querySelector('.loading-animation').style.display = 'block';
+
+        //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
+        await this.loadFriend(userId);
+        progressBar.value = 50;
+
+        progressBar.labels[0].innerText = `importing ${this.peerInfo.username}'s island...`;
+
+        //synchronise coordinate system of 2 islands: lowest user id island is the main island which is set to (0,0,0).
+        // the other island is rotated 180 degrees around the y-axis and translated from center of main island
+
+        //construct 2nd player object and island object and add to world
+        await this.worldManager.switchIslands(this.peerInfo.islandID);
+        progressBar.value = 75;
+
+        this.togglePhysicsUpdates();
+        document.querySelector('.loading-animation').style.display = 'none';
     }
 
     /**
      * loads your friend on your island
+     * @param {number} userId - id of the user that sent the visit request
      */
-    loadFriend(){
-
+    async loadFriend(userId){
+        //TODO: load friend on your island
+        await this.peerInfo.retrieveInfo(userId);
+        const friend = this.worldManager.addPeer({
+            position: this.peerInfo.playerPosition,
+            health: this.peerInfo.maxHealth,
+            maxHealth: this.peerInfo.maxHealth,
+            team: 1
+        });
+        friend.setId({entity: {player_id: this.peerInfo.userID}});
+        this.peerController = new Controller.PeerController({peer: friend});
+        this.startSendingStateUpdates(this.peerInfo.userID);
     }
 
     /**
      * unloads your friend's island (and loads your own island)
      */
-    unloadFriendIsland(){
+    async unloadFriendIsland(){
+        console.log("leaving friends island");
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.labels[0].innerText = "leaving match...";
+        document.querySelector('.loading-animation').style.display = 'block';
+        this.togglePhysicsUpdates();
 
+        this.spellCaster.multiplayer = false;
+        //stop sending state updates to server & remove event listeners
+        // this.stopSendingStateUpdates(); => moved to leaveMatch
+        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
+
+        this.unloadFriend();
+
+        await this.worldManager.switchIslands(this.playerInfo.userID);
+        //stop receiving state updates from server
+        document.querySelector('.loading-animation').style.display = 'none';
+        this.togglePhysicsUpdates();
+        console.log("done leaving match");
     }
 
     /**
      * removes your friend from your island
      */
     unloadFriend(){
-
+        //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
+        this.stopSendingStateUpdates();
+        this.peerController.peer = null;
     }
 
     /**
      * adds a message to the mailbox
      * @param {string} message
      * @param {string} type - type of notification (visit, cancel, ...)
+     * @param {number} userId - id of the user that sent the message
      */
-    #addMessageToMailbox(message, type){
+    #addMessageToMailbox(message, type, userId){
         const notification = document.createElement("div");
         const notificationText = document.createElement("p");
         const notificationButtonsContainer = document.createElement("div");
@@ -792,35 +862,30 @@ export class MultiplayerController extends Subject{
         notificationText.classList.add('request-text');
         notification.classList.add('request');
 
+        notification.addEventListener("click", async (event) => {
+            if(event.target.classList.contains("Accept-Request")){
+                if(type === "visit") await this.acceptIslandVisit(userId);
+            } else if(event.target.classList.contains("Reject-Request")){
+                if(type === "visit") this.rejectIslandVisit(userId);
+            }
+            this.#removeFriendNotification();
+            notification.remove();
+        });
+
 
         notification.appendChild(notificationText);
         notification.appendChild(notificationButtonsContainer);
 
-
         switch (type) {
             case "visit":
-                acceptButton.addEventListener("click", () =>{
-                    this.acceptIslandVisit();
-                    this.#removeFriendNotification();
-                    notification.remove();
-                });
-                rejectButton.addEventListener("click", () =>{
-                    this.rejectIslandVisit();
-                    this.#removeFriendNotification();
-                    notification.remove();
-                });
                 notificationButtonsContainer.appendChild(acceptButton);
                 notificationButtonsContainer.appendChild(rejectButton);
                 break;
             case "cancel":
-                rejectButton.addEventListener("click", () =>{
-                    this.#removeFriendNotification();
-                    notification.remove();
-                });
                 notificationButtonsContainer.appendChild(rejectButton);
                 break;
-
         }
+
         this.friendsMenu.querySelector("#listRequests").appendChild(notification);
     }
 
@@ -828,11 +893,12 @@ export class MultiplayerController extends Subject{
      * adds a notification to the notification bell and puts the message in your mailbox
      * @param {string} message
      * @param {string} type - type of notification (visit, cancel, ...)
+     * @param {number} userId - id of the user that sent the message
      */
-    #addFriendNotification(message, type){
+    #addFriendNotification(message, type, userId){
         const notificationCount = this.notificationContainer.querySelector(".notification-count");
         notificationCount.innerText = parseInt(notificationCount.innerText) + 1;
-        this.#addMessageToMailbox(message, type);
+        this.#addMessageToMailbox(message, type, userId);
         this.notificationContainer.style.display = "block";
     }
 

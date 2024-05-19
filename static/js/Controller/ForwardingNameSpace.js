@@ -26,6 +26,9 @@ export class ForwardingNameSpace extends Subject{
         this.socket.on('match_timer', (data) => params.updateMatchTimer(data));
         this.socket.on('already_connected', this.dispatchAbortSignal.bind(this));
         this.socket.on('island_visit', (data) => params.processIslandVisitEvent(data));
+        this.socket.on('online_status', (data) => {
+            console.log(data);
+        });
     }
 
     /**
@@ -87,5 +90,13 @@ export class ForwardingNameSpace extends Subject{
      */
     sendIslandVisitEvent(userId, request) {
         this.socket.emit('island_visit', {'target': userId, 'request': request});
+    }
+
+    /**
+     * Send a message to the server that the player wants to check the online status of player with given userId
+     * @param {number} userId
+     */
+    sendCheckOnlineStatusEvent(userId) {
+        this.socket.emit('check_online_status', {'target': userId});
     }
 }

@@ -59,6 +59,18 @@ class ForwardingNamespace(Namespace):
         """
         self._log.debug(f"Ending match: {match_id}")
         try:
+            #remove friend visit "match"
+            if self.matches[match_id]['time_left'] is None:
+                self._log.debug(f"Ending friend visit: {match_id}")
+                for player_id in self.matches[match_id]['players']:
+                    if player_id != request.sid:
+                        self.emit('island_visit', {'request': 'leave'}, room=self.clients[player_id])
+
+                    del self.playing[player_id]
+                self.matches.pop(match_id)
+
+                return
+
             with self.app.app_context():
                 #transfer ownership of stakes to winner or when there is a draw, return stakes to players
                 if winner_id is None:
@@ -244,7 +256,6 @@ class ForwardingNamespace(Namespace):
         except Exception:
             self._log.error(f"Could not send match found message: {match_id} between {player1} and {player2}", exc_info=True)
 
-
     def on_island_visit(self, data):
         """
         forwards the island_visit event
@@ -261,10 +272,34 @@ class ForwardingNamespace(Namespace):
             senderId = self.get_user_from_sid(request.sid)
 
             data['sender'] = senderId
-            # TODO: add a visit request to the db (also make an endpoint to get the requests, this will be called on game load)
+
+            if message == "accept":
+                match_id = f'{senderId}-{targetId}'
+                self.playing[senderId] = match_id
+                self.playing[targetId] = match_id
+                self.matches[match_id] = {'players': [senderId, targetId], 'time_left': None}
+            elif message == "kick" or message == "leave":
+                match_id = self.playing[senderId]
+                self.end_match(match_id, None)
 
             for sid in target_sids:
                 self.emit('island_visit', data, room=sid)
         except Exception:
             self._log.error(f"Could not forward message: {data}", exc_info=True)
 
+    def on_check_online_status(self, data):
+        """
+        checks the online status of the target user
+        :param data:  message from the client
+        :return:
+        """
+        try:
+            targetId = int(data['target'])
+            status = "offline"
+            if targetId in self.clients:
+                status = "online"
+            if targetId in self.playing:
+                status = "in_match"
+            self.emit('online_status', {'target': targetId, 'status': status}, room=request.sid)
+        except Exception:
+            self._log.error(f"Could not check online status: {data}", exc_info=True)

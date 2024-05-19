@@ -100,3 +100,5 @@ export const islandWidth = 15;
 export const islandLength = 15;
 
 export const displayViewBoxHelper = false;
+
+export const shadowCasting = false;
