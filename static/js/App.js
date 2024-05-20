@@ -236,6 +236,11 @@ class App {
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
                 if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
             }
+            for(const spell of spellTypes.getNamesList()){
+                if(!spells.find(s => s.id === spellTypes.getId(spell))){
+                    spells.push({id: spellTypes.getId(spell), slot: null});
+                }
+            }
             this.playerInfo.updateSpells({detail: {spells: spells}});
         });
 

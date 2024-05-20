@@ -103,13 +103,8 @@ export class PlayerInfo extends Subject{
      * @param event
      */
     updateSpells(event){
-        this.spells = [];
         for(const spell of event.detail.spells){
-            this.spells.push({
-                player_id: this.userID,
-                spell_id: spell.id,
-                slot: spell.slot
-            });
+            this.spells.find(s => s.spell_id === spell.id).slot = spell.slot;
         }
         $.ajax({
             url: `${API_URL}/${playerURI}`,

@@ -407,7 +407,7 @@ export const spellTypes = (() => {
         BuildSpell: new BuildSpell({})
     }
 
-    const ctor = {
+    const ctors = {
         Fireball: Fireball,
         IceWall: IceWall,
         Zap: Zap,
@@ -417,7 +417,7 @@ export const spellTypes = (() => {
         BuildSpell: BuildSpell
     }
 
-    const name = {
+    const names = {
         0: "BuildSpell",
         1: "Fireball",
         2: "IceWall",
@@ -427,7 +427,7 @@ export const spellTypes = (() => {
         6: "Heal"
     }
 
-    const id = {
+    const ids = {
         BuildSpell: 0,
         Fireball: 1,
         IceWall: 2,
@@ -449,7 +449,7 @@ export const spellTypes = (() => {
 
     return {
         getCtor(name) {
-            return ctor[name];
+            return ctors[name];
         },
 
         getSpellObject: function (name) {
@@ -458,19 +458,23 @@ export const spellTypes = (() => {
 
         getSpellObjectFromId: function (id) {
             console.log(`returning spell object from id: ${id}`)
-            return spellObject[name[id]];
+            return spellObject[names[id]];
         },
 
         getName(id) {
-            return name[id];
+            return names[id];
         },
 
         getId(name) {
-            return id[name];
+            return ids[name];
         },
 
         getIcon: function (name) {
             return icons[name];
+        },
+
+        getNamesList: function () {
+            return Object.keys(ids);
         }
     }
 })();
