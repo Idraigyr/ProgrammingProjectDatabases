@@ -25,6 +25,8 @@ export const gemAttributesURI = 'api/gem/attributes/list';
 
 export const spellListURI = 'api/spell/list';
 
+export const playerStatsURI = 'api/player_stats';
+
 export const taskURI = 'api/task';
 
 export const postRetries = 3;

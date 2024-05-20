@@ -1,4 +1,5 @@
 import { Controller } from "./Controller.js";
+import {spellTypes} from "../Model/Spell.js";
 
 /**
  * Class for the HUD controller
@@ -147,11 +148,11 @@ export class HUD {
 
     /**
      * sets a spell icon in the hotbar
-     * @param {number} spellSlot - the spell slot to set the icon for (1-5)
-     * @param {string} spellIcon - the url of the icon to set
+     * @param {{detail: {index: number, spell: ConcreteSpell | null}}} event
      */
-    setSpellIcon(spellSlot, spellIcon) {
-        const spellIconElement = document.querySelector(`.HotBarIcons .Spell${spellSlot}Icon .spell-icon-img`);
-        spellIconElement.src = spellIcon ?? "";
+    setSpellIcon(event) {
+        const spellIconElement = document.querySelector(`.HotBarIcons .Spell${event.detail.index+1}Icon .spell-icon-img`);
+        console.log(event.detail.spell, event.detail.spell?.constructor.name);
+        spellIconElement.src = spellTypes.getIcon(event.detail.spell?.constructor.name) ?? "";
     }
 }

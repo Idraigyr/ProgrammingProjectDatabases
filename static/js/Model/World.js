@@ -40,6 +40,11 @@ export class World{
             }
             return true;
         });
+
+        this.spellFactory.models.forEach((model) => {
+            model.dispose();
+        });
+        this.spellFactory.models = [];
     }
 
     /**

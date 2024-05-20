@@ -1,5 +1,5 @@
 import {assert} from "../../helpers.js";
-import {multiplayerStats} from "../../configs/ControllerConfigs.js";
+import {multiplayerStats} from "../../configs/Enums.js";
 
 export class IMenu {
     constructor(params) {
@@ -618,11 +618,13 @@ export class MultiplayerStatsMenu extends IMenu{
         buttonContainer.appendChild(lifetimeButton);
         buttonContainer.addEventListener("click", this.toggleStats.bind(this));
         statsDiv.appendChild(buttonContainer);
-        for(const property in multiplayerStats){
+        console.log(multiplayerStats.getKeys())
+        for(const key of multiplayerStats.getKeys()){
+            console.log(key)
             const statElement = document.createElement("li");
-            statElement.id = property;
+            statElement.id = key;
             statElement.classList.add("multiplayer-stats-menu-li");
-            statElement.innerText = `${property}: ${multiplayerStats[property]}`;
+            statElement.innerText = `${key}: 0`;
             list.appendChild(statElement);
         }
         element.appendChild(statsDiv);
@@ -664,7 +666,7 @@ export class MultiplayerStatsMenu extends IMenu{
         }
         for(const stat of stats){
                 const list = this.element.querySelector(".multiplayer-stats-menu-ul");
-                const statElement = list.querySelector(`#${stat.name}`);
+                const statElement = list.querySelector(`#${stat.key}`);
                 statElement.innerText = `${stat.name}: ${stat.value}`;
             }
     }

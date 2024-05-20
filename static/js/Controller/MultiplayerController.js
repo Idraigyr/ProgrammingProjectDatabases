@@ -1,11 +1,11 @@
-import {API_URL, matchMakingURI} from "../configs/EndpointConfigs.js";
+import {API_URL, matchMakingURI, playerStatsURI, postRetries} from "../configs/EndpointConfigs.js";
 import {PlayerInfo} from "./PlayerInfo.js";
 import * as THREE from "three";
 import {Controller} from "./Controller.js";
 import {Fireball, spellTypes} from "../Model/Spell.js";
 import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
-import {multiplayerStats} from "../configs/ControllerConfigs.js";
+import {multiplayerStats} from "../configs/Enums.js";
 
 /**
  * MultiplayerController class
@@ -54,9 +54,21 @@ export class MultiplayerController extends Subject{
 
         this.countStats = false;
         this.stats = new Map();
-        for(const property in multiplayerStats){
-            this.stats.set(property, 0);
-        }
+        this.lifetimeStats = new Map();
+    }
+
+    /**
+     * sets the lifetime stats of the player (& initializes the current stats)
+     * call on game load! (after playerInfo is set)
+     */
+    #setLifetimeStats(){
+        this.#getLifetimeStats().then((data) => {
+            for(const property in data){
+                if(property === "player_id") continue;
+                this.lifetimeStats.set(property, data[property]);
+                this.stats.set(property, 0);
+            }
+        });
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -83,13 +95,14 @@ export class MultiplayerController extends Subject{
     }
 
     /**
-     * add all the necessary controllers and managers to the MultiplayerController
+     * add all the necessary controllers and managers to the MultiplayerController + initialize the stats properties
      * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster,
      * minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory,
      * factory: Factory, itemManager: ItemManager, viewManager: ViewManager}} params
      */
     setUpProperties(params){
         this.playerInfo = params.playerInfo;
+        this.#setLifetimeStats();
         this.menuManager = params.menuManager;
         this.worldManager = params.worldManager;
         this.spellCaster = params.spellCaster;
@@ -282,8 +295,8 @@ export class MultiplayerController extends Subject{
 
         //update stats
         if(this.countStats){
-            this.stats.set("gemsWon", this.stats.get("gemsWon") + newGemViews.length);
-            this.stats.set("gamesPlayed", this.stats.get("gamesPlayed") + 1);
+            this.stats.set("gems_won", this.stats.get("gems_won") + newGemViews.length);
+            this.stats.set("games_played", this.stats.get("games_played") + 1);
         }
 
         //fill params for results screen
@@ -291,12 +304,12 @@ export class MultiplayerController extends Subject{
         const currentStats = [];
         const lifetimeStats = [];
         this.stats.forEach((value, key) => {
-            currentStats.push({name: key, value: value});
-            multiplayerStats[key] += value;
+            currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+            this.lifetimeStats.set(key, this.lifetimeStats.get(key) + value);
         });
-        for(const property in multiplayerStats){
-            lifetimeStats.push({name: property, value: multiplayerStats[property]});
-        }
+        this.lifetimeStats.forEach((value, key) => {
+            lifetimeStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+        });
 
         if(data.winner_id === this.playerInfo.userID){
             //show win screen
@@ -307,12 +320,12 @@ export class MultiplayerController extends Subject{
             newGemViews.forEach(gemView => {
                 renderGems.push(gemView.item.getItemId());
             });
-            if(this.countStats) this.stats.set("gamesWon", this.stats.get("gamesWon") + 1);
+            if(this.countStats) this.stats.set("games_won", this.stats.get("games_won") + 1);
             console.log("you win");
         } else if (data.winner_id === this.peerInfo.userID){
             //show lose screen
             this.result = "lose";
-            if(this.countStats) this.stats.set("gemsLost", this.stats.get("gemsLost") + this.stakedGems.length);
+            if(this.countStats) this.stats.set("gems_lost", this.stats.get("gems_lost") + this.stakedGems.length);
             this.stakedGems.forEach(gem => {
                 renderGems.push(gem.getItemId());
             });
@@ -324,6 +337,13 @@ export class MultiplayerController extends Subject{
             });
             console.log("draw");
         }
+        //update lifetime stats
+        await this.updateLifetimeStats();
+        //reset current stats
+        this.stats.forEach((value, key) => {
+            this.stats.set(key, 0);
+        });
+
         this.menuManager.renderMenu({
             name: "MultiplayerMenu",
             result: this.result,
@@ -334,6 +354,80 @@ export class MultiplayerController extends Subject{
             }
         });
         //wait for player to click on close button
+    }
+
+    /**
+     * retrieves the lifetime stats of the player from backend and updates the multiplayerStats object with it
+     * @return {Promise<unknown>}
+     */
+    async #getLifetimeStats(){
+        return new Promise((resolve, reject) => {
+            const counter = 0;
+            $.ajax({
+                url: `${API_URL}/${playerStatsURI}?player_id=${this.playerInfo.userID}`,
+                type: "GET",
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                    reject(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("GET success");
+                console.log(textStatus, data);
+                delete data["player_id"];
+                resolve(data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("GET fail");
+                console.log(textStatus, errorThrown);
+                if(counter < postRetries){
+                    console.log("retrying...");
+                    this.#getLifetimeStats();
+                } else {
+                    reject(errorThrown);
+                }
+            });
+        });
+    }
+
+    /**
+     * updates the lifetime stats of the player in the backend
+     * @return {Promise<unknown>}
+     */
+    async updateLifetimeStats(){
+        let counter = 0;
+        let data = {player_id: this.playerInfo.userID};
+        this.lifetimeStats.forEach((value, key) => {
+            const currentValue = this.stats.get(key);
+            this.lifetimeStats.set(key, currentValue + value);
+            data[key] = currentValue + value;
+        });
+        return new Promise((resolve, reject)=> {
+            $.ajax({
+                url: `${API_URL}/${playerStatsURI}`,
+                type: "PUT",
+                data: JSON.stringify(data),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+                resolve(data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                console.log(textStatus, errorThrown);
+                if (counter < postRetries) {
+                    console.log("retrying...");
+                    counter++;
+                    this.updateLifetimeStats();
+                } else{
+                    reject(errorThrown);
+                }
+            });
+        });
     }
 
     /**
@@ -395,11 +489,11 @@ export class MultiplayerController extends Subject{
             this.peerController.update(data.player);
         }
         if(data.playerHealth){
-            if(this.countStats) this.stats.set("damageTaken", this.stats.get("damageTaken") + data.playerHealth.previous - data.playerHealth.current);
+            if(this.countStats) this.stats.set("damage_taken", this.stats.get("damage_taken") + data.playerHealth.previous - data.playerHealth.current);
             this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
         }
         if(data.spellEvent) {
-            data.spellEvent.type = new (spellTypes.getCtor(data.spellEvent.type))({});
+            data.spellEvent.type = spellTypes.getCtor(data.spellEvent.type);
             for (const property in data.spellEvent.params) {
                 //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
                 if(data.spellEvent.params[property]?.x) data.spellEvent.params[property] = new THREE.Vector3(
@@ -500,7 +594,7 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {health: number, id: number}}} event
      */
     sendEnemyHealthUpdate(event){
-        if(this.countStats) this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
+        if(this.countStats) this.stats.set("damage_dealt", this.stats.get("damage_dealt") + event.detail.previous - event.detail.current);
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 healthUpdate: {health: event.detail.current, id: event.detail.id}
@@ -525,7 +619,7 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {health: number}}} event
      */
     sendPlayerHealthUpdate(event){
-        if(this.countStats) this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
+        if(this.countStats) this.stats.set("damage_dealt", this.stats.get("damage_dealt") + event.detail.previous - event.detail.current);
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             playerHealth: event.detail
         });
@@ -536,7 +630,7 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     enemyDeathEvent(event){
-        if(this.countStats) this.stats.set("minionsKilled", this.stats.get("minionsKilled") + 1);
+        if(this.countStats) this.stats.set("minions_killed", this.stats.get("minions_killed") + 1);
         event.detail.model.removeEventListener("updatedHealth", this.updateEvents.get("minionHealthUpdate"));
         event.detail.model.removeEventListener("delete", this.updateEvents.get("minionDeath"));
     }
@@ -546,7 +640,7 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     sendPlayerDeathEvent(event){
-        if(this.countStats) this.stats.set("playerKills", this.stats.get("playerKills") + 1);
+        if(this.countStats) this.stats.set("player_kills", this.stats.get("player_kills") + 1);
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             player: {
                 death: event.detail

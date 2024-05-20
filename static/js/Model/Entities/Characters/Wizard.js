@@ -33,6 +33,7 @@ export class Wizard extends Character{
         }
         this.#spells.splice(index,1,newSpell);
         this.spellCooldowns.splice(index,1,onCooldown ? newSpell.getCooldown() : 0);
+        this.dispatchEvent(this.#createChangeSpellEvent(index, newSpell));
     }
 
     /**
@@ -172,6 +173,16 @@ export class Wizard extends Character{
      */
     get type(){
         return "player";
+    }
+
+    /**
+     * create a custom event to update a spell of the player
+     * @param {number} index
+     * @param {ConcreteSpell} newSpell
+     * @return {CustomEvent<{spell, index}>}
+     */
+    #createChangeSpellEvent(index, newSpell){
+        return new CustomEvent("changeSpell", {detail: {index: index, spell: newSpell}});
     }
 
     /**

@@ -229,12 +229,14 @@ class App {
             // building.levelUp(); TODO: implement levelUp method
         });
         this.menuManager.addEventListener("switchSpells", (event) => {
+            const spells = []
             for(let i = 0; i < 5; i++){
                 let spell = null;
                 if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
-                this.hud.setSpellIcon(i+1, spellTypes.getIcon(event.detail.spellIds[i]));
+                if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
             }
+            this.playerInfo.updateSpells({detail: {spells: spells}});
         });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
@@ -532,6 +534,19 @@ class App {
 
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
+        this.worldManager.world.player.addEventListener("changeSpell", this.hud.setSpellIcon.bind(this.hud));
+        this.worldManager.setPlayerSpells();
+        console.log(this.playerInfo.spells);
+        this.menuManager.createSpellItems(this.playerInfo.spells.map(spell => {
+            let unlocked = true;
+            if(spell.spell_id === 3 || spell.spell_id === 6) unlocked = false;
+            return {
+                name: spellTypes.getName(spell.spell_id),
+                slot: spell.slot,
+                src: spellTypes.getIcon(spellTypes.getName(spell.spell_id)),
+                unlocked: unlocked
+            }
+        }));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
         this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));

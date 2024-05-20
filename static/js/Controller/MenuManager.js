@@ -630,7 +630,8 @@ export class MenuManager extends Subject{
      * @param {MenuItem} item
      */
     #addItemToMenu(item){
-        this.menus.get(item.belongsIn).addChild("afterbegin", item);
+        item.attachTo(this.menus.get(item.belongsIn));
+        // this.menus.get(item.belongsIn).addChild("afterbegin", item);
     }
 
     //untested
@@ -818,28 +819,41 @@ export class MenuManager extends Subject{
         this.addItems(items);
     }
 
-    #createSpellItems(){
-        let spells = ["Fireball", "IceWall", "Shield", "ThunderCloud"];
-        let names = ["Fireball", "IceWall", "Shield", "ThunderCloud"];
+    /**
+     * create views in the menus for spell items and adds them to the menu
+     * @param {{name: string, slot: number | null, src: string, unlocked: boolean}[]} spells
+     */
+    createSpellItems(spells){
+        spells.sort((a, b) => {
+            let number = 0;
+            if(a.slot && !b.slot) number = -1;
+            if(!a.slot && b.slot) number = 1;
+            if(a.slot && b.slot) number = a.slot - b.slot;
+            return number;
+        });
         let items = [];
         for (let i = 0; i < spells.length; i++){
+            if(spells[i].name === "BuildSpell") continue;
             items.push({
-                item: {name: spells[i], id: i, belongsIn: "SpellsMenu", getItemId: () => spells[i], getDisplayName: () => names[i]},
-                icon: {src: '/static/assets/images/spells/type2/' + spells[i] + '.png', width: 50, height: 50},
+                item: {id: i, belongsIn: spells[i].slot ? "HotbarMenu" : "SpellsMenu", getItemId: () => spells[i].name, getDisplayName: () => spells[i].name},
+                icon: {src: spells[i].src, width: 50, height: 50},
                 description: "",
                 extra: { //TODO: change this based on lvl
-                    unlocked: true,
-                    draggable: true
+                    unlocked: spells[i].unlocked,
+                    draggable: spells[i].unlocked
                 }
             });
         }
         this.addItems(items);
     }
 
+    /**
+     * creates the buildSpell item (permanently in hotbar)
+     */
     #createHotbarItem(){
         let buildSpell = {
             //TODO: SpellsMenu should be HotbarMenu but that gives an error
-            item: {name: "BuildSpell", id: 0, belongsIn: "HotbarMenu", getItemId: () => "BuildSpell", getDisplayName: () => "build spell"},
+            item: {id: 0, belongsIn: "HotbarMenu", getItemId: () => "BuildSpell", getDisplayName: () => "build spell"},
             icon: {src: '/static/assets/images/spells/type2/BuildSpell.png', width: 50, height: 50},
             description: "",
             extra: {
@@ -884,7 +898,6 @@ export class MenuManager extends Subject{
         this.collectParams.meter = this.menus.get("CollectMenu").element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
-        this.#createSpellItems();
         this.#createHotbarItem();
     }
 

@@ -118,6 +118,30 @@ export const gemTypes = (function (){
     };
 })();
 
+export const multiplayerStats = (function (){
+    const description = {
+        player_kills: "Player Kills",
+        player_deaths: "Player Deaths",
+        minions_killed: "Minions Killed",
+        damage_dealt: "Damage Dealt",
+        damage_taken: "Damage Taken",
+        mana_spent: "Mana Spent",
+        spell_casts: "Spell Casts",
+        gems_won: "Gems Won",
+        gems_lost: "Gems Lost",
+        games_played: "Games Played",
+        games_won: "Games Won",
+    }
+    return {
+        getDescription: function (name) {
+            return description[name];
+        },
+        getKeys: function () {
+            return Object.keys(description);
+        }
+    }
+})();
+
 export const buildingStats = (function (){
     const stats = {
         Altar: [

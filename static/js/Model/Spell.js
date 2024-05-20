@@ -417,7 +417,7 @@ export const spellTypes = (() => {
         BuildSpell: BuildSpell
     }
 
-    const ids = {
+    const name = {
         0: "BuildSpell",
         1: "Fireball",
         2: "IceWall",
@@ -425,6 +425,16 @@ export const spellTypes = (() => {
         4: "ThunderCloud",
         5: "Shield",
         6: "Heal"
+    }
+
+    const id = {
+        BuildSpell: 0,
+        Fireball: 1,
+        IceWall: 2,
+        Zap: 3,
+        ThunderCloud: 4,
+        Shield: 5,
+        Heal: 6
     }
 
     const icons = {
@@ -447,7 +457,16 @@ export const spellTypes = (() => {
         },
 
         getSpellObjectFromId: function (id) {
-            return spellObject[ids[id]];
+            console.log(`returning spell object from id: ${id}`)
+            return spellObject[name[id]];
+        },
+
+        getName(id) {
+            return name[id];
+        },
+
+        getId(name) {
+            return id[name];
         },
 
         getIcon: function (name) {

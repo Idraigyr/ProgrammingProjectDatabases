@@ -64,6 +64,7 @@ export class SpellItem extends MenuItem{
     }
 
     attachTo(parent) {
+        console.log("adding spell to menu:", this)
         parent.addChild("beforeend", this);
     }
 

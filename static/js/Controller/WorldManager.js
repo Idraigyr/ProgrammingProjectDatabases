@@ -4,7 +4,7 @@ import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
-import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "../Model/Spell.js";
+import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall, spellTypes} from "../Model/Spell.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
@@ -352,13 +352,14 @@ export class WorldManager{
         };
 
         this.world.setPlayer(this.factory.createPlayer(player));
-        // Set default values for the inventory slots
-        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
-        this.world.player.changeEquippedSpell(0,new BuildSpell({}));
-        // this.world.player.changeEquippedSpell(1,new Fireball({}));
-        // this.world.player.changeEquippedSpell(2,new ThunderCloud({}));
-        // this.world.player.changeEquippedSpell(3,new Shield({}));
-        // this.world.player.changeEquippedSpell(4,new IceWall({}));
+    }
+
+    setPlayerSpells(){
+        for(const spell of this.playerInfo.spells){
+            if(spell.slot === null) continue;
+            console.log("setting spell on player", spell)
+            this.world.player.changeEquippedSpell(spell.slot, spellTypes.getSpellObjectFromId(spell.spell_id));
+        }
     }
 
 
