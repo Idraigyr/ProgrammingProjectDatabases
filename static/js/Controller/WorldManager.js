@@ -352,7 +352,7 @@ export class WorldManager{
                     this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
                 }
                 this.collisionDetector.generateColliderOnWorker();
-                this.playerInfo.changeXP(10);
+                this.playerInfo.changeXP(100);
                 this.playerInfo.buildingsPlaced[buildingName]++;
                 return true;
             } else {
