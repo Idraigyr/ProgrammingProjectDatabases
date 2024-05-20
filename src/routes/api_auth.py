@@ -287,10 +287,16 @@ def password_reset():
 
         username = escape(request.args.get('username'))
         newPassword = escape(request.args.get('password'))
+        firstname = escape(request.args.get('firstname'))
+        lastname = escape(request.args.get('lastname'))
 
         # Check if the user exists
         user = AUTH_SERVICE.get_user(username=username)
         if user is None:
+            return Response(json.dumps({'status': 'error', 'message': 'User not found'}), status=404, mimetype='application/json')
+
+        if user.firstname != firstname or user.lastname != lastname:
+            _log.warning(f'User {username} attempted to reset password with incorrect firstname and/or lastname')
             return Response(json.dumps({'status': 'error', 'message': 'User not found'}), status=404, mimetype='application/json')
 
         # Check if the user uses OAuth2

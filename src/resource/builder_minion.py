@@ -4,7 +4,7 @@ from flask_restful_swagger_3 import swagger, Api
 
 from src.model.island import Island
 from src.model.builder_minion import BuilderMinion
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.resource.entity import EntitySchema, EntityResource
 from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import summary
@@ -71,6 +71,9 @@ class BuilderMinionResource(EntityResource):
     @swagger.expected(schema=BuilderMinionSchema, required=True)
     @swagger.response(response_code=200, description='Builder minion created', schema=BuilderMinionSchema)
     @swagger.response(response_code=400, description='builds_on building id not found (when provided), island_id not found, or invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -109,6 +112,10 @@ class BuilderMinionResource(EntityResource):
 
 
         builder_minion = BuilderMinion(**data)
+
+        r = check_data_ownership(builder_minion.island_id)  # island_id == owner_id
+        if r: return r
+
         island = Island.query.get(builder_minion.island_id)
         if island is None:
             return ErrorSchema(f"Island with id {builder_minion.island_id} not found"), 400
@@ -124,6 +131,9 @@ class BuilderMinionResource(EntityResource):
     @swagger.response(200, description='Builder minion successfully updated. The up-to-date object is returned', schema=BuilderMinionSchema)
     @swagger.response(404, description="Builder minion not found", schema=ErrorSchema)
     @swagger.response(400, description="Invalid input", schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -159,6 +169,9 @@ class BuilderMinionResource(EntityResource):
                 island = Island.query.get(int(data['island_id']))
                 if island is None:
                     return ErrorSchema(f"Island with id {data['island_id']} not found"), 400
+
+            r = check_data_ownership(minion.island_id)  # island_id == owner_id
+            if r: return r
 
             minion.update(data)
 

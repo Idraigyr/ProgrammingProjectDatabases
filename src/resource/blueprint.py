@@ -6,7 +6,7 @@ from flask import Blueprint as FlaskBlueprint
 
 
 from src.model.blueprint import Blueprint
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_admin
 from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import Schema, summary
 
@@ -53,7 +53,7 @@ class BlueprintSchema(Schema):
 class BlueprintResource(Resource):
     """
     A resource / api endpoint that allows for the retrieval and modification of blueprints
-    TODO - check if the invoking user is an admin, otherwise restrict access to the GET endpoint
+    Note: all endpoints except GET are restricted to admins
     """
 
     @swagger.tags('blueprint')
@@ -87,12 +87,18 @@ class BlueprintResource(Resource):
     @swagger.response(200, description='Success, returns the updated blueprint in JSON format', schema=BlueprintSchema)
     @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no blueprint id', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not an admin', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
         Update a blueprint by id
         :return:
         """
+        # Check admin rights
+        r = check_admin()
+        if r:
+            return r
+
         data = request.get_json()
         data = clean_dict_input(data)
 
@@ -118,12 +124,18 @@ class BlueprintResource(Resource):
     @swagger.expected(schema=BlueprintSchema, required=True)
     @swagger.response(200, description='Success, returns the created blueprint in JSON format', schema=BlueprintSchema)
     @swagger.response(400, description='Invalid blueprint data', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not an admin', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
         Create a new blueprint by id
         :return:
         """
+        # Check admin rights
+        r = check_admin()
+        if r:
+            return r
+
         data = request.get_json()
         data = clean_dict_input(data)
 
@@ -147,6 +159,7 @@ class BlueprintResource(Resource):
     @swagger.response(404, description='Unknown blueprint id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no blueprint id', schema=ErrorSchema)
     @swagger.response(409, description='Cannot delete blueprint as it is still in use by a building', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not an admin', schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """
@@ -154,6 +167,11 @@ class BlueprintResource(Resource):
         Note: This won't work if the blueprint is still in use by a building
         :return:
         """
+        # Check admin rights
+        r = check_admin()
+        if r:
+            return r
+
         id = request.args.get('id', type=int)
 
         if id is None:

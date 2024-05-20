@@ -54,7 +54,8 @@ export class MenuItem{
 export class SpellItem extends MenuItem{
     constructor(params) {
         super(params);
-        this.unlocked = false;
+        this.unlocked = params?.extra?.unlocked ?? false;
+        this.element.draggable = params?.extra?.draggable ?? false;
         this.display = "flex";
     }
 
@@ -62,10 +63,14 @@ export class SpellItem extends MenuItem{
         super.render();
     }
 
+    attachTo(parent) {
+        parent.addChild("beforeend", this);
+    }
+
     unlock(params){
         this.unlocked = true;
+        this.element.draggable = true;
         this.element.classList.add("unlocked");
-        //add drag and drop callbacks
     }
 
     get type(){

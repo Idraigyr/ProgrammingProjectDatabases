@@ -87,7 +87,7 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(view.boxHelper) this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -119,7 +119,7 @@ export class SpellFactory{
         this.scene.add(view.charModel);
 
         view.boundingBox.set(new THREE.Vector3().copy(position).sub(new THREE.Vector3(4,15,4)), new THREE.Vector3().copy(position).add(new THREE.Vector3(4,0.5,4)));
-        this.scene.add(view.boxHelper);
+        if(view.boxHelper) this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -206,7 +206,7 @@ export class SpellFactory{
 
         views.forEach((view) => {
             this.scene.add(view.charModel);
-            this.scene.add(view.boxHelper);
+            if(view.boxHelper) this.scene.add(view.boxHelper);
             model.addEventListener("updatePosition", view.updatePosition.bind(view));
             model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
             this.viewManager.addPair(model,view);

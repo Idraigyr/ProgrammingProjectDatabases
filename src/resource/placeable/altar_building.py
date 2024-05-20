@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
 
 from src.model.placeable.buildings import AltarBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema, SuccessSchema
 from src.swagger_patches import summary
@@ -33,6 +33,7 @@ class AltarBuildingResource(Resource):
     A resource/api endpoint that allows the retrieval and modification of an Altar Building
     This would be most commonly be used to move its position or change it's level.
     No new altar can be made as only one may exist on an island. Therefore, no POST endpoint exits
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -65,6 +66,7 @@ class AltarBuildingResource(Resource):
     @swagger.response(response_code=200, description="Success schema", schema=SuccessSchema)
     @swagger.response(response_code=404, description='Altar table with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -84,6 +86,9 @@ class AltarBuildingResource(Resource):
         altar_building = AltarBuilding.query.get(id)
         if altar_building is None:
             return ErrorSchema(f"Altar building {id} not found"), 404
+
+        r = check_data_ownership(altar_building.island_id)  # island_id == owner_id
+        if r: return r
 
         altar_building.update(data)
 

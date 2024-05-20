@@ -71,6 +71,11 @@ export class World{
         this.islands.push(island);
     }
 
+    removeIslands(){
+        this.islands.forEach((island) => island.dispose());
+        this.islands = [];
+    }
+
     /**
      * Add an entity to the world
      * @param {Entity} entity

@@ -1,5 +1,5 @@
 import {API_URL} from "../configs/EndpointConfigs.js";
-import {userId} from "./socketio.js"
+import {userId} from "./ChatNamespace.js"
 
 export let playerList = [];
 

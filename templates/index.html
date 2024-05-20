@@ -6,8 +6,8 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <!-- Inline load jQuery so that inline scripts such as socketio.js can use it -->
-    <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
+    <!-- Inline load jQuery so that inline scripts such as ChatNamespace.js can use it -->
+    <!-- Importmap is loaded AFTER inline scripts, and therefore ChatNamespace.js can't use jQuery when it's loaded in the importmap -->
     <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
@@ -102,7 +102,15 @@
     </div>
 
     <!-- Friends -->
-    <button id="FriendsButton" class="Friends-Button"></button>
+    <div id="friends-button-container">
+        <div id="friends-notification-container" class="bell-container">
+            <img src="../static/assets/images/notification.png" class="bell-img">
+            <div class="notification-count-container">
+                <div class="notification-count" id="friend-notification-count">0</div>
+            </div>
+        </div>
+        <button id="friends-button"></button>
+    </div>
 
     <div id="Friends" class="Friends-Content">
         <button id="friendListButton" class="Friend-List-Button"></button>
@@ -313,19 +321,19 @@
 
     <div class="HotBarIcons">
         <div class="Spell1Icon">
-            <img src="../static/assets/images/spell-cast-plant.png" class= "buildimage">
+            <img src="../static/assets/images/spells/type2/BuildSpell.png" class="spell-icon-img">
         </div>
         <div class="Spell2Icon">
-            <img src="../static/assets/images/spell-cast-fire.png" class= "firebalimage">
-            </div>
+            <img src="" class="spell-icon-img">
+        </div>
         <div class="Spell3Icon">
-            <img src="../static/assets/images/spell-cast-bolt.png" class= "lighningimage">
+            <img src="" class="spell-icon-img">
         </div>
         <div class="Spell4Icon">
-            <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
+            <img src="" class="spell-icon-img">
         </div>
         <div class="Spell5Icon">
-            <img src="../static/assets/images/spell-cast-ice.png" class= "icewallimage">
+            <img src="" class="spell-icon-img">
         </div>
     </div>
 

@@ -4,7 +4,8 @@ import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {displayViewBoxHelper} from "../configs/ViewConfigs.js";
+import {displayViewBoxHelper, gridCellSize} from "../configs/ViewConfigs.js";
+import {Timer3D} from "../View/Watch.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -278,32 +279,26 @@ export class Factory{
             // Create timer
             const timer = this.timerManager.createTimer(
                 model.timeToBuild,
-                [() => {
+                [() => { //callbacks: make view visible, set model ready and generate collider
                     view.charModel.visible = true;
+                    }, () => {
+                    model.ready = true;
+                    this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
                 }]
             );
             const buildingPreview = new View.BuildingPreview({
                 charModel: assetClone,
                 position: pos,
-                timer: timer
+                timer: timer,
+                timerModel: new Timer3D({
+                    time: model.timeToBuild,
+                    charWidth: gridCellSize/25,
+                    position: pos.clone().setY(pos.y + gridCellSize/1.5),
+                    charAccess: this.assetManager.requestTimerAssets(),
+                })
             });
             this.viewManager.dyingViews.push(buildingPreview);
             this.scene.add(buildingPreview.charModel);
-            // Create visible watch to see time left
-            const watch = new View.Watch({position: pos, time: model.timeToBuild, scene: this.scene, font: this.assetManager.getAsset("SurabanglusFont")});
-            // Add callback to update view with the up-to-date time
-            timer.addRuntimeCallback((time=timer.duration-timer.timer) => watch.setTimeView(time));
-            // Rotate the watch view each step
-            timer.addRuntimeCallback((deltaTime=timer.deltaTime) => {
-                if(watch.charModel) watch.charModel.rotation.y += 2*deltaTime;
-            });
-            // Remove watch view when the timer ends
-            timer.addCallback(() => {
-                this.scene.remove(watch.charModel);
-                model.ready = true;
-                this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
-            }
-            )
         }
         return model;
     }

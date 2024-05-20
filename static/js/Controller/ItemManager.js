@@ -1,7 +1,8 @@
-import {Attribute, Gem} from "../Model/items/Item.js";
-import {API_URL, gemAttributesURI, gemURI, postRetries} from "../configs/EndpointConfigs.js";
+import {Attribute, Gem, Spell} from "../Model/items/Item.js";
+import {API_URL, gemAttributesURI, gemURI, postRetries, spellListURI} from "../configs/EndpointConfigs.js";
 import {minTotalPowerForStakes, powerScaling} from "../configs/ControllerConfigs.js";
 import {gemTypes} from "../configs/Enums.js";
+import {spellTypes} from "../Model/Spell.js";
 
 /**
  * Class for managing items in menu's
@@ -13,6 +14,7 @@ export class ItemManager {
      */
     constructor(params) {
         this.gems = [];
+        this.spells = [];
         this.gemAttributes = [];
         this.playerInfo = params.playerInfo;
         this.menuManager = params.menuManager;
@@ -30,6 +32,22 @@ export class ItemManager {
             this.gemAttributes = response;
         } else {
             throw new Error("Could not retrieve gem attributes");
+        }
+    }
+
+    async retrieveSpells(){
+        const response = await $.getJSON(`${API_URL}/${spellListURI}`);
+        console.log(response);
+        if(response){
+            for(let i = 0; i < response.length; i++){
+                this.spells.push(new Spell({
+                    id: response[i].id,
+                    name: response[i].name,
+                }));
+            }
+            console.log("spells", this.spells)
+        } else {
+            throw new Error("Could not retrieve spells");
         }
     }
 
@@ -110,6 +128,19 @@ export class ItemManager {
                 extra: {
                     equipped: gem.equippedIn !== null,
                     slot: gem.slot
+                }
+            }
+        });
+    }
+
+    getSpellsViewParams(){
+        return this.spells.map(spell => {
+            return {
+                item: spell,
+                icon: {src: spellTypes.getIcon(spell.name), width: 50, height: 50},
+                description: spell.getDescription(),
+                extra: {
+                    unlocked: spell.unlocked
                 }
             }
         });

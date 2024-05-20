@@ -16,6 +16,7 @@
 
 /*MenuManager CSS START*/
 :root{
+    cursor: url('../assets/images/wand.png'), auto;
     --game-timer-height: 5vh;
     --fuse-button-height: 80px;
     --fuse-button-width: 80px;
@@ -1201,6 +1202,7 @@ body {
 
 /* loading screen style */
 .loading-animation{
+    width: 100vw;
     height: 100vh;
     z-index: 10;
 }
@@ -2196,7 +2198,7 @@ body {
     z-index: 5;
 }
 
-.buildimage {
+.Spell1Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 10%;
@@ -2204,12 +2206,12 @@ body {
 }
 
 
-.buildimage {
+.Spell1Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.firebalimage {
+.Spell2Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 30%;
@@ -2217,12 +2219,12 @@ body {
 }
 
 
-.firebalimage {
+.Spell2Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.lighningimage {
+.Spell3Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -2230,31 +2232,31 @@ body {
 }
 
 
-.lighningimage {
+.Spell3Icon > .spell-icon-img {
     width: 10%;
     height: auto;
 }
 
-.shieldimage {
+.Spell4Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 70%;
     transform: translate(-50%, -50%);
 }
 
-.shieldimage {
+.Spell4Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.icewallimage {
+.Spell5Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 90%;
     transform: translate(-50%, -50%);
 }
 
-.icewallimage {
+.Spell5Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
@@ -2339,6 +2341,105 @@ body {
 
 .settings-button:active .icon {
     content: url('../assets/images/Pressed_02.png');
+}
+
+.bell-container{
+    pointer-events: none;
+    position: absolute;
+    display: none;
+    top: -13px;
+    left: -12px;
+    width: 30px;
+    height: 30px;
+    z-index: 5;
+    /*transform-origin: 50% 4px; if you want to do rotation from its top as anchorpoint*/
+    animation: ring 4s .7s ease-in-out infinite;
+}
+
+@keyframes ring {
+  0% { transform: rotate(0); }
+  1% { transform: rotate(30deg); }
+  3% { transform: rotate(-28deg); }
+  5% { transform: rotate(34deg); }
+  7% { transform: rotate(-32deg); }
+  9% { transform: rotate(30deg); }
+  11% { transform: rotate(-28deg); }
+  13% { transform: rotate(26deg); }
+  15% { transform: rotate(-24deg); }
+  17% { transform: rotate(22deg); }
+  19% { transform: rotate(-20deg); }
+  21% { transform: rotate(18deg); }
+  23% { transform: rotate(-16deg); }
+  25% { transform: rotate(14deg); }
+  27% { transform: rotate(-12deg); }
+  29% { transform: rotate(10deg); }
+  31% { transform: rotate(-8deg); }
+  33% { transform: rotate(6deg); }
+  35% { transform: rotate(-4deg); }
+  37% { transform: rotate(2deg); }
+  39% { transform: rotate(-1deg); }
+  41% { transform: rotate(1deg); }
+
+  43% { transform: rotate(0); }
+  100% { transform: rotate(0); }
+}
+
+.bell-container *{
+    pointer-events: none;
+}
+
+.bell-img{
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.notification-count-container{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification-count{
+    position: relative;
+    font-size: 10px;
+    text-align: center;
+}
+
+#friends-button-container{
+    position: absolute;
+    top: 77.5%;
+    right: 0;
+    width: 50px;
+    height: 40px;
+    display: block; /* Ensure the container has the size of its contents */
+    z-index: 5;
+
+}
+
+#friends-button {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: lightblue; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    border-radius: 10px;
+    background-image: url('../assets/images/friend.png'); /* Replace with the path to your image */
+    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
 
 #chatButton {
@@ -2545,6 +2646,7 @@ a[data-tooltip][data-placement="right"]::after {
     padding: 10px; /* Optional: Add padding inside the div */
     border: solid black;
     border-radius: 10px;
+    z-index: 10;
 }
 
 .Friend-List-Button{
@@ -2659,27 +2761,42 @@ a[data-tooltip][data-placement="right"]::after {
 }
 
 .Request-List{
-    display: none;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
     position: relative;
     top: 20%;
+    height: 80%;
+}
+
+.request-text{
+    flex-grow: 10;
+}
+
+.request-buttons-container{
+    display: flex;
+    justify-content: start;
+    height: 100%;
+    flex-grow: 1;
 }
 
 .request{
     background-color: #f0f0f0; /* Light grey background */
-    padding: 10px; /* Padding around the text */
     margin-bottom: 8px; /* Space between each friend div */
     text-align: left; /* Center-align the text */
     border-radius: 5px; /* Rounded corners */
     font-size: 16px; /* Font size */
     color: #333; /* Dark grey text color */
     box-sizing: border-box;
+    padding: 10px;
     width: 100%;
-    height: 1%;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .Accept-Request{
-    transform: translateY(-45%); /* Center it vertically */
-    transform: translateX(700%);
     width: 10%; /* Set a specific width */
     height: 10%; /* Set a specific height */
     background-color: white; /* Visibility */
@@ -2687,13 +2804,11 @@ a[data-tooltip][data-placement="right"]::after {
     text-align: center;
     border-color: black;
     background-image: url('../assets/images/accept.png'); /* Replace with the path to your image */
-    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-size: 100%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
 .Reject-Request{
-    transform: translateY(-45%); /* Center it vertically */
-    transform: translateX(700%);
     width: 10%; /* Set a specific width */
     height: 10%; /* Set a specific height */
     background-color: white; /* Visibility */
@@ -2701,7 +2816,7 @@ a[data-tooltip][data-placement="right"]::after {
     text-align: center;
     border-color: black;
     background-image: url('../assets/images/reject.png'); /* Replace with the path to your image */
-    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-size: 100%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }

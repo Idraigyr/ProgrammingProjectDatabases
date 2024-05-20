@@ -78,10 +78,14 @@ export class ChatNamespace {
         //add cheats
         if (admin) {
             if (message.match(regex["mana"])) {
-                this.app.playerInfo.updateMana({detail: {
-                    current: Number(message.match(regex["mana"])[1]),
-                    total: this.app.playerInfo.maxMana
-                    }});
+                this.app.worldManager.updatePlayerStats({detail: {
+                    type: ["mana"],
+                        params: {
+                        mana: Math.min(
+                            Number(message.match(regex["mana"])[1]),
+                            this.app.playerInfo.maxMana-this.app.playerInfo.mana
+                        )}}
+                });
             } else if (message.match(regex["level"])) {
                 if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0) {
                     this.app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
@@ -93,8 +97,14 @@ export class ChatNamespace {
             } else if (message.match(regex["crystal"])) {
                 this.app.playerInfo.changeCrystals(Number(message.match(regex["crystal"])[1]));
             } else if (message.match(regex["health"])) {
-                this.app.playerInfo.changeHealth(Number(message.match(regex["health"])[1]));
-                this.app.worldManager.world.player.health = Number(message.match(regex["health"])[1]);
+                this.app.worldManager.updatePlayerStats({detail: {
+                    type: ["health"],
+                        params: {
+                        health: Math.min(
+                            Number(message.match(regex["mana"])[1]),
+                            this.app.playerInfo.maxHealth-this.app.playerInfo.health
+                        )}}
+                });
             } else if (message.match(regex["position"])) {
                 this.app.worldManager.world.player.position = new THREE.Vector3(
                     Number(message.match(regex["position"])[1]),
@@ -117,12 +127,8 @@ export class ChatNamespace {
             else if (message !== "" && !message.startsWith("\\")){
                 this.socket.emit('message', messageData);
             }
-        } else if (!message.startsWith("\\")) { // Don't send the message if it starts with a backslash (cheat)
+        } else if (!message.startsWith("\\") || message !== "") { // Don't send the message if it starts with a backslash (cheat) or is empty
             this.socket.emit('message', messageData);
-        } else{
-            if (message !== ""){
-                this.socket.emit('message', messageData);
-            }
         }
     }
 }

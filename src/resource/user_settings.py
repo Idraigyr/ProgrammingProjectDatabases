@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.user_settings import UserSettings
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.schema import ErrorSchema
 from src.swagger_patches import Schema, summary
 
@@ -110,6 +110,9 @@ class UserSettingsResource(Resource):
     @swagger.response(200, description='Settings updated', schema=UserSettingsSchema)
     @swagger.response(404, description='The player does not exist', schema=ErrorSchema)
     @swagger.response(400, description='Player id absent', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @swagger.expected(UserSettingsSchema, required=True)
     @jwt_required()
     def put(self):
@@ -134,6 +137,11 @@ class UserSettingsResource(Resource):
 
             data = request.get_json()
             data = clean_dict_input(data)
+
+            r = check_data_ownership(
+                user_settings.player_id)  # island_id == owner_id
+            if r: return r
+
             user_settings.update(data)
 
             return UserSettingsSchema(user_settings), 200
