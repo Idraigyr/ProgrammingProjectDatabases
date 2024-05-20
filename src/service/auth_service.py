@@ -5,6 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.player import PlayerSpellAssociation
 from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
 from src.model.placeable.buildings import AltarBuilding, MineBuilding
@@ -170,7 +171,8 @@ class AuthService:
 
         # Update player spells, it initially has the build spell
         from src.model.spell import Spell
-        player.spells = [Spell.query.get(0)]  # Id 0 is the build spell
+        for i, spell in enumerate(Spell.query.all()):
+            player.spells_association.append(PlayerSpellAssociation(player_id=player.user_profile_id, spell_id=spell.id, slot=0 if i == 0 else None))
 
         current_app.db.session.commit()
 

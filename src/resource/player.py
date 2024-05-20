@@ -11,7 +11,7 @@ from src.resource.entity import EntitySchema
 from src.resource.gems import GemSchema
 from src.swagger_patches import Schema, summary
 from src.schema import ErrorSchema, SuccessSchema, IntArraySchema
-from src.model.player import Player
+from src.model.player import Player, PlayerSpellAssociation
 from src.resource import add_swagger, clean_dict_input, check_data_ownership
 
 """
@@ -43,6 +43,40 @@ class PlayerEntitySchema(EntitySchema):
             super().__init__(**kwargs)
 
 
+class PlayerSpellAssociationSchema(Schema):
+    """
+    The schema for the player spell association
+    """
+    type = 'object'
+    properties = {
+        'player_id': {
+            'type': 'integer',
+            'description': 'The player id'
+        },
+        'spell_id': {
+            'type': 'integer',
+            'description': 'The spell id'
+        },
+        'slot': {
+            'type': 'integer',
+            'description': 'The slot in which the spell is stored (0-5)'
+        }
+    }
+
+    required = ['player_id', 'spell_id']
+
+    description = 'The association between a player and a spell'
+
+    def __init__(self, player_spell: PlayerSpellAssociation = None, **kwargs):
+        if player_spell is not None:
+            super().__init__(player_id=player_spell.player_id,
+                             spell_id=player_spell.spell_id,
+                             slot=player_spell.slot,
+                             **kwargs)
+        else:
+            super().__init__(**kwargs)
+
+
 class PlayerSchema(Schema):
     """
     The schema for the player profile requests & responses
@@ -69,7 +103,7 @@ class PlayerSchema(Schema):
             'type': 'integer',
             'description': 'The experience points of the player'
         },
-        'spells': IntArraySchema,
+        'spells': PlayerSpellAssociationSchema.array(),
         'gems': {
             'type': 'array',
             'description': 'The gem inventory of the player',
@@ -97,7 +131,7 @@ class PlayerSchema(Schema):
                              crystals=player.crystals, mana=player.mana, xp=player.xp,
                              last_login=str(player.last_login).replace(' ', 'T'),
                              last_logout=str(player.last_logout).replace(' ', 'T'),
-                             spells=[spell.id for spell in player.spells],
+                             spells=[PlayerSpellAssociationSchema(assoc) for assoc in player.spells_association],
                              gems=[GemSchema(gem) for gem in player.gems],
                              entity=PlayerEntitySchema(player=player.entity),
                              username=player.user_profile.username,

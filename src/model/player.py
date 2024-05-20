@@ -3,12 +3,11 @@ from typing import List
 
 from flask import current_app
 from sqlalchemy import BigInteger, ForeignKey, Column, Integer, CheckConstraint, DateTime, func, PrimaryKeyConstraint
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 
 from src.model.chat_message import ChatMessage
-from src.model.blueprint import Blueprint
 from src.model.spell import Spell
-from src.model.spell import association_table as player_spell_association_table
 from src.model.user_profile import UserProfile
 
 friends_association_table = current_app.db.Table(
@@ -46,7 +45,9 @@ class Player(current_app.db.Model):
     entity: Mapped['PlayerEntity'] = relationship(back_populates="player", cascade="all, delete-orphan", uselist=False, lazy=False)
 
     # lazy=False means that the spells are loaded when the player is loaded
-    spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
+    # spells: Mapped[List[Spell]] = relationship(lazy=False, secondary=player_spell_association_table)
+    spells_association = relationship("PlayerSpellAssociation", cascade="all, delete-orphan")
+    spells: Mapped[List[Spell]] = association_proxy('spells_association', 'spell', creator=lambda map: PlayerSpellAssociation(player_id=map['player_id'], spell_id=map['spell_id'], slot=map['slot'] if 'slot' in map else None))
 
     # The island of the player
     island: Mapped["Island"] = relationship("Island", back_populates="owner", single_parent=True, cascade="all, delete-orphan")
@@ -117,17 +118,17 @@ class Player(current_app.db.Model):
 
         if 'spells' in data:
             # ignore pyCharm warning about data types, it's wrong
-            new_spellset = []
-            for spell_id in data.get('spells'):
-                spell = Spell.query.get(spell_id)
-                if spell is None:
-                    raise ValueError(f"Spell {spell_id} not found")
-                new_spellset.append(spell)
+            from src.resource.player import PlayerSpellAssociationSchema
+            for spell in data.get('spells'):
+                PlayerSpellAssociationSchema(**spell)
 
-            # Update the spells after checking if the spell id's exist. Otherwise we might remove all spells if the input is invalid
-            # Also, don't simply clear the map as this would mess with SQLAlchemy's internal workings
-            # The type hinting is correct here, it's a pyCharm reporting it as wrong
-            self.spells = new_spellset
+                # Only slot is updatable
+                for assoc in self.spells_association:
+                    spell["player_id"] = self.user_profile_id  # It MUST be the same, always
+                    if assoc.spell_id == spell['spell_id']:
+                        assoc.slot = spell.get('slot', assoc.slot)
+                        break
+
 
         if 'entity' in data:
             self.entity.update(data['entity'])
@@ -150,3 +151,20 @@ class Player(current_app.db.Model):
                     friend.friends.remove(self)  # remove the player from the friend's friend list
 
             self.friends = new_friendset
+
+
+class PlayerSpellAssociation(current_app.db.Model):
+    __tablename__ = 'player_spells'
+
+    player_id: Mapped[int] = Column(Integer, ForeignKey('player.user_profile_id', ondelete='CASCADE'), primary_key=True)
+    spell_id: Mapped[int] = Column(Integer, ForeignKey('spell.id', ondelete='CASCADE'), primary_key=True)
+    slot: Mapped[int] = Column(Integer, CheckConstraint("slot >= 0 AND slot < 5"), nullable=True)  # The slot in which the spell is stored (0-5) - relationship attribute
+
+    player: Mapped[Player] = relationship("Player", back_populates="spells_association")
+    spell: Mapped[Spell] = relationship("Spell")
+
+    def __init__(self, player_id: int = None, spell_id: int = None, slot: int = None, **kwargs):
+        # leave **kwargs in case of future use
+        self.player_id = player_id
+        self.spell_id = spell_id
+        self.slot = slot
