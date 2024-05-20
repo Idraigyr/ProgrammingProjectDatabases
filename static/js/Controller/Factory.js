@@ -280,7 +280,10 @@ export class Factory{
             timeEnd.setTime(timeEnd.getTime() + offsetDif);
             // End of black magic
             if(timeEnd < this.currentTime){
-                if(params.task.type === "building_upgrade_task" && model.level < 3) this._levelUpBuilding(params, model);
+                if(params.task.type === "building_upgrade_task" && model.level < 3){
+                    this._levelUpBuilding(params, model);
+                    this.playerInfo.changeXP(150);
+                }
                 return model;
             }
             params.withTimer = true;

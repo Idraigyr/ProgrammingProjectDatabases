@@ -24,7 +24,7 @@ let regex = {
     "buildCooldown": /\\buildCooldown\((0*[0-9]\d*)\)/,
     "health": /\\health\((0*[0-9]\d*)\)/,
     "forceSpells": /\\forceSpells/,
-    "forceBuildDuration": /\\forceBuildDuration/
+    "forceBuild": /\\forceBuild/
 }
 export class ChatNamespace {
 
@@ -115,6 +115,8 @@ export class ChatNamespace {
                 this.app.spellCaster.changeSpellCost();
             } else if (message.match(regex["thunderCloudCooldown"])) {
                 this.app.spellCaster.changeCooldown("thundercloud", Number(message.match(regex["thunderCloudCooldown"])[1]));
+            } else if (message.match(regex["forceBuild"])){
+                this.app.worldManager.cheats = true;
             }
             else if (message !== "" && !message.startsWith("\\")){
                 this.socket.emit('message', messageData);

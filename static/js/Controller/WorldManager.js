@@ -34,6 +34,7 @@ export class WorldManager{
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
 
         this.persistent = true;
+        this.cheats = false;
     }
 
     async importIsland(islandID){
@@ -347,18 +348,35 @@ export class WorldManager{
             console.log("Cannot place");
         }
         else {
-            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
-            if (placeable) {
-                if (this.persistent) {
-                    this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+            if(!this.cheats){
+                const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
+                if (placeable) {
+                    if (this.persistent) {
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+                    }
+                    this.collisionDetector.generateColliderOnWorker();
+                    this.playerInfo.changeXP(100);
+                    this.playerInfo.buildingsPlaced[buildingName]++;
+                    return true;
+                } else {
+                    console.error("failed to add new building at that position");
                 }
-                this.collisionDetector.generateColliderOnWorker();
-                this.playerInfo.changeXP(100);
-                this.playerInfo.buildingsPlaced[buildingName]++;
-                return true;
-            } else {
-                console.error("failed to add new building at that position");
+            } else{
+                const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation);
+                if (placeable) {
+                    if (this.persistent) {
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+                    }
+                    this.collisionDetector.generateColliderOnWorker();
+                    this.playerInfo.changeXP(100);
+                    this.playerInfo.buildingsPlaced[buildingName]++;
+                    return true;
+                } else {
+                    console.error("failed to add new building at that position");
+                }
+
             }
+
         }
         return false;
     }
