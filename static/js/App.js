@@ -181,6 +181,8 @@ class App {
 
         this.menuManager.addEventListener("startFusion", (event) => {
             const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
+            // Send post request to create new task
+
             this.timerManager.createTimer(fusionTime, [() => {
                 const gem = this.itemManager.createGem(fusionLevel);
                 // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});

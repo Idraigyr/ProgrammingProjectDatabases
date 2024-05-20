@@ -15,7 +15,7 @@ export class Placeable extends Entity{
         super(params);
         this.id = params?.id ?? null;
         this.level = params?.level ?? 0;
-        this.maxLevel = 3;
+        this.maxLevel = 4;
         this.upgradable = false;
         this.rotation = params?.rotation ??  0;
         this.gemSlots = params?.gemSlots ?? 0;
@@ -214,19 +214,23 @@ export class Placeable extends Entity{
             return false;
         }
         if(this.level === 0){
+            this.upgradeTime = this.timeToBuild;
+            this.upgradeCost = 0;
+            this.gemSlots = 0;
+        } else if(this.level === 1){
             this.upgradeTime = 10;
             this.upgradeCost = 500;
             this.gemSlots = 0;
-        }else if(this.level === 1){
+        }else if(this.level === 2){
             this.upgradeTime = 300;
             this.upgradeCost = 3000;
             this.gemSlots = 1;
         }
-        else if(this.level === 2){
+        else if(this.level === 3){
             this.upgradeTime = 9000;
             this.upgradeCost = 10000;
             this.gemSlots = 2;
-        } else if(this.level === 3){
+        } else if(this.level === 4){
             this.upgradeTime = Infinity;
             this.upgradeCost = Infinity;
             this.gemSlots = 3;

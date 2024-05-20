@@ -228,7 +228,7 @@ export class PlayerInfo extends Subject{
      * @returns {boolean} - True if the crystals were changed, false otherwise
      */
     changeCrystals(amount){
-        if(!amount) throw new Error("playerInfo.changeCrystals: amount is not defined");
+        if(amount === undefined) throw new Error("playerInfo.changeCrystals: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());

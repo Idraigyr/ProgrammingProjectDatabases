@@ -1,5 +1,5 @@
 import {Model} from "../Model/ModelNamespace.js";
-import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
@@ -373,11 +373,11 @@ export class WorldManager{
             // Convert local time to ISO string
             let time = localTime.toISOString();
             let formattedDate = time.slice(0, 19);
-            console.log(JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId}));
+            console.log(JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId, to_level: 1}));
             $.ajax({
                 url: `${API_URL}/${uri}`,
                 type: "POST",
-                data: JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId}),
+                data: JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId, to_level: 1, used_crystals: 0}),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -636,7 +636,7 @@ export class WorldManager{
                 entity.setId(data);
                 this.removePendingPostRequest(requestIndex);
                 if (withTimer){
-                    this.postBuildingTimer(taskURI, entity.timeToBuild, entity.id, this.playerInfo.islandID, postRetries);
+                    this.postBuildingTimer(buildingUpgradeURI, entity.timeToBuild, entity.id, this.playerInfo.islandID, postRetries);
                 }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");

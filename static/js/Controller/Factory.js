@@ -280,7 +280,7 @@ export class Factory{
             timeEnd.setTime(timeEnd.getTime() + offsetDif);
             // End of black magic
             if(timeEnd < this.currentTime){
-                if(params.task.type === "building_upgrade_task" && model.level < 3) this._levelUpBuilding(params, model);
+                if(params.task.type === "building_upgrade_task") this._levelUpBuilding(params, model);
                 return model;
             }
             params.withTimer = true;
@@ -322,7 +322,7 @@ export class Factory{
                 this.scene.remove(watch.charModel);
                 model.ready = true;
                 this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
-                this.#checkIfBuildingHasUpgradeTask(params, model);
+                if(params.task) this.#checkIfBuildingHasUpgradeTask(params, model);
             }
             )
         }
@@ -357,6 +357,7 @@ export class Factory{
                     if(model.dbType === "tower_building") {
                         data2Send.tower_type = "magic";
                     }
+                    if(model.dbType === "prop")  return; // Skip props
                     // Send put request to the server to level up the building
                     $.ajax({
                         url: `${API_URL}/${placeableURI}/${model.dbType}`,

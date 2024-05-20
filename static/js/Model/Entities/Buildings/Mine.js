@@ -103,7 +103,8 @@ export class Mine extends Placeable{
      * @return {number}
      */
     #calculateMaxCrystals(){
-        return 1000 + this.level * 1000;
+        if (this.level === 0) return 100;
+        return this.level * 1000;
     }
 
     /**
