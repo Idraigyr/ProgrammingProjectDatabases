@@ -388,6 +388,21 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * creates a custom switch spell event
+     * @param {number} spellId - the id of the last spell that was equipped
+     * @param {boolean} equip - whether the spell should be equipped or unequipped
+     * @return {CustomEvent<>} returns an array of the ids of the spells to equip
+     */
+    createSwitchSpellEvent(spellId, equip=true){
+        return new CustomEvent("switchSpells", {
+            detail: {
+                spellIds: this.menus.get("HotbarMenu").getEquippedSpellIds(spellId, equip)
+            }
+        });
+
+    }
+
+    /**
      * creates a custom lvl up event
      */
     dispatchLvlUpEvent(){
@@ -525,6 +540,9 @@ export class MenuManager extends Subject{
             this.items.get(this.dragElement).element.style.opacity = 1;
             this.slot = null;
         }
+        if(this.dropElement === "HotbarMenu" || this.dropElement === "SpellsMenu"){
+            this.dispatchEvent(this.createSwitchSpellEvent(this.dragElement, this.dropElement === "HotbarMenu"));
+        }
         this.items.get(this.dragElement).attachTo(this.menus.get(this.dropElement));
     }
 
@@ -536,7 +554,7 @@ export class MenuManager extends Subject{
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "slot-menu").id;
         if(this.items.get(this.dragElement)?.equipped) return;
-        if(this.menus.get(this.dragElement).allows.includes(this.items.get(this.dragElement).type) && event.target.classList.contains("slot")){
+        if(this.menus.get(this.dropElement).allows.includes(this.items.get(this.dragElement).type) && event.target.classList.contains("slot")){
             event.preventDefault();
             this.slot = event.target.id.substring(event.target.id.lastIndexOf("-")+1);
         }
@@ -654,7 +672,7 @@ export class MenuManager extends Subject{
      * @return {StatItem|DecorationBuildingItem|null|ResourceBuildingItem|SpellItem|GemItem|CombatBuildingItem}
      */
     #createMenuItem(item){
-        if(item.belongsIn === "SpellsMenu"){
+        if(item.belongsIn === "SpellsMenu" || item.belongsIn === "HotbarMenu"){
             return new SpellItem(item);
         } else if (item.belongsIn === "GemsMenu" || item.belongsIn === "StakesMenu"){
             item.equipped = item.extra?.equipped ?? false;
@@ -801,14 +819,18 @@ export class MenuManager extends Subject{
     }
 
     #createSpellItems(){
-        let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell"];
-        let names = ["Fire", "Freeze", "Shield", "Heal", "Thunder"];
+        let spells = ["Fireball", "IceWall", "Shield", "ThunderCloud"];
+        let names = ["Fireball", "IceWall", "Shield", "ThunderCloud"];
         let items = [];
         for (let i = 0; i < spells.length; i++){
             items.push({
                 item: {name: spells[i], id: i, belongsIn: "SpellsMenu", getItemId: () => spells[i], getDisplayName: () => names[i]},
-                icon: {src: '/static/assets/images/spells/type1/' + spells[i] + '.png', width: 50, height: 50},
-                description: ""
+                icon: {src: '/static/assets/images/spells/type2/' + spells[i] + '.png', width: 50, height: 50},
+                description: "",
+                extra: { //TODO: change this based on lvl
+                    unlocked: true,
+                    draggable: true
+                }
             });
         }
         this.addItems(items);
@@ -817,9 +839,13 @@ export class MenuManager extends Subject{
     #createHotbarItem(){
         let buildSpell = {
             //TODO: SpellsMenu should be HotbarMenu but that gives an error
-            item: {name: "buildSpell", id: 0, belongsIn: "SpellsMenu", getItemId: () => "buildSpell", getDisplayName: () => " Build"},
-            icon: {src: '/static/assets/images/spells/type2/buildSpell.png', width: 50, height: 50},
-            description: ""
+            item: {name: "BuildSpell", id: 0, belongsIn: "HotbarMenu", getItemId: () => "BuildSpell", getDisplayName: () => "build spell"},
+            icon: {src: '/static/assets/images/spells/type2/BuildSpell.png', width: 50, height: 50},
+            description: "",
+            extra: {
+                unlocked: true,
+                draggable: false
+            }
         };
         this.addItem(buildSpell);
     }

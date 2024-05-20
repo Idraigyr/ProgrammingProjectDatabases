@@ -63,6 +63,7 @@ export class SpellPreview extends IView{
      */
     toggleVisibility(event){
         this.visible = event.detail.visible;
+        this.charModel.visible = this.visible;
     }
 
     /**

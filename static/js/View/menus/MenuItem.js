@@ -54,13 +54,17 @@ export class MenuItem{
 export class SpellItem extends MenuItem{
     constructor(params) {
         super(params);
-        this.unlocked = false;
-        this.element.draggable = false;
+        this.unlocked = params?.extra?.unlocked ?? false;
+        this.element.draggable = params?.extra?.draggable ?? false;
         this.display = "flex";
     }
 
     render() {
         super.render();
+    }
+
+    attachTo(parent) {
+        parent.addChild("beforeend", this);
     }
 
     unlock(params){

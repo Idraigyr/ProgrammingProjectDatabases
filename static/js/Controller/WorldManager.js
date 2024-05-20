@@ -355,10 +355,10 @@ export class WorldManager{
         // Set default values for the inventory slots
         // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
         this.world.player.changeEquippedSpell(0,new BuildSpell({}));
-        this.world.player.changeEquippedSpell(1,new Fireball({}));
-        this.world.player.changeEquippedSpell(2,new ThunderCloud({}));
-        this.world.player.changeEquippedSpell(3,new Shield({}));
-        this.world.player.changeEquippedSpell(4,new IceWall({}));
+        // this.world.player.changeEquippedSpell(1,new Fireball({}));
+        // this.world.player.changeEquippedSpell(2,new ThunderCloud({}));
+        // this.world.player.changeEquippedSpell(3,new Shield({}));
+        // this.world.player.changeEquippedSpell(4,new IceWall({}));
     }
 
 

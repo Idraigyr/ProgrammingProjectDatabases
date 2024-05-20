@@ -129,19 +129,29 @@ export class HUD {
         for (let i = 0; i < cooldowns.length; i++) {
             let spellSlotIndex = i;
             let spellCooldown = cooldowns[i];
-            const cooldownElement = document.querySelector(`#countdown-slot-${spellSlotIndex + 1}`);
-            const usedSpell = document.querySelector(`#spell-slot-${spellSlotIndex + 1}-container`);
-            const usedSpellIcon = document.querySelector(`#spell-icon-${spellSlotIndex + 1}`);
-            usedSpellIcon.classList.add('on-cooldown');
+            const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex + 1}Cooldown`);
+            const usedSpell = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
+            const usedSpellIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
+            usedSpellIcon.classList.add('onCooldown');
             if (spellCooldown <= 0) {
                 cooldownElement.textContent = ""; // Clear the cooldown display
-                usedSpell.parentElement.classList.remove('on-cooldown');
-                usedSpellIcon.classList.remove('on-cooldown');
+                usedSpell.parentElement.classList.remove('onCooldown');
+                usedSpellIcon.classList.remove('onCooldown');
             } else {
                 cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
-                usedSpell.parentElement.classList.add('on-cooldown');
-                usedSpellIcon.classList.add('on-cooldown');
+                usedSpell.parentElement.classList.add('onCooldown');
+                usedSpellIcon.classList.add('onCooldown');
             }
         }
+    }
+
+    /**
+     * sets a spell icon in the hotbar
+     * @param {number} spellSlot - the spell slot to set the icon for (1-5)
+     * @param {string} spellIcon - the url of the icon to set
+     */
+    setSpellIcon(spellSlot, spellIcon) {
+        const spellIconElement = document.querySelector(`.HotBarIcons .Spell${spellSlot}Icon .spell-icon-img`);
+        spellIconElement.src = spellIcon ?? "";
     }
 }

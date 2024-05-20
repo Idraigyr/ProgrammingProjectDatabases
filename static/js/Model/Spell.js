@@ -198,35 +198,6 @@ class Build extends Effect{
 }
 
 /**
- * Factory function to create a concrete spell instance
- * from an id that corresponds to the database id
- * @param id - The id of the spell
- * @returns {ConcreteSpell}
- * @author Joren
- */
-function concreteSpellFromId(id){
-    switch(id){
-        case 0:
-            return new BuildSpell();
-        case 1:
-            return new Fireball();
-        case 2:
-            return new IceWall();
-        case 3:
-            return new Zap();
-        case 4:
-            return new ThunderCloud();
-        case 5:
-            return new Shield();
-        case 6:
-            return new Heal();
-        default:
-            throw new Error("Invalid spell id");
-    }
-
-}
-
-/**
  * @class ConcreteSpell - class for concrete spells
  */
 class ConcreteSpell{
@@ -426,7 +397,17 @@ class Heal extends ConcreteSpell{
 }
 
 export const spellTypes = (() => {
-    const ctors = {
+    const spellObject = {
+        Fireball: new Fireball({}),
+        IceWall: new IceWall({}),
+        Zap: new Zap({}),
+        ThunderCloud: new ThunderCloud({}),
+        Shield: new Shield({}),
+        Heal: new Heal({}),
+        BuildSpell: new BuildSpell({})
+    }
+
+    const ctor = {
         Fireball: Fireball,
         IceWall: IceWall,
         Zap: Zap,
@@ -436,20 +417,39 @@ export const spellTypes = (() => {
         BuildSpell: BuildSpell
     }
 
+    const ids = {
+        0: "BuildSpell",
+        1: "Fireball",
+        2: "IceWall",
+        3: "Zap",
+        4: "ThunderCloud",
+        5: "Shield",
+        6: "Heal"
+    }
+
     const icons = {
-        Fireball: "./static/assets/images/spells/type2/fireSpell.png",
-        IceWall: "./static/assets/images/spells/type2/freezeSpell.png",
-        Zap: "./static/assets/images/spells/type1/thunderSpell.png",
-        ThunderCloud: "./static/assets/images/spells/type2/thunderSpell.png",
-        Shield: "./static/assets/images/spells/type2/shieldSpell.png",
-        Heal: "./static/assets/images/spells/type1/healSpell.png",
-        BuildSpell: "./static/assets/images/spells/type2/buildSpell.png"
+        Fireball: "./static/assets/images/spells/type2/Fireball.png",
+        IceWall: "./static/assets/images/spells/type2/IceWall.png",
+        Zap: "./static/assets/images/spells/type1/ThunderCloud.png",
+        ThunderCloud: "./static/assets/images/spells/type2/ThunderCloud.png",
+        Shield: "./static/assets/images/spells/type2/Shield.png",
+        Heal: "./static/assets/images/spells/type1/Heal.png",
+        BuildSpell: "./static/assets/images/spells/type2/BuildSpell.png"
     }
 
     return {
-        getCtor: function (name) {
-            return ctors[name];
+        getCtor(name) {
+            return ctor[name];
         },
+
+        getSpellObject: function (name) {
+            return spellObject[name];
+        },
+
+        getSpellObjectFromId: function (id) {
+            return spellObject[ids[id]];
+        },
+
         getIcon: function (name) {
             return icons[name];
         }

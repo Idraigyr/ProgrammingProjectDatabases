@@ -2198,7 +2198,7 @@ body {
     z-index: 5;
 }
 
-.buildimage {
+.Spell1Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 10%;
@@ -2206,12 +2206,12 @@ body {
 }
 
 
-.buildimage {
+.Spell1Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.firebalimage {
+.Spell2Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 30%;
@@ -2219,12 +2219,12 @@ body {
 }
 
 
-.firebalimage {
+.Spell2Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.lighningimage {
+.Spell3Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -2232,31 +2232,31 @@ body {
 }
 
 
-.lighningimage {
+.Spell3Icon > .spell-icon-img {
     width: 10%;
     height: auto;
 }
 
-.shieldimage {
+.Spell4Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 70%;
     transform: translate(-50%, -50%);
 }
 
-.shieldimage {
+.Spell4Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.icewallimage {
+.Spell5Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 90%;
     transform: translate(-50%, -50%);
 }
 
-.icewallimage {
+.Spell5Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }

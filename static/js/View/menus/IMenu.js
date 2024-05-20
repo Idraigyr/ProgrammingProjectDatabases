@@ -19,11 +19,17 @@ export class IMenu {
         return element;
     }
 
+    /**
+     * add a child to the menu at a certain position
+     * @param {"afterbegin" | "beforeend" } position
+     * @param child
+     */
     addChild(position, child){
         if(!this.allows.includes(child.name)) {
             console.error(`${child.name} is not allowed in ${this.name}`);
             return;
         }
+        if(position !== "afterbegin" && position !== "beforeend") throw new Error("Invalid position");
         this.element.insertAdjacentElement(position, child.element);
     }
 
@@ -345,6 +351,22 @@ export class HotbarMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["Spell"];
+    }
+
+    /**
+     * Get the ids of the spells in the hotbar
+     * @param {number} spellId
+     * @param {boolean} equip - if the spell is being equipped or unequipped
+     * @return {string[]}
+     */
+    getEquippedSpellIds(spellId, equip){
+        const arr = Array.from(this.element.querySelectorAll(".list-menu-ul > li")).map(spell => spell.id);
+        const index = arr.indexOf(spellId);
+        if(index !== -1){
+            arr.splice(arr.indexOf(spellId), 1);
+        }
+        if(equip) arr.push(spellId);
+        return arr;
     }
 
     get name(){

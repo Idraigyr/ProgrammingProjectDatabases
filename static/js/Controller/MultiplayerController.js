@@ -399,7 +399,7 @@ export class MultiplayerController extends Subject{
             this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
         }
         if(data.spellEvent) {
-            data.spellEvent.type = spellTypes[data.spellEvent.type];
+            data.spellEvent.type = new (spellTypes.getCtor(data.spellEvent.type))({});
             for (const property in data.spellEvent.params) {
                 //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
                 if(data.spellEvent.params[property]?.x) data.spellEvent.params[property] = new THREE.Vector3(

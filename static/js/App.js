@@ -24,9 +24,7 @@ import {ChatNamespace} from "./external/ChatNamespace.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
-
-
-import { TextGeometry } from 'three-TextGeometry';
+import {spellTypes} from "./Model/Spell.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -229,6 +227,14 @@ class App {
             if(this.playerInfo.crystals < building?.upgradeCost) return;
             this.playerInfo.changeCrystals(-building.upgradeCost);
             // building.levelUp(); TODO: implement levelUp method
+        });
+        this.menuManager.addEventListener("switchSpells", (event) => {
+            for(let i = 0; i < 5; i++){
+                let spell = null;
+                if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                this.worldManager.world.player.changeEquippedSpell(i, spell);
+                this.hud.setSpellIcon(i+1, spellTypes.getIcon(event.detail.spellIds[i]));
+            }
         });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));

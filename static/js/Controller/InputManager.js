@@ -22,7 +22,6 @@ export class InputManager extends Subject{
         right: false,
         up: false,
         down: false,
-        spellSlot: 1,
         sprint: false,
         build: false,
         eating: false
@@ -104,7 +103,6 @@ export class InputManager extends Subject{
      */
     resetKeys(){
         for(const key in this.keys){
-            if(key === "spellSlot") continue;
             this.keys[key] = false;
         }
         this.mouse.leftClick = false;
@@ -183,10 +181,11 @@ export class InputManager extends Subject{
 
     /**
      * creates custom event for spell slot change
+     * @param {number} slot - [1,5]
      * @return {CustomEvent<{spellSlot: number}>}
      */
-    createSpellSlotChangeEvent(){
-        return new CustomEvent("spellSlotChange", {detail: {spellSlot: this.keys.spellSlot}});
+    createSpellSlotChangeEvent(slot){
+        return new CustomEvent("spellSlotChange", {detail: {spellSlot: slot}});
     }
 
     /**
@@ -235,24 +234,19 @@ export class InputManager extends Subject{
                 this.keys.build = bool;
                 break;
             case slot1Key:
-                this.keys.spellSlot = 1;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+                this.dispatchEvent(this.createSpellSlotChangeEvent(1));
                 break;
             case slot2Key:
-                this.keys.spellSlot = 2;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+                this.dispatchEvent(this.createSpellSlotChangeEvent(2));
                 break;
             case slot3Key:
-                this.keys.spellSlot = 3;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+                this.dispatchEvent(this.createSpellSlotChangeEvent(3));
                 break;
             case slot4Key:
-                this.keys.spellSlot = 4;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+                this.dispatchEvent(this.createSpellSlotChangeEvent(4));
                 break;
             case slot5Key:
-                this.keys.spellSlot = 5;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+                this.dispatchEvent(this.createSpellSlotChangeEvent(5));
                 break;
 
         }
