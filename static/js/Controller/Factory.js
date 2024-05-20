@@ -2,6 +2,7 @@ import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
+import {API_URL, buildingUpgradeURI, placeableURI, taskURI} from "../configs/EndpointConfigs.js";
 import * as THREE from "three";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 
@@ -207,7 +208,7 @@ export class Factory{
     createBuilding(params){
         const asset = this.assetManager.getAsset(params.buildingName);
         let pos = new THREE.Vector3(params.position.x, asset.position.y, params.position.z);
-        const modelParams = {position: pos, id: params.id, team: params.team};
+        const modelParams = {position: pos, id: params.id, team: params.team, level: params.level};
 
         const model = new Model[params.buildingName](modelParams); // TODO: add rotation
         const view = new View[params.buildingName]({charModel: asset, position: pos, scene: this.scene});
@@ -247,8 +248,39 @@ export class Factory{
         if (params.task){
             console.log("task", params.task);
             // Get if the timer is already finished
+            console.log("currentTime: ", this.currentTime, "starttime:", params.task.starttime, "endtime: ", params.task.endtime,  "endtime in date: ", new Date(params.task.endtime));
             const timeEnd = new Date(params.task.endtime);
+            // Start of black magic
+            const offsetRegex = /([+-]\d{2}):(\d{2})$/;
+            const match = params.task.starttime.match(offsetRegex);
+            let sign, hours, minutes;
+            if (match) {
+                sign = match[1][0]; // + or -
+                hours = match[1].slice(1); // hours part
+                minutes = match[2]; // minutes part
+                let formattedOffset = `${sign}${hours}:${minutes}`;
+
+                console.log(`Time offset: ${formattedOffset}`);
+            } else {
+                console.log("No offset found in the string");
+            }
+            // Alright, now we have sign, hours and minutes of the server offset
+            // Now we have to convert them to milliseconds
+            let offset = 0;
+            if (sign === "+") {
+                offset = (parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
+            }else if (sign === "-") {
+                offset = -(parseInt(hours) * 60 + parseInt(minutes)) * 60 * 1000;
+            }
+            // Let's compare offset of the local time and the server time
+            let localOffset = new Date().getTimezoneOffset() * 60 * 1000;
+            let offsetDif = offset + localOffset;
+            console.log(`Offset difference: ${offsetDif}`, `Local offset: ${localOffset}`, `Server offset: ${offset}`);
+            // Fix timeEnd
+            timeEnd.setTime(timeEnd.getTime() + offsetDif);
+            // End of black magic
             if(timeEnd < this.currentTime){
+                if(params.task.type === "building_upgrade_task" && model.level < 3) this._levelUpBuilding(params, model);
                 return model;
             }
             params.withTimer = true;
@@ -290,12 +322,65 @@ export class Factory{
                 this.scene.remove(watch.charModel);
                 model.ready = true;
                 this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
+                this.#checkIfBuildingHasUpgradeTask(params, model);
             }
             )
         }
         return model;
     }
 
+    #checkIfBuildingHasUpgradeTask(params, model){
+        // Send get request to the server to check if the model already have the correct level
+        $.ajax({
+            url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                // If there is a task, we have to upgrade the building
+                this._levelUpBuilding(params, model);
+            }});
+    }
+    async _levelUpBuilding(params, model){
+        // Send get request to the server to check if the model already have the correct level
+        await $.ajax({
+            url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                console.log(data);
+                // TODO: or > to disallow downgrading
+                if (data.to_level !== model.level) {
+                    let data2Send = {
+                            placeable_id: model.id,
+                            level: data.to_level
+                        }
+                    if(model.dbType === "tower_building") {
+                        data2Send.tower_type = "magic";
+                    }
+                    // Send put request to the server to level up the building
+                    $.ajax({
+                        url: `${API_URL}/${placeableURI}/${model.dbType}`,
+                        type: "PUT",
+                        contentType: "application/json",
+                        data: JSON.stringify(
+                            data2Send),
+                        success: (data) => {
+                            model.level = data.level;
+                            console.log(data);
+                        },
+                        error: (xhr, status, error) => {
+                            console.error(xhr.responseText);
+                            console.log("Building ", model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
+                        }
+                    });
+                }
+            },
+            error: (xhr, status, error) => {
+                console.error(xhr.responseText);
+                console.log("Building with upgrade task id ", params.task.id, " is not found");
+            }
+        });
+    }
     createProxy(params) {
         const asset = this.assetManager.getAsset(params.buildingName);
         let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
@@ -351,7 +436,7 @@ export class Factory{
     /**
      * Creates models of the buildings
      * @param {Island} islandModel island (Model) to add the buildings to
-     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[], task}[]} buildingsList list of the buildings to add
+     * @param {{type: string, position: THREE.Vector3, id: number, gems: Object[] | undefined, stats: {name: string, value: number}[], task, level}[]} buildingsList list of the buildings to add
      * @throws {Error} if there is no constructor for the building
      */
     #addBuildings(islandModel, buildingsList){
@@ -361,7 +446,7 @@ export class Factory{
                 position.set(building.position.x, building.position.y, building.position.z);
                 convertGridIndexToWorldPosition(position);
                 position.add(islandModel.position);
-                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team, task: building.task}));
+                islandModel.addBuilding(this.createBuilding({buildingName: building.type,position: position, rotation: building.rotation, withTimer: false, id: building.id, gems: building.gems, stats: building.stats, team: islandModel.team, task: building.task, level: building.level}));
             } catch (e){
                 console.error(`no ctor for ${building.type} building: ${e.message}`);
             }

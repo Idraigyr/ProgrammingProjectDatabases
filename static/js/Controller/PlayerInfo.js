@@ -1,6 +1,14 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI, islandURI} from "../configs/EndpointConfigs.js";
+import {
+    API_URL,
+    playerProfileURI,
+    playerURI,
+    timeURI,
+    logoutURI,
+    islandURI,
+    buildingUpgradeURI
+} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
@@ -271,6 +279,44 @@ export class PlayerInfo extends Subject{
             });
         } catch (err){
             console.error(err);
+        }
+    }
+    /**
+     * Creates level up task on the server
+     * @param building - Building to level up
+     */
+    async createLevelUpTask(building){
+        // Get time
+        let response = await this.getCurrentTime();
+        let serverTime = new Date(response);
+        serverTime.setSeconds(serverTime.getSeconds()+ building.upgradeTime);
+        let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+        let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+        // Convert local time to ISO string
+        let time = localTime.toISOString();
+        let formattedDate = time.slice(0, 19);
+        try{
+            await $.ajax({
+                url: `${API_URL}/${buildingUpgradeURI}`,
+                type: "POST",
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({
+                    island_id: this.islandID,
+                    to_level: building.level + 1,
+                    building_id: building.id,
+                    used_crystals: building.upgradeCost,
+                    endtime: formattedDate
+                }),
+                success: (data) => {
+                    console.log(data);
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+        } catch (e){
+            console.log(e);
         }
     }
     changeHealth(amount) {

@@ -25,4 +25,6 @@ export const gemAttributesURI = 'api/gem/attributes/list';
 
 export const taskURI = 'api/task';
 
+export const buildingUpgradeURI = 'api/building_upgrade_task';
+
 export const postRetries = 3;
