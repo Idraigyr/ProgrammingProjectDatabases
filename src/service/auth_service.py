@@ -5,6 +5,7 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.player_stats import PlayerStats
 from src.model.player import PlayerSpellAssociation
 from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
@@ -158,6 +159,11 @@ class AuthService:
         player_entity.player = player
         player.entity = player_entity
         current_app.db.session.add(player_entity)
+        current_app.db.session.commit()
+
+        # Create the stats object for the player
+        player_stats = PlayerStats(player_id=player.user_profile_id)
+        current_app.db.session.add(player_stats)
         current_app.db.session.commit()
 
         # player settings

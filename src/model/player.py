@@ -67,6 +67,8 @@ class Player(current_app.db.Model):
     # The player's match queue entry
     match_queue_entry: Mapped["MatchQueueEntry"] = relationship("MatchQueueEntry", back_populates="player", uselist=False, cascade="all, delete-orphan")
 
+    # The player's statistics object
+    stats: Mapped["PlayerStats"] = relationship("PlayerStats", back_populates="player", uselist=False, cascade="all, delete-orphan")
 
     def __init__(self, user_profile=None, crystals: int = 0, mana: int = 0, xp: int = None, last_logout: DateTime = None, last_login: DateTime = None):
         """

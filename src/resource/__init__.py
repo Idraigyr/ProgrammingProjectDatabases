@@ -93,6 +93,7 @@ def attach_resources(app: Flask) -> None:
     import src.resource.time as time_module
     import src.resource.match_queue as match_queue_module
     import src.resource.friend_request as friend_request_module
+    import src.resource.player_stats as player_stats_module
 
     player_module.attach_resource(app)
     user_profile_module.attach_resource(app)
@@ -117,6 +118,7 @@ def attach_resources(app: Flask) -> None:
     time_module.attach_resource(app)
     match_queue_module.attach_resource(app)
     friend_request_module.attach_resource(app)
+    player_stats_module.attach_resource(app)
 
 
 def clean_dict_input(d: dict) -> dict:

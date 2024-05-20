@@ -6,6 +6,10 @@ from src.model.player import Player
 
 
 class UserSettings(current_app.db.Model):
+    """
+    UserSettings contains all the settings for a player
+    This includes audio settings, keybinds, etc.
+    """
 
     player_id: Mapped[int] = mapped_column("Player", ForeignKey("player.user_profile_id"), primary_key=True)
     player: Mapped[Player] = relationship(back_populates="user_settings")

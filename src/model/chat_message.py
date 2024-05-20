@@ -6,6 +6,10 @@ from sqlalchemy.orm import relationship
 
 
 class ChatMessage(current_app.db.Model):
+    """
+    A chat message object is a message sent by a player in the game
+    It is always 'submitted' through the websocket, thus there is no need for a POST endpoint
+    """
     
     id = Column(Integer, primary_key=True)
     message = Column(String(255))
