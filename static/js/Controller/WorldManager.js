@@ -316,22 +316,26 @@ export class WorldManager{
         $.getJSON(`${API_URL}/${taskURI}/list?island_id=${this.playerInfo.islandID}&is_over=true`).done((data) => {
             // Delete all tasks that are finished
             data.forEach((task) => {
-                $.ajax({
-                    url: `${API_URL}/${taskURI}?id=${task.id}`,
-                    type: "DELETE",
-                    error: (e) => {
-                        console.error(e);
-                    }
-                }).done((data, textStatus, jqXHR) => {
-                    console.log("DELETE success");
-                    console.log(textStatus, data);
-                }).fail((jqXHR, textStatus, errorThrown) => {
-                    console.log("DELETE fail");
-                    console.error(textStatus, errorThrown);
-                });
+                this.deleteTask(task.id);
             });
         }).fail((jqXHR, textStatus, errorThrown) => {
             console.error("GET request failed");
+            console.error(textStatus, errorThrown);
+        });
+    }
+
+    async deleteTask(taskID){
+        $.ajax({
+            url: `${API_URL}/${taskURI}?id=${taskID}`,
+            type: "DELETE",
+            error: (e) => {
+                console.error(e);
+            }
+        }).done((data, textStatus, jqXHR) => {
+            console.log("DELETE success");
+            console.log(textStatus, data);
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.log("DELETE fail");
             console.error(textStatus, errorThrown);
         });
     }
@@ -362,6 +366,54 @@ export class WorldManager{
         }
         return false;
     }
+
+    /**
+     * Create a new task to fuse a gem
+     * @param params {{timeInSeconds: number, buildingID: number}}
+     * @returns {Promise<void>} - a promise that resolves when the task has been created
+     */
+    async createFuseTask(params){
+        try {
+            // Get server time
+            let response = await this.playerInfo.getCurrentTime();
+            let serverTime = new Date(response);
+            serverTime.setSeconds(serverTime.getSeconds()+params.timeInSeconds);
+            let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+            let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+            // Convert local time to ISO string
+            let time = localTime.toISOString();
+            let formattedDate = time.slice(0, 19);
+            // TODO: change uri + add crystal_amount to JSON.stringify
+            const result = await $.ajax({
+                url: `${API_URL}/${taskURI}`,
+                type: "POST",
+                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID}),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                throw new Error(`Could not send POST request to fuse a gem: Error: ${textStatus} ${errorThrown}`);
+            });
+            return result;
+        } catch (err){
+            console.error(err);
+        }
+    }
+    /**
+     * Places a building in the world
+     * @param uri - the URI to send the POST request to
+     * @param timeInSeconds - the time in seconds to build the building
+     * @param buildingID - the id of the building to upgrade
+     * @param islandId - the id of the island the building is on
+     * @param retries - the number of retries to resend the POST request
+     * @returns {Promise<void>} - a promise that resolves when the building has been placed
+     */
     async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
         try {
             // Get server time

@@ -281,7 +281,16 @@ export class Factory{
             // End of black magic
             if(timeEnd < this.currentTime){
                 if(params.task.type === "building_upgrade_task") this._levelUpBuilding(params, model);
+                // TODO: check the name
+                else if (params.task.type === "fuse_task") {
+                    // Time to create a new gem!
+                    // TODO: ask how to get the corresponding menu to make gem there
+                }
                 return model;
+                // TODO: check the name
+            }else if (params.task.type === "fuse_task"){
+                // TODO: Time to create a new task for the gem in timeManager! => copy ~line 186 App.js
+
             }
             params.withTimer = true;
             // Get difference in seconds

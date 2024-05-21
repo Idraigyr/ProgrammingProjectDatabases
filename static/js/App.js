@@ -179,12 +179,14 @@ class App {
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
 
-        this.menuManager.addEventListener("startFusion", (event) => {
-            const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
-            // Send post request to create new task
-
+        this.menuManager.addEventListener("startFusion", async (event) => {
+            const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            // Send post request to create new task TODO: connect this to the new Thomas' code
+            const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: 10});
             this.timerManager.createTimer(fusionTime, [() => {
-                const gem = this.itemManager.createGem(fusionLevel);
+                const gem = this.itemManager.createGem(fusionTable.level);
+                // Delete the old task
+                this.worldManager.deleteTask(response.id);
                 // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);
