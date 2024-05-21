@@ -153,7 +153,13 @@ class App {
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
-        this.settings = new Settings(this.inputManager, this.playerInfo, {leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)});
+        this.settings = new Settings({
+            inputManager: this.inputManager,
+            playerInfo: this.playerInfo,
+            callbacks: {
+                leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)
+            }
+        });
 
         /*TODO: look and see
         this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});

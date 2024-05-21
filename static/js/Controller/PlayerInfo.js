@@ -5,7 +5,6 @@ import {
     playerProfileURI,
     playerURI,
     timeURI,
-    islandURI,
     logoutURI,
     islandURI,
     buildingUpgradeURI

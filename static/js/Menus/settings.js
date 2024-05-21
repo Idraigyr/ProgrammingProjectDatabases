@@ -47,7 +47,8 @@ export class Settings {
         console.log("Grass toggle button clicked ", event);
         this.grassOn = !!event.target.checked;
         // Dispatch event to toggle grass
-        this.worldManager.toggleGrass(this.grassOn);
+        //this.worldManager.toggleGrass(this.grassOn);
+        //TODO: add a callback don't add worldmanager directly
     }
 
     loadCursors() {
