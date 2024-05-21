@@ -353,10 +353,10 @@ class App {
             //if the building is a mine, forward stored crystal information
             if(buildingNumber === buildTypes.getNumber("mine_building")){
                 const currentTime = new Date(await this.playerInfo.getCurrentTime());
+                building.updateGemMultipliers(params.stats.get("speed"), params.stats.get("capacity"));
                 params.crystals = building.checkStoredCrystals(currentTime);
                 params.maxCrystals = building.maxCrystals;
                 params.rate = building.productionRate;
-
                 //params.maxCrystals = params.stats.get("capacity");
                 //params.rate = params.stats.get("mineSpeed");
             }
