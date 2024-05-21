@@ -318,7 +318,9 @@ export class Factory{
             timeEnd.setTime(timeEnd.getTime() + offsetDif);
             // End of black magic
             if(timeEnd < this.currentTime){
-                if(params.task.type === "building_upgrade_task") this._levelUpBuilding(params, model);
+                if(params.task.type === "building_upgrade_task") {
+                    this._levelUpBuilding(params, model);
+                }
                 // TODO: check the name
                 else if (params.task.type === "fuse_task") {
                     // Time to create a new gem!
@@ -408,6 +410,8 @@ export class Factory{
                             data2Send),
                         success: (data) => {
                             model.level = data.level;
+                            //TODO: is this always +1
+                            this.playerInfo.changeXP(150);
                             console.log(data);
                         },
                         error: (xhr, status, error) => {

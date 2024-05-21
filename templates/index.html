@@ -120,6 +120,7 @@
             <label for="usernameFriend" style="color:black;">Username:</label>
             <input type="text" id="usernameFriend" name="usernameFriend">
             <button id="requestSubmit" class="Request-Submit" value=""> </button>
+            <p id="UsernameExist" class="Username-Exist"> Username does not exist.</p>
         </div>
         <div id="listFriend" class="Friend-List"></div>
         <div id="listRequests" class="Request-List"></div>
@@ -439,7 +440,7 @@
 
         // Event listener for keydown to toggle FPS display
         document.addEventListener('keydown', function(e) {
-            if (document.activeElement === chatInput) {
+            if (document.activeElement === chatInput || document.activeElement ===  usernameFriend) {
                 return;
             }
             if (e.code === 'KeyF') {

@@ -2714,6 +2714,7 @@ a[data-tooltip][data-placement="right"]::after {
     padding: 10px; /* Optional: Add padding inside the div */
     border: solid black;
     border-radius: 10px;
+    overflow-y: auto;
     z-index: 10;
 }
 
@@ -2735,8 +2736,6 @@ a[data-tooltip][data-placement="right"]::after {
     border: solid black;
     border-radius: 10px 0px 0px 0px;
     cursor: pointer;
-
-
 }
 
 .Friend-Add-Button{
@@ -2785,6 +2784,13 @@ a[data-tooltip][data-placement="right"]::after {
     top: 20%;
     text-decoration-color: black;
 
+}
+
+.Username-Exist{
+    display: none;
+    color: red;
+    margin-left: 90px;
+    margin-top: 5px;
 }
 
 .Request-Submit{

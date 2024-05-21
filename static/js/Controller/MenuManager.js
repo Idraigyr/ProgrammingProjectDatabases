@@ -51,7 +51,8 @@ export class MenuManager extends Subject{
      * ctor for the MenuManager
      * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function},
      * matchMakeCallback: function, checkStakesCallback: function | null,
-     * closedMultiplayerMenuCallback: function}} params
+     * closedMultiplayerMenuCallback: function,
+     * playerInfo: PlayerInfo}} params - TODO: possibly remove playerInfo as param
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -63,6 +64,11 @@ export class MenuManager extends Subject{
         this.closedMultiplayerMenuCallback = params?.closedMultiplayerMenuCallback;
         this.items = new Map();
         this.menus = new Map();
+
+        /* TODO: why playerInfo here?
+        this.playerInfo = params.playerInfo;
+
+         */
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -267,9 +273,13 @@ export class MenuManager extends Subject{
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
+          /* TODO: don't change xp here do this when fusion task is done
+          this.playerInfo.changeXP(2*this.inputCrystalParams.current);
+          */
           this.inputCrystalParams.current = 0;
           this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
           this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+
 
           /*
           // loading bar + reset features to be removed
@@ -761,7 +771,12 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            if(param.total === 0){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
+                this.items[param.building].element.style.opacity = 0.5;
+            }else{
+                this.items[param.building].element.style.opacity = 1;
+                this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            }
         }
     }
 

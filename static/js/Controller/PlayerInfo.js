@@ -37,7 +37,7 @@ export class PlayerInfo extends Subject{
 
         this.maxBuildings = 2;
 
-        this.level = 0;
+        this.level = 1;
         this.experience = 0;
         this.xpThreshold = 50;
 
@@ -50,9 +50,9 @@ export class PlayerInfo extends Subject{
             Tower: Level[this.level]["Tower"],
             WarriorHut: Level[this.level]["WarriorHut"],
             Mine: Level[this.level]["Mine"],
-            FusionTable: Level[this.level]["FusionTable"]
+            FusionTable: Level[this.level]["FusionTable"],
         };
-        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0}
+        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0};
 
     }
 
@@ -428,7 +428,7 @@ export class PlayerInfo extends Subject{
             if(increase){
                 let old = this.level;
                 this.level = this.level + 1;
-                if (this.level < 0 || this.level > 4){
+                if (this.level < 0 || this.level > 15){
                     this.level = old;
                     return false;
                 }
@@ -437,7 +437,7 @@ export class PlayerInfo extends Subject{
             }
         } else{
             if(amount < 0 && Math.abs(amount) > this.level) return false;
-            if(amount < 0 || amount > 4) return false;
+            if(amount < 0 || amount > 15) return false;
             this.level = amount;
         }
         this.dispatchEvent(this.createUpdateLevelEvent());

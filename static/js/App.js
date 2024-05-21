@@ -9,7 +9,7 @@ import {HUD} from "./Controller/HUD.js"
 import "./external/ChatNamespace.js"
 import "./external/chatBox.js"
 import "./external/LevelUp.js"
-import "./external/friendsMenu.js"
+import {FriendsMenu} from "./external/friendsMenu.js"
 import {OrbitControls} from "three-orbitControls";
 import {
     placeableURI,
@@ -144,9 +144,11 @@ class App {
         //visualise axes -- DEBUG STATEMENTS --
         this.scene.add(this.cameraManager.axisHelper.charModel);
         //visualise axes -- DEBUG STATEMENTS --
+        this.friendsMenu = new FriendsMenu();
 
         this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
-
+        //TODO: check why you need to put friendsMenu into MultiplayerController
+        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu});
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager, camera: this.cameraManager.camera});
@@ -638,6 +640,8 @@ class App {
         progressBar.labels[0].innerText = "Generating collision mesh...";
         progressBar.value = 95;
         this.collisionDetector.generateColliderOnWorker();
+
+        await this.friendsMenu.populateRequests();
 
         if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});

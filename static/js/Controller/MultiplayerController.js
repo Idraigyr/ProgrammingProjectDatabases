@@ -36,6 +36,7 @@ export class MultiplayerController extends Subject{
         this.stakedGems = [];
         this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
+        this.friendsMenu = params.friendsMenu;
 
         //Friend visit properties
         this.pendingVisitRequest = null;
@@ -280,6 +281,7 @@ export class MultiplayerController extends Subject{
     startMatch(){
         console.log("match started");
         this.inMatch = true;
+        this.friendsMenu.inMatch = true;
         document.querySelector('.loading-animation').style.display = 'none';
         this.togglePhysicsUpdates();
     }
@@ -469,6 +471,7 @@ export class MultiplayerController extends Subject{
         this.toggleTimer(false);
         this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
+        this.friendsMenu.inMatch = false;
         this.togglePhysicsUpdates();
         console.log("done leaving match");
     }
