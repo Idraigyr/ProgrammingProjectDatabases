@@ -149,7 +149,7 @@ class ForwardingNamespace(Namespace):
             if user_id in self.playing:
                 print(f"Player was in match: user_id={user_id}, sid={sid}")
                 match_id = self.playing[user_id]
-                self.end_match(match_id, None)
+                self.end_match(match_id, self.matches[match_id]['players'][0] if self.matches[match_id]['players'][0] != user_id else self.matches[match_id]['players'][1])
 
             # remove player from match queue if they were in it
             db_entry: Optional[MatchQueueEntry] = MatchQueueEntry.query.filter_by(player_id=user_id).first()
