@@ -660,9 +660,46 @@ export class MenuManager extends Subject{
             if(params.stats.has(stat)){
                 this.items[stat].element.style.display = this.items[stat].display;
                 //TODO: change the text based on the type of building
-                console.log("stat: " + params.stats.get(stat));
+                console.log("stat: " + stat);
+                console.log("buidling: " + params.name);
                 let name = `${stat}: ${Math.round(params.stats.get(stat))}`;
                 let text = `placeholder description`;
+                if (params.name === "MineMenu") {
+                    if (stat === "capacity") {
+                        text = "Max stored crystals";
+                    }
+                    else if (stat === "speed") {
+                        text = "Mine speed";
+                    }
+                    else if (stat === "fortune") {
+                        text = "Chance of mining gem";
+                    }
+                }
+                else if (params.name === "TowerMenu") {
+                    if (stat === "capacity") {
+                        text = "Hitpoints";
+                    }
+                    else if (stat === "damage") {
+                        text = "Attack damage";
+                    }
+                    else if (stat === "speed") {
+                        text = "Attack speed";
+                    }
+                    else if (stat === "fortune") {
+                        text = "Critical hit chance";
+                    }
+                }
+                else if (params.name === "FusionTableMenu") {
+                    if (stat === "capacity") {
+                        text = "Max crystals to fuse";
+                    }
+                    else if (stat === "speed") {
+                        text = "Fusion speed";
+                    }
+                    else if (stat === "fortune") {
+                        text = "Power of generated gem";
+                    }
+                }
                 this.items[stat].element.querySelector(".menu-item-description-name").innerText = name;
                 this.items[stat].element.querySelector(".menu-item-description-text").innerText = text;
             } else {
