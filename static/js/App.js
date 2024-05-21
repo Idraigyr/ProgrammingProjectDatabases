@@ -209,9 +209,19 @@ class App {
             building.startUpgrade();
             this.menuManager.exitMenu();
         });
-        this.menuManager.addEventListener("delete", (event) =>{
-            const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
-            this.worldManager.deleteBuilding(building);
+        this.menuManager.addEventListener("delete", async (event) =>{
+            const toDelete = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            this.worldManager.deleteBuilding(toDelete);
+            // await this.playerInfo.retrieveInfo();
+            let buildings = [];
+            for(const building in this.playerInfo.buildingsPlaced){
+                    buildings.push({
+                        building: building,
+                        placed: this.playerInfo.buildingsPlaced[building],
+                        total: this.playerInfo.buildingsThreshold[building]
+                    });
+                }
+            this.menuManager.updateMenu({name: "BuildMenu", buildings: buildings});
             this.menuManager.exitMenu();
         });
 
@@ -266,7 +276,7 @@ class App {
                 this.menuManager.renderMenu({name: buildTypes.getMenuName(buildingNumber), buildings: buildings});
                 this.inputManager.exitPointerLock();
 
-            } else if (this.spellCaster.currentObject) { //What is this code block used for??? placing back in same spot after rotating?
+            } else if (this.spellCaster.currentObject) { // Placing back in same spot after rotating
                 // Get selected building
                 const building = this.spellCaster.currentObject;
                 // Update bounding box of the building

@@ -728,6 +728,8 @@ export class WorldManager{
         }
         // Delete building from world
         this.world.deleteBuilding(building);
+        const buildingName = building.constructor.name;
+        this.playerInfo.buildingsPlaced[buildingName]--;
         this.collisionDetector.generateColliderOnWorker();
     }
 
