@@ -135,6 +135,8 @@ export class MenuManager extends Subject{
     #addMenuCallbacks(menu){
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
+        }
+        if (menu instanceof PropMenu) {
             menu.element.querySelector(".delete-button").addEventListener("click", this.dispatchDeleteEvent.bind(this));
         }
         if(menu instanceof BuildingMenu){

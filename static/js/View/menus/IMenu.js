@@ -532,8 +532,6 @@ export class BaseMenu extends IMenu{
         const headerDiv = document.createElement("div");
         const titleDiv = document.createElement("div");
         const title = document.createElement("h1");
-        const deleteButton = document.createElement("button");
-        const deleteButtonDiv = document.createElement("div");
         const closeButtonDiv = document.createElement("div");
         const closeButton = document.createElement("button");
         const subMenuDiv = document.createElement("div");
@@ -545,15 +543,9 @@ export class BaseMenu extends IMenu{
         subMenuDiv.classList.add("sub-menu-container");
         closeButton.classList.add("close-button");
         closeButtonDiv.appendChild(closeButton);
-        deleteButton.classList.add("delete-button");
-        // Add title to the button
-        deleteButton.title = "Vanish this";
-        deleteButtonDiv.appendChild(deleteButton);
-        deleteButtonDiv.classList.add("delete-button-container");
-        titleDiv.appendChild(title);
         headerDiv.appendChild(titleDiv);
-        headerDiv.appendChild(deleteButtonDiv);
         headerDiv.appendChild(closeButtonDiv);
+        titleDiv.appendChild(title);
         element.appendChild(headerDiv);
         element.appendChild(subMenuDiv);
         element.id = this.name;
@@ -584,9 +576,22 @@ export class PropMenu extends BaseMenu{
         return "PropMenu";
     }
 
-    get title(){
-        return "Prop";
+    createElement(params) {
+        const element = super.createElement(params);
+        const deleteButton = document.createElement("button");
+        const deleteButtonDiv = document.createElement("div");
+        deleteButton.classList.add("delete-button");
+        // Add title to the button
+        deleteButton.title = "Vanish this";
+        deleteButtonDiv.appendChild(deleteButton);
+        deleteButtonDiv.classList.add("delete-button-container");
+        const headerDiv = element.querySelector(".menu-header");
+        headerDiv.insertBefore(deleteButtonDiv, headerDiv.lastChild);
+        return element;
+    }
 
+    get title(){
+        return "Decoration";
     }
 }
 
@@ -701,7 +706,7 @@ export class MultiplayerStatsMenu extends IMenu{
     }
 }
 
-export class BuildingMenu extends BaseMenu{
+export class BuildingMenu extends PropMenu{
     constructor(params) {
         params.classes ? params.classes.push("building-menu") : params.classes = ["building-menu"];
         super(params);
