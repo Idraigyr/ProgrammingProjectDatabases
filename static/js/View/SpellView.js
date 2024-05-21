@@ -12,6 +12,8 @@ export class Fireball extends IView{
         super(params);
         this.particleSystem = new ParticleSystem(params);
         this.staysAlive = true;
+        this.hasUpdates = true;
+
 
         const geo = new THREE.SphereGeometry(0.1);
         const mat = new THREE.MeshPhongMaterial({color: 0xFF6C00 });
@@ -30,18 +32,20 @@ export class Fireball extends IView{
     /**
      * Update fireball
      * @param deltaTime time passed
+     * @param camera camera to update view
      */
-    update(deltaTime){
-        this.particleSystem.update(deltaTime);
+    update(deltaTime, camera){
+        this.particleSystem.update(deltaTime, camera);
     }
 
     /**
      * Check if fireball is not dead
      * @param deltaTime time passed
+     * @param camera camera to update view
      * @returns {boolean} true if fireball is not dead
      */
-    isNotDead(deltaTime){
-        return this.particleSystem.isNotDead(deltaTime);
+    isNotDead(deltaTime, camera){
+        return this.particleSystem.isNotDead(deltaTime, camera);
     }
 
     /**
@@ -63,7 +67,7 @@ export class Fireball extends IView{
 export class ThunderCloud extends IView{
     constructor(params) {
         super(params);
-        this.camera = params.camera;
+        this.hasUpdates = true;
         this.opacity = params?.opacity ?? 0.8;
         this.speed = params?.speed ?? 0.4;
         this.width  = params?.width ?? 8;
@@ -153,7 +157,6 @@ export class ThunderCloud extends IView{
         this.cloudMetrics.forEach((segment, index) => {
             group.add(this.#createPlane(color,segment.scale,segment.density,opacity));
             group.children[index].position.set(segment.x, segment.y, segment.z);
-            group.children[index].lookAt(this.camera.position);
             this.planesRotation.push(group.children[index].rotation.z);
         })
         return group;
@@ -187,10 +190,10 @@ export class ThunderCloud extends IView{
      * Update clouds
      * @param deltaTime time passed
      */
-    #updateClouds(deltaTime){
+    #updateClouds(deltaTime, camera){
         for(let i = 0; i < this.planes.children.length; i++){
             this.#rotateAroundPosition(this.planes.children[i],new THREE.Vector3(0,1,0),0.2*deltaTime);
-            this.planes.children[i].lookAt(this.camera.position);
+            this.planes.children[i].lookAt(camera.position);
             this.planesRotation[i] +=  this.cloudMetrics[i].rotation;
             this.planes.children[i].rotation.z = this.planesRotation[i];
             this.planes.children[i].scale.setScalar(this.cloudMetrics[i].scale + (((1 + Math.sin(deltaTime / 10)) / 2) * i) / 10);
@@ -200,10 +203,11 @@ export class ThunderCloud extends IView{
     /**
      * Update thundercloud
      * @param deltaTime time passed
+     * @param camera
      */
-    update(deltaTime){
+    update(deltaTime, camera){
         this.#updateLight(deltaTime);
-        this.#updateClouds(deltaTime);
+        this.#updateClouds(deltaTime, camera);
     }
 }
 
@@ -213,7 +217,6 @@ export class ThunderCloud extends IView{
 export class RitualSpell extends IAnimatedView{
     constructor(params) {
         super(params);
-        this.camera = params.camera;
         this.charModel = params.charModel;
         this.position = params.position;
     }
@@ -233,9 +236,10 @@ export class RitualSpell extends IAnimatedView{
     /**
      * Update build ritual
      * @param deltaTime time passed
+     * @param camera camera to update view
      */
-    update(deltaTime) {
-        super.update(deltaTime);
+    update(deltaTime, camera) {
+        super.update(deltaTime, camera);
         this.animations["RitualSpell"].play();
     }
 }

@@ -15,7 +15,7 @@ from typing import Optional
 from markupsafe import escape
 from flask_restful_swagger_3 import Resource, swagger, Api
 
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.swagger_patches import Schema, summary
 
 class MatchQueueSchema(Schema):
@@ -53,6 +53,9 @@ class MatchQueueResource(Resource):
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
     @swagger.response(404, 'player not found', schema=ErrorSchema)
     @swagger.response(409, 'player already / not in the queue', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not the target user (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -69,6 +72,9 @@ class MatchQueueResource(Resource):
         target_player: Optional[Player] = Player.query.get(target_user_id)
         if not target_player:
             return ErrorSchema(f"Player {target_user_id} not found"), 404
+
+        r = check_data_ownership(target_user_id)  # Check the target player is the one invoking it - only admins can add other players
+        if r: return r
 
         try:
             # Validate the input
@@ -106,11 +112,8 @@ class MatchQueueResource(Resource):
                 current_app.db.session.delete(entry)
                 current_app.db.session.commit()
 
-                # Unique id based on the two player ids
-                match_id = f'{target_user_id}-{opponent.user_profile_id}'
-
                 # Send a message to the players through the websocket
-                current_app.socketio.emit('match_found', {'player1': target_player.user_profile_id, 'player2': opponent.user_profile_id, 'match_id': match_id}, namespace='/forward')
+                current_app.socketio.forwarding_namespace.on_match_found(target_user_id, opponent.user_profile_id)
 
                 logging.getLogger(__name__).info(f"Match found between {target_user_id} (level={target_player.entity.level}) and {opponent.user_profile_id} (level={opponent.entity.level})")
                 return MatchQueueSchema(matchmake=True), 200
@@ -142,6 +145,9 @@ class MatchQueueResource(Resource):
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
     @swagger.response(404, 'player not found', schema=ErrorSchema)
     @swagger.response(409, 'player not in the queue', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """
@@ -158,6 +164,9 @@ class MatchQueueResource(Resource):
         player: Optional[Player] = Player.query.get(target_user_id)
         if not player:
             return ErrorSchema(f"Player {target_user_id} not found"), 404
+
+        r = check_data_ownership(target_user_id)  # Check the target player is the one invoking it - only admins can remove other players
+        if r: return r
 
         try:
             # Validate the input

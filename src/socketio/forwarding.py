@@ -13,7 +13,7 @@ from src.model.match_queue import MatchQueueEntry
 
 # Set this to True if you want to broadcast forwarded the message to the sender as well
 # It will ignore the original sender session, but will broadcast to all other sessions
-BROADCAST_TO_SELF: bool = False
+# BROADCAST_TO_SELF: bool = False
 MAX_PLAYERS: int = 2
 MATCH_TIME: int = 10*60  # 10 minutes
 
@@ -59,6 +59,20 @@ class ForwardingNamespace(Namespace):
         """
         self._log.debug(f"Ending match: {match_id}")
         try:
+            self._log.debug(f"Ending match: {match_id}")
+            #remove friend visit "match"
+            if self.matches[match_id]['time_left'] is None:
+                self._log.debug(f"Ending friend visit: {match_id}")
+                for player_id in self.matches[match_id]['players']:
+                    if player_id != request.sid:
+                        print(f"Player {player_id} left the island")
+                        self.emit('island_visit', {'request': 'leave'}, room=self.clients[player_id])
+
+                    del self.playing[player_id]
+                self.matches.pop(match_id)
+
+                return
+
             with self.app.app_context():
                 #transfer ownership of stakes to winner or when there is a draw, return stakes to players
                 if winner_id is None:
@@ -96,6 +110,7 @@ class ForwardingNamespace(Namespace):
         Register the clients when they connect
         """
         sid = request.sid
+        print(f"Client connected: sid={sid}")
 
         try:
             verify_jwt_in_request()
@@ -114,8 +129,11 @@ class ForwardingNamespace(Namespace):
 
         if user_id not in self.clients:
             self.clients[user_id] = sid
+            self._log.debug(f"Client connected: user_id={user_id}, sid={sid}")
+            print(f"Client connected: user_id={user_id}, sid={sid}")
         else:
             self._log.error(f"player is already logged in", exc_info=True)
+            self.emit('already_connected', room=sid)
             #TODO: send error message to client that they are already connected
 
     # Remove clients when they disconnect
@@ -129,10 +147,9 @@ class ForwardingNamespace(Namespace):
                 continue
             # end match if player was in a match
             if user_id in self.playing:
+                print(f"Player was in match: user_id={user_id}, sid={sid}")
                 match_id = self.playing[user_id]
-                self.end_match(match_id, self.matches[match_id]['players'][0] if self.matches[match_id]['players'][
-                                                                                     0] != user_id else
-                self.matches[match_id]['players'][1])
+                self.end_match(match_id, self.matches[match_id]['players'][0] if self.matches[match_id]['players'][0] != user_id else self.matches[match_id]['players'][1])
 
             # remove player from match queue if they were in it
             db_entry: Optional[MatchQueueEntry] = MatchQueueEntry.query.filter_by(player_id=user_id).first()
@@ -144,6 +161,7 @@ class ForwardingNamespace(Namespace):
             # remove player from clients
             self.clients.pop(user_id)
             self._log.info(f"Client disconnected: user_id={user_id}, sid={sid}")
+            print(f"Client disconnected: user_id={user_id}, sid={sid}")
             break
 
     def on_forward(self, data):
@@ -153,15 +171,18 @@ class ForwardingNamespace(Namespace):
         """
         try:
             targetId = int(data['target'])
+            if targetId not in self.playing:
+                self._log.error(f"Player is not in a match: {targetId}. Dropping message.")
+                return
             if targetId not in self.clients:
                 self._log.error(f"Client not found: {targetId}. Dropping message.")
                 return
             target_sids = [self.clients[targetId]]
             senderId = self.get_user_from_sid(request.sid)
 
-            if BROADCAST_TO_SELF:
-                # also send the message to the other sender sessions
-                target_sids.append(request.sid)
+            # if BROADCAST_TO_SELF:
+            #     # also send the message to the other sender sessions
+            #     target_sids.append(request.sid)
 
             # self._log.debug(f"Forwarding message to user_id = {targetId}: {data}")
             data['sender'] = senderId
@@ -208,3 +229,81 @@ class ForwardingNamespace(Namespace):
         :param data: message from the client
         :return:
         """
+        try:
+            user_id = self.get_user_from_sid(request.sid)
+            match_id = self.playing[user_id]
+            self.end_match(match_id, self.matches[match_id]['players'][0] if
+                                     self.matches[match_id]['players'][0] != user_id else
+                                     self.matches[match_id]['players'][1])
+        except Exception:
+            self._log.error(f"Could not leave match: {data}", exc_info=True)
+
+
+    def on_match_found(self, player1: int, player2: int):
+        """
+        Sends a message to the matched players that they have been matched
+        :param match_id: match_id
+        :param player1: player1
+        :param player2: player2
+        """
+        print("clients:", self.clients)
+        # Unique id based on the two player ids
+        match_id = f'{player1}-{player2}'
+        self._log.debug(f"Match found: {match_id}")
+
+        try:
+            self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player2])
+            self.emit('match_found', {'match_id': match_id, 'player1': player1, 'player2': player2}, room=self.clients[player1])
+        except Exception:
+            self._log.error(f"Could not send match found message: {match_id} between {player1} and {player2}", exc_info=True)
+
+    def on_island_visit(self, data):
+        """
+        forwards the island_visit event
+        :param data: message from the client
+        :return:
+        """
+        try:
+            targetId = int(data['target'])
+            message = data['request']
+            if targetId not in self.clients:
+                self._log.error(f"Client not found: {targetId}. Dropping message.")
+                return
+            target_sids = [self.clients[targetId]]
+            senderId = self.get_user_from_sid(request.sid)
+            self._log.debug(f"Player {senderId} wants to {message} friend {targetId}")
+            print(f"Player {senderId} wants to {message} friend {targetId}")
+            data['sender'] = senderId
+
+            if message == "accept":
+                self._log.debug(f"Player accepted friend visit: {senderId} -> {targetId}")
+                print(f"Player accepted friend visit: {senderId} -> {targetId}")
+                match_id = f'{senderId}-{targetId}'
+                self.playing[senderId] = match_id
+                self.playing[targetId] = match_id
+                self.matches[match_id] = {'players': [senderId, targetId], 'time_left': None}
+            elif message == "kick" or message == "leave":
+                match_id = self.playing[senderId]
+                self.end_match(match_id, None)
+
+            for sid in target_sids:
+                self.emit('island_visit', data, room=sid)
+        except Exception:
+            self._log.error(f"Could not forward message: {data}", exc_info=True)
+
+    def on_check_online_status(self, data):
+        """
+        checks the online status of the target user
+        :param data:  message from the client
+        :return:
+        """
+        try:
+            targetId = int(data['target'])
+            status = "offline"
+            if targetId in self.clients:
+                status = "online"
+            if targetId in self.playing:
+                status = "in_match"
+            self.emit('online_status', {'target': targetId, 'status': status}, room=request.sid)
+        except Exception:
+            self._log.error(f"Could not check online status: {data}", exc_info=True)

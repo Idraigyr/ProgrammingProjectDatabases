@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import {Entity} from "../Entity.js";
-import {pushCollidedObjects} from "../../../helpers.js";
+import {pushCollidedObjects, pushCollidedObjects2} from "../../../helpers.js";
 //abstract class
 /**
  * Abstract class for all characters in the game
@@ -25,12 +25,14 @@ export class Character extends Entity{
         this.onCollidable = false;
         this.hit = false;
         this.#fsm = null;
-        this.health = params?.health ?? 100;
-        this.maxHealth = params?.health ?? 100;
+        this.maxHealth = params?.maxHealth ?? 100;
+        this.health = params?.health ?? this?.maxHealth;
         this.height = params.height;
         this.segment = new THREE.Line3();
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
+        this.shielded = false;
+        this.respawning = false;
 
         this.updateEvent = this.forwardStateUpdate.bind(this);
     }
@@ -98,7 +100,8 @@ export class Character extends Entity{
     }
 
     onCharacterCollision(deltaTime, other, thisBox, otherBox){
-        pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity, 1, 20, deltaTime);
+        // pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity,this.mass, other.mass, deltaTime);
+        pushCollidedObjects2(thisBox, otherBox, this, other, deltaTime);
     }
 
     /**
@@ -167,6 +170,10 @@ export class Character extends Entity{
         return "character";
     }
 
+    setShielded(bool){
+        this.shielded = bool;
+    }
+
     /**
      * Take damage
      */
@@ -182,6 +189,6 @@ export class Character extends Entity{
     }
 
     dies(){
-        throw new Error("cannot call abstract method Character.dies");
+        this.dispatchEvent(new CustomEvent("characterDied", {detail: {id: this.id}}));
     }
 }

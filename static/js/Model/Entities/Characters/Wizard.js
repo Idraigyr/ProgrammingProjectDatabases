@@ -4,13 +4,15 @@ import {Character} from "./Character.js";
  * @class Wizard - class for the player character
  */
 export class Wizard extends Character{
+    #spells;
     constructor(params) {
         super(params);
-        this.spells = [null,null,null,null,null];
+        this.#spells = [null,null,null,null,null];
         this.spellCooldowns = [0,0,0,0,0];
+        this.eatingCooldown = 3;
         this.currentSpell = 0;
-        this.mana = params?.mana ?? 100;
         this.maxMana = params?.maxMana ?? 100;
+        this.mana = params?.mana ?? this.maxMana;
         this.id = params?.id ?? null;
     }
 
@@ -21,12 +23,25 @@ export class Wizard extends Character{
     /**
      * Change the equipped spell
      * @param index - index of the spell slot to equip
-     * @param newSpell - new spell to equip
+     * @param {ConcreteSpell | null} newSpell - new spell to equip (null to unequip a spell)
      * @param onCooldown - if the spell should be on cooldown when equipped
      */
     changeEquippedSpell(index, newSpell, onCooldown = false){
-        this.spells.splice(index,1,newSpell);
+        if(!newSpell){
+            newSpell = null;
+            onCooldown = false;
+        }
+        this.#spells.splice(index,1,newSpell);
         this.spellCooldowns.splice(index,1,onCooldown ? newSpell.getCooldown() : 0);
+        this.dispatchEvent(this.#createChangeSpellEvent(index, newSpell));
+    }
+
+    /**
+     * Switch the current spell
+     * @param {number} index
+     */
+    switchCurrentSpell(index){
+        this.currentSpell = index;
     }
 
     /**
@@ -45,8 +60,8 @@ export class Wizard extends Character{
      * Update cooldown of the current spell
      */
     cooldownSpell(){
-        this.spellCooldowns[this.currentSpell] = this.spells[this.currentSpell].getCooldown();
-        this.mana -= this.spells[this.currentSpell].cost;
+        this.spellCooldowns[this.currentSpell] = this.#spells[this.currentSpell].getCooldown();
+        this.mana -= this.#spells[this.currentSpell].cost;
         this.dispatchEvent(this.#createUpdateManaEvent());
     }
 
@@ -60,10 +75,10 @@ export class Wizard extends Character{
 
     /**
      * Get the current spell
-     * @returns current spell
+     * @returns {ConcreteSpell | null} current spell
      */
     getCurrentSpell(){
-        return this.spells[this.currentSpell];
+        return this.#spells[this.currentSpell];
     }
 
     /**
@@ -125,7 +140,7 @@ export class Wizard extends Character{
      */
     changeSpellCoolDown(spellName, coolDown){
         let index = 0;
-        for(let spell of this.spells){
+        for(let spell of this.#spells){
             if(spell.name === spellName){
                 spell.spell.cooldown = coolDown;
                 this.spellCooldowns[index] = coolDown;
@@ -138,7 +153,7 @@ export class Wizard extends Character{
      * sets cost of all spells to 0
      */
     changeSpellCost() {
-        for(let spell of this.spells){
+        for(let spell of this.#spells){
             spell.cost = 0;
         }
     }
@@ -158,6 +173,16 @@ export class Wizard extends Character{
      */
     get type(){
         return "player";
+    }
+
+    /**
+     * create a custom event to update a spell of the player
+     * @param {number} index
+     * @param {ConcreteSpell} newSpell
+     * @return {CustomEvent<{spell, index}>}
+     */
+    #createChangeSpellEvent(index, newSpell){
+        return new CustomEvent("changeSpell", {detail: {index: index, spell: newSpell}});
     }
 
     /**
@@ -184,13 +209,44 @@ export class Wizard extends Character{
         return new CustomEvent("updateCooldowns", {detail: {cooldowns: this.spellCooldowns}});
     }
 
+
+
+
+    /**
+     * Function to handle damage to the player
+     * @param damage - amount of damage to take
+     */
+
+    takeDamage(damage){
+        if(damage <= 0 || this.shielded) return;
+        const prevHealth = this.health;
+        this.health -= damage;
+        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
+        if(this.health <= 0){
+            this.health = 0;
+            this.dies();
+        }
+    }
+
     /**
      * Function that gets called when the player dies
      */
     dies() {
-        console.log("Player died")
         this.dispatchEvent(new CustomEvent("playerDied"));
 
+    }
+
+    /**
+     * Function that gets called when the player respawns
+     * @param {THREE.Vector3} position - position to respawn at
+     * @param {boolean} refillHealth - if the health should be refilled
+     * @param {boolean} refillMana - if the mana should be refilled
+     */
+    respawn(position = null, refillHealth = true, refillMana = true) {
+        this.position = this._position.copy(position ?? this.spawnPoint);
+        if(refillHealth) this.changeCurrentHealth(this.maxHealth);
+        if(refillMana) this.changeCurrentMana(this.maxMana);
+        this.respawning = false;
     }
 
 

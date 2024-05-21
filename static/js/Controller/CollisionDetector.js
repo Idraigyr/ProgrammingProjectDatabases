@@ -6,7 +6,7 @@ import {Subject} from "../Patterns/Subject.js";
 export class CollisionDetector extends Subject{
     /**
      * Constructor for the collision detector
-     * @param {{scene: THREE.Scene, viewManager: ViewManager}} params
+     * @param {{scene: THREE.Scene, viewManager: ViewManager, raycastController: RaycastController | undefined}} params
      */
     constructor(params) {
         super(params);
@@ -17,6 +17,10 @@ export class CollisionDetector extends Subject{
         this.visualizer = null;
         this.viewManager = params.viewManager;
 
+        //for preventing phasing through ground
+        this.pointBelow = null;
+        this.raycastController = params?.raycastController ?? null;
+
         this.worker = null;
         this.loader = new THREE.BufferGeometryLoader();
         this.mergedGeometry = new THREE.BufferGeometry();
@@ -26,6 +30,14 @@ export class CollisionDetector extends Subject{
         this.tempVector2 = new THREE.Vector3();
 
         this.tempBox = new THREE.Box3();
+    }
+
+    /**
+     * sets the raycastController
+     * @param raycastController
+     */
+    setRaycastController(raycastController){
+        this.raycastController = raycastController;
     }
 
     /**
@@ -104,7 +116,7 @@ export class CollisionDetector extends Subject{
         if(typeof Worker === 'undefined' || this.startUp || true){
             //show loading screen
             document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
-            document.querySelector('.loading-animation').style.display = 'visible';
+            document.querySelector('.loading-animation').style.display = 'block';
             this.collider = this.generateCollider();
             document.querySelector('.loading-animation').style.display = 'none';
         } else {
@@ -116,7 +128,6 @@ export class CollisionDetector extends Subject{
             this.viewManager.getColliderModels(this.charModel);
             this.worker.postMessage(this.stringifyCharModel());
         }
-        console.log("generating done")
         this.startUp = false;
     }
 
@@ -175,6 +186,12 @@ export class CollisionDetector extends Subject{
                     spellEntity.model.onCharacterCollision(deltaTime, character.model, spellEntity.view.boundingBox, character.view.boundingBox);
                 }
             });
+            this.viewManager.pairs.spellEntity.forEach((spell) => {
+                console.log("checking spell collision of", spell.model);
+                if(this.boxToBoxCollision(spellEntity.view.boundingBox, spell.view.boundingBox)){
+                    spellEntity.model.onCharacterCollision(deltaTime, spell.model, spellEntity.view.boundingBox, spell.view.boundingBox);
+                }
+            });
 
             //TODO: check for collision with other spellEntities (mainly collidables like icewall)
         }
@@ -215,13 +232,16 @@ export class CollisionDetector extends Subject{
     /**
      * gets the closest enemy to a character
      * @param {Character} character
-     * @return {{closestEnemy: Character, closestDistance: number}}
+     * @param {string[]} targets - which types of entities to consider, default is players and characters, order is important (put the targets with the highest priority at the end)
+     * possible targets: "player", "character", "proxy", "spellEntity"
+     * @return {{closestEnemy: Object, closestDistance: number}} - closestEnemy type depends on the target array
      */
-    getClosestEnemy(character){
+    getClosestEnemy(character, targets = ["player", "character"]){
+        //TODO: maybe add something so you can differentiate targets within the "proxy" group (i.e. different buildings can have different priorities)?
         let closestEnemy = null;
         let closestDistance = Infinity;
         const algo = (otherCharacter) => {
-            if(character.team !== otherCharacter.model.team){
+            if(character.team !== otherCharacter.model.team && otherCharacter.model.targettable){
                 let distance = character.position.distanceTo(otherCharacter.model.position);
                 if(distance < closestDistance){
                     closestDistance = distance;
@@ -229,13 +249,12 @@ export class CollisionDetector extends Subject{
                 }
             }
         }
-        this.viewManager.pairs.character.forEach(algo);
-        this.viewManager.pairs.player.forEach(algo);
+        //order of target array is important!
+        targets.forEach((target) => {
+            this.viewManager.pairs[target].forEach(algo);
+        });
         return {closestEnemy, closestDistance};
     }
-
-
-
 
     /**
      * checks if a player collides with static geometry and adjusts the player position accordingly
@@ -245,21 +264,23 @@ export class CollisionDetector extends Subject{
      * @return {THREE.Vector3}
      */
     adjustCharacterPosition(character, position, deltaTime){
+        //fix for falling through ground
+        if(this.raycastController) this.pointBelow = this.raycastController.getFirstHitWithWorld(character.segment.start, new THREE.Vector3(0,-1,0))[0]?.point ?? null;
+
         character.setSegmentFromPosition(position);
 
+        // create a box around the capsule to check for collisions
         this.tempBox.makeEmpty();
-
         this.tempBox.expandByPoint( character.segment.start );
         this.tempBox.expandByPoint( character.segment.end );
-
         this.tempBox.min.addScalar( - character.radius );
         this.tempBox.max.addScalar( character.radius );
 
-
+        // check for collisions with the static geometry bvh tree
         this.collider.geometry.boundsTree.shapecast( {
-
+            // check if the box intersects the bounds of the BVH nodes
             intersectsBounds: box => box.intersectsBox( this.tempBox ),
-
+            //check what triangles intersect with the character
             intersectsTriangle: tri => {
 
                 // check if the triangle is intersecting the capsule and adjust the
@@ -273,23 +294,30 @@ export class CollisionDetector extends Subject{
                     const depth = character.radius - distance;
                     const direction = capsulePoint.sub( triPoint ).normalize();
 
+                    //if character is clipping through the ground, move it up
                     character.segment.start.addScaledVector( direction, depth );
                     character.segment.end.addScaledVector( direction, depth );
 
-                    // solution for clipping through ground and getting stuck
+                    // solution for clipping through ground and getting stuck (if triangle within player just move player up)
                     this.tempVector2.y = triPoint.y - character.segment.end.y;
 
                     if(character.segment.end.y < triPoint.y && character.segment.start.y > triPoint.y){
                         character.segment.start.add(new THREE.Vector3(0, this.tempVector2.y, 0));
                         character.segment.end.add(new THREE.Vector3(0, this.tempVector2.y, 0));
                     }
-                    // solution for clipping through ground and getting stuck
 
                     return false;
                 }
             }
 
         } );
+
+        //fix for falling through ground
+        if(this.raycastController && this.pointBelow?.y > character.segment.end.y){
+            const distance = this.pointBelow.y - character.segment.end.y;
+            character.segment.start.y += distance;
+            character.segment.end.y += distance;
+        }
 
         const newPosition = this.tempVector;
         newPosition.copy( character.segment.end );

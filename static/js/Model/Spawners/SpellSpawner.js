@@ -13,6 +13,7 @@ export class SpellSpawner extends Spawner{
     constructor(params) {
         super(params);
         this.spell = params?.spell?.type ?? null;
+        console.log("Spell of spellSpawner: ", this.spell)
         this.spellParams = params?.spell?.params ?? null;
         if(this.spellParams) this.spellParams.position = this.position.clone();
         this.nearestTarget = null; //TODO: remove?
@@ -46,7 +47,7 @@ export class SpellSpawner extends Spawner{
      * Calculate the tower shooting speed (interval)
      */
     calculateSpeed() {
-        return (this.interval / this.speedMultiplier);
+        return (this.interval * this.speedMultiplier);
     }
 
     /**
@@ -54,8 +55,8 @@ export class SpellSpawner extends Spawner{
      * @param deltaTime - time since last update
      */
     update(deltaTime) {
-        const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this);
-        if (closestEnemy != null && closestDistance < 150) //TODO: make the range a parameter (in config file?)
+        const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this, ["player", "character"]);
+        if (closestEnemy && closestDistance < 150) //TODO: make the range a parameter (in config file?)
         {
             this.timer += deltaTime;
             if(this.timer >= this.calculateSpeed() && this.spell) {
@@ -68,6 +69,7 @@ export class SpellSpawner extends Spawner{
                 params.position = this.position.clone();
                 //random offset
                 // params.direction.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize());
+                console.log("Spawning spell");
                 this.dispatchEvent(this._createSpawnEvent({
                     type: this.spell.constructor,
                     params: params

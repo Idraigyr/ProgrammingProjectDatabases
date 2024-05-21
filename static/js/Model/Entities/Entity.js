@@ -7,13 +7,17 @@ import * as THREE from "three";
 export class Entity extends Subject{
     /**
      * initialises Entity
-     * @param {{position: THREE.Vector3, radius: number, team: number} | {}} params - optional
+     * @param {{position: THREE.Vector3, radius: number, team: number, mass: number} | {}} params - optional
      */
     constructor(params) {
         super(params);
         this.radius = params?.radius ?? 0.5;
         this._position =  params?.position?.clone() ?? new THREE.Vector3(0,0,0);
         this.team = params?.team ?? 0;
+        this.canMove = true;
+        this.mass = params?.mass ?? 1;
+        this.targettable = true;
+
     }
 
     /**

@@ -31,7 +31,7 @@ export class CameraManager {
         //visualise camera line -- DEBUG STATEMENTS --
 
         //visualise axes -- DEBUG STATEMENTS --
-        // this.axisHelper = params.axisHelper;
+        this.axisHelper = params.axisHelper;
         //visualise axes -- DEBUG STATEMENTS --
     }
 
@@ -71,8 +71,8 @@ export class CameraManager {
             }
         }
         //visualise axes -- DEBUG STATEMENTS --
-        // this.axisHelper.updatePosition(zoom.clone().addScaledVector(new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion), this.axisHelper.offset));
-        // this.axisHelper.updateRotation(this.camera.quaternion);
+        this.axisHelper.updatePosition(zoom.clone().addScaledVector(new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion), this.axisHelper.offset));
+        this.axisHelper.updateRotation(this.camera.quaternion);
         //visualise axes -- DEBUG STATEMENTS --
         return zoom;
     }

@@ -2,7 +2,7 @@ import {Subject} from "../Patterns/Subject.js";
 import {View} from "../View/ViewNamespace.js";
 import {IAnimatedView} from "../View/View.js";
 import {RitualSpell} from "../View/SpellView.js";
-import {convertWorldToGridPosition} from "../helpers.js";
+import {assert, convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
 import {Model} from "../Model/ModelNamespace.js";
 
@@ -12,6 +12,7 @@ import {Model} from "../Model/ModelNamespace.js";
 export class ViewManager extends Subject{
     constructor(params) {
         super(params);
+        this.camera = params?.camera ?? null;
         this.pairs = {
             building: [],
             island: [],
@@ -22,6 +23,50 @@ export class ViewManager extends Subject{
         };
         this.dyingViews = [];
         this.spellPreview = params.spellPreview;
+    }
+
+    /**
+     * used to hide/show building previews. If hidden, all building previews are shown and vice versa
+     */
+    toggleHideBuildingPreviews(){
+        if(this.hiddenViews){
+            this.hiddenViews.forEach((view) => {
+                view.show();
+                this.dyingViews.push(view);
+            });
+            delete this.hiddenViews;
+        } else {
+            this.hiddenViews = [];
+            this.dyingViews = this.dyingViews.filter((view) => {
+                if(view instanceof View.BuildingPreview){
+                    view.hide();
+                    this.hiddenViews.push(view);
+                    return false;
+                }
+                return true;
+            });
+        }
+    }
+
+    /**
+     * Remove all building previews from the manager (used when player is visiting a friend)
+     */
+    removeBuildingPreviews(){
+        this.dyingViews = this.dyingViews.filter((view) => {
+            if(view instanceof View.BuildingPreview){
+                view.dispose();
+                return false;
+            }
+            return true;
+        });
+    }
+
+    /**
+     * Set the camera of the manager
+     * @param {THREE.Camera} camera
+     */
+    setCamera(camera){
+        this.camera = camera;
     }
 
     /**
@@ -105,15 +150,12 @@ export class ViewManager extends Subject{
      * @return {Wizard|*}
      */
     getPlayerModelByID(id){ //TODO: probably not a good idea to retrieve models from the viewManager; is player model id unique across all characters?
-        console.log("retrieving player model by id: ", id)
         if(this.pairs.player[0].model.id === id){
             return this.pairs.player[0].model;
         } else {
             const char = this.pairs.character.find((pair) => {
-                console.log(pair.model.id);
                 return pair.model instanceof Model.Character && pair.model.id === id;
             });
-            console.log(char);
             if(char){
                 return char.model;
             }
@@ -153,9 +195,11 @@ export class ViewManager extends Subject{
     * @param {{detail: model}} event
     */
     deleteView(event){
+        console.log(`deleting view of type: ${event.detail.model.type}`)
         this.pairs[event.detail.model.type] = this.pairs[event.detail.model.type].filter((pair) => {
             if(pair.model === event.detail.model){
                 if(pair.view.staysAlive){
+                    console.log("pushing to dying views");
                     this.dyingViews.push(pair.view);
                 }
                 pair.view.dispose();
@@ -163,6 +207,7 @@ export class ViewManager extends Subject{
             }
             return true;
         });
+        console.log(this.pairs.spellEntity);
     }
 
     /**
@@ -204,28 +249,15 @@ export class ViewManager extends Subject{
      * @param deltaTime time difference
      */
     updateAnimatedViews(deltaTime){
-        this.spellPreview.update(deltaTime);
+        assert(this.camera, "Camera not set in ViewManager");
+        this.spellPreview.update(deltaTime, this.camera);
         for(const type in this.pairs){
             this.pairs[type].forEach((pair) => {
-                if(pair.view instanceof IAnimatedView) {
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof View.Fireball){ //TODO: make new superclass for 1 else if instanceof SpellView
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof View.ThunderCloud){
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof View.Shield){
-                    pair.view.update(deltaTime);
-                } else if(pair.view instanceof RitualSpell){
-                    pair.view.update(deltaTime);
+                if(pair.view.hasUpdates) { //TODO: make new superclass for 1 else if instanceof SpellView
+                    pair.view.update(deltaTime, this.camera);
                 }
             });
         }
-        this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime));
-    }
-
-    updateProxys(deltaTime){
-        this.pairs.proxy.forEach((pair) => {
-            pair.view.update(deltaTime);
-        });
+        this.dyingViews = this.dyingViews.filter((view) => view.isNotDead(deltaTime, this.camera));
     }
 }

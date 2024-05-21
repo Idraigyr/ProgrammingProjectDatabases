@@ -71,8 +71,9 @@ class Lightning extends IView{
     /**
      * @method createGeometry - A method that creates a geometry for the lightning bolt.
      * @param deltaTime - The time between frames.
+     * @param camera - The camera to update view.
      */
-    update(deltaTime){
+    update(deltaTime, camera){
         this.time += deltaTime;
         this.material.uniforms.time.value = this.time;
     }

@@ -24,7 +24,6 @@ export class Mine extends Placeable{
         }
         this.productionRate = 10; //TODO: calculate based on level and equipped gems
         this.#maxCrystals = this.#calculateMaxCrystals();
-        this.gemSlots = 2;
         this.upgradable = true;
     }
     async fetchLastCollected(){
@@ -94,12 +93,18 @@ export class Mine extends Placeable{
         return Math.min(this.maxCrystals, timePassed * this.productionRate);
     }
 
+    levelUp() {
+        super.levelUp();
+        this.#maxCrystals = this.#calculateMaxCrystals();
+    }
+
     /**
      * calculates the max amount of crystals that can be stored in the mine, based on the level
      * @return {number}
      */
     #calculateMaxCrystals(){
-        return 1000 + this.level * 1000;
+        if (this.level === 0) return 100;
+        return this.level * 1000;
     }
 
     /**

@@ -4,7 +4,7 @@ from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.blueprint import Blueprint as BlueprintModel
 from src.model.placeable.prop import Prop
-from src.resource import clean_dict_input, add_swagger
+from src.resource import clean_dict_input, add_swagger, check_data_ownership
 from src.resource.placeable.placeable import PlaceableSchema
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -33,6 +33,7 @@ class PropSchema(PlaceableSchema):
 class PropResource(Resource):
     """
     A resource that allows for the retrieval and modification of props
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('placeable')
@@ -62,6 +63,7 @@ class PropResource(Resource):
     @swagger.response(200, 'Success', schema=PropSchema)
     @swagger.response(404, 'Prop not found', schema=ErrorSchema)
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -76,6 +78,9 @@ class PropResource(Resource):
             prop = Prop.query.get(int(data['placeable_id']))
             if prop is None:
                 return ErrorSchema("Prop id not found"), 404
+
+            r = check_data_ownership(prop.island_id)  # island_id == owner_id
+            if r: return r
 
             prop.update(data)
 
@@ -92,6 +97,7 @@ class PropResource(Resource):
     @swagger.expected(schema=PropSchema, required=True)
     @swagger.response(200, 'Success', schema=PropSchema)
     @swagger.response(400, 'Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -137,6 +143,10 @@ class PropResource(Resource):
 
 
             prop = Prop(**data, blueprint_id=blueprint_id)
+
+            r = check_data_ownership(prop.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(prop)
             current_app.db.session.commit()
 

@@ -5,6 +5,7 @@ export class MenuItem{
         this.display = "block";
         this.belongsIn = params.belongsIn;
         this.icon = new Image(params.icon.width,params.icon.height);
+        this.icon.classList.add("menu-item-icon");
         this.icon.src = params.icon.src;
         this.element = this.createElement(params);
     }
@@ -53,7 +54,8 @@ export class MenuItem{
 export class SpellItem extends MenuItem{
     constructor(params) {
         super(params);
-        this.unlocked = false;
+        this.unlocked = params?.extra?.unlocked ?? false;
+        this.element.draggable = params?.extra?.draggable ?? false;
         this.display = "flex";
     }
 
@@ -61,10 +63,14 @@ export class SpellItem extends MenuItem{
         super.render();
     }
 
+    attachTo(parent) {
+        parent.addChild("beforeend", this);
+    }
+
     unlock(params){
         this.unlocked = true;
+        this.element.draggable = true;
         this.element.classList.add("unlocked");
-        //add drag and drop callbacks
     }
 
     get type(){
@@ -81,7 +87,6 @@ export class GemItem extends MenuItem{
 
     createElement(params) {
         const element =  super.createElement(params);
-        console.log("gem menuitem:", params);
         if(params?.equipped) element.style.opacity = "0.5";
         return element;
     }
@@ -112,7 +117,7 @@ export class BuildingItem extends MenuItem{
         if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
         descriptionName.innerText += description;
         descriptionText.innerText = params?.description ?? "placeholder description";
-        placedDescription.innerText = "placed: 0/0";
+        //placedDescription.innerText = "placed: 0/0";
         return element;
     }
 

@@ -23,7 +23,7 @@ export class SpellPreview extends IView{
             this.types[Object.keys(this.types)[0]].secondaryColor,
             this.types[Object.keys(this.types)[0]].cutoff);
         this.charModel = new THREE.Mesh(new this.types[Object.keys(this.types)[0]].ctor(...this.types[Object.keys(this.types)[0]].params), this.material);
-        this.boxHelper.visible = false;
+        if(this.boxHelper) this.boxHelper.visible = false;
         this.#gridCellSize = 10;
         this.#cutoff = this.types[Object.keys(this.types)[0]].cutoff;
         this.updating = false;
@@ -63,6 +63,7 @@ export class SpellPreview extends IView{
      */
     toggleVisibility(event){
         this.visible = event.detail.visible;
+        this.charModel.visible = this.visible;
     }
 
     /**
@@ -83,8 +84,9 @@ export class SpellPreview extends IView{
     /**
      * Update position of the preview object
      * @param deltaTime
+     * @param camera
      */
-    update(deltaTime) {
+    update(deltaTime, camera) {
         this.charModel.material.uniforms.time.value += deltaTime*2;
     }
 

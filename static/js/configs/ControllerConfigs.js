@@ -45,7 +45,7 @@ export const playerSpawn = {
 }
 
 //-- Minions --//
-export const minionAttackRadius = 3;
+export const minionAttackRadius = 4;
 export const minionFollowRadius = 10;
 export const minionSpeedMultiplier = 200;
 

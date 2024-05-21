@@ -150,7 +150,8 @@ export class SpellCaster extends Subject{
      * @param event
      */
     onSpellSwitch(event){
-        this.dispatchVisibleSpellPreviewEvent((!(this.multiplayer && event.detail.spellSlot-1 === 0) && this.#wizard.spells[event.detail.spellSlot-1]?.hasPreview) ?? false);
+        this.#wizard.switchCurrentSpell(event.detail.spellSlot-1);
+        this.dispatchVisibleSpellPreviewEvent((!(this.multiplayer && this.#wizard.getCurrentSpell() instanceof BuildSpell) && this.#wizard.getCurrentSpell()?.hasPreview) ?? false);
         // TODO: add sound
         // TODO: drop current object if it exists
         if(this.currentObject){
