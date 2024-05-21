@@ -56,8 +56,7 @@ export const fusionTime = 2;
 
 //-- multiplayer --//
 export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?
-    1: 1,
-    2: 1,
-    3: 1,
-    4: 1,
+    getStakesForLvl: function (level) {
+        return 1;
+    }
 };

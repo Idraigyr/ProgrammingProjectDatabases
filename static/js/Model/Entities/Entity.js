@@ -16,6 +16,7 @@ export class Entity extends Subject{
         this.team = params?.team ?? 0;
         this.canMove = true;
         this.mass = params?.mass ?? 1;
+        this.velocity = new THREE.Vector3(0,0,0);
         this.targettable = true;
 
     }

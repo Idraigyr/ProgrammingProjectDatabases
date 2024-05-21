@@ -186,7 +186,7 @@ export class ItemManager {
             gem.staked = !gem.staked;
             this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["staked"]);
         });
-        return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
+        return powerStaked >= minTotalPowerForStakes.getStakesForLvl(this.playerInfo.level);
     }
 
     checkStakedGems(){
@@ -194,7 +194,7 @@ export class ItemManager {
         this.gems.forEach(gem => {
             if(gem.staked) powerStaked += gem.power;
         });
-        return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
+        return powerStaked >= minTotalPowerForStakes.getStakesForLvl(this.playerInfo.level);
     }
 
     /**

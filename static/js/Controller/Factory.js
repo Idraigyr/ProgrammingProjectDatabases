@@ -411,7 +411,7 @@ export class Factory{
                         success: (data) => {
                             model.level = data.level;
                             //TODO: is this always +1
-                            this.playerInfo.changeXP(150);
+                            // this.playerInfo.changeXP(150);
                             console.log(data);
                         },
                         error: (xhr, status, error) => {
