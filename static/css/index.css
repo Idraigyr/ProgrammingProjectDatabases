@@ -1931,6 +1931,7 @@ body {
     padding: 10px 20px;
     font-size: 16px;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 #respawn-button.active {
@@ -1938,9 +1939,7 @@ body {
     pointer-events: auto;
 }
 
-#respawn-button.inactive {
-    pointer-events: none;
-}
+
 
 
 /* xp bar and level */

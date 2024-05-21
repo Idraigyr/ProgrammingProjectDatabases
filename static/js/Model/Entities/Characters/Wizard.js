@@ -246,6 +246,7 @@ export class Wizard extends Character{
         this.position = this._position.copy(position ?? this.spawnPoint);
         if(refillHealth) this.changeCurrentHealth(this.maxHealth);
         if(refillMana) this.changeCurrentMana(this.maxMana);
+        this.respawning = false;
     }
 
 

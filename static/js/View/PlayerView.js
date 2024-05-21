@@ -31,6 +31,7 @@ export class Player extends CharacterView{
 
     hide(){
         this.charModel.visible = false;
+        this.healthBar.visible = false;
     }
 
     /**
@@ -38,6 +39,8 @@ export class Player extends CharacterView{
      */
     show(){
         this.charModel.visible = true;
+        this.healthBar.visible = true;
+        this.realHealth_ = 1.0;
     }
 
 }

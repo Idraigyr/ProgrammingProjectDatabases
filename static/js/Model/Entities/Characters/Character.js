@@ -32,6 +32,7 @@ export class Character extends Entity{
         this.spawnPoint = new THREE.Vector3().copy(params.spawnPoint);
         this.setSegmentFromPosition(this.spawnPoint);
         this.shielded = false;
+        this.respawning = false;
 
         this.updateEvent = this.forwardStateUpdate.bind(this);
     }
@@ -187,6 +188,6 @@ export class Character extends Entity{
     }
 
     dies(){
-        this.dispatchEvent(new CustomEvent("characterDied"));
+        this.dispatchEvent(new CustomEvent("characterDied", {detail: {id: this.id}}));
     }
 }

@@ -284,6 +284,7 @@ export class MultiplayerController extends Subject{
      * @param data
      */
     async endMatch(data){
+        document.getElementById('overlay').style.display = 'none'; //make sure the respawn overlay is hidden
         console.log(`match ended, winner: ${data.winner_id}`); //TODO: let backend also send won or lost gem ids
         this.stopSendingStateUpdates();
         this.result = "draw";
@@ -488,13 +489,15 @@ export class MultiplayerController extends Subject{
         const target = data.target // target user id
         if(data.player) {
             this.peerController.update(data.player);
-            if(data.player.death) {
-                this.showDeathOverlay(data.player);}
-            if(data.player.respawn){
-                 this.viewManager.getPair(this.peerController.peer).view.show();
-
-            }
         }
+        if(data.playerDeath) {
+                this.showDeathOverlay();}
+        if(data.playerRespawn){
+                 this.peerController.peer.targettable = true;
+                 this.viewManager.getPair(this.peerController.peer).view.show();
+                 this.peerController.peer.health = this.peerController.peer.maxHealth;
+            }
+
         if(data.playerHealth){
             if(this.countStats) this.stats.set("damage_taken", this.stats.get("damage_taken") + data.playerHealth.previous - data.playerHealth.current);
             this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
@@ -649,18 +652,15 @@ export class MultiplayerController extends Subject{
     sendPlayerDeathEvent(event){
         if(this.countStats) this.stats.set("player_kills", this.stats.get("player_kills") + 1);
         this.viewManager.getPair(this.peerController.peer).view.hide()
+        this.peerController.peer.targettable = false;
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
-            player: {
-                death: event.detail
-            }
+            playerDeath: event.detail
         });
     }
 
     sendPlayerRespawnEvent(event){
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
-            player: {
-                respawn: event.detail
-            }
+            playerRespawn: event.detail
         });
     }
 
@@ -696,12 +696,19 @@ export class MultiplayerController extends Subject{
     /**
      * function to show overlay when the player died
      */
-    showDeathOverlay(player) {
+    showDeathOverlay() {
+        if (this.worldManager.world.player.respawning) return;
+         if(this.countStats) this.stats.set("player_deaths", this.stats.get("player_deaths") + 1);
+         this.worldManager.world.player.respawning = true;
          document.getElementById('overlay').style.display = 'flex';
         const timerElement = document.getElementById('timer');
         const respawnButton = document.getElementById('respawn-button');
         const textElement = document.getElementById('respawntext');
         let countdown = 10;  // Timer duration in seconds
+        respawnButton.classList.remove('active');
+        respawnButton.disabled = true;
+
+
 
         const timerInterval = setInterval(() => {
             countdown -= 1;
@@ -709,7 +716,6 @@ export class MultiplayerController extends Subject{
             if (countdown <= 0) {
                 clearInterval(timerInterval);
                 textElement.textContent = 'You can now respawn!';
-                respawnButton.classList.remove('inactive');
                 respawnButton.classList.add('active');
                 respawnButton.disabled = false;
             }
@@ -717,12 +723,10 @@ export class MultiplayerController extends Subject{
 
         respawnButton.addEventListener('click', () => {
             if (!respawnButton.disabled) {
-                respawnButton.classList.add('inactive');
-                respawnButton.classList.remove('active');
                 document.getElementById('overlay').style.display = 'none';
                 clearInterval(timerInterval);
-                player.respawn();
-                this.sendPlayerRespawnEvent();
+                this.worldManager.world.player.respawn();
+                this.sendPlayerRespawnEvent( {detail: {respawn: true}});
             }
         });
     }
