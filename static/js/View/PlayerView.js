@@ -25,4 +25,19 @@ export class Player extends CharacterView{
         this._getAnimation(clips, 'CharacterArmature|PickUp', 'Eating')
     }
 
+    /**
+     * hides the player model (used when opponent dies)
+     */
+
+    hide(){
+        this.charModel.visible = false;
+    }
+
+    /**
+     * shows the player model (used when opponent respawns)SS
+     */
+    show(){
+        this.charModel.visible = true;
+    }
+
 }

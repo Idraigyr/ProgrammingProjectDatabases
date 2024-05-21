@@ -29,8 +29,7 @@ export class Settings {
         inputManager.addRespawnButtonListener(this.respawn.bind(this));
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
-        const button = document.getElementById('applyButton');
-        button.addEventListener('click', this.applySettings.bind(this));
+        inputManager.addApplyButtonListener(this.applySettings.bind(this))
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
@@ -120,7 +119,8 @@ export class Settings {
     }
 
     applySettings(){
-
+        console.log("Settings applied");
+        this.exitSettingsMenu();
     }
 
     switchCursor(event) {
