@@ -4,7 +4,7 @@ import {getFriendRequestStatus} from "./Friends.js";
 export class FriendsMenu {
 
     constructor() {
-        this.friendsButton = document.getElementById("FriendsButton");
+        this.friendsButton = document.getElementById("friends-button");
 
         this.notificationCount = document.getElementById("notification-count");
 
