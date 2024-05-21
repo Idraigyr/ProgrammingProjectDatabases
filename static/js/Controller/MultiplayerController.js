@@ -702,7 +702,8 @@ export class MultiplayerController extends Subject{
                 player: {
                     position: this.worldManager.world.player.position,
                     phi: this.worldManager.world.player.phi,
-                    health: this.worldManager.world.player.health
+                    health: this.worldManager.world.player.health,
+                    velocity: this.worldManager.world.player.velocity
                 }
             });
             //minion state (position, rotation, health) => just check minionModel

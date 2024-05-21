@@ -222,8 +222,8 @@ export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velo
 }
 /**
  * Push the collided objects apart
- * @param box1 - the first object
- * @param box2 - the second object
+ * @param box1 - the first object's bounding box
+ * @param box2 - the second object's bounding box
  * @param box1Velocity - the velocity of the first object
  * @param box2Velocity - the velocity of the second object
  * @param box1Mass - the mass of the first object
@@ -232,13 +232,44 @@ export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velo
  */
 export const pushCollidedObjects = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
     const distance = box1.getCenter(new THREE.Vector3()).distanceTo(box2.getCenter(new THREE.Vector3()));
-
     const totalMass = box1Mass + box2Mass;
     const relativeVelocity = box1Velocity.clone().sub(box2Velocity);
     const normal = box1.getCenter(new THREE.Vector3()).sub(box2.getCenter(new THREE.Vector3())).normalize();
-    const impulse = 2 * relativeVelocity.dot(normal) / totalMass * Math.max(1, Math.min(200,1/Math.pow(distance,4)));
+    const relativeSpeed = relativeVelocity.dot(normal);
+    const impulse = 2 * relativeSpeed / totalMass * Math.max(1, Math.min(200,1/Math.pow(distance,4)));
     box1Velocity.sub(normal.clone().multiplyScalar(impulse * box2Mass));
     box2Velocity.add(normal.clone().multiplyScalar(impulse * box1Mass));
+}
+
+/**
+ * Push the collided objects apart
+ * @param {THREE.Box3} box1 - the first object's bounding box
+ * @param {THREE.Box3} box2 - the second object's bounding box
+ * @param {Character} object1 - the first object
+ * @param {Character} object2 - the second object
+ * @param deltaTime - the time elapsed since the last frame
+ */
+export const pushCollidedObjects2 = function (box1, box2, object1, object2, deltaTime) {
+    const c1 = box1.getCenter(new THREE.Vector3());
+    const c2 = box2.getCenter(new THREE.Vector3());
+    const normal = c2.clone().sub(c1).normalize();
+    const relativeVelocity = object2.velocity.clone().sub(object1.velocity);
+    const relativeSpeed = relativeVelocity.dot(normal);
+
+    if(relativeSpeed > 0) return;
+    if(object1.mass === 0){
+        const newVelocity2 = object2.velocity.clone().sub(normal.clone().multiplyScalar(2 * relativeSpeed));
+        object2.position = object2.position.addScaledVector(newVelocity2, deltaTime)
+    } else if(object2.mass === 0){
+        const newVelocity1 = object1.velocity.clone().add(normal.clone().multiplyScalar(2 * relativeSpeed));
+        object1.position = object1.position.addScaledVector(newVelocity1, deltaTime)
+    } else {
+        const impulse = 2 * relativeSpeed / (object1.mass + object2.mass);
+        const newVelocity1 = object1.velocity.clone().add(normal.clone().multiplyScalar(impulse * object2.mass));
+        const newVelocity2 = object2.velocity.clone().sub(normal.clone().multiplyScalar(impulse * object1.mass));
+        object1.position = object1.position.addScaledVector(newVelocity1, deltaTime)
+        object2.position = object2.position.addScaledVector(newVelocity2, deltaTime)
+    }
 }
 
 /**

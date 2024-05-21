@@ -59,11 +59,13 @@ class ForwardingNamespace(Namespace):
         """
         self._log.debug(f"Ending match: {match_id}")
         try:
+            self._log.debug(f"Ending match: {match_id}")
             #remove friend visit "match"
             if self.matches[match_id]['time_left'] is None:
                 self._log.debug(f"Ending friend visit: {match_id}")
                 for player_id in self.matches[match_id]['players']:
                     if player_id != request.sid:
+                        print(f"Player {player_id} left the island")
                         self.emit('island_visit', {'request': 'leave'}, room=self.clients[player_id])
 
                     del self.playing[player_id]
@@ -145,10 +147,9 @@ class ForwardingNamespace(Namespace):
                 continue
             # end match if player was in a match
             if user_id in self.playing:
+                print(f"Player was in match: user_id={user_id}, sid={sid}")
                 match_id = self.playing[user_id]
-                self.end_match(match_id, self.matches[match_id]['players'][0] if self.matches[match_id]['players'][
-                                                                                     0] != user_id else
-                self.matches[match_id]['players'][1])
+                self.end_match(match_id, None)
 
             # remove player from match queue if they were in it
             db_entry: Optional[MatchQueueEntry] = MatchQueueEntry.query.filter_by(player_id=user_id).first()
@@ -270,10 +271,13 @@ class ForwardingNamespace(Namespace):
                 return
             target_sids = [self.clients[targetId]]
             senderId = self.get_user_from_sid(request.sid)
-
+            self._log.debug(f"Player {senderId} wants to {message} friend {targetId}")
+            print(f"Player {senderId} wants to {message} friend {targetId}")
             data['sender'] = senderId
 
             if message == "accept":
+                self._log.debug(f"Player accepted friend visit: {senderId} -> {targetId}")
+                print(f"Player accepted friend visit: {senderId} -> {targetId}")
                 match_id = f'{senderId}-{targetId}'
                 self.playing[senderId] = match_id
                 self.playing[targetId] = match_id

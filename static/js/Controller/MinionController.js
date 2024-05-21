@@ -178,7 +178,7 @@ export class MinionController extends Subject{
 
     /**
      * updates an enemy minion, used only during multiplayer
-     * @param {{id: number, position: {x: number, y: number, z: number}, phi: number, health: number}} params
+     * @param {{id: number, position: {x: number, y: number, z: number}, velocity: {x: number, y: number, z: number}, phi: number, health: number}} params
      */
     updateEnemy(params){
         let minion = this.enemies.find((minion) => minion.id === params.id + this.#idOffset);
@@ -189,6 +189,7 @@ export class MinionController extends Subject{
         minion.position = minion.position.set(params.position.x, params.position.y, params.position.z);
         minion.phi = params.phi;
         minion.rotation = this.enemyRotation;
+        minion.velocity.set(params.velocity.x, params.velocity.y, params.velocity.z);
         minion.takeDamage(minion.health - params.health);
     }
 
@@ -232,7 +233,13 @@ export class MinionController extends Subject{
      * @return {{phi: number, id: number, position: THREE.Vector3}[]}
      */
     getMinionsState(){
-        return this.minions.map((minion) => ({id: minion.id, position: minion.position, phi: minion.phi, health: minion.health})); //TODO: add velocity for interpolation?
+        return this.minions.map((minion) => ({
+            id: minion.id,
+            position: minion.position,
+            phi: minion.phi,
+            health: minion.health,
+            velocity: minion.velocity
+        }));
     }
 
     /**
@@ -322,14 +329,14 @@ export class MinionController extends Subject{
             //TODO: put proxy as minion.target
         } else {
             const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(minion, ["spellEntity", "player", "character", "proxy"]);
-            if(closestDistance - closestEnemy.radius < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
+            if(closestEnemy && closestDistance - closestEnemy.radius < minionAttackRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //attack character
                 //set attack state & at the end of the attack animation, deal damage
                 minion.fsm.processEvent({detail: {newState: "DefaultAttack"}});
                 minion.lastAction = "AttackEnemy";
                 minion.target = closestEnemy;
                 // console.log("attacking enemy");
-            } else if(closestDistance - closestEnemy.radius < minionFollowRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
+            } else if(closestEnemy && closestDistance - closestEnemy.radius < minionFollowRadius){ //TODO: maybe add a check for if the minion wanders too far from the path?
                 //follow character
                 targetPosition.copy(closestEnemy.position);
                 minion.fsm.processEvent({detail: {newState: "WalkForward"}});

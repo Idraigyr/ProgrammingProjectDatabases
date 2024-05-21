@@ -55,7 +55,7 @@ export class SpellSpawner extends Spawner{
      */
     update(deltaTime) {
         const {closestEnemy, closestDistance} = this.collisionDetector.getClosestEnemy(this, ["player", "character"]);
-        if (closestEnemy != null && closestDistance < 150) //TODO: make the range a parameter (in config file?)
+        if (closestEnemy && closestDistance < 150) //TODO: make the range a parameter (in config file?)
         {
             this.timer += deltaTime;
             if(this.timer >= this.calculateSpeed() && this.spell) {

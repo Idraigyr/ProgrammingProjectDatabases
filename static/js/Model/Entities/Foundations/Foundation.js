@@ -18,6 +18,7 @@ export class Foundation extends Entity{
      * @param {{width: Number, length: Number, rotation: Number, height: Number} | Foundation[]} params - width and length are always uneven, if not they are increased by 1. height is always larger than 0 otherwise = 0.1
      */
     constructor(params) {
+        params.mass = 0;
         super(params);
         this.#rotation = 0;
 

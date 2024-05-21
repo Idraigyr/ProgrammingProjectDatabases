@@ -11,6 +11,7 @@ export class Placeable extends Entity{
     #stats;
     #statMultipliers;
     constructor(params) {
+        params.mass = 0;
         super(params);
         this.id = params?.id ?? null;
         this.level = params?.level ?? 0;

@@ -55,7 +55,15 @@ export class Factory{
     createMinion(params){
         let currentPos = new THREE.Vector3(params.spawn.x,params.spawn.y,params.spawn.z);
         const height = 2.5;
-        let model = new Model.Minion({spawnPoint: currentPos, position: currentPos, height: height, team: params.team, buildingID: params.buildingID, minionType: params.type});
+        let model = new Model.Minion({
+            spawnPoint: currentPos,
+            position: currentPos,
+            height: height,
+            team: params.team,
+            buildingID: params.buildingID,
+            minionType: params.type,
+            mass: 10
+        });
         let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 25,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
@@ -103,7 +111,17 @@ export class Factory{
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Wizard({spawnPoint: sp, position: currentPos, height: height, health: params.health, maxHealth: params.maxHealth, maxMana: params.maxMana, mana: params.mana, team: params?.team ?? 0});
+        let player = new Model.Wizard({
+            spawnPoint: sp,
+            position: currentPos,
+            height: height,
+            health: params.health,
+            maxHealth: params.maxHealth,
+            maxMana: params.maxMana,
+            mana: params.mana,
+            team: params?.team ?? 0,
+            mass: 20
+        });
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);
@@ -133,7 +151,15 @@ export class Factory{
         let currentPos = new THREE.Vector3(params.position.x,params.position.y,params.position.z);
         //TODO: remove hardcoded height
         const height = 3;
-        let player = new Model.Character({spawnPoint: sp, position: currentPos, height: height, health: params.health, maxHealth: params.maxHealth, team: params?.team ?? 0});
+        let player = new Model.Character({
+            spawnPoint: sp,
+            position: currentPos,
+            height: height,
+            health: params.health,
+            maxHealth: params.maxHealth,
+            team: params?.team ?? 0,
+            mass: 20
+        });
         let view = new View.Player({charModel: this.assetManager.getAsset("Player"), position: currentPos, camera: this.camera});
 
         this.scene.add(view.charModel);

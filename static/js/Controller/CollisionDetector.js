@@ -240,7 +240,7 @@ export class CollisionDetector extends Subject{
         let closestEnemy = null;
         let closestDistance = Infinity;
         const algo = (otherCharacter) => {
-            if(character.team !== otherCharacter.model.team && otherCharacter.model.targettable){
+            if(character.team !== otherCharacter.model.team){
                 let distance = character.position.distanceTo(otherCharacter.model.position);
                 if(distance < closestDistance){
                     closestDistance = distance;
