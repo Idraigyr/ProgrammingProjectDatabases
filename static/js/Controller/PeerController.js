@@ -3,7 +3,6 @@ import * as THREE from 'three';
 export class PeerController{
     constructor(params) {
         this.peer = params.peer;
-        console.log("peer: ", this.peer);
         this.rotation = new THREE.Quaternion();
     }
 

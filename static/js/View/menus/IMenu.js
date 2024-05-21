@@ -424,7 +424,6 @@ export class MultiplayerGemsMenu extends GemsMenu{
      * @param {"win" | "lose" | "draw"} result
      */
     setTitle(result){
-        console.log("setting title:", result)
         if(result === "win"){
             this.getTitleBar().innerText = "Won";
         } else if(result === "lose"){
@@ -618,9 +617,7 @@ export class MultiplayerStatsMenu extends IMenu{
         buttonContainer.appendChild(lifetimeButton);
         buttonContainer.addEventListener("click", this.toggleStats.bind(this));
         statsDiv.appendChild(buttonContainer);
-        console.log(multiplayerStats.getKeys())
         for(const key of multiplayerStats.getKeys()){
-            console.log(key)
             const statElement = document.createElement("li");
             statElement.id = key;
             statElement.classList.add("multiplayer-stats-menu-li");

@@ -86,7 +86,6 @@ export class WorldManager{
                     }
                     buildingParams.gems = gems;
                 }
-                console.log(`importing building ${building.blueprint.name} at position ${building.x}, ${building.z}`);
                 island.buildings.push(buildingParams);
             }
 
@@ -275,12 +274,10 @@ export class WorldManager{
         const offset = this.calculateIslandOffset();
         const rotation = 180;
         if(currentIslandIsCenter){
-            console.log("%ccurrent island is center", "color: green; font-size: 20px");
             islandPosition.add(offset);
             //TODO: implement rotation in factory createIsland
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
         } else {
-            console.log("%cother island is center", "color: red; font-size: 20px");
             const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
             this.moveCurrentIsland(offset, rotation);
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
@@ -357,7 +354,6 @@ export class WorldManager{
     setPlayerSpells(){
         for(const spell of this.playerInfo.spells){
             if(spell.slot === null) continue;
-            console.log("setting spell on player", spell)
             this.world.player.changeEquippedSpell(spell.slot, spellTypes.getSpellObjectFromId(spell.spell_id));
         }
     }
@@ -505,10 +501,13 @@ export class WorldManager{
      * @param {{spell: {type: ConcreteSpell, params: Object}, interval: number}} params - the parameters for the spell spawner
      */
     generateSpellSpawners(params){
+        console.log("generating spell spawners")
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const towerProxies = island.getProxysByType("tower_building");
+            console.log("towerProxies", towerProxies)
             towerProxies.forEach((towerProxy) => {
+
                 if(!towerProxy.building.ready) return;
                 const position = towerProxy.position;
                 position.y += 40;
@@ -524,6 +523,7 @@ export class WorldManager{
                     spawner.dispose();
                 });
                 spawner.addEventListener("spawn", (event) => {
+                    console.log("spawning spell")
                     this.spellFactory.createSpell(event);
                 });
                 this.world.addSpellSpawner(spawner);

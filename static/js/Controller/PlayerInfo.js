@@ -135,12 +135,9 @@ export class PlayerInfo extends Subject{
             this.username = response.username;
 
             this.spells = response.spells;
-            console.log(this.spells);
-            console.log(response)
 
             this.islandID = response.entity.island_id;
             this.gems = response.gems;
-            console.log(response);
             this.crystals = response.crystals;
 
             this.gems = response.gems;
@@ -182,7 +179,6 @@ export class PlayerInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${playerURI}?id=${this.userID}`);
-            console.log(response);
             return response.gems;
         } catch (err){
             console.error(err);
@@ -198,7 +194,6 @@ export class PlayerInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${timeURI}`);
-            console.log(response.time);
             return response.time;
         } catch (err){
             console.error(err);
@@ -418,7 +413,6 @@ export class PlayerInfo extends Subject{
      * @returns {CustomEvent<{xp: number, threshold: number}>} - Event that contains the new amount of xp threshold
      */
     createUpdateXpThresholdEvent() {
-        console.log(this.xpThreshold)
         return new CustomEvent("updateXpThreshold", {detail: {xp: this.experience, threshold: this.xpThreshold}});
     }
 

@@ -225,7 +225,7 @@ export class World{
         }
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.collisionDetector.checkCharacterCollisions(deltaTime);
-        this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
+        this.spellFactory.models.forEach((model) => model.update(deltaTime));
     }
 }

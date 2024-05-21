@@ -296,7 +296,6 @@ export class MenuManager extends Subject{
 
     // Function to start or stop the fusing arrow animation based on condition
     toggleAnimation(condition) {
-        console.log(condition);
         if (condition) {
             this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.add('move-right');
         } else {
@@ -424,7 +423,6 @@ export class MenuManager extends Subject{
      * @param event
      */
     dispatchCollectEvent(event){
-        console.log("Collecting resources");
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;

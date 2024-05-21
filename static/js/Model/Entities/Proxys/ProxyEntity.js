@@ -20,7 +20,6 @@ export class ProxyEntity extends Entity {
 
     }
     takeDamage(damage){
-        console.log("takeDamage called, damage: ", damage, "currhealth: ", this.health, "buildingId: ", this.building.id);
         const prevHealth = this.health;
         this.health -= damage;
         this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));

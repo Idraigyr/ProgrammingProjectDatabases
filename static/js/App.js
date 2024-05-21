@@ -541,7 +541,6 @@ class App {
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("changeSpell", this.hud.setSpellIcon.bind(this.hud));
         this.worldManager.setPlayerSpells();
-        console.log(this.playerInfo.spells);
         this.menuManager.createSpellItems(this.playerInfo.spells.map(spell => {
             let unlocked = true;
             if(spell.spell_id === 3 || spell.spell_id === 6) unlocked = false;

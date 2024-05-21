@@ -39,7 +39,6 @@ export class Island extends Foundation{
      */
     addProxy(proxy) {
         proxy.addEventListener("delete", (event) => {
-            console.log("Proxy deleted from island");
             this.proxys = this.proxys.filter(proxy => proxy !== event.detail.model);
         });
         this.proxys.push(proxy);
@@ -55,9 +54,7 @@ export class Island extends Foundation{
     occupyCell(worldPosition, dbType){
         //check if parameter of returnWorldToGridIndex is correct
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
-        console.log("Occupying cell: x", x, "z", z, "with building type", dbType);
         const index = this._calculate1DIndex(x, z);
-        console.log("Occupying cell: index", index, "with building type", dbType);
         // this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
         this.grid[index] = buildTypes.getNumber(dbType);
         return index;
@@ -182,7 +179,6 @@ export class Island extends Foundation{
      * @return {Array}
      */
     _rotateGrid90Deg(grid, width, length) {
-        console.log("rotating grid 90 degrees")
         let rotatedGrid = new Array(length*width).fill(0);
         for(let x = 0; x < length; x++){
             for(let z = 0; z < width; z++){

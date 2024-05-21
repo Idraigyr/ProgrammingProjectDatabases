@@ -152,7 +152,6 @@ export class HUD {
      */
     setSpellIcon(event) {
         const spellIconElement = document.querySelector(`.HotBarIcons .Spell${event.detail.index+1}Icon .spell-icon-img`);
-        console.log(event.detail.spell, event.detail.spell?.constructor.name);
         spellIconElement.src = spellTypes.getIcon(event.detail.spell?.constructor.name) ?? "";
     }
 }

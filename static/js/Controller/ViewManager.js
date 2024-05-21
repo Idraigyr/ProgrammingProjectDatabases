@@ -154,10 +154,8 @@ export class ViewManager extends Subject{
             return this.pairs.player[0].model;
         } else {
             const char = this.pairs.character.find((pair) => {
-                console.log(pair.model.id);
                 return pair.model instanceof Model.Character && pair.model.id === id;
             });
-            console.log(char);
             if(char){
                 return char.model;
             }
@@ -197,9 +195,11 @@ export class ViewManager extends Subject{
     * @param {{detail: model}} event
     */
     deleteView(event){
+        console.log(`deleting view of type: ${event.detail.model.type}`)
         this.pairs[event.detail.model.type] = this.pairs[event.detail.model.type].filter((pair) => {
             if(pair.model === event.detail.model){
                 if(pair.view.staysAlive){
+                    console.log("pushing to dying views");
                     this.dyingViews.push(pair.view);
                 }
                 pair.view.dispose();
@@ -207,6 +207,7 @@ export class ViewManager extends Subject{
             }
             return true;
         });
+        console.log(this.pairs.spellEntity);
     }
 
     /**

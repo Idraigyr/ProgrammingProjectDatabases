@@ -99,9 +99,8 @@ export class Character extends Entity{
     }
 
     onCharacterCollision(deltaTime, other, thisBox, otherBox){
-        console.log("collision with character");
-        pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity,1, 20, deltaTime);
-        // pushCollidedObjects2(thisBox, otherBox, this, other, deltaTime);
+        // pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity,this.mass, other.mass, deltaTime);
+        pushCollidedObjects2(thisBox, otherBox, this, other, deltaTime);
     }
 
     /**

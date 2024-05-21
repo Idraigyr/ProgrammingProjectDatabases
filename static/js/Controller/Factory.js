@@ -62,7 +62,7 @@ export class Factory{
             team: params.team,
             buildingID: params.buildingID,
             minionType: params.type,
-            mass: 10
+            mass: 20
         });
         let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 25,camera: this.camera});
         //add weapon to hand
@@ -284,7 +284,6 @@ export class Factory{
         // put the buildingPreview in dyingViews of viewManager
         // just make the buildingView invisible for the duration of the timer
         if (params.task){
-            console.log("task", params.task);
             // Get if the timer is already finished
             const timeEnd = new Date(params.task.endtime);
             if(timeEnd < this.currentTime){
@@ -330,7 +329,6 @@ export class Factory{
     }
 
     createProxy(params) {
-        console.log("createProxy", params)
         const asset = this.assetManager.getAsset(params.buildingName);
         let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);
 
@@ -344,8 +342,6 @@ export class Factory{
                 buildingName: params.buildingName,
                 building: params.building
             });
-
-        console.log("model", model);
 
         let view = new View.ProxyView({
             position: currentPos,

@@ -187,6 +187,7 @@ export class CollisionDetector extends Subject{
                 }
             });
             this.viewManager.pairs.spellEntity.forEach((spell) => {
+                console.log("checking spell collision of", spell.model);
                 if(this.boxToBoxCollision(spellEntity.view.boundingBox, spell.view.boundingBox)){
                     spellEntity.model.onCharacterCollision(deltaTime, spell.model, spellEntity.view.boundingBox, spell.view.boundingBox);
                 }
@@ -240,7 +241,7 @@ export class CollisionDetector extends Subject{
         let closestEnemy = null;
         let closestDistance = Infinity;
         const algo = (otherCharacter) => {
-            if(character.team !== otherCharacter.model.team){
+            if(character.team !== otherCharacter.model.team && otherCharacter.model.targettable){
                 let distance = character.position.distanceTo(otherCharacter.model.position);
                 if(distance < closestDistance){
                     closestDistance = distance;
@@ -254,9 +255,6 @@ export class CollisionDetector extends Subject{
         });
         return {closestEnemy, closestDistance};
     }
-
-
-
 
     /**
      * checks if a player collides with static geometry and adjusts the player position accordingly

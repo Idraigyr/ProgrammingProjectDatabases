@@ -231,6 +231,7 @@ export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velo
  * @param deltaTime - the time elapsed since the last frame
  */
 export const pushCollidedObjects = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
+    return;
     const distance = box1.getCenter(new THREE.Vector3()).distanceTo(box2.getCenter(new THREE.Vector3()));
     const totalMass = box1Mass + box2Mass;
     const relativeVelocity = box1Velocity.clone().sub(box2Velocity);

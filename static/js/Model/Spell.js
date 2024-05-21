@@ -457,7 +457,6 @@ export const spellTypes = (() => {
         },
 
         getSpellObjectFromId: function (id) {
-            console.log(`returning spell object from id: ${id}`)
             return spellObject[names[id]];
         },
 

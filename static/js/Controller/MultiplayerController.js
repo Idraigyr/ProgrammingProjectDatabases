@@ -151,8 +151,6 @@ export class MultiplayerController extends Subject{
         const connectionPoint = this.worldManager.getIslandConnectionPoint();
         if(this.worldManager.world.getBuildingByPosition(connectionPoint)) throw new Error("Connection point is occupied by a building");
         const altarPosition = this.worldManager.getAltarPosition();
-        console.log("connection point: ", connectionPoint);
-        console.log("altar position: ", altarPosition);
         if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("No path from connection point to altar");
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
@@ -249,7 +247,7 @@ export class MultiplayerController extends Subject{
         this.minionController.worldMap = this.worldManager.world.islands;
         progressBar.value = 90;
 
-        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 10});
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 2});
         this.worldManager.generateSpellSpawners({
             spell: {
                 type: new Fireball({}),
@@ -259,7 +257,7 @@ export class MultiplayerController extends Subject{
                     duration: 4,
                 }
             },
-            interval: 1
+            interval: 15
         });
 
         //start sending state updates to server
@@ -373,7 +371,7 @@ export class MultiplayerController extends Subject{
                     reject(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("GET success");
+                console.log("GET lifetimeStats success");
                 console.log(textStatus, data);
                 delete data["player_id"];
                 resolve(data);

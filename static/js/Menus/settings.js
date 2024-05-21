@@ -61,7 +61,6 @@ export class Settings {
      * Function to log out the user
      */
     async logOut() {
-        console.log("Log out button clicked")
         // Send logout info to the backend
         await this.playerInfo.logout();
         // Redirect the user to the logout URL
@@ -69,8 +68,6 @@ export class Settings {
     }
 
     async respawn() {
-        console.log("Respawn button clicked")
-
         // Send respawn info to the backend
         await this.playerInfo.reload();
     }
@@ -95,7 +92,6 @@ export class Settings {
      */
     deleteAccountCallback() {
         if (confirm("Are you sure you want to PERMANENTLY remove your account?\nThis cannot be undone!")) {
-            console.log("Account deletion confirmed")
             $.ajax({
                 url: `${API_URL}/api/user_profile?id=${this.playerInfo.userID}`,
                 type: "DELETE",
@@ -124,7 +120,6 @@ export class Settings {
     }
 
     switchCursor(event) {
-        console.log(event);
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
     }

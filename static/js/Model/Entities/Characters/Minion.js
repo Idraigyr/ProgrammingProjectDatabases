@@ -53,7 +53,6 @@ export class Minion extends Character{
      * Function that gets called when the minion dies
      */
     dies() {
-        console.log(`minion dies: id (${this.id})`);
         this.dispatchEvent(this.createDeleteEvent());
     }
 

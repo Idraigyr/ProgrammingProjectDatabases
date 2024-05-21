@@ -37,7 +37,6 @@ export class ItemManager {
 
     async retrieveSpells(){
         const response = await $.getJSON(`${API_URL}/${spellListURI}`);
-        console.log(response);
         if(response){
             for(let i = 0; i < response.length; i++){
                 this.spells.push(new Spell({
@@ -45,7 +44,6 @@ export class ItemManager {
                     name: response[i].name,
                 }));
             }
-            console.log("spells", this.spells)
         } else {
             throw new Error("Could not retrieve spells");
         }
