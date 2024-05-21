@@ -89,7 +89,7 @@ class TaskResource(Resource):
                 return ErrorSchema(message='Placeable id not found'), 400
             if building.island_id != data['island_id']:
                 return ErrorSchema(message='Placeable does not belong to this island_id'), 400
-            if new_task and building.task is not None and building.task.is_running():
+            if new_task and building.task is not None and not building.task.is_over():
                 return ErrorSchema(message='Placeable is already being worked on'), 409
 
             data['working_building'] = building
