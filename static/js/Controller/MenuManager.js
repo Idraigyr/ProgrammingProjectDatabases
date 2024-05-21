@@ -19,7 +19,11 @@ import {
     StakesMenu,
     StatsMenu,
     TowerMenu,
-    BuildingMenu
+    BuildingMenu,
+    MultiplayerMenu,
+    MultiplayerStatsMenu,
+    MultiplayerGemsMenu,
+    PropMenu
 } from "../View/menus/IMenu.js";
 import {
     BuildingItem,
@@ -45,7 +49,10 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function},
+     * matchMakeCallback: function, checkStakesCallback: function | null,
+     * closedMultiplayerMenuCallback: function,
+     * playerInfo: PlayerInfo}} params - TODO: possibly remove playerInfo as param
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -54,8 +61,14 @@ export class MenuManager extends Subject{
         this.blockInputCallback = params.blockInputCallback;
         this.matchMakeCallback = params.matchMakeCallback;
         this.checkStakesCallback = params?.checkStakesCallback ?? null;
-        this.items = {};
-        this.menus = {};
+        this.closedMultiplayerMenuCallback = params?.closedMultiplayerMenuCallback;
+        this.items = new Map();
+        this.menus = new Map();
+
+        /* TODO: why playerInfo here?
+        this.playerInfo = params.playerInfo;
+
+         */
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -89,7 +102,8 @@ export class MenuManager extends Subject{
 
     /**
      * method for adding callbacks to the menuManager in case they could not be added in the constructor/ they need to be changed
-     * @param {{blockInputCallback: {block: function, activate: function} | null, matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
+     * @param {{blockInputCallback: {block: function, activate: function} | null,
+     * matchMakeCallback: function | null, checkStakesCallback: function | null}} callbacks
      */
     addCallbacks(callbacks){
         if(callbacks.blockInputCallback) this.blockInputCallback = callbacks.blockInputCallback;
@@ -121,6 +135,7 @@ export class MenuManager extends Subject{
     #addMenuCallbacks(menu){
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
+            menu.element.querySelector(".delete-button").addEventListener("click", this.dispatchDeleteEvent.bind(this));
         }
         if(menu instanceof BuildingMenu){
             menu.element.querySelector(".lvl-up-button").addEventListener("click", this.dispatchLvlUpEvent.bind(this));
@@ -165,11 +180,71 @@ export class MenuManager extends Subject{
                 this.checkStakes();
             });
         }
+        if(menu instanceof MultiplayerMenu){
+            menu.element.querySelector(".close-button").addEventListener("click", this.closedMultiplayerMenuCallback);
+        }
+    }
+
+    /**
+     * creates a confetti div with random size and falling animation
+     * @param {number} id
+     * @return {HTMLDivElement}
+     */
+    createConfetti(id) {
+        const colours = ["#ffbf00", "#ff0000", "#00ff00", "#0000ff", "#ff00ff", "#00ffff"];
+
+        let confetti = document.createElement("div");
+        const w = Math.random() * 8;
+        const l = Math.random() * 100;
+        confetti.classList.add("confetti");
+        confetti.style.width = `${w}px`;
+        confetti.style.height = `${w*0.4}px`;
+        confetti.style.backgroundColor = colours[Math.floor(Math.random()*colours.length)];
+        confetti.style.top = "-20%";
+        confetti.style.left = `${l}%`;
+        confetti.style.opacity = `${Math.max((Math.random() + 0.5), 1)}`;
+        confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+        confetti.animate([
+            {
+                top: "-20%",
+                left: `${l}%`
+            },
+            {
+                top: "110%",
+                left: `${Math.random() * 15 + l}%`
+            }
+
+        ],
+            {
+                duration: Math.random()*2000+2000,
+                iterations: Infinity
+            });
+        confetti.id = `confetti-${id}`;
+        return confetti;
+    }
+
+    /**
+     * generate confetti on the screen
+     * @param {number} amount - amount of confetti to generate
+     */
+    startConfetti(amount) {
+        for(let i = 0; i < amount; i++) {
+            this.container.appendChild(this.createConfetti(i));
+        }
+    }
+
+    /**
+     * remove all confetti from the screen
+     */
+    stopConfetti() {
+        this.container.querySelectorAll(".confetti").forEach(confetti => {
+            confetti.remove();
+        });
     }
 
     checkStakes(){
         const gemsIds = [];
-        this.menus["GemsMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
+        this.menus.get("GemsMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
         if(this.checkStakesCallback(gemsIds)){
             this.container.querySelector(".play-button-container").classList.remove("inactive");
             this.container.querySelector(".play-button-container").classList.add("active");
@@ -185,7 +260,7 @@ export class MenuManager extends Subject{
      */
     toggleMatchMaking(event){
         this.matchmaking = event.detail.matchmaking;
-        const element = this.menus["AltarMenu"].element.querySelector(".play-button-container");
+        const element = this.menus.get("AltarMenu").element.querySelector(".play-button-container");
         if(this.matchmaking){
             element.classList.add("pressed");
         } else {
@@ -198,9 +273,13 @@ export class MenuManager extends Subject{
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
+          /* TODO: don't change xp here do this when fusion task is done
+          this.playerInfo.changeXP(2*this.inputCrystalParams.current);
+          */
           this.inputCrystalParams.current = 0;
-          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-          this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+          this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+          this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+
 
           /*
           // loading bar + reset features to be removed
@@ -232,11 +311,10 @@ export class MenuManager extends Subject{
 
     // Function to start or stop the fusing arrow animation based on condition
     toggleAnimation(condition) {
-        console.log(condition);
         if (condition) {
-            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.add('move-right');
+            this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.add('move-right');
         } else {
-            this.menus["FuseInputMenu"].element.querySelector(".arrow").classList.remove('move-right');
+            this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.remove('move-right');
         }
     }
 
@@ -252,11 +330,11 @@ export class MenuManager extends Subject{
      * @param {{target: HTMLElement}} event
      */
     switchPage(event){
-        this.menus[this.currentMenu].allows.forEach(child => {
+        this.menus.get(this.currentMenu).allows.forEach(child => {
             if(child === event.target.dataset.name){
-                this.menus[child].render();
+                this.menus.get(child).render();
             } else {
-                this.menus[child].hide();
+                this.menus.get(child).hide();
             }
         });
     }
@@ -324,10 +402,32 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * creates a custom switch spell event
+     * @param {number} spellId - the id of the last spell that was equipped
+     * @param {boolean} equip - whether the spell should be equipped or unequipped
+     * @return {CustomEvent<>} returns an array of the ids of the spells to equip
+     */
+    createSwitchSpellEvent(spellId, equip=true){
+        return new CustomEvent("switchSpells", {
+            detail: {
+                spellIds: this.menus.get("HotbarMenu").getEquippedSpellIds(spellId, equip)
+            }
+        });
+
+    }
+
+    /**
      * creates a custom lvl up event
      */
     dispatchLvlUpEvent(){
         this.dispatchEvent(new CustomEvent("lvlUp"));
+    }
+
+    /**
+     * dispatches a delete event
+     */
+    dispatchDeleteEvent(){
+        this.dispatchEvent(new CustomEvent("delete"));
     }
 
     /**
@@ -345,10 +445,9 @@ export class MenuManager extends Subject{
      * @param event
      */
     dispatchCollectEvent(event){
-        console.log("Collecting resources");
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = "0%";
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
         this.dispatchEvent(this.createCollectEvent());
     }
 
@@ -362,8 +461,8 @@ export class MenuManager extends Subject{
             this.inputCrystalParams.current += 10;
             this.dispatchEvent(this.createRemoveEvent());
         }
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -376,8 +475,8 @@ export class MenuManager extends Subject{
             this.inputCrystalParams.current -= 10;
             this.dispatchEvent(this.createAddEvent());
         }
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-        this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -394,10 +493,10 @@ export class MenuManager extends Subject{
         }
 
         event.dataTransfer.clearData();
-        event.dataTransfer.setDragImage(this.items[id].icon, 0, 0);
+        event.dataTransfer.setDragImage(this.items.get(id).icon, 0, 0);
 
-        if(!this.isSlotItem && this.items[id]?.equipped) return;
-        this.items[id].element.style.opacity = 0.5;
+        if(!this.isSlotItem && this.items.get(id)?.equipped) return;
+        this.items.get(id).element.style.opacity = 0.5;
         this.dragElement = id;
     }
 
@@ -407,8 +506,8 @@ export class MenuManager extends Subject{
      */
     dragend(event){
         if(!this.dragElement) return;
-        if (!this.isSlotItem && !this.items[this.dragElement]?.equipped) {
-            this.items[this.dragElement].element.style.opacity = 1;
+        if (!this.isSlotItem && !this.items.get(this.dragElement)?.equipped) {
+            this.items.get(this.dragElement).element.style.opacity = 1;
         }
         this.dragElement = null;
         this.dropElement = null;
@@ -442,7 +541,7 @@ export class MenuManager extends Subject{
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "list-menu").id;
         if(!(this.dropElement)) return;
-        if(this.menus[this.dropElement].allows.includes(this.items[this.dragElement].type)) {
+        if(this.menus.get(this.dropElement).allows.includes(this.items.get(this.dragElement).type)) {
             event.preventDefault();
         }
     }
@@ -455,13 +554,16 @@ export class MenuManager extends Subject{
         event.preventDefault();
         if(this.isSlotItem){
             this.dispatchEvent(this.createRemoveGemEvent());
-            this.menus["GemInsertMenu"].element.querySelector(`#slot-${this.slot}`).innerHTML = "";
-            this.items[this.dragElement].equipped = false;
-            this.items[this.dragElement].slot = null;
-            this.items[this.dragElement].element.style.opacity = 1;
+            this.menus.get("GemInsertMenu").element.querySelector(`#slot-${this.slot}`).innerHTML = "";
+            this.items.get(this.dragElement).equipped = false;
+            this.items.get(this.dragElement).slot = null;
+            this.items.get(this.dragElement).element.style.opacity = 1;
             this.slot = null;
         }
-        this.items[this.dragElement].attachTo(this.menus[this.dropElement]);
+        if(this.dropElement === "HotbarMenu" || this.dropElement === "SpellsMenu"){
+            this.dispatchEvent(this.createSwitchSpellEvent(this.dragElement, this.dropElement === "HotbarMenu"));
+        }
+        this.items.get(this.dragElement).attachTo(this.menus.get(this.dropElement));
     }
 
     /**
@@ -471,8 +573,8 @@ export class MenuManager extends Subject{
     dragoverSlot(event){
         if(!this.dragElement) return;
         this.dropElement = this.getParentMenuByClass(event.target, "slot-menu").id;
-        if(this.items[this.dragElement]?.equipped) return;
-        if(this.menus[this.dropElement].allows.includes(this.items[this.dragElement].type) && event.target.classList.contains("slot")){
+        if(this.items.get(this.dragElement)?.equipped) return;
+        if(this.menus.get(this.dropElement).allows.includes(this.items.get(this.dragElement).type) && event.target.classList.contains("slot")){
             event.preventDefault();
             this.slot = event.target.id.substring(event.target.id.lastIndexOf("-")+1);
         }
@@ -500,14 +602,14 @@ export class MenuManager extends Subject{
      */
     dropInSlot(event){
         event.preventDefault();
-        this.menus[this.dropElement].addIcon(this.slot, this.createSlotIcon({
+        this.menus.get(this.dropElement).addIcon(this.slot, this.createSlotIcon({
             id: `slot-icon-${this.slot}`,
-            itemId: this.items[this.dragElement].id,
-            src: this.items[this.dragElement].icon.src
+            itemId: this.items.get(this.dragElement).id,
+            src: this.items.get(this.dragElement).icon.src
         }));
-        this.items[this.dragElement].element.style.opacity = 0.5;
-        this.items[this.dragElement].equipped = true;
-        this.items[this.dragElement].slot = this.slot;
+        this.items.get(this.dragElement).element.style.opacity = 0.5;
+        this.items.get(this.dragElement).equipped = true;
+        this.items.get(this.dragElement).slot = this.slot;
         this.slot = null;
         this.dispatchEvent(this.createAddGemEvent());
     }
@@ -540,7 +642,7 @@ export class MenuManager extends Subject{
         }
 
         this.#addItemToMenu(menuItem);
-        this.items[params.item.getItemId()] = menuItem;
+        this.items.set(params.item.getItemId(), menuItem);
     }
 
     /**
@@ -548,27 +650,29 @@ export class MenuManager extends Subject{
      * @param {MenuItem} item
      */
     #addItemToMenu(item){
-        this.menus[item.belongsIn].addChild("afterbegin", item);
+        item.attachTo(this.menus.get(item.belongsIn));
+        // this.menus.get(item.belongsIn).addChild("afterbegin", item);
     }
 
     //untested
     removeItem(itemId){
-        this.items = this.items.filter(i => {
-            if(i.id === itemId){
-                i.detach();
-                return false;
-            }
-            return true;
-        });
+        const item = this.items.get(itemId);
+        if(item){
+            item.detach();
+            this.items.delete(itemId);
+        } else {
+            console.error("Cannot remove MenuItem; not found");
+        }
     }
 
     //untested - should not be necessary
-    moveItem(itemId, fromMenu, toMenu){
-        this.items.forEach(i => {
-            if(i.id === itemId){
-                i.attachTo(toMenu);
-            }
-        });
+    moveItem(itemId, toMenu){
+        const item = this.items.get(itemId);
+        if(item){
+            item.attachTo(this.menus.get(toMenu));
+        } else {
+            console.error("Cannot move MenuItem; not found");
+        }
     }
 
     /**
@@ -580,7 +684,7 @@ export class MenuManager extends Subject{
      */
     #moveMenu(child, parent, position){
         if(position !== "afterbegin" && position !== "beforeend") return false;
-        this.menus[parent].addChild(position, this.menus[child]);
+        this.menus.get(parent).addChild(position, this.menus.get(child));
     }
 
     /**
@@ -589,7 +693,7 @@ export class MenuManager extends Subject{
      * @return {StatItem|DecorationBuildingItem|null|ResourceBuildingItem|SpellItem|GemItem|CombatBuildingItem}
      */
     #createMenuItem(item){
-        if(item.belongsIn === "SpellsMenu"){
+        if(item.belongsIn === "SpellsMenu" || item.belongsIn === "HotbarMenu"){
             return new SpellItem(item);
         } else if (item.belongsIn === "GemsMenu" || item.belongsIn === "StakesMenu"){
             item.equipped = item.extra?.equipped ?? false;
@@ -635,20 +739,27 @@ export class MenuManager extends Subject{
      * @param {{name: string, stats: Map}} params
      */
     #arrangeStatMenuItems(params){
-        console.log("inside arrangeItems:",  params.stats);
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
+        // update stats for according to the building
+        if (params.name === "MineMenu"){
+            params.stats.set("capacity", params.stats.get("capacity")*1000);
+        }
+        if (params.name === "TowerMenu"){
+            params.stats.set("capacity", params.stats.get("capacity")*100);
+            params.stats.set("damage", params.stats.get("damage")*5);
+        }
         for(const stat of stats){
             if(params.stats.has(stat)){
-                this.items[stat].element.style.display = this.items[stat].display;
+                this.items.get(stat).element.style.display = this.items.get(stat).display;
                 //TODO: change the text based on the type of building
                 console.log(params.stats.get(stat));
                 let name = `${stat}: ${Math.round(params.stats.get(stat))}`;
                 let text = `placeholder description`;
-                this.items[stat].element.querySelector(".menu-item-description-name").innerText = name;
-                this.items[stat].element.querySelector(".menu-item-description-text").innerText = text;
+                this.items.get(stat).element.querySelector(".menu-item-description-name").innerText = name;
+                this.items.get(stat).element.querySelector(".menu-item-description-text").innerText = text;
             } else {
-                this.items[stat].element.style.display = "none";
+                this.items.get(stat).element.style.display = "none";
             }
         }
     }
@@ -660,7 +771,12 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            if(param.total === 0){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
+                this.items.get(param.building).element.style.opacity = 0.5;
+            }else{
+                this.items.get(param.building).element.style.opacity = 1;
+                this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            }
         }
     }
 
@@ -725,26 +841,47 @@ export class MenuManager extends Subject{
         this.addItems(items);
     }
 
-    #createSpellItems(){
-        let spells = ["fireSpell", "freezeSpell", "shieldSpell", "healSpell", "thunderSpell"];
-        let names = ["Fire", "Freeze", "Shield", "Heal", "Thunder"];
+    /**
+     * create views in the menus for spell items and adds them to the menu
+     * @param {{name: string, slot: number | null, src: string, unlocked: boolean}[]} spells
+     */
+    createSpellItems(spells){
+        spells.sort((a, b) => {
+            let number = 0;
+            if(a.slot && !b.slot) number = -1;
+            if(!a.slot && b.slot) number = 1;
+            if(a.slot && b.slot) number = a.slot - b.slot;
+            return number;
+        });
         let items = [];
         for (let i = 0; i < spells.length; i++){
+            if(spells[i].name === "BuildSpell") continue;
             items.push({
-                item: {name: spells[i], id: i, belongsIn: "SpellsMenu", getItemId: () => spells[i], getDisplayName: () => names[i]},
-                icon: {src: '/static/assets/images/spells/' + spells[i] + '.png', width: 50, height: 50},
-                description: ""
+                item: {id: i, belongsIn: spells[i].slot ? "HotbarMenu" : "SpellsMenu", getItemId: () => spells[i].name, getDisplayName: () => spells[i].name},
+                icon: {src: spells[i].src, width: 50, height: 50},
+                description: "",
+                extra: { //TODO: change this based on lvl
+                    unlocked: spells[i].unlocked,
+                    draggable: spells[i].unlocked
+                }
             });
         }
         this.addItems(items);
     }
 
+    /**
+     * creates the buildSpell item (permanently in hotbar)
+     */
     #createHotbarItem(){
         let buildSpell = {
             //TODO: SpellsMenu should be HotbarMenu but that gives an error
-            item: {name: "buildSpell", id: 0, belongsIn: "SpellsMenu", getItemId: () => "buildSpell", getDisplayName: () => " Build"},
-            icon: {src: '/static/assets/images/spells/buildSpell.png', width: 50, height: 50},
-            description: ""
+            item: {id: 0, belongsIn: "HotbarMenu", getItemId: () => "BuildSpell", getDisplayName: () => "build spell"},
+            icon: {src: '/static/assets/images/spells/type2/BuildSpell.png', width: 50, height: 50},
+            description: "",
+            extra: {
+                unlocked: true,
+                draggable: false
+            }
         };
         this.addItem(buildSpell);
     }
@@ -756,12 +893,12 @@ export class MenuManager extends Subject{
      */
     #createMenu(ctor){
         const menu = new ctor({parent: this});
-        if(this.menus[menu.name]) return false;
+        if(this.menus.get(menu.name)) return false;
 
         this.#addMenuCallbacks(menu);
 
-        this.menus[menu.name] = menu;
-        this.container.appendChild(this.menus[menu.name].element);
+        this.menus.set(menu.name, menu);
+        this.container.appendChild(this.menus.get(menu.name).element);
         return true;
     }
 
@@ -779,17 +916,16 @@ export class MenuManager extends Subject{
      */
     createMenus(){
         //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
-        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
-        this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu, MultiplayerStatsMenu, MultiplayerGemsMenu, MultiplayerMenu, PropMenu]);
+        this.collectParams.meter = this.menus.get("CollectMenu").element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();
-        this.#createSpellItems();
         this.#createHotbarItem();
     }
 
     /**
      * render a menu and call the blockInputCallback.block function
-     * @param {{name: string}} params
+     * @param {{name: string}} params - needs to contain the name of the menu to render + additional params for the arrangement of the menu (see menuManager.#arrangeMenus)
      */
     renderMenu(params){
         if(!params.name || !this.menusEnabled) return;
@@ -798,10 +934,10 @@ export class MenuManager extends Subject{
         this.container.style.display = "block";
         this.currentMenu = params.name;
         this.#arrangeMenus(params);
-        this.menus[params.name].allows.forEach(child => {
-            this.menus[child].render();
+        this.menus.get(params.name).allows.forEach(child => {
+            this.menus.get(child).render();
         });
-        this.menus[params.name].render();
+        this.menus.get(params.name).render();
     }
 
     /**
@@ -835,10 +971,16 @@ export class MenuManager extends Subject{
             clearInterval(this.collectInterval);
             this.collectInterval = null;
         }
+        if(name === "MultiplayerMenu"){
+            this.menus.get("MultiplayerGemsMenu").element.querySelectorAll(".menu-item").forEach(item => {
+                this.moveItem(item.id, "GemsMenu");
+            });
+            this.stopConfetti();
+        }
         this.currentMenu = null;
-        this.menus[name].hide();
-        this.menus[name].allows.forEach(child => {
-            this.menus[child].hide();
+        this.menus.get(name).hide();
+        this.menus.get(name).allows.forEach(child => {
+            this.menus.get(child).hide();
         });
         this.blockInputCallback.activate();
     }
@@ -849,16 +991,15 @@ export class MenuManager extends Subject{
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
-        this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
     }
 
     /**
      * move all gems from the StakesMenu to the GemsMenu
      */
     unstakeGems(){
-        this.menus["StakesMenu"].element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
-            const gem = this.items[item.id];
-            this.items[item.id].attachTo(this.menus["GemsMenu"]);
+        this.menus.get("StakesMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => {
+            this.items.get(item.id).attachTo(this.menus.get("GemsMenu"));
         });
     }
 
@@ -882,12 +1023,17 @@ export class MenuManager extends Subject{
      * @return {MenuItem[]}
      */
     #getMenuItemsById(ids){
-        return ids.map(id => this.items[id]);
+        return ids.map(id => this.items.get(id));
     }
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu"} | {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} | {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} | {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map}} params
+     * @param {{name: "AltarMenu"} |
+     * {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} |
+     * {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} |
+     * {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map} |
+     * {name: "MultiplayerMenu", gemIds: String[], result: "win" | "lose" | "draw", stats: {current: {name: string, value: number}[],
+     * lifetime: {name: string, value: number}[]}}} params
      */
     #arrangeMenus(params){ //TODO: for mine put maxCrysals and rate as stats (capacity and mineSpeed)
         // arrange the menus in the container
@@ -905,9 +1051,9 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "TowerMenu", "afterbegin");
                 // show correct Gems based on received params
-                this.menus["GemInsertMenu"].renderSlots(params.slots);
-                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
-                this.menus["TowerMenu"].updateLvlUpButton(params);
+                this.menus.get("GemInsertMenu").renderSlots(params.slots);
+                this.menus.get("GemInsertMenu").addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus.get("TowerMenu").updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "TowerMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "TowerMenu", "afterbegin");
                 break;
@@ -916,17 +1062,17 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
-                this.menus["CollectMenu"].element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
-                this.menus["CollectMenu"].element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
-                this.menus["MineMenu"].updateLvlUpButton(params);
+                this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
+                this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
+                this.menus.get("MineMenu").updateLvlUpButton(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
                 this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
-                this.menus["GemInsertMenu"].renderSlots(params.slots);
-                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus.get("GemInsertMenu").renderSlots(params.slots);
+                this.menus.get("GemInsertMenu").addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
                 this.#moveMenu("GemInsertMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "MineMenu", "afterbegin");
                 break;
@@ -934,9 +1080,9 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.#moveMenu("StatsMenu", "FusionTableMenu", "afterbegin");
                 // show correct Gems based on received params
-                this.menus["GemInsertMenu"].renderSlots(params.slots);
-                this.menus["GemInsertMenu"].addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
-                this.menus["FusionTableMenu"].updateLvlUpButton(params);
+                this.menus.get("GemInsertMenu").renderSlots(params.slots);
+                this.menus.get("GemInsertMenu").addSlotIcons(this.createSlotIcons(this.#getMenuItemsById(params.gemIds)));
+                this.menus.get("FusionTableMenu").updateLvlUpButton(params);
                 this.#moveMenu("GemInsertMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "FusionTableMenu", "afterbegin");
                 this.#moveMenu("FuseInputMenu", "FusionTableMenu", "afterbegin");
@@ -946,6 +1092,17 @@ export class MenuManager extends Subject{
                 this.#moveMenu("DecorationsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("ResourceBuildingsMenu", "BuildMenu", "afterbegin");
                 this.#moveMenu("CombatBuildingsMenu", "BuildMenu", "afterbegin");
+                break;
+            case "MultiplayerMenu":
+                if(params.result === "win") this.startConfetti(150);
+                this.menus.get("MultiplayerGemsMenu").setTitle(params.result);
+                this.menus.get("MultiplayerStatsMenu").setStats(params.stats);
+                this.menus.get("MultiplayerStatsMenu").toggleStats({target: this.menus.get("MultiplayerStatsMenu").element.querySelector("#multiplayer-match-button")});
+                params.gemIds.forEach(id => {
+                    this.moveItem(id, "MultiplayerGemsMenu");
+                });
+                this.#moveMenu("MultiplayerGemsMenu", "MultiplayerMenu", "afterbegin");
+                this.#moveMenu("MultiplayerStatsMenu", "MultiplayerMenu", "afterbegin");
                 break;
         }
     }

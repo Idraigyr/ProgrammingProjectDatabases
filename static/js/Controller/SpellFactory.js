@@ -26,7 +26,6 @@ export class SpellFactory{
      * @param event event with spell details
      */
     createSpell(event){
-        console.log("SpellFactory: createSpell", event.detail.type);
         let entityModel = null;
         switch (event.detail.type){
             case Fireball:
@@ -88,7 +87,7 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(view.boxHelper) this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -120,7 +119,7 @@ export class SpellFactory{
         this.scene.add(view.charModel);
 
         view.boundingBox.set(new THREE.Vector3().copy(position).sub(new THREE.Vector3(4,15,4)), new THREE.Vector3().copy(position).add(new THREE.Vector3(4,0.5,4)));
-        this.scene.add(view.boxHelper);
+        if(view.boxHelper) this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -147,10 +146,13 @@ export class SpellFactory{
             camera: this.camera,
             position: details.params.position
         });
-
+        target.setShielded(true);
+        model.addEventListener("shieldLost", view.loseShield.bind(view));
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", target.setShielded(false));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        view.boundingBox.set(details.params.position.clone().sub(new THREE.Vector3(1,0,1)), details.params.position.clone().add(new THREE.Vector3(1,3.5,1)));
         this.viewManager.addPair(model,view);
         return model;
     }
@@ -204,7 +206,7 @@ export class SpellFactory{
 
         views.forEach((view) => {
             this.scene.add(view.charModel);
-            this.scene.add(view.boxHelper);
+            if(view.boxHelper) this.scene.add(view.boxHelper);
             model.addEventListener("updatePosition", view.updatePosition.bind(view));
             model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
             this.viewManager.addPair(model,view);

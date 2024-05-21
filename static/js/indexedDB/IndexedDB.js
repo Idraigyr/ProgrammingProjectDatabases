@@ -3,7 +3,6 @@
  * @type {Dexie}
  */
 export const db = new Dexie('WizardIslandDB');
-console.log("Database initialized", db);
 /**
  * Database schema
  * ++id:  auto incrementing primary key, ensuring each entry is unique

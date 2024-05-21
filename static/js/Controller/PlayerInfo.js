@@ -1,6 +1,14 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, logoutURI, islandURI} from "../configs/EndpointConfigs.js";
+import {
+    API_URL,
+    playerProfileURI,
+    playerURI,
+    timeURI,
+    logoutURI,
+    islandURI,
+    buildingUpgradeURI
+} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
@@ -29,7 +37,7 @@ export class PlayerInfo extends Subject{
 
         this.maxBuildings = 2;
 
-        this.level = 0;
+        this.level = 1;
         this.experience = 0;
         this.xpThreshold = 50;
 
@@ -42,9 +50,9 @@ export class PlayerInfo extends Subject{
             Tower: Level[this.level]["Tower"],
             WarriorHut: Level[this.level]["WarriorHut"],
             Mine: Level[this.level]["Mine"],
-            FusionTable: Level[this.level]["FusionTable"]
+            FusionTable: Level[this.level]["FusionTable"],
         };
-        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0}
+        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0};
 
     }
 
@@ -62,7 +70,8 @@ export class PlayerInfo extends Subject{
                         x: Math.round(this.playerPosition.x),
                         y: Math.round(this.playerPosition.y + 20), // To prevent the player from spawning in the ground
                         z: Math.round(this.playerPosition.z)
-                    }
+                    },
+                    spells: this.spells
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -98,6 +107,29 @@ export class PlayerInfo extends Subject{
     }
 
     /**
+     * Updates the equipped spells of the player
+     * @param event
+     */
+    updateSpells(event){
+        for(const spell of event.detail.spells){
+            this.spells.find(s => s.spell_id === spell.id).slot = spell.slot;
+        }
+        $.ajax({
+            url: `${API_URL}/${playerURI}`,
+            type: 'PUT',
+            data: JSON.stringify({
+                user_profile_id: this.userID,
+                spells: this.spells
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            error: (e) => {
+                console.error(e);
+            }
+        });
+    }
+
+    /**
      * Retrieves the user information from the server
      * @param {number | null} playerId - optional, The id of the player to retrieve the information from
      * @returns {Promise<void>} - Promise that resolves when the user information is retrieved
@@ -110,11 +142,10 @@ export class PlayerInfo extends Subject{
             this.userID = response.entity.player_id;
             this.username = response.username;
 
+            this.spells = response.spells;
 
             this.islandID = response.entity.island_id;
-            this.unclockedBuildings = response.blueprints;
             this.gems = response.gems;
-            console.log(response);
             this.crystals = response.crystals;
 
             this.gems = response.gems;
@@ -138,7 +169,7 @@ export class PlayerInfo extends Subject{
                 }
             }
 
-
+            this.setLevelStats();
             this.advertiseCurrentCondition();
 
         } catch (err){
@@ -156,7 +187,6 @@ export class PlayerInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${playerURI}?id=${this.userID}`);
-            console.log(response);
             return response.gems;
         } catch (err){
             console.error(err);
@@ -172,7 +202,6 @@ export class PlayerInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${timeURI}`);
-            console.log(response.time);
             return response.time;
         } catch (err){
             console.error(err);
@@ -220,7 +249,7 @@ export class PlayerInfo extends Subject{
      * @returns {boolean} - True if the crystals were changed, false otherwise
      */
     changeCrystals(amount){
-        if(!amount) throw new Error("playerInfo.changeCrystals: amount is not defined");
+        if(!Number.isFinite(amount)) throw new Error("playerInfo.changeCrystals: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());
@@ -260,7 +289,8 @@ export class PlayerInfo extends Subject{
                         y: Math.round(this.playerPosition.y),
                         z: Math.round(this.playerPosition.z),
                         level: this.level
-                    }
+                    },
+                    spells: this.spells
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -271,6 +301,44 @@ export class PlayerInfo extends Subject{
             });
         } catch (err){
             console.error(err);
+        }
+    }
+    /**
+     * Creates level up task on the server
+     * @param building - Building to level up
+     */
+    async createLevelUpTask(building){ //TODO: WHY DO THIS HERE?
+        // Get time
+        let response = await this.getCurrentTime();
+        let serverTime = new Date(response);
+        serverTime.setSeconds(serverTime.getSeconds()+ building.upgradeTime);
+        let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+        let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+        // Convert local time to ISO string
+        let time = localTime.toISOString();
+        let formattedDate = time.slice(0, 19);
+        try{
+            await $.ajax({
+                url: `${API_URL}/${buildingUpgradeURI}`,
+                type: "POST",
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({
+                    island_id: this.islandID,
+                    to_level: building.level + 1,
+                    building_id: building.id,
+                    used_crystals: building.upgradeCost,
+                    endtime: formattedDate
+                }),
+                success: (data) => {
+                    console.log(data);
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+        } catch (e){
+            console.log(e);
         }
     }
     changeHealth(amount) {
@@ -295,7 +363,11 @@ export class PlayerInfo extends Subject{
             return 100000;
         }
     }
-    respawn(){
+
+    /**
+     * Relaods the world and sets the player position to the spawn position
+     */
+    reload(){
         this.playerPosition.x = playerSpawn.x;
         this.playerPosition.y = playerSpawn.y;
         this.playerPosition.z = playerSpawn.z;
@@ -342,7 +414,7 @@ export class PlayerInfo extends Subject{
             this.dispatchEvent(this.createUpdateXpEvent());
             this.dispatchEvent(this.createUpdateXpThresholdEvent());
             this.dispatchEvent(new CustomEvent("updateMaxManaAndHealth", {detail: {maxMana: this.maxMana, maxHealth: this.maxHealth}}));
-            console.log(this.buildingsThreshold);
+
         }
     }
     /**
@@ -351,12 +423,12 @@ export class PlayerInfo extends Subject{
      * @param increase - True if the level should be increased, false if it should be set to 0
      * @returns {boolean} - True if the level was changed, false otherwise
      */
-    changeLevel(amount=0, increase=false){
+    changeLevel(amount=0, increase=false){ //TODO: refactor this, increase is obsolete, just use amount
         if(amount === 0){
             if(increase){
                 let old = this.level;
                 this.level = this.level + 1;
-                if (this.level < 0 || this.level > 4){
+                if (this.level < 0 || this.level > 15){
                     this.level = old;
                     return false;
                 }
@@ -365,7 +437,7 @@ export class PlayerInfo extends Subject{
             }
         } else{
             if(amount < 0 && Math.abs(amount) > this.level) return false;
-            if(amount < 0 || amount > 4) return false;
+            if(amount < 0 || amount > 15) return false;
             this.level = amount;
         }
         this.dispatchEvent(this.createUpdateLevelEvent());
@@ -388,7 +460,6 @@ export class PlayerInfo extends Subject{
      * @returns {CustomEvent<{xp: number, threshold: number}>} - Event that contains the new amount of xp threshold
      */
     createUpdateXpThresholdEvent() {
-        console.log(this.xpThreshold)
         return new CustomEvent("updateXpThreshold", {detail: {xp: this.experience, threshold: this.xpThreshold}});
     }
 

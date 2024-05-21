@@ -3,9 +3,13 @@
 ### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abele & Thomas Urkens
 #### Created at the University Of Antwerp, 2024 for the course Programming Project Databases (2nd Bachelor's degree in Computer Science)
 ## Introduction
-Web-based idle game using THREE.js for 3D visuals.
+Web-based 3D idle game using THREE.js, Flask, PostgreSQL, SQLAlchemy, SocketIO & Alembic. Made by 6 students for the course Programming Project Databases at the University of Antwerp.
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+Ordinary Wizards is a web-based 3D idle game where you are a magical wizard that can build his own island, mine crystals & gems, progress through multiple levels and fight other players in a real-time multiplayer battle. 
+With the power of WebGL, the game is completely rendered in 3D and can be played on any device that supports a modern web browser. 
+Craft magical gems to boost your buildings, upgrade your island, beat other players and become the most powerful wizard in the game!
+
+Full handbook can be found at [USER_MANUAL.md](docs/USER_MANUAL.md)
 
 ## Project setup
 The project is divided into two main parts: the backend and the frontend. The backend is a RESTful API built using Flask, SQLAlchemy, flask-restful and flask-migrate, that communicates with an external PostgreSQL database.
@@ -60,3 +64,7 @@ In order to fix this, you must run gunicorn with only **1 worker** and use threa
 ## Documentation
 
 Please refer to [DOCUMENTATION.md](docs/DOCUMENTATION.md) for more information about the project structure, the API, the database schema and the 3D visuals.
+
+## Intellectual Property
+
+All assets used in this project are free to use. You can find the original sources of the used assets as well as their authors in the [credits.txt](static/credits.txt) file.

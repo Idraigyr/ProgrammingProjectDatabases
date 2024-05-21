@@ -28,7 +28,7 @@ export class Island extends IView{
         this.#yOffset = 0;
     }
     /**
-     * Create lights for the scene
+     * Create lights for the scene - DEPRECATED, now in App.initScene
      * @returns {Group} group of lights
      */
     createLights(){

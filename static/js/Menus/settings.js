@@ -1,5 +1,5 @@
 // all variables for game settings
-import { API_URL } from "../configs/EndpointConfigs.js";
+import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths} from "../configs/ViewConfigs.js";
 let volume = 50;
@@ -20,15 +20,23 @@ export class Settings {
     constructor(params) {
         this.map = null;
         this.inputManager = params.inputManager;
+        /* TODO: look and see
         this.worldManager = params.worldManager;
+
+         */
         this.playerInfo = params.playerInfo;
 
-        this.inputManager.addLeaveMatchButtonListener(this.leaveMatch.bind(this))
+        this.inputManager.addLeaveMatchButtonListener((e) => {
+            params.callbacks.leaveMatch();
+            this.exitSettingsMenu();
+        });
+
         this.inputManager.addLogoutButtonListener(this.logOut.bind(this))
         this.inputManager.addRespawnButtonListener(this.respawn.bind(this));
         this.inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         this.inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
         this.inputManager.addGrassToggleListener(this.toggleGrass.bind(this));
+        this.inputManager.addApplyButtonListener(this.applySettings.bind(this))
         const button = document.getElementById('applyButton');
         button.addEventListener('click', this.applySettings.bind(this));
         const keybinds = document.querySelector('.key-binds');
@@ -39,7 +47,8 @@ export class Settings {
         console.log("Grass toggle button clicked ", event);
         this.grassOn = !!event.target.checked;
         // Dispatch event to toggle grass
-        this.worldManager.toggleGrass(this.grassOn);
+        //this.worldManager.toggleGrass(this.grassOn);
+        //TODO: add a callback don't add worldmanager directly
     }
 
     loadCursors() {
@@ -68,24 +77,15 @@ export class Settings {
      * Function to log out the user
      */
     async logOut() {
-        console.log("Log out button clicked")
-        var currentUrl = window.location.href;
-
-        // Append '/logout' to the current URL
-        var logoutUrl = currentUrl + '/logout';
-
         // Send logout info to the backend
         await this.playerInfo.logout();
-
         // Redirect the user to the logout URL
-        window.location.href = logoutUrl;
+        window.location.href = `${API_URL}/logout`;
     }
 
     async respawn() {
-        console.log("Respawn button clicked")
-
         // Send respawn info to the backend
-        await this.playerInfo.respawn();
+        await this.playerInfo.reload();
     }
 
     /**
@@ -108,7 +108,6 @@ export class Settings {
      */
     deleteAccountCallback() {
         if (confirm("Are you sure you want to PERMANENTLY remove your account?\nThis cannot be undone!")) {
-            console.log("Account deletion confirmed")
             $.ajax({
                 url: `${API_URL}/api/user_profile?id=${this.playerInfo.userID}`,
                 type: "DELETE",
@@ -133,11 +132,11 @@ export class Settings {
     }
 
     applySettings(){
-
+        console.log("Settings applied");
+        this.exitSettingsMenu();
     }
 
     switchCursor(event) {
-        console.log(event);
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
     }

@@ -16,6 +16,7 @@
 
 /*MenuManager CSS START*/
 :root{
+    cursor: url('../assets/images/wand.png'), auto;
     --game-timer-height: 5vh;
     --fuse-button-height: 60px;
     --fuse-button-width: 10vw;
@@ -29,6 +30,11 @@
     --menu-title-width: 50%; /* get width of .menu-title class */
     -webkit-user-select: none; /* Safari */
     user-select: none; /* Standard syntax */
+}
+
+[class|="confetti"] {
+  position: absolute;
+    z-index: 666;
 }
 
 .prevent-select {
@@ -59,11 +65,29 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.close-button:hover {
-  transform: scale(1.10);
+.delete-button {
+    position: relative;
+    width: var(--close-button-size);
+    height: var(--close-button-size);
+    background-image: url('/static/assets/images/menu/delete.png');
+    background-color: transparent;
+    background-size: cover;
+    z-index: 12;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.close-button:active {
+.close-button:hover, .delete-button:hover {
+    transform: scale(1.10);
+}
+
+/* Hide delete button if it in the Altar Menu */
+#AltarMenu .delete-button-container {
+    display: none;
+}
+
+.close-button:active, .delete-button:active {
   transform: translateY(5px);
 }
 
@@ -328,7 +352,7 @@
     height: calc(100% - var(--play-button-height) - var(--close-button-size));
 }
 
-#TowerMenu > .sub-menu-container, #MineMenu > .sub-menu-container {
+#TowerMenu > .sub-menu-container, #MineMenu > .sub-menu-container, #MultiplayerMenu > .sub-menu-container {
     height: calc(100% - var(--close-button-size));
 }
 
@@ -338,6 +362,10 @@
 
 #FusionTableMenu .list-menu, #FusionTableMenu .slot-menu, #FusionTableMenu .buttons-menu{
     width: 25%
+}
+
+#MultiplayerMenu .multiplayer-stats-menu, #MultiplayerMenu .multiplayer-gems-menu{
+    width: 50%
 }
 
 #AltarMenu .list-menu{
@@ -357,6 +385,53 @@
     background-color: #f9f3d2;
     border: 2px solid #0f172a;
     border-radius: 15px;
+    background-image: url('/static/assets/images/menu/listBackground.png');
+    background-size: cover;
+    z-index: 8;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.multiplayer-stats-menu {
+    position: relative;
+    background-color: #f9f3d2;
+    border: 2px solid #0f172a;
+    border-radius: 15px;
+    height: 100%;
+    width: 100%;
+    background-image: url('/static/assets/images/menu/listBackground.png');
+    background-size: cover;
+    z-index: 8;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.multiplayer-stats-menu-container{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: start;
+}
+
+.multiplayer-gems-menu {
+    position: relative;
+    background-color: #f9f3d2;
+    border: 2px solid #0f172a;
+    border-radius: 15px;
+    height: 100%;
+    width: 100%;
     background-image: url('/static/assets/images/menu/listBackground.png');
     background-size: cover;
     z-index: 8;
@@ -612,6 +687,42 @@
     flex-grow: 1;
 }
 
+.multiplayer-stats-menu-button-container{
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+.multiplayer-stats-menu-button{
+    background-color: #69644a;
+    border: 5px solid #0f172a;
+    border-radius: 10px;
+    margin: 0;
+    padding: 0;
+    font-size: 30px;
+    flex-grow: 1;
+}
+
+.multiplayer-stats-menu-button.active{
+    background-color: #3e8e41;
+    box-shadow: 0 3px #666;
+}
+
+.multiplayer-stats-menu-button:hover {
+    box-shadow: inset 0 0 20px rgba(255, 255, 255, .5), 0 0 20px rgba(255, 255, 255, .2);
+    outline-color: rgba(255, 255, 255, 0);
+    outline-offset: 10px;
+    text-shadow: 1px 1px 2px #427388;
+}
+
+.multiplayer-stats-menu-li{
+    font-size: 20px;
+}
+
 .slot-container{
     position: relative;
     width: 100%;
@@ -702,6 +813,32 @@
     flex-grow: 1;
 }
 
+.multiplayer-stats-menu-ul{
+    position: relative;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: start;
+    gap: 10px;
+    scrollbar-gutter: stable;
+}
+
+.multiplayer-stats-menu-ul:hover{
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-color: #67604e #1d1d21;
+    scrollbar-width: thin;
+    flex-grow: 1;
+}
+
 .menu-item{
     position: relative;
     width: 100%;
@@ -718,6 +855,10 @@
     justify-content: start;
     align-items: center;
     gap: 10px;
+}
+
+.menu-item-icon{
+    pointer-events: none;
 }
 
 .menu-item-description{
@@ -1091,6 +1232,7 @@ body {
 
 /* loading screen style */
 .loading-animation{
+    width: 100vw;
     height: 100vh;
     z-index: 10;
 }
@@ -1792,6 +1934,43 @@ body {
     left: 33%;
 
 }
+/* awaiting respawn overlay */
+
+
+#overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(128, 128, 128, 0.5);
+    z-index: 100;
+    font-family: Surabasa, sans-serif;
+    display: none;
+}
+
+.overlay-content {
+    text-align: center;
+}
+
+#respawn-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+#respawn-button.active {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+
+
 
 /* xp bar and level */
 
@@ -2086,7 +2265,7 @@ body {
     z-index: 5;
 }
 
-.buildimage {
+.Spell1Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 10%;
@@ -2094,12 +2273,12 @@ body {
 }
 
 
-.buildimage {
+.Spell1Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.firebalimage {
+.Spell2Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 30%;
@@ -2107,12 +2286,12 @@ body {
 }
 
 
-.firebalimage {
+.Spell2Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.lighningimage {
+.Spell3Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -2120,31 +2299,31 @@ body {
 }
 
 
-.lighningimage {
+.Spell3Icon > .spell-icon-img {
     width: 10%;
     height: auto;
 }
 
-.shieldimage {
+.Spell4Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 70%;
     transform: translate(-50%, -50%);
 }
 
-.shieldimage {
+.Spell4Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
 
-.icewallimage {
+.Spell5Icon > .spell-icon-img  {
     position: absolute;
     top: 50%;
     left: 90%;
     transform: translate(-50%, -50%);
 }
 
-.icewallimage {
+.Spell5Icon > .spell-icon-img  {
     width: 10%;
     height: auto;
 }
@@ -2229,6 +2408,105 @@ body {
 
 .settings-button:active .icon {
     content: url('../assets/images/Pressed_02.png');
+}
+
+.bell-container{
+    pointer-events: none;
+    position: absolute;
+    display: none;
+    top: -13px;
+    left: -12px;
+    width: 30px;
+    height: 30px;
+    z-index: 5;
+    /*transform-origin: 50% 4px; if you want to do rotation from its top as anchorpoint*/
+    animation: ring 4s .7s ease-in-out infinite;
+}
+
+@keyframes ring {
+  0% { transform: rotate(0); }
+  1% { transform: rotate(30deg); }
+  3% { transform: rotate(-28deg); }
+  5% { transform: rotate(34deg); }
+  7% { transform: rotate(-32deg); }
+  9% { transform: rotate(30deg); }
+  11% { transform: rotate(-28deg); }
+  13% { transform: rotate(26deg); }
+  15% { transform: rotate(-24deg); }
+  17% { transform: rotate(22deg); }
+  19% { transform: rotate(-20deg); }
+  21% { transform: rotate(18deg); }
+  23% { transform: rotate(-16deg); }
+  25% { transform: rotate(14deg); }
+  27% { transform: rotate(-12deg); }
+  29% { transform: rotate(10deg); }
+  31% { transform: rotate(-8deg); }
+  33% { transform: rotate(6deg); }
+  35% { transform: rotate(-4deg); }
+  37% { transform: rotate(2deg); }
+  39% { transform: rotate(-1deg); }
+  41% { transform: rotate(1deg); }
+
+  43% { transform: rotate(0); }
+  100% { transform: rotate(0); }
+}
+
+.bell-container *{
+    pointer-events: none;
+}
+
+.bell-img{
+    position: relative;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.notification-count-container{
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background-color: red;
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.notification-count{
+    position: relative;
+    font-size: 10px;
+    text-align: center;
+}
+
+#friends-button-container{
+    position: absolute;
+    top: 77.5%;
+    right: 0;
+    width: 50px;
+    height: 40px;
+    display: block; /* Ensure the container has the size of its contents */
+    z-index: 5;
+
+}
+
+#friends-button {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background-color: lightblue; /* Optional: Just for better visibility */
+    text-align: center; /* Optional: Align text within the div */
+    padding: 10px; /* Optional: Add padding inside the div */
+    border-radius: 10px;
+    background-image: url('../assets/images/friend.png'); /* Replace with the path to your image */
+    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-position: center; /* This will center the image in the element */
+    background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
 
 #chatButton {
@@ -2436,6 +2714,8 @@ a[data-tooltip][data-placement="right"]::after {
     padding: 10px; /* Optional: Add padding inside the div */
     border: solid black;
     border-radius: 10px;
+    overflow-y: auto;
+    z-index: 10;
 }
 
 .Friend-List-Button{
@@ -2456,8 +2736,6 @@ a[data-tooltip][data-placement="right"]::after {
     border: solid black;
     border-radius: 10px 0px 0px 0px;
     cursor: pointer;
-
-
 }
 
 .Friend-Add-Button{
@@ -2508,6 +2786,13 @@ a[data-tooltip][data-placement="right"]::after {
 
 }
 
+.Username-Exist{
+    display: none;
+    color: red;
+    margin-left: 90px;
+    margin-top: 5px;
+}
+
 .Request-Submit{
     background-image: url('../assets/images/submit.png');
     background-repeat: no-repeat;
@@ -2550,27 +2835,42 @@ a[data-tooltip][data-placement="right"]::after {
 }
 
 .Request-List{
-    display: none;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
     position: relative;
     top: 20%;
+    height: 80%;
+}
+
+.request-text{
+    flex-grow: 10;
+}
+
+.request-buttons-container{
+    display: flex;
+    justify-content: start;
+    height: 100%;
+    flex-grow: 1;
 }
 
 .request{
     background-color: #f0f0f0; /* Light grey background */
-    padding: 10px; /* Padding around the text */
     margin-bottom: 8px; /* Space between each friend div */
     text-align: left; /* Center-align the text */
     border-radius: 5px; /* Rounded corners */
     font-size: 16px; /* Font size */
     color: #333; /* Dark grey text color */
     box-sizing: border-box;
+    padding: 10px;
     width: 100%;
-    height: 1%;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .Accept-Request{
-    transform: translateY(-45%); /* Center it vertically */
-    transform: translateX(700%);
     width: 10%; /* Set a specific width */
     height: 10%; /* Set a specific height */
     background-color: white; /* Visibility */
@@ -2578,13 +2878,11 @@ a[data-tooltip][data-placement="right"]::after {
     text-align: center;
     border-color: black;
     background-image: url('../assets/images/accept.png'); /* Replace with the path to your image */
-    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-size: 100%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
 .Reject-Request{
-    transform: translateY(-45%); /* Center it vertically */
-    transform: translateX(700%);
     width: 10%; /* Set a specific width */
     height: 10%; /* Set a specific height */
     background-color: white; /* Visibility */
@@ -2592,7 +2890,7 @@ a[data-tooltip][data-placement="right"]::after {
     text-align: center;
     border-color: black;
     background-image: url('../assets/images/reject.png'); /* Replace with the path to your image */
-    background-size: 30%; /* This will cover the entire element, may also use contain */
+    background-size: 100%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }

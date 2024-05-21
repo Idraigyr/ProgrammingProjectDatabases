@@ -1,5 +1,3 @@
-import {amountOfGemIcons} from "../../configs/ViewConfigs.js";
-
 export class Item{
     constructor(params) {
         this.id = params?.id ?? null;
@@ -87,7 +85,6 @@ export class Gem extends Item{
         this.equippedIn = params?.equippedIn ?? null; // Building id
         this.slot = params?.slot ?? null;
         this.belongsIn = (params?.staked ?? false) ? "StakesMenu" : "GemsMenu";
-        console.log("created gem:", this);
     }
     get type(){
         return "Gem";
@@ -171,6 +168,8 @@ export class Gem extends Item{
 export class Spell extends Item{
     constructor(params) {
         super(params);
+        this.belongsIn = "SpellsMenu";
+        this.unlocked = params?.unlocked ?? false;
     }
     get type(){
         return "Spell";

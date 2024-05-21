@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.gems import GemAttributeAssociation, Gem, GemAttribute
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.schema import ErrorSchema, ArraySchema
 from src.swagger_patches import Schema, summary
 
@@ -149,6 +149,9 @@ class GemResource(Resource):
     @swagger.response(200, description='Success, returns the updated gem in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no gem id', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -166,6 +169,9 @@ class GemResource(Resource):
             if gem is None:
                 return ErrorSchema(f'Unknown gem id {id}'), 404
 
+            r = check_data_ownership(gem.player_id) # Check the owner id
+            if r: return r
+
             gem.update(data)
             current_app.db.session.commit()
 
@@ -180,6 +186,9 @@ class GemResource(Resource):
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the created gem in JSON format', schema=GemSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -211,6 +220,9 @@ class GemResource(Resource):
 
             gem = Gem(**data)
 
+            r = check_data_ownership(gem.player_id) # Check the owner id
+            if r: return r
+
             current_app.db.session.add(gem)
             current_app.db.session.commit() # This is necessary to get the gem id
 
@@ -230,6 +242,9 @@ class GemResource(Resource):
     @swagger.response(200, description='Success', schema=ErrorSchema)
     @swagger.response(404, description='Gem not found', schema=ErrorSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """
@@ -243,6 +258,9 @@ class GemResource(Resource):
         gem = Gem.query.get(id)
         if gem is None:
             return ErrorSchema(f'Gem {id} not found'), 404
+
+        r = check_data_ownership(gem.player_id)  # Check the owner id
+        if r: return r
 
         current_app.db.session.delete(gem)
         current_app.db.session.commit()

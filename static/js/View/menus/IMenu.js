@@ -1,4 +1,5 @@
 import {assert} from "../../helpers.js";
+import {multiplayerStats} from "../../configs/Enums.js";
 
 export class IMenu {
     constructor(params) {
@@ -18,11 +19,17 @@ export class IMenu {
         return element;
     }
 
+    /**
+     * add a child to the menu at a certain position
+     * @param {"afterbegin" | "beforeend" } position
+     * @param child
+     */
     addChild(position, child){
         if(!this.allows.includes(child.name)) {
             console.error(`${child.name} is not allowed in ${this.name}`);
             return;
         }
+        if(position !== "afterbegin" && position !== "beforeend") throw new Error("Invalid position");
         this.element.insertAdjacentElement(position, child.element);
     }
 
@@ -346,6 +353,22 @@ export class HotbarMenu extends ListMenu{
         this.allows = ["Spell"];
     }
 
+    /**
+     * Get the ids of the spells in the hotbar
+     * @param {number} spellId
+     * @param {boolean} equip - if the spell is being equipped or unequipped
+     * @return {string[]}
+     */
+    getEquippedSpellIds(spellId, equip){
+        const arr = Array.from(this.element.querySelectorAll(".list-menu-ul > li")).map(spell => spell.id);
+        const index = arr.indexOf(spellId);
+        if(index !== -1){
+            arr.splice(arr.indexOf(spellId), 1);
+        }
+        if(equip) arr.push(spellId);
+        return arr;
+    }
+
     get name(){
         return "HotbarMenu";
     }
@@ -384,6 +407,42 @@ export class GemsMenu extends ListMenu{
     get title(){
         return "Gems";
     }
+}
+
+export class MultiplayerGemsMenu extends GemsMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("multiplayer-gems-menu") : params.classes = ["multiplayer-gems-menu"];
+        super(params);
+    }
+
+    get name(){
+        return "MultiplayerGemsMenu";
+    }
+
+    /**
+     * Set the title of the menu based on the result of the match
+     * @param {"win" | "lose" | "draw"} result
+     */
+    setTitle(result){
+        if(result === "win"){
+            this.getTitleBar().innerText = "Won";
+        } else if(result === "lose"){
+            this.getTitleBar().innerText = "Lost";
+        } else if(result === "draw"){
+            this.getTitleBar().innerText = "Got back";
+        }
+
+    }
+
+    hide(){
+        this.element.style.display = "none";
+        this.getTitleBar().innerText = this.title;
+    }
+
+    get title(){
+        return "Gems";
+    }
+
 }
 
 export class StakesMenu extends ListMenu{
@@ -473,6 +532,8 @@ export class BaseMenu extends IMenu{
         const headerDiv = document.createElement("div");
         const titleDiv = document.createElement("div");
         const title = document.createElement("h1");
+        const deleteButton = document.createElement("button");
+        const deleteButtonDiv = document.createElement("div");
         const closeButtonDiv = document.createElement("div");
         const closeButton = document.createElement("button");
         const subMenuDiv = document.createElement("div");
@@ -484,8 +545,14 @@ export class BaseMenu extends IMenu{
         subMenuDiv.classList.add("sub-menu-container");
         closeButton.classList.add("close-button");
         closeButtonDiv.appendChild(closeButton);
+        deleteButton.classList.add("delete-button");
+        // Add title to the button
+        deleteButton.title = "Vanish this";
+        deleteButtonDiv.appendChild(deleteButton);
+        deleteButtonDiv.classList.add("delete-button-container");
         titleDiv.appendChild(title);
         headerDiv.appendChild(titleDiv);
+        headerDiv.appendChild(deleteButtonDiv);
         headerDiv.appendChild(closeButtonDiv);
         element.appendChild(headerDiv);
         element.appendChild(subMenuDiv);
@@ -505,6 +572,133 @@ export class BaseMenu extends IMenu{
         return "Base";
     }
 
+}
+
+export class PropMenu extends BaseMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("prop-menu") : params.classes = ["prop-menu"];
+        super(params);
+    }
+
+    get name(){
+        return "PropMenu";
+    }
+
+    get title(){
+        return "Prop";
+
+    }
+}
+
+export class MultiplayerMenu extends BaseMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("multiplayer-menu") : params.classes = ["multiplayer-menu"];
+        super(params);
+        this.allows = ["MultiplayerStatsMenu", "MultiplayerGemsMenu"];
+    }
+
+    get name(){
+        return "MultiplayerMenu";
+    }
+
+    get title(){
+        return "Results";
+
+    }
+}
+
+export class MultiplayerStatsMenu extends IMenu{
+    #stats;
+    constructor(params) {
+        params.classes ? params.classes.push("multiplayer-stats-menu") : params.classes = ["multiplayer-stats-menu"];
+        super(params);
+        this.allows = [];
+        this.#stats = {
+            current: null,
+            lifetime: null
+        }
+    }
+
+    createElement(params){
+        const element = document.createElement("div");
+        const statsDiv = document.createElement("div");
+        const buttonContainer = document.createElement("div");
+        const matchButton = document.createElement("button");
+        const lifetimeButton = document.createElement("button");
+        const list = document.createElement("ul");
+        buttonContainer.classList.add("multiplayer-stats-menu-button-container");
+        matchButton.classList.add("multiplayer-stats-menu-button");
+        lifetimeButton.classList.add("multiplayer-stats-menu-button");
+        statsDiv.classList.add("multiplayer-stats-menu-container");
+        list.classList.add("multiplayer-stats-menu-ul");
+        matchButton.innerText = "Match";
+        lifetimeButton.innerText = "Lifetime";
+        list.dataset.menu = this.name;
+        matchButton.id = "multiplayer-match-button";
+        lifetimeButton.id = "multiplayer-lifetime-button";
+        list.id = `${this.name}-list`
+        buttonContainer.appendChild(matchButton);
+        buttonContainer.appendChild(lifetimeButton);
+        buttonContainer.addEventListener("click", this.toggleStats.bind(this));
+        statsDiv.appendChild(buttonContainer);
+        for(const key of multiplayerStats.getKeys()){
+            const statElement = document.createElement("li");
+            statElement.id = key;
+            statElement.classList.add("multiplayer-stats-menu-li");
+            statElement.innerText = `${key}: 0`;
+            list.appendChild(statElement);
+        }
+        element.appendChild(statsDiv);
+        statsDiv.appendChild(list);
+        element.id = this.name;
+        params.classes.forEach(c => element.classList.add(c));
+        element.style.display = "none";
+        element.draggable = false;
+        return element;
+    }
+
+    /**
+     * Set the stats of the menu
+     * @param {{current: {name: string, value, number}[], lifetime: {name: string, value, number}[]}} stats
+     */
+    setStats(stats){
+
+        this.#stats.current = stats.current;
+        this.#stats.lifetime = stats.lifetime;
+    }
+
+    /**
+     * callback for the button click event to toggle between match and lifetime stats
+     * @param {{target: HTMLElement}} e
+     */
+    toggleStats(e){
+        console.log("toggling stats")
+        const matchButton = this.element.querySelector("#multiplayer-match-button");
+        const lifetimeButton = this.element.querySelector("#multiplayer-lifetime-button");
+        let stats = null;
+        if(e.target === matchButton) {
+            matchButton.classList.add("active");
+            lifetimeButton.classList.remove("active");
+            stats = this.#stats.current;
+        } else if (e.target === lifetimeButton){
+            lifetimeButton.classList.add("active");
+            matchButton.classList.remove("active");
+            stats = this.#stats.lifetime;
+        }
+        for(const stat of stats){
+                const list = this.element.querySelector(".multiplayer-stats-menu-ul");
+                const statElement = list.querySelector(`#${stat.key}`);
+                statElement.innerText = `${stat.name}: ${stat.value}`;
+            }
+    }
+
+    get name(){
+        return "MultiplayerStatsMenu";
+    }
+
+    get title(){
+        return "Stats";
+    }
 }
 
 export class BuildingMenu extends BaseMenu{

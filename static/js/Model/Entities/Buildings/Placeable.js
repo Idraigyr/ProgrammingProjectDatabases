@@ -3,6 +3,7 @@ import * as THREE from "three";
 import {convertWorldToGridPosition} from "../../../helpers.js";
 import {gridCellSize} from "../../../configs/ViewConfigs.js";
 import {popUp} from "../../../external/LevelUp.js";
+import {API_URL, buildingUpgradeURI} from "../../../configs/EndpointConfigs.js";
 
 /**
  * Base class for the placeable model
@@ -11,6 +12,7 @@ export class Placeable extends Entity{
     #stats;
     #statMultipliers;
     constructor(params) {
+        params.mass = 0;
         super(params);
         this.id = params?.id ?? null;
         this.level = params?.level ?? 0;
@@ -24,10 +26,22 @@ export class Placeable extends Entity{
         this.#stats = new Map();
         //TODO: add stats
         this.#statMultipliers = new Map();
+        this.inputCrystals = 0; // input for fusion
         //TODO: set stat multipliers (defaults to 1)
         this.ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
+        this.changeLevel(0); // Set correct level stats
+        // Force some things if they were passed in
+        if(params.gemSlots !== undefined){
+            this.gemSlots = params.gemSlots;
+        }
+        if(params.upgradeTime !== undefined){
+            this.upgradeTime = params.upgradeTime;
+        }
+        if(params.upgradeCost !== undefined){
+            this.upgradeCost = params.upgradeCost;
+        }
     }
 
     /**
@@ -105,9 +119,7 @@ export class Placeable extends Entity{
     addGem(gem){
         if(this.gems.length === this.gemSlots) throw new Error("Building already has the maximum amount of gems");
         this.addStatMultipliers(gem.getAttributes());
-        console.log("adding gem: ", this.gems);
         this.gems.push(gem.id);
-        console.log(this.gems);
     }
 
     /**
@@ -117,12 +129,30 @@ export class Placeable extends Entity{
     removeGem(gem){
         if(!this.gems.includes(gem.id)) throw new Error("Building does not have the gem");
         this.removeStatMultipliers(gem.getAttributes());
-        console.log("removing gem: ", this.gems);
         this.gems = this.gems.filter(gemId => {
-            console.log(`${gemId} !== ${gem.id}: ${gemId !== gem.id}`);
             return gemId !== gem.id;
         });
-        console.log(this.gems);
+    }
+
+    /**
+     * add 10 crystals to the input
+     */
+    addInputCrystals(){
+        this.inputCrystals += 10;
+    }
+
+    /**
+     * removes 10 from input crystals
+     */
+    removeInputCrystals(){
+        this.inputCrystals -= 10;
+    }
+
+    /**
+     * reset input crystals
+     */
+    resetInputCrystals(){
+        this.inputCrystals = 0;
     }
 
     /**
@@ -153,7 +183,6 @@ export class Placeable extends Entity{
             // gems: []
 
         };
-        console.log(this.rotation/90);
         for(const gem of this.gems){
             //obj.gems.push(gem.formatPOSTData(playerInfo));
         }
@@ -197,34 +226,36 @@ export class Placeable extends Entity{
         let old = this.level;
         if(amount < 0 && Math.abs(amount) > this.level) return false;
         this.level = amount > 0 ? this.level + amount : Math.max(0, this.level + amount);
-        if (this.level < 0 || this.level > 4){
+        if (this.level < 0 || this.level > 3){
             this.level = old;
             return false;
         }
-        this.dispatchEvent(this.createUpdateLevelEvent());
-        this.xpThreshold = this.increaseXpThreshold();
         if(this.level === 0){
-            this.levelUpTime = 0;
+            this.upgradeTime = this.timeToBuild;
+            this.upgradeCost = 0;
+            this.gemSlots = 0;
+        } else if(this.level === 1){
+            this.upgradeTime = 10;
+            this.upgradeCost = 500;
+            this.gemSlots = 0;
+        }else if(this.level === 2){
+            this.upgradeTime = 300;
+            this.upgradeCost = 3000;
             this.gemSlots = 1;
-        }else if(this.level === 1){
-            this.levelUpTime = 30;
+        }
+        else if(this.level === 3){
+            this.upgradeTime = 9000;
+            this.upgradeCost = 10000;
             this.gemSlots = 2;
-        }
-        else if(this.level === 2){
-            this.levelUpTime = 600;
-            this.gemSlots = 4;
-        } else if(this.level === 3){
-            this.levelUpTime = 1800;
-            this.gemSlots = 6;
         } else if(this.level === 4){
-            this.levelUpTime = 3600;
-            this.gemSlots = 8;
+            this.upgradeTime = Infinity;
+            this.upgradeCost = Infinity;
+            this.gemSlots = 3;
         }
-        popUp(this.level, this.maxMana, this.maxHealth);
-        this.updatePlayerInfoBackend();
+        // this.dispatchEvent(this.createUpdateLevelEvent());
+        // this.xpThreshold = this.increaseXpThreshold();
         return true;
     }
-
     /**
      * Create an event for updating the rotation
      * @param {number} degrees the rotation to update to
@@ -238,5 +269,21 @@ export class Placeable extends Entity{
         let quaternion = new THREE.Quaternion();
         quaternion.setFromEuler(new THREE.Euler(0, this.rotation * Math.PI / 180, 0));
         this.dispatchEvent(new CustomEvent("updateRotation", {detail: {rotation: quaternion}}));
+    }
+
+    /**
+     * Starts upgrade of the building
+     */
+    startUpgrade(){
+        this.ready = false;
+        this.dispatchEvent(new CustomEvent("startUpgrade", {detail: {time: this.upgradeTime, position: this.position}}));
+        setTimeout(() => {
+            this.ready = true;
+            this.levelUp();
+            this.dispatchEvent(new CustomEvent("finishUpgrade"));
+        }, this.upgradeTime*1000);
+    }
+    levelUp(){
+        this.changeLevel(1);
     }
 }

@@ -15,6 +15,8 @@ class SpellEntity extends Entity{
         this.canDamage = params?.canDamage ?? true;
         this.hitSomething = false;
         this.timer = 0;
+        this.targettable = params?.targettable ?? false;
+        this.canMove = false;
     }
 
     /**
@@ -52,6 +54,9 @@ class SpellEntity extends Entity{
             this.hitSomething = true;
             character.hit = true;
         }
+    }
+    takeDamage(damage){
+        //skip
     }
 }
 
@@ -163,11 +168,11 @@ export class Projectile extends SpellEntity{
         super.onCharacterCollision(deltaTime, character);
 
         if(this.hitSomething) {
-            //TODO: is there a better way to do this?
-            if (!(character  instanceof ProxyEntity)){
-                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, 1, 20, deltaTime);
+            if (character.canMove){
+                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, this.mass, character.mass, deltaTime);
             }
             this.timer += this.duration;
+            console.log("Projectile hit something, deleting")
             this.dispatchEvent(this.createDeleteEvent());
         }
     }
@@ -179,6 +184,9 @@ export class Projectile extends SpellEntity{
 export class Immobile extends SpellEntity{
     constructor(params) {
         super(params);
+        this.timeSinceLastEffect = 2; //time since last effect was applied, I start at 2 to apply the first effect immediately, we can change it to 0 if we want to wait before applying the first effect
+        this.effectInterval = 1; //time between damage ticks, adjust when balancing the game
+
     }
     /**
      * Function to handle collision with world
@@ -191,11 +199,22 @@ export class Immobile extends SpellEntity{
      * Function to handle collision with characters
      * @param deltaTime - time since last update
      * @param character - character to check collision with
-     * @param characterBBox - bounding box of character
-     * @param spellBBox - bounding box of spell
      */
-    onCharacterCollision(deltaTime, character, characterBBox, spellBBox){
-        super.onCharacterCollision(deltaTime, character);
+    onCharacterCollision(deltaTime, character){
+        this.timeSinceLastEffect += deltaTime;
+        if(this.effectInterval < this.timeSinceLastEffect) {
+            if (this.team !== character.team) {
+                if (this.canDamage) {
+                    this.spellType.applyEffects(character);
+                } else {
+                    this.spellType.applyHarmlessEffects(character);
+                }
+                this.hitSomething = true;
+                character.hit = true;
+            }
+            console.log("Immobile hit something, applying effects")
+            this.timeSinceLastEffect = 0;
+        }
     }
 }
 
@@ -220,10 +239,27 @@ export class FollowPlayer extends SpellEntity{
         super(params);
         this.target = params.target;
         this.offset = params?.offset ?? new THREE.Vector3(0,0,0);
+        this.targettable = true;
+        this.shields = 3;
     }
     update(deltaTime){
         super.update(deltaTime);
         this._position.copy(this.target.position);
         this.dispatchEvent(this._createUpdatePositionEvent());
+    }
+    takeDamage(damage) {
+        this.shields -= 1;
+        console.log("Shield hit, " + this.shields + " left");
+        if(this.shields > 0){
+            this.dispatchEvent(this.createShieldLostEvent());
+        }
+        else{
+            this.dispose();
+        }
+
+    }
+
+    createShieldLostEvent(){
+        return new CustomEvent("shieldLost");
     }
 }

@@ -114,7 +114,10 @@ export class CharacterController extends Subject{
             this._character.velocity.y = 0;
         }
 
-        if ( this._character.position.y < - 50 ) {
+        if ( this._character.position.y < - 50 || this._character.position.y > 2000) {
+            //TODO: respawn function for player which can be reused for death by enemies, add funny message
+            //You fell of the island
+            //you were catapulted to the stratosphere
             //respawn
             this._character.velocity.set(0,0,0);
             this.lastMovementVelocity.set(0,0,0);
@@ -130,7 +133,7 @@ export class CharacterController extends Subject{
      * @returns {CustomEvent<{}>}
      */
     createEatingEvent(){
-        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 50}}});
+        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 25}}});
     }
 
     /**
@@ -139,14 +142,10 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-       if (!(this._character.fsm.currentState instanceof EatingState) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
+       if ((this._character.eatingCooldown > 1.25 ) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
             this.dispatchEvent(this.createEatingEvent());
-            this.#inputManager.keys.eating = true;
+            this._character.eatingCooldown = 0;
         }
-       else
-         {
-              this.#inputManager.keys.eating = false;
-         }
     }
 
 
@@ -160,8 +159,9 @@ export class CharacterController extends Subject{
             return;
         }
 
-        this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
+
+        this._character.eatingCooldown += deltaTime;
 
 
         if (this._character.fsm.currentState.movementPossible) {

@@ -6,10 +6,10 @@ import {CharacterController} from "./Controller/CharacterController.js";
 import {Factory} from "./Controller/Factory.js";
 import {SpellFactory} from "./Controller/SpellFactory.js";
 import {HUD} from "./Controller/HUD.js"
-import "./external/socketio.js"
+import "./external/ChatNamespace.js"
 import "./external/chatBox.js"
 import "./external/LevelUp.js"
-import "./external/friendsMenu.js"
+import {FriendsMenu} from "./external/friendsMenu.js"
 import {OrbitControls} from "three-orbitControls";
 import {
     placeableURI,
@@ -18,12 +18,13 @@ import {
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey} from "./configs/Keybinds.js";
-import {gridCellSize} from "./configs/ViewConfigs.js";
+import {shadowCasting, gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
 import {buildTypes, gemTypes} from "./configs/Enums.js";
-import {ChatNamespace} from "./external/socketio.js";
+import {ChatNamespace} from "./external/ChatNamespace.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
+import {spellTypes} from "./Model/Spell.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -46,13 +47,18 @@ class App {
      * @param {object} params
      */
     constructor(params) {
+        this.abort = false;
+
         this.simulatePhysics = false;
         this.clock = new THREE.Clock();
 
         this.scene = new THREE.Scene();
-        const texture = new THREE.TextureLoader().load( "../static/assets/images/background-landing.jpg" );
-        this.scene.background = texture; // add sky
-        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true}); // improve quality of the picture at the cost of performance
+        // this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        // const texture = new THREE.TextureLoader().load( "../static/assets/images/background-landing.jpg" );
+        // this.scene.background = texture; // add sky
+        this.scene.background = new THREE.CubeTextureLoader().setPath( './static/assets/images/skybox/' ).load( [
+            'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png']);
+        this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
 
         //OrbitControls -- DEBUG STATEMENTS --
         // orbitControls = new OrbitControls( orbitCam, this.renderer.domElement );
@@ -68,6 +74,12 @@ class App {
 
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
+
+        if(shadowCasting){
+            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            this.renderer.shadowMap.enabled = true;
+        }
+
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
 
@@ -108,10 +120,11 @@ class App {
         }}])});
 
         this.scene.add(this.viewManager.spellPreview.charModel);
-        this.scene.add(this.viewManager.spellPreview.boxHelper);
+        if(this.viewManager.spellPreview.boxHelper) this.scene.add(this.viewManager.spellPreview.boxHelper);
 
         this.collisionDetector = new Controller.CollisionDetector({scene: this.scene, viewManager: this.viewManager});
         this.raycastController = new Controller.RaycastController({viewManager: this.viewManager, collisionDetector: this.collisionDetector});
+        this.collisionDetector.setRaycastController(this.raycastController);
         this.inputManager = new Controller.InputManager({canvas: canvas});
         this.cameraManager = new Controller.CameraManager({
             camera: new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 ),
@@ -120,33 +133,48 @@ class App {
             target: null,
             raycaster: this.raycastController,
             //visualise axes -- DEBUG STATEMENTS --
-            // axisHelper: new Cursor({})
+            axisHelper: new Cursor({})
             //visualise axes -- DEBUG STATEMENTS --
         });
         this.cameraManager.camera.position.set(0,0,0);
         this.cameraManager.camera.lookAt(0,0,0);
 
+        this.viewManager.setCamera(this.cameraManager.camera);
+
         //visualise axes -- DEBUG STATEMENTS --
-        // this.scene.add(this.cameraManager.axisHelper.charModel);
+        this.scene.add(this.cameraManager.axisHelper.charModel);
         //visualise axes -- DEBUG STATEMENTS --
+        this.friendsMenu = new FriendsMenu();
 
         this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
-
+        //TODO: check why you need to put friendsMenu into MultiplayerController
+        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu});
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager, camera: this.cameraManager.camera});
         this.minionController = new Controller.MinionController({collisionDetector: this.collisionDetector});
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
+        this.settings = new Settings({
+            inputManager: this.inputManager,
+            playerInfo: this.playerInfo,
+            callbacks: {
+                leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)
+            }
+        });
+
+        /*TODO: look and see
         this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
         this.multiplayerController.settings = this.settings;
+        */
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
                 block: this.inputManager.exitPointerLock.bind(this.inputManager),
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
             },
-            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController)
+            matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController),
+            closedMultiplayerMenuCallback: this.multiplayerController.unloadMatch.bind(this.multiplayerController)
         });
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
         this.menuManager.addCallbacks({
@@ -162,6 +190,11 @@ class App {
         // Setup chat SocketIO namespace
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
+
+        // setup abort signal for when the player is already connected
+        this.forwardingNameSpace.addEventListener("abort", () => {
+            this.abort = true;
+        });
 
         this.multiplayerController.addEventListener("toggleMatchMaking", this.menuManager.toggleMatchMaking.bind(this.menuManager));
 
@@ -179,10 +212,21 @@ class App {
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
 
-        this.menuManager.addEventListener("startFusion", (event) => {
-            const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
+        this.menuManager.addEventListener("startFusion", async (event) => {
+            const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            const fusionLevel = fusionTable.level;
+            const stats = fusionTable.getStats();
+            const inputCrystals = fusionTable.inputCrystals;
+            fusionTable.resetInputCrystals();
+            let speed = stats.get("speed");
+            let fortune = stats.get("fortune");
+            console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
+            // Send post request to create new task TODO: connect this to the new Thomas' code
+            const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: inputCrystals});
             this.timerManager.createTimer(fusionTime, [() => {
-                const gem = this.itemManager.createGem(fusionLevel);
+                const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune)); //TODO: make this parameter persistent? & don't just put a magic formula here
+                // Delete the old task
+                this.worldManager.deleteTask(response.id);
                 // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);
@@ -197,11 +241,33 @@ class App {
             this.itemManager.removeGem(event);
             this.menuManager.updateMenu({name: buildTypes.getMenuNameFromCtorName(event.detail.building.constructor.name), stats: event.detail.building.getStats()});
         });
-        this.menuManager.addEventListener("lvlUp", (event) => {
+        this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
             this.playerInfo.changeCrystals(-building.upgradeCost);
-            // building.levelUp(); TODO: implement levelUp method
+            await this.playerInfo.createLevelUpTask(building);
+            building.startUpgrade();
+            this.menuManager.exitMenu();
+        });
+        this.menuManager.addEventListener("delete", (event) =>{
+            const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            this.worldManager.deleteBuilding(building);
+            this.menuManager.exitMenu();
+        });
+        this.menuManager.addEventListener("switchSpells", (event) => {
+            const spells = []
+            for(let i = 0; i < 5; i++){
+                let spell = null;
+                if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                this.worldManager.world.player.changeEquippedSpell(i, spell);
+                if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
+            }
+            for(const spell of spellTypes.getNamesList()){
+                if(!spells.find(s => s.id === spellTypes.getId(spell))){
+                    spells.push({id: spellTypes.getId(spell), slot: null});
+                }
+            }
+            this.playerInfo.updateSpells({detail: {spells: spells}});
         });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
@@ -297,9 +363,9 @@ class App {
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
-            this.togglePhysicsUpdates(false);
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
+            console.log(building)
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
@@ -317,13 +383,12 @@ class App {
             }
 
             //TODO: move if statements into their own method of the placeable class' subclasses
-            if(building && building.gemSlots > 0){
+            if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
                 params.stats = building.getStats();
                 params.level = building.level;
                 // params.maxLevel = building.maxLevel; //TODO: implement maxLevel?
                 params.slots = building.gemSlots;
-                console.log("rendering slots: ", params.slots);
             }
 
             if(building?.upgradable){
@@ -350,11 +415,11 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
+            if(params.name === undefined) params.name = "PropMenu";
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
             this.worldManager.currentRotation = event.detail.rotation;
-            this.togglePhysicsUpdates(true);
         });
         this.spellCaster.addEventListener("visibleSpellPreview", this.viewManager.spellPreview.toggleVisibility.bind(this.viewManager.spellPreview));
         this.spellCaster.addEventListener("RenderSpellPreview", this.viewManager.renderSpellPreview.bind(this.viewManager));
@@ -367,9 +432,9 @@ class App {
             handleMatchFound: this.multiplayerController.loadMatch.bind(this.multiplayerController),
             handleMatchStart: this.multiplayerController.startMatch.bind(this.multiplayerController),
             handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
-            handleMatchAbort: this.multiplayerController.abortMatch.bind(this.multiplayerController),
             processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
             updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
+            processIslandVisitEvent: this.multiplayerController.processIslandVisitEvent.bind(this.multiplayerController)
         });
 
         //visualise camera line -- DEBUG STATEMENTS --
@@ -380,10 +445,6 @@ class App {
         //visualise camera line -- DEBUG STATEMENTS --
     }
 
-    createRandomGem(){
-
-    }
-
     /**
      * Updates the camera aspect ratio and the renderer size when the window is resized
      */
@@ -391,17 +452,17 @@ class App {
         this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
         this.cameraManager.camera.updateProjectionMatrix();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
-        // Scale the background image
-        if(!this.scene.background) return;
-        const targetAspect = window.innerWidth / window.innerHeight;
-        const imageAspect = 1920 / 1280;
-        const factor = imageAspect / targetAspect;
-        // When factor larger than 1, that means texture 'wilder' than target。
-        // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
-        this.scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
-        this.scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
-        this.scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
-        this.scene.background.repeat.y = factor > 1 ? 1 : factor;
+        // Scale the background image (use if background = static image)
+        // if(!this.scene.background) return;
+        // const targetAspect = window.innerWidth / window.innerHeight;
+        // const imageAspect = 1920 / 1280;
+        // const factor = imageAspect / targetAspect;
+        // // When factor larger than 1, that means texture 'wilder' than target。
+        // // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
+        // this.scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
+        // this.scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
+        // this.scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
+        // this.scene.background.repeat.y = factor > 1 ? 1 : factor;
     }
 
     /**
@@ -429,12 +490,14 @@ class App {
      */
     togglePhysicsUpdates(bool = null){
         this.simulatePhysics = bool ?? !this.simulatePhysics;
-        if(this.simulatePhysics) this.clock.getDelta();
+        if(this.simulatePhysics) {
+            this.clock.getDelta();
+        }
     }
 
     /**
      * Loads the assets, creates the worldManager, the playerController and sets the cameraManager target to the player
-     * @returns {Promise<void>} - a promise that resolves when the assets are loaded
+     * @returns {Promise<boolean>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
         console.log( await this.playerInfo.getCurrentTime());
@@ -442,13 +505,27 @@ class App {
         //TODO: try to remove awaits? what can we complete in parallel?
         progressBar.labels[0].innerText = "retrieving user info...";
         await this.playerInfo.retrieveInfo();
+
+        if(this.abort) return false;
+
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
         this.settings.loadCursors();
         await this.assetManager.loadViews();
+        this.assetManager.createTimerViews(minCharCount, "SurabanglusFont", this.scene);
+
+        if(this.abort) return false;
+
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
+
+        if(this.abort) return false;
+
         await this.itemManager.retrieveGemAttributes();
+        await this.itemManager.retrieveSpells();
+
+        if(this.abort) return false;
+
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
@@ -456,8 +533,14 @@ class App {
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
+        /* TODO: look and see
         this.settings.worldManager = this.worldManager;
+        */
         await this.worldManager.importWorld(this.playerInfo.islandID);
+        this.worldManager.createPlayer();
+
+        if(this.abort) return false;
+
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
         this.playerController = new CharacterController({
@@ -476,6 +559,18 @@ class App {
         this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
+        this.worldManager.world.player.addEventListener("changeSpell", this.hud.setSpellIcon.bind(this.hud));
+        this.worldManager.setPlayerSpells();
+        this.menuManager.createSpellItems(this.playerInfo.spells.map(spell => {
+            let unlocked = true;
+            if(spell.spell_id === 3 || spell.spell_id === 6) unlocked = false;
+            return {
+                name: spellTypes.getName(spell.spell_id),
+                slot: spell.slot,
+                src: spellTypes.getIcon(spellTypes.getName(spell.spell_id)),
+                unlocked: unlocked
+            }
+        }));
         this.worldManager.world.player.addEventListener("updateMana", this.hud.updateManaBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
         this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
@@ -535,28 +630,55 @@ class App {
             spellFactory: this.spellFactory,
             factory: this.factory,
             itemManager: this.itemManager,
+            viewManager: this.viewManager,
         });
 
-        progressBar.labels[0].innerText = "Login in...";
+        if(this.abort) return false;
+
+        progressBar.labels[0].innerText = "Logging in...";
         await this.playerInfo.login();
         progressBar.labels[0].innerText = "Generating collision mesh...";
         progressBar.value = 95;
         this.collisionDetector.generateColliderOnWorker();
 
+        await this.friendsMenu.populateRequests();
+
+        if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();
+        return true;
     }
 
     initScene(){
         const group = new THREE.Group();
         const light = new THREE.AmbientLight( 0xFFFFFF, 2);
         light.position.set(0,3, 10);
-        light.castShadow = true;
+
         group.add(light);
 
         const dirLight = new THREE.DirectionalLight( 0xFFFFFF, 10);
-        dirLight.position.set(0,100, 50);
+        dirLight.position.set(-100,50, 100);
         dirLight.castShadow = true;
+
+        if(shadowCasting){
+            //2048, 4096, 8192, 16384
+            //Set up shadow properties for the light
+            dirLight.shadow.mapSize.width = 8192;
+            dirLight.shadow.mapSize.height = 8192;
+            dirLight.shadow.camera.top = 100;
+            dirLight.shadow.camera.bottom = -100;
+            dirLight.shadow.camera.left = -100;
+            dirLight.shadow.camera.right = 300;
+            dirLight.shadow.camera.near = 0.5;
+            dirLight.shadow.camera.far = 500;
+            dirLight.shadow.bias = -0.0005;
+            dirLight.shadow.camera.position.set(-100,50, 100);
+            dirLight.shadow.camera.lookAt(0,0,0);
+
+            // const helper = new THREE.CameraHelper( dirLight.shadow.camera );
+            // this.scene.add( helper );
+        }
+
         group.add(dirLight);
         this.scene.add(group);
     }
@@ -566,15 +688,11 @@ class App {
      */
     start(){
         if ( WebGL.isWebGLAvailable()) {
-            //TODO: remove this is test //
-            // this.worldManager.addSpawningIsland();
-            // this.minionController.worldMap = this.worldManager.world.islands;
-            // this.worldManager.world.spawners["minions"][0].addEventListener("spawn", (event) => {
-            //    this.minionController.addMinion(this.factory.createMinion(event.detail));
-            // });
-            //TODO: remove this is test //
-
             this.initScene();
+
+            //TODO: testing purposes - remove when done
+            // this.worldManager.addEnemyTestIsland();
+            //TODO: testing purposes - remove when done
 
 
             document.querySelector('.loading-animation').style.display = 'none';
@@ -610,13 +728,12 @@ class App {
         this.timerManager.update(this.deltaTime);
         this.cameraManager.update(this.deltaTime);
         //...
+
         this.viewManager.updateAnimatedViews(this.deltaTime);
 
-        //TODO: should only be done in multiplayer @Flynn
-        this.viewManager.updateProxys(this.deltaTime);
-
-
         this.renderer.render( this.scene, this.cameraManager.camera );
+
+        this.assetManager.resetCharCounts();
         //OrbitControls -- DEBUG STATEMENTS --
         // this.renderer.render( this.scene, orbitCam );
         //OrbitControls -- DEBUG STATEMENTS --
@@ -625,5 +742,9 @@ class App {
 }
 
 const app = new App({});
-await app.loadAssets();
-app.start();
+if(await app.loadAssets()){
+    app.start();
+} else {
+    const progressBar = document.getElementById('progress-bar');
+    progressBar.labels[0].innerText = "already logged in, Stopped loading";
+}
