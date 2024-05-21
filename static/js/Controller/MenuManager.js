@@ -19,7 +19,7 @@ import {
     StakesMenu,
     StatsMenu,
     TowerMenu,
-    BuildingMenu
+    BuildingMenu, PropMenu
 } from "../View/menus/IMenu.js";
 import {
     BuildingItem,
@@ -121,6 +121,7 @@ export class MenuManager extends Subject{
     #addMenuCallbacks(menu){
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
+            menu.element.querySelector(".delete-button").addEventListener("click", this.dispatchDeleteEvent.bind(this));
         }
         if(menu instanceof BuildingMenu){
             menu.element.querySelector(".lvl-up-button").addEventListener("click", this.dispatchLvlUpEvent.bind(this));
@@ -328,6 +329,13 @@ export class MenuManager extends Subject{
      */
     dispatchLvlUpEvent(){
         this.dispatchEvent(new CustomEvent("lvlUp"));
+    }
+
+    /**
+     * dispatches a delete event
+     */
+    dispatchDeleteEvent(){
+        this.dispatchEvent(new CustomEvent("delete"));
     }
 
     /**
@@ -779,7 +787,7 @@ export class MenuManager extends Subject{
      */
     createMenus(){
         //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
-        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu]);
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu, PropMenu]);
         this.collectParams.meter = this.menus["CollectMenu"].element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();

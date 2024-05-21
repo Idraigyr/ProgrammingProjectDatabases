@@ -705,6 +705,33 @@ export class WorldManager{
     }
 
     /**
+     * Send a DELETE request to the server
+     * @param building - the building to delete
+     */
+    deleteBuilding(building){
+        try {
+            $.ajax({
+                url: `${API_URL}/${placeableURI}?placeable_id=${building.id}`,
+                type: "DELETE",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("DELETE success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("DELETE fail");
+                console.error(textStatus, errorThrown);
+            });
+        } catch (err){
+            console.error(err);
+        }
+        // Delete building from world
+        this.world.deleteBuilding(building);
+        this.collisionDetector.generateColliderOnWorker();
+    }
+
+    /**
      * Send a PUT request to the server
      * @param uri - the URI to send the PUT request to
      * @param entity - the Entity that we want to update in the db

@@ -473,6 +473,8 @@ export class BaseMenu extends IMenu{
         const headerDiv = document.createElement("div");
         const titleDiv = document.createElement("div");
         const title = document.createElement("h1");
+        const deleteButton = document.createElement("button");
+        const deleteButtonDiv = document.createElement("div");
         const closeButtonDiv = document.createElement("div");
         const closeButton = document.createElement("button");
         const subMenuDiv = document.createElement("div");
@@ -484,8 +486,14 @@ export class BaseMenu extends IMenu{
         subMenuDiv.classList.add("sub-menu-container");
         closeButton.classList.add("close-button");
         closeButtonDiv.appendChild(closeButton);
+        deleteButton.classList.add("delete-button");
+        // Add title to the button
+        deleteButton.title = "Vanish this";
+        deleteButtonDiv.appendChild(deleteButton);
+        deleteButtonDiv.classList.add("delete-button-container");
         titleDiv.appendChild(title);
         headerDiv.appendChild(titleDiv);
+        headerDiv.appendChild(deleteButtonDiv);
         headerDiv.appendChild(closeButtonDiv);
         element.appendChild(headerDiv);
         element.appendChild(subMenuDiv);
@@ -505,6 +513,22 @@ export class BaseMenu extends IMenu{
         return "Base";
     }
 
+}
+
+export class PropMenu extends BaseMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("prop-menu") : params.classes = ["prop-menu"];
+        super(params);
+    }
+
+    get name(){
+        return "PropMenu";
+    }
+
+    get title(){
+        return "Prop";
+
+    }
 }
 
 export class BuildingMenu extends BaseMenu{

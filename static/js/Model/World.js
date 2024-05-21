@@ -199,4 +199,13 @@ export class World{
             island.toggleGrass(grassOn);
         });
     }
+
+    /**
+     * Delete a building from the world
+     * @param building - the building to delete
+     */
+    deleteBuilding(building){
+        const island = this.getIslandByPosition(building.position);
+        island.deleteBuilding(building);
+    }
 }

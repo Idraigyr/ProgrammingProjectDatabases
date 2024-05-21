@@ -165,4 +165,14 @@ export class Island extends Foundation{
         // Dispatch event to toggle grass
         this.dispatchEvent(new CustomEvent("toggleGrass", {detail: {grassOn: grassOn}}));
     }
+
+    /**
+     * Delete a building from the island
+     * @param building - building to delete
+     */
+    deleteBuilding(building){
+        this.freeCell(building.position);
+        this.buildings = this.buildings.filter(b => b !== building);
+        building.dispose();
+    }
 }

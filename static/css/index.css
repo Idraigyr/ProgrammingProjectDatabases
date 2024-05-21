@@ -59,11 +59,29 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.close-button:hover {
-  transform: scale(1.10);
+.delete-button {
+    position: relative;
+    width: var(--close-button-size);
+    height: var(--close-button-size);
+    background-image: url('/static/assets/images/menu/delete.png');
+    background-color: transparent;
+    background-size: cover;
+    z-index: 12;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.close-button:active {
+.close-button:hover, .delete-button:hover {
+    transform: scale(1.10);
+}
+
+/* Hide delete button if it in the Altar Menu */
+#AltarMenu .delete-button-container {
+    display: none;
+}
+
+.close-button:active, .delete-button:active {
   transform: translateY(5px);
 }
 

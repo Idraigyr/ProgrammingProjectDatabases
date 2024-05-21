@@ -209,6 +209,11 @@ class App {
             building.startUpgrade();
             this.menuManager.exitMenu();
         });
+        this.menuManager.addEventListener("delete", (event) =>{
+            const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            this.worldManager.deleteBuilding(building);
+            this.menuManager.exitMenu();
+        });
 
         this.spellCaster.addEventListener("createSpellEntity", this.spellFactory.createSpell.bind(this.spellFactory));
         this.spellCaster.addEventListener("updateBuildSpell", this.BuildManager.updateBuildSpell.bind(this.BuildManager));
@@ -356,6 +361,7 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
+            if(params.name === undefined) params.name = "PropMenu";
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
