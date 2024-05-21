@@ -29,4 +29,6 @@ export const playerStatsURI = 'api/player_stats';
 
 export const taskURI = 'api/task';
 
+export const buildingUpgradeURI = 'api/building_upgrade_task';
+
 export const postRetries = 3;

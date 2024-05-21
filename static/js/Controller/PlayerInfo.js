@@ -1,6 +1,15 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, islandURI} from "../configs/EndpointConfigs.js";
+import {
+    API_URL,
+    playerProfileURI,
+    playerURI,
+    timeURI,
+    islandURI,
+    logoutURI,
+    islandURI,
+    buildingUpgradeURI
+} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
@@ -241,7 +250,7 @@ export class PlayerInfo extends Subject{
      * @returns {boolean} - True if the crystals were changed, false otherwise
      */
     changeCrystals(amount){
-        if(!amount) throw new Error("playerInfo.changeCrystals: amount is not defined");
+        if(!Number.isFinite(amount)) throw new Error("playerInfo.changeCrystals: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());
@@ -288,10 +297,49 @@ export class PlayerInfo extends Subject{
                 dataType: 'json',
                 error: (e) => {
                     console.error(e);
+                    console.error("MAna: ", this.mana);
                 }
             });
         } catch (err){
             console.error(err);
+        }
+    }
+    /**
+     * Creates level up task on the server
+     * @param building - Building to level up
+     */
+    async createLevelUpTask(building){ //TODO: WHY DO THIS HERE?
+        // Get time
+        let response = await this.getCurrentTime();
+        let serverTime = new Date(response);
+        serverTime.setSeconds(serverTime.getSeconds()+ building.upgradeTime);
+        let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+        let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+        // Convert local time to ISO string
+        let time = localTime.toISOString();
+        let formattedDate = time.slice(0, 19);
+        try{
+            await $.ajax({
+                url: `${API_URL}/${buildingUpgradeURI}`,
+                type: "POST",
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({
+                    island_id: this.islandID,
+                    to_level: building.level + 1,
+                    building_id: building.id,
+                    used_crystals: building.upgradeCost,
+                    endtime: formattedDate
+                }),
+                success: (data) => {
+                    console.log(data);
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+        } catch (e){
+            console.log(e);
         }
     }
     changeHealth(amount) {

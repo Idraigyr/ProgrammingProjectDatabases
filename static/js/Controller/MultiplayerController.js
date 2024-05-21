@@ -18,6 +18,9 @@ export class MultiplayerController extends Subject{
     viewManager;
     spellCaster;
     spellFactory;
+    /* TODO: look and see
+    settings;
+    */
     factory;
     minionController;
     forwardingNameSpace;
@@ -264,6 +267,10 @@ export class MultiplayerController extends Subject{
         this.startSendingStateUpdates(this.peerInfo.userID);
         //announce to the server that the player is ready to start the match
         this.forwardingNameSpace.sendPlayerReadyEvent(this.#matchId);
+        /* TODO: look and see
+        // Time for settings
+        this.settings.toggleGrass({target: {checked: this.settings.grassOn}});
+        */
     }
 
     /**

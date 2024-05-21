@@ -54,6 +54,8 @@ class App {
 
         this.scene = new THREE.Scene();
         // this.scene.background = new THREE.Color( 0x87CEEB ); // add sky
+        // const texture = new THREE.TextureLoader().load( "../static/assets/images/background-landing.jpg" );
+        // this.scene.background = texture; // add sky
         this.scene.background = new THREE.CubeTextureLoader().setPath( './static/assets/images/skybox/' ).load( [
             'px.png', 'nx.png', 'py.png', 'ny.png', 'pz.png', 'nz.png']);
         this.renderer = new THREE.WebGLRenderer({canvas: canvas, antialias: true});
@@ -152,6 +154,11 @@ class App {
         this.assetManager = new Controller.AssetManager();
         this.hud = new HUD(this.inputManager)
         this.settings = new Settings(this.inputManager, this.playerInfo, {leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)});
+
+        /*TODO: look and see
+        this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
+        this.multiplayerController.settings = this.settings;
+        */
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -197,17 +204,21 @@ class App {
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
 
-        this.menuManager.addEventListener("startFusion", (event) => {
-            const fusionLevel = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).level;
-            // get stats from fusion table
-            const stats = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).getStats();
-            const inputCrystals = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).inputCrystals;
-            this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos).resetInputCrystals();
+        this.menuManager.addEventListener("startFusion", async (event) => {
+            const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            const fusionLevel = fusionTable.level;
+            const stats = fusionTable.getStats();
+            const inputCrystals = fusionTable.inputCrystals;
+            fusionTable.resetInputCrystals();
             let speed = stats.get("speed");
             let fortune = stats.get("fortune");
             console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
-            this.timerManager.createTimer(fusionTime/speed, [() => {
-                const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune));
+            // Send post request to create new task TODO: connect this to the new Thomas' code
+            const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: inputCrystals});
+            this.timerManager.createTimer(fusionTime, [() => {
+                const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune)); //TODO: make this parameter persistent? & don't just put a magic formula here
+                // Delete the old task
+                this.worldManager.deleteTask(response.id);
                 // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);
@@ -222,11 +233,18 @@ class App {
             this.itemManager.removeGem(event);
             this.menuManager.updateMenu({name: buildTypes.getMenuNameFromCtorName(event.detail.building.constructor.name), stats: event.detail.building.getStats()});
         });
-        this.menuManager.addEventListener("lvlUp", (event) => {
+        this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
             this.playerInfo.changeCrystals(-building.upgradeCost);
-            // building.levelUp(); TODO: implement levelUp method
+            await this.playerInfo.createLevelUpTask(building);
+            building.startUpgrade();
+            this.menuManager.exitMenu();
+        });
+        this.menuManager.addEventListener("delete", (event) =>{
+            const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            this.worldManager.deleteBuilding(building);
+            this.menuManager.exitMenu();
         });
         this.menuManager.addEventListener("switchSpells", (event) => {
             const spells = []
@@ -254,7 +272,7 @@ class App {
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
             // If the selected cell is empty
-            if (buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject) { //move object
+            if ((buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject)) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
                 // Get selected building
@@ -264,13 +282,6 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
-                // // Get if the cell is occupied
-                // let buildOnCell = island.getCellIndex(pos);
-                // if (buildOnCell !== building.cellIndex){// TODO!!!!
-                //     let cell = island.checkCell(pos);
-                //     // Check if the cell is occupied
-                //     if(cell !== buildTypes.getNumber("empty")) return;
-                // }
                 island.freeCell(this.spellCaster.previousSelectedPosition); // Make the previous cell empty
                 // Occupy cell
                 building.cellIndex = island.occupyCell(pos, building.dbType);
@@ -278,7 +289,6 @@ class App {
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
                 this.spellCaster.previousRotation = null;
-                //TODO @Daria: shouldn't this: " this.spellCaster.previousSelectedPosition = null; " be here?
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -365,7 +375,7 @@ class App {
             }
 
             //TODO: move if statements into their own method of the placeable class' subclasses
-            if(building && building.gemSlots > 0){
+            if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
                 params.stats = building.getStats();
                 params.level = building.level;
@@ -397,7 +407,7 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
-
+            if(params.name === undefined) params.name = "PropMenu";
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;
@@ -434,6 +444,17 @@ class App {
         this.cameraManager.camera.aspect = window.innerWidth / window.innerHeight;
         this.cameraManager.camera.updateProjectionMatrix();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
+        // Scale the background image (use if background = static image)
+        // if(!this.scene.background) return;
+        // const targetAspect = window.innerWidth / window.innerHeight;
+        // const imageAspect = 1920 / 1280;
+        // const factor = imageAspect / targetAspect;
+        // // When factor larger than 1, that means texture 'wilder' than target。
+        // // we should scale texture height to target height and then 'map' the center  of texture to target， and vice versa.
+        // this.scene.background.offset.x = factor > 1 ? (1 - 1 / factor) / 2 : 0;
+        // this.scene.background.repeat.x = factor > 1 ? 1 / factor : 1;
+        // this.scene.background.offset.y = factor > 1 ? 0 : (1 - factor) / 2;
+        // this.scene.background.repeat.y = factor > 1 ? 1 : factor;
     }
 
     /**
@@ -504,6 +525,9 @@ class App {
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
+        /* TODO: look and see
+        this.settings.worldManager = this.worldManager;
+        */
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.createPlayer();
 
@@ -511,18 +535,12 @@ class App {
 
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
         progressBar.value = 90;
-        progressBar.labels[0].innerText = "generating collision mesh...";
-        this.collisionDetector.generateColliderOnWorker();
-
-        progressBar.value = 95;
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
             InputManager: this.inputManager,
             collisionDetector: this.collisionDetector
         });
         progressBar.labels[0].innerText = "last touches...";
-
-        progressBar.value = 100;
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded
@@ -530,13 +548,7 @@ class App {
         this.spellCaster.wizard = this.worldManager.world.player;
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
-
-
-        this.inputManager.addKeyDownEventListener("KeyP", () => {
-           this.worldManager.world.islands[0].rotation
-        });
-
-
+        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("changeSpell", this.hud.setSpellIcon.bind(this.hud));
@@ -563,13 +575,24 @@ class App {
         this.menuManager.addEventListener("remove", this.worldManager.removeCrystals.bind(this.worldManager));
 
         this.menuManager.addEventListener("build", (event) => {
-            this.menuManager.exitMenu();
             //TODO: make sure that id of BuildingItem (=MenuItem) corresponds to the ctor name of the building
             const ctorName = event.detail.id;
             // TODO: move things from menuManager, because otherwise you have to use the following code:
             // Get the price of the building
             let nameInDB = this.menuManager.ctorToDBName(ctorName);
             const price = this.menuManager.infoFromDatabase["buildings"]?.find((building) => building.name === nameInDB)?.cost;
+            // Check if you have enough mana
+            const mana = this.playerInfo.mana;
+            this.worldManager.world.player.cooldownSpell();
+            const mana2 = this.playerInfo.mana;
+            if (mana === mana2 || mana2 < 0) {
+                console.log("Not enough mana");
+                this.worldManager.world.player.mana = mana;
+                this.playerInfo.mana = mana;
+                this.hud.updateManaBar({detail: {current: this.playerInfo.mana, total: this.playerInfo.maxMana}});
+                console.log("mana: " + this.playerInfo.mana, "Hud: " + this.hud.manaBar.textContent);
+                return;
+            }
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
                 console.log("Not enough crystals");
@@ -580,6 +603,7 @@ class App {
                 if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){
                     this.playerInfo.changeCrystals(-price) ;
                 }
+                this.menuManager.exitMenu();
             }
 
         }); //build building with event.detail.id on selected Position;
@@ -601,12 +625,15 @@ class App {
             viewManager: this.viewManager,
         });
 
-        progressBar.labels[0].innerText = "Last touches...";
-
         if(this.abort) return false;
 
+        progressBar.labels[0].innerText = "Logging in...";
         await this.playerInfo.login();
+        progressBar.labels[0].innerText = "Generating collision mesh...";
+        progressBar.value = 95;
+        this.collisionDetector.generateColliderOnWorker();
 
+        if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();
         return true;
