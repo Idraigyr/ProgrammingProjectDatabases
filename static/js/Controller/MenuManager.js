@@ -772,10 +772,10 @@ export class MenuManager extends Subject{
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
             if(param.total === 0){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
-                this.items[param.building].element.style.opacity = 0.5;
+                this.items.get(param.building).element.style.opacity = 0.5;
             }else{
-                this.items[param.building].element.style.opacity = 1;
-                this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+                this.items.get(param.building).element.style.opacity = 1;
+                this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
             }
         }
     }
