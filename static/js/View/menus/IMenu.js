@@ -1,5 +1,5 @@
 import {assert} from "../../helpers.js";
-import {multiplayerStats} from "../../configs/ControllerConfigs.js";
+import {multiplayerStats} from "../../configs/Enums.js";
 
 export class IMenu {
     constructor(params) {
@@ -19,11 +19,17 @@ export class IMenu {
         return element;
     }
 
+    /**
+     * add a child to the menu at a certain position
+     * @param {"afterbegin" | "beforeend" } position
+     * @param child
+     */
     addChild(position, child){
         if(!this.allows.includes(child.name)) {
             console.error(`${child.name} is not allowed in ${this.name}`);
             return;
         }
+        if(position !== "afterbegin" && position !== "beforeend") throw new Error("Invalid position");
         this.element.insertAdjacentElement(position, child.element);
     }
 
@@ -347,6 +353,22 @@ export class HotbarMenu extends ListMenu{
         this.allows = ["Spell"];
     }
 
+    /**
+     * Get the ids of the spells in the hotbar
+     * @param {number} spellId
+     * @param {boolean} equip - if the spell is being equipped or unequipped
+     * @return {string[]}
+     */
+    getEquippedSpellIds(spellId, equip){
+        const arr = Array.from(this.element.querySelectorAll(".list-menu-ul > li")).map(spell => spell.id);
+        const index = arr.indexOf(spellId);
+        if(index !== -1){
+            arr.splice(arr.indexOf(spellId), 1);
+        }
+        if(equip) arr.push(spellId);
+        return arr;
+    }
+
     get name(){
         return "HotbarMenu";
     }
@@ -596,11 +618,13 @@ export class MultiplayerStatsMenu extends IMenu{
         buttonContainer.appendChild(lifetimeButton);
         buttonContainer.addEventListener("click", this.toggleStats.bind(this));
         statsDiv.appendChild(buttonContainer);
-        for(const property in multiplayerStats){
+        console.log(multiplayerStats.getKeys())
+        for(const key of multiplayerStats.getKeys()){
+            console.log(key)
             const statElement = document.createElement("li");
-            statElement.id = property;
+            statElement.id = key;
             statElement.classList.add("multiplayer-stats-menu-li");
-            statElement.innerText = `${property}: ${multiplayerStats[property]}`;
+            statElement.innerText = `${key}: 0`;
             list.appendChild(statElement);
         }
         element.appendChild(statsDiv);
@@ -642,7 +666,7 @@ export class MultiplayerStatsMenu extends IMenu{
         }
         for(const stat of stats){
                 const list = this.element.querySelector(".multiplayer-stats-menu-ul");
-                const statElement = list.querySelector(`#${stat.name}`);
+                const statElement = list.querySelector(`#${stat.key}`);
                 statElement.innerText = `${stat.name}: ${stat.value}`;
             }
     }

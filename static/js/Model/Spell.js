@@ -118,9 +118,9 @@ export class HitScanSpell extends Spell{
  * @class InstantSpell - class for instant spells
  */
 export class InstantSpell extends Spell{
-    constructor() {
-        super();
-        this.duration = 0;
+    constructor(params) {
+        params.duration = 0;
+        super(params);
     }
 
 }
@@ -195,35 +195,6 @@ class Build extends Effect{
         super(params);
         this.building = params.building;
     }
-}
-
-/**
- * Factory function to create a concrete spell instance
- * from an id that corresponds to the database id
- * @param id - The id of the spell
- * @returns {ConcreteSpell}
- * @author Joren
- */
-function concreteSpellFromId(id){
-    switch(id){
-        case 0:
-            return new BuildSpell();
-        case 1:
-            return new Fireball();
-        case 2:
-            return new IceWall();
-        case 3:
-            return new Zap();
-        case 4:
-            return new ThunderCloud();
-        case 5:
-            return new Shield();
-        case 6:
-            return new Heal();
-        default:
-            throw new Error("Invalid spell id");
-    }
-
 }
 
 /**
@@ -362,8 +333,8 @@ export class IceWall extends ConcreteSpell{
 export class Zap extends ConcreteSpell{
     constructor() {
         super({
-            spell: new InstantSpell(),
-            effects: [new InstantDamage()]
+            spell: new InstantSpell({}),
+            effects: [new InstantDamage({})]
         });
         this.name = "zap";
         this.worldHitScan = true;
@@ -419,21 +390,94 @@ export class Shield extends ConcreteSpell{
 class Heal extends ConcreteSpell{
     constructor() {
         super({
-            spell: new InstantSpell(),
-            effects: [new HealEffect()]
+            spell: new InstantSpell({}),
+            effects: [new HealEffect({})]
         });
     }
 }
 
-export const spellTypes = Object.freeze({
-    Fireball: Fireball,
-    IceWall: IceWall,
-    Zap: Zap,
-    ThunderCloud: ThunderCloud,
-    Shield: Shield,
-    Heal: Heal,
-    Build: BuildSpell
-});
+export const spellTypes = (() => {
+    const spellObject = {
+        Fireball: new Fireball({}),
+        IceWall: new IceWall({}),
+        Zap: new Zap({}),
+        ThunderCloud: new ThunderCloud({}),
+        Shield: new Shield({}),
+        Heal: new Heal({}),
+        BuildSpell: new BuildSpell({})
+    }
+
+    const ctors = {
+        Fireball: Fireball,
+        IceWall: IceWall,
+        Zap: Zap,
+        ThunderCloud: ThunderCloud,
+        Shield: Shield,
+        Heal: Heal,
+        BuildSpell: BuildSpell
+    }
+
+    const names = {
+        0: "BuildSpell",
+        1: "Fireball",
+        2: "IceWall",
+        3: "Zap",
+        4: "ThunderCloud",
+        5: "Shield",
+        6: "Heal"
+    }
+
+    const ids = {
+        BuildSpell: 0,
+        Fireball: 1,
+        IceWall: 2,
+        Zap: 3,
+        ThunderCloud: 4,
+        Shield: 5,
+        Heal: 6
+    }
+
+    const icons = {
+        Fireball: "./static/assets/images/spells/type2/Fireball.png",
+        IceWall: "./static/assets/images/spells/type2/IceWall.png",
+        Zap: "./static/assets/images/spells/type1/ThunderCloud.png",
+        ThunderCloud: "./static/assets/images/spells/type2/ThunderCloud.png",
+        Shield: "./static/assets/images/spells/type2/Shield.png",
+        Heal: "./static/assets/images/spells/type1/Heal.png",
+        BuildSpell: "./static/assets/images/spells/type2/BuildSpell.png"
+    }
+
+    return {
+        getCtor(name) {
+            return ctors[name];
+        },
+
+        getSpellObject: function (name) {
+            return spellObject[name];
+        },
+
+        getSpellObjectFromId: function (id) {
+            console.log(`returning spell object from id: ${id}`)
+            return spellObject[names[id]];
+        },
+
+        getName(id) {
+            return names[id];
+        },
+
+        getId(name) {
+            return ids[name];
+        },
+
+        getIcon: function (name) {
+            return icons[name];
+        },
+
+        getNamesList: function () {
+            return Object.keys(ids);
+        }
+    }
+})();
 //spell ideas:
 //summon minion (self-explanatory)
 //heal over time (self-explanatory)

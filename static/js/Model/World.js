@@ -40,6 +40,11 @@ export class World{
             }
             return true;
         });
+
+        this.spellFactory.models.forEach((model) => {
+            model.dispose();
+        });
+        this.spellFactory.models = [];
     }
 
     /**
@@ -69,6 +74,11 @@ export class World{
      */
     addIsland(island){
         this.islands.push(island);
+    }
+
+    removeIslands(){
+        this.islands.forEach((island) => island.dispose());
+        this.islands = [];
     }
 
     /**

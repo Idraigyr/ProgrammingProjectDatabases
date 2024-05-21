@@ -168,6 +168,8 @@ export class Gem extends Item{
 export class Spell extends Item{
     constructor(params) {
         super(params);
+        this.belongsIn = "SpellsMenu";
+        this.unlocked = params?.unlocked ?? false;
     }
     get type(){
         return "Spell";

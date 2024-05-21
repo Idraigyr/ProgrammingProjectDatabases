@@ -159,7 +159,6 @@ export class CharacterController extends Subject{
             return;
         }
 
-        this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
 
         this._character.eatingCooldown += deltaTime;

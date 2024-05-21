@@ -1,4 +1,5 @@
 import { Controller } from "./Controller.js";
+import {spellTypes} from "../Model/Spell.js";
 
 /**
  * Class for the HUD controller
@@ -130,18 +131,28 @@ export class HUD {
             let spellSlotIndex = i;
             let spellCooldown = cooldowns[i];
             const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex + 1}Cooldown`);
-            const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
-            const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
-            usedSpelIcon.classList.add('onCooldown');
+            const usedSpell = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
+            const usedSpellIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
+            usedSpellIcon.classList.add('onCooldown');
             if (spellCooldown <= 0) {
                 cooldownElement.textContent = ""; // Clear the cooldown display
-                usedSpel.parentElement.classList.remove('onCooldown');
-                usedSpelIcon.classList.remove('onCooldown');
+                usedSpell.parentElement.classList.remove('onCooldown');
+                usedSpellIcon.classList.remove('onCooldown');
             } else {
                 cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
-                usedSpel.parentElement.classList.add('onCooldown');
-                usedSpelIcon.classList.add('onCooldown');
+                usedSpell.parentElement.classList.add('onCooldown');
+                usedSpellIcon.classList.add('onCooldown');
             }
         }
+    }
+
+    /**
+     * sets a spell icon in the hotbar
+     * @param {{detail: {index: number, spell: ConcreteSpell | null}}} event
+     */
+    setSpellIcon(event) {
+        const spellIconElement = document.querySelector(`.HotBarIcons .Spell${event.detail.index+1}Icon .spell-icon-img`);
+        console.log(event.detail.spell, event.detail.spell?.constructor.name);
+        spellIconElement.src = spellTypes.getIcon(event.detail.spell?.constructor.name) ?? "";
     }
 }

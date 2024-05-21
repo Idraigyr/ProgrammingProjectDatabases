@@ -1,11 +1,11 @@
-import {API_URL, matchMakingURI} from "../configs/EndpointConfigs.js";
+import {API_URL, matchMakingURI, playerStatsURI, postRetries} from "../configs/EndpointConfigs.js";
 import {PlayerInfo} from "./PlayerInfo.js";
 import * as THREE from "three";
 import {Controller} from "./Controller.js";
 import {Fireball, spellTypes} from "../Model/Spell.js";
 import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
-import {multiplayerStats} from "../configs/ControllerConfigs.js";
+import {multiplayerStats} from "../configs/Enums.js";
 
 /**
  * MultiplayerController class
@@ -15,6 +15,7 @@ export class MultiplayerController extends Subject{
     menuManager;
     worldManager;
     itemManager;
+    viewManager;
     spellCaster;
     spellFactory;
     factory;
@@ -22,16 +23,22 @@ export class MultiplayerController extends Subject{
     forwardingNameSpace;
     peerController;
     updateInterval;
-    matchId = null;
+    #matchId = null;
     constructor(params) {
         super(params);
-        //for remembering the interval for sending state updates
+        this.canMatchmake = true;
         this.matchmaking = false;
         this.inMatch = false;
         this.result = null;
         this.stakedGems = [];
-        this.opponentInfo = new PlayerInfo();
+        this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
+
+        //Friend visit properties
+        this.pendingVisitRequest = null;
+        this.notificationContainer = document.getElementById("friends-notification-container");
+        this.friendsMenu = document.getElementById("Friends");
+        document.querySelector("#listFriend").addEventListener("click", this.#toggleVisitRequest.bind(this));
 
         this.updateEvents = new Map();
         this.updateEvents.set("updatedState", this.sendPlayerStateUpdate.bind(this));
@@ -46,10 +53,23 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
         this.updateEvents.set("playerDied", this.showDeathOverlay.bind(this));
 
+        this.countStats = false;
         this.stats = new Map();
-        for(const property in multiplayerStats){
-            this.stats.set(property, 0);
-        }
+        this.lifetimeStats = new Map();
+    }
+
+    /**
+     * sets the lifetime stats of the player (& initializes the current stats)
+     * call on game load! (after playerInfo is set)
+     */
+    #setLifetimeStats(){
+        this.#getLifetimeStats().then((data) => {
+            for(const property in data){
+                if(property === "player_id") continue;
+                this.lifetimeStats.set(property, data[property]);
+                this.stats.set(property, 0);
+            }
+        });
     }
 
     async sendMatchMakingRequest(matchmake = true){
@@ -76,11 +96,14 @@ export class MultiplayerController extends Subject{
     }
 
     /**
-     * add all the necessary controllers and managers to the MultiplayerController
-     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster, minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory, factory: Factory, itemManager: ItemManager}} params
+     * add all the necessary controllers and managers to the MultiplayerController + initialize the stats properties
+     * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster,
+     * minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory,
+     * factory: Factory, itemManager: ItemManager, viewManager: ViewManager}} params
      */
     setUpProperties(params){
         this.playerInfo = params.playerInfo;
+        this.#setLifetimeStats();
         this.menuManager = params.menuManager;
         this.worldManager = params.worldManager;
         this.spellCaster = params.spellCaster;
@@ -89,6 +112,7 @@ export class MultiplayerController extends Subject{
         this.spellFactory = params.spellFactory;
         this.factory = params.factory;
         this.itemManager = params.itemManager;
+        this.viewManager = params.viewManager;
     }
 
     /**
@@ -138,6 +162,7 @@ export class MultiplayerController extends Subject{
         //when opponent found, get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
         //start the match
         this.matchmaking = true;
+        this.countStats = true;
     }
 
     async endMatchMaking(){
@@ -145,6 +170,7 @@ export class MultiplayerController extends Subject{
         const response = await this.sendMatchMakingRequest(false);
         console.log(response);
         this.matchmaking = false;
+        this.countStats = false;
     }
 
     /**
@@ -174,11 +200,12 @@ export class MultiplayerController extends Subject{
      */
     async loadMatch(matchInfo){
         console.log("loading match...");
-        this.matchId = matchInfo['match_id'];
+        this.#matchId = matchInfo['match_id'];
         this.matchmaking = false;
         this.dispatchEvent(this.createMatchmakingEvent());
         this.togglePhysicsUpdates();
         this.toggleTimer(true);
+        this.viewManager.toggleHideBuildingPreviews();
         const progressBar = document.getElementById('progress-bar');
 
         progressBar.labels[0].innerText = "retrieving Opponent info...";
@@ -192,7 +219,7 @@ export class MultiplayerController extends Subject{
         document.querySelector('.loading-animation').style.display = 'block';
 
         //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
-        await this.opponentInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1']);
+        await this.peerInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1']);
         progressBar.value = 50;
 
         progressBar.labels[0].innerText = "importing Opponent's island...";
@@ -201,16 +228,16 @@ export class MultiplayerController extends Subject{
         // the other island is rotated 180 degrees around the y-axis and translated from center of main island
 
         //construct 2nd player object and island object and add to world
-        await this.worldManager.addImportedIslandToWorld(this.opponentInfo.islandID, this.playerInfo.userID < this.opponentInfo.userID);
+        await this.worldManager.addImportedIslandToWorld(this.peerInfo.islandID, this.playerInfo.userID < this.peerInfo.userID);
         progressBar.value = 75;
         // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
-        const opponent = this.worldManager.addOpponent({
-            position: this.opponentInfo.playerPosition,
-            health: this.opponentInfo.maxHealth,
-            maxHealth: this.opponentInfo.maxHealth,
+        const opponent = this.worldManager.addPeer({
+            position: this.peerInfo.playerPosition,
+            health: this.peerInfo.maxHealth,
+            maxHealth: this.peerInfo.maxHealth,
             team: 1
         });
-        opponent.setId({entity: {player_id: this.opponentInfo.userID}});
+        opponent.setId({entity: {player_id: this.peerInfo.userID}});
         opponent.addEventListener("characterDied", this.updateEvents.get("playerDeath"));
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
@@ -224,7 +251,7 @@ export class MultiplayerController extends Subject{
         this.minionController.worldMap = this.worldManager.world.islands;
         progressBar.value = 90;
 
-        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 10});
         this.worldManager.generateSpellSpawners({
             spell: {
                 type: new Fireball({}),
@@ -238,9 +265,9 @@ export class MultiplayerController extends Subject{
         });
 
         //start sending state updates to server
-        this.startSendingStateUpdates(this.opponentInfo.userID);
+        this.startSendingStateUpdates(this.peerInfo.userID);
         //announce to the server that the player is ready to start the match
-        this.forwardingNameSpace.sendPlayerReadyEvent(this.matchId);
+        this.forwardingNameSpace.sendPlayerReadyEvent(this.#matchId);
     }
 
     /**
@@ -269,20 +296,22 @@ export class MultiplayerController extends Subject{
         this.menuManager.addItems(newGemViews);
 
         //update stats
-        this.stats.set("gemsWon", this.stats.get("gemsWon") + newGemViews.length);
-        this.stats.set("gamesPlayed", this.stats.get("gamesPlayed") + 1);
+        if(this.countStats){
+            this.stats.set("gems_won", this.stats.get("gems_won") + newGemViews.length);
+            this.stats.set("games_played", this.stats.get("games_played") + 1);
+        }
 
         //fill params for results screen
         const renderGems = [];
         const currentStats = [];
         const lifetimeStats = [];
         this.stats.forEach((value, key) => {
-            currentStats.push({name: key, value: value});
-            multiplayerStats[key] += value;
+            currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+            this.lifetimeStats.set(key, this.lifetimeStats.get(key) + value);
         });
-        for(const property in multiplayerStats){
-            lifetimeStats.push({name: property, value: multiplayerStats[property]});
-        }
+        this.lifetimeStats.forEach((value, key) => {
+            lifetimeStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+        });
 
         if(data.winner_id === this.playerInfo.userID){
             //show win screen
@@ -293,12 +322,12 @@ export class MultiplayerController extends Subject{
             newGemViews.forEach(gemView => {
                 renderGems.push(gemView.item.getItemId());
             });
-            this.stats.set("gamesWon", this.stats.get("gamesWon") + 1);
+            if(this.countStats) this.stats.set("games_won", this.stats.get("games_won") + 1);
             console.log("you win");
-        } else if (data.winner_id === this.opponentInfo.userID){
+        } else if (data.winner_id === this.peerInfo.userID){
             //show lose screen
             this.result = "lose";
-            this.stats.set("gemsLost", this.stats.get("gemsLost") + this.stakedGems.length);
+            if(this.countStats) this.stats.set("gems_lost", this.stats.get("gems_lost") + this.stakedGems.length);
             this.stakedGems.forEach(gem => {
                 renderGems.push(gem.getItemId());
             });
@@ -310,6 +339,13 @@ export class MultiplayerController extends Subject{
             });
             console.log("draw");
         }
+        //update lifetime stats
+        await this.updateLifetimeStats();
+        //reset current stats
+        this.stats.forEach((value, key) => {
+            this.stats.set(key, 0);
+        });
+
         this.menuManager.renderMenu({
             name: "MultiplayerMenu",
             result: this.result,
@@ -320,6 +356,80 @@ export class MultiplayerController extends Subject{
             }
         });
         //wait for player to click on close button
+    }
+
+    /**
+     * retrieves the lifetime stats of the player from backend and updates the multiplayerStats object with it
+     * @return {Promise<unknown>}
+     */
+    async #getLifetimeStats(){
+        return new Promise((resolve, reject) => {
+            const counter = 0;
+            $.ajax({
+                url: `${API_URL}/${playerStatsURI}?player_id=${this.playerInfo.userID}`,
+                type: "GET",
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                    reject(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("GET success");
+                console.log(textStatus, data);
+                delete data["player_id"];
+                resolve(data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("GET fail");
+                console.log(textStatus, errorThrown);
+                if(counter < postRetries){
+                    console.log("retrying...");
+                    this.#getLifetimeStats();
+                } else {
+                    reject(errorThrown);
+                }
+            });
+        });
+    }
+
+    /**
+     * updates the lifetime stats of the player in the backend
+     * @return {Promise<unknown>}
+     */
+    async updateLifetimeStats(){
+        let counter = 0;
+        let data = {player_id: this.playerInfo.userID};
+        this.lifetimeStats.forEach((value, key) => {
+            const currentValue = this.stats.get(key);
+            this.lifetimeStats.set(key, currentValue + value);
+            data[key] = currentValue + value;
+        });
+        return new Promise((resolve, reject)=> {
+            $.ajax({
+                url: `${API_URL}/${playerStatsURI}`,
+                type: "PUT",
+                data: JSON.stringify(data),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+                resolve(data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                console.log(textStatus, errorThrown);
+                if (counter < postRetries) {
+                    console.log("retrying...");
+                    counter++;
+                    this.updateLifetimeStats();
+                } else{
+                    reject(errorThrown);
+                }
+            });
+        });
     }
 
     /**
@@ -348,10 +458,11 @@ export class MultiplayerController extends Subject{
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.peerController.peer = null;
         this.minionController.clearMinions();
-        this.worldManager.resetWorldState(this.playerInfo.userID < this.opponentInfo.userID);
+        this.worldManager.resetWorldState(this.playerInfo.userID < this.peerInfo.userID);
         //stop receiving state updates from server
         document.querySelector('.loading-animation').style.display = 'none';
         this.toggleTimer(false);
+        this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
         this.togglePhysicsUpdates();
         console.log("done leaving match");
@@ -362,7 +473,7 @@ export class MultiplayerController extends Subject{
      */
     leaveMatch(){
         if (confirm("Are you sure you want to leave the match?\nYou will lose your stakes!")) {
-            this.forwardingNameSpace.sendPlayerLeavingEvent(this.matchId);
+            this.forwardingNameSpace.sendPlayerLeavingEvent(this.#matchId);
         }
     }
 
@@ -380,11 +491,11 @@ export class MultiplayerController extends Subject{
             this.peerController.update(data.player);
         }
         if(data.playerHealth){
-            this.stats.set("damageTaken", this.stats.get("damageTaken") + data.playerHealth.previous - data.playerHealth.current);
+            if(this.countStats) this.stats.set("damage_taken", this.stats.get("damage_taken") + data.playerHealth.previous - data.playerHealth.current);
             this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
         }
         if(data.spellEvent) {
-            data.spellEvent.type = spellTypes[data.spellEvent.type];
+            data.spellEvent.type = spellTypes.getCtor(data.spellEvent.type);
             for (const property in data.spellEvent.params) {
                 //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
                 if(data.spellEvent.params[property]?.x) data.spellEvent.params[property] = new THREE.Vector3(
@@ -394,7 +505,7 @@ export class MultiplayerController extends Subject{
                 );
             }
             data.spellEvent.params.team = 1;
-            data.spellEvent.params.playerID = this.opponentInfo.userID;
+            data.spellEvent.params.playerID = this.peerInfo.userID;
             this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
         }
         if(data.minions){
@@ -445,7 +556,7 @@ export class MultiplayerController extends Subject{
     sendCreateSpellEntityEvent(event){
 
         event.detail.type = event.detail.type.name;
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             spellEvent: event.detail
         });
     }
@@ -460,7 +571,7 @@ export class MultiplayerController extends Subject{
             spawn: event.detail.minion.spawnPoint,
             id: event.detail.minion.id,
         }
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 create: createParams
             }
@@ -473,7 +584,7 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {id: number, position: THREE.Vector3, phi: number, health: number}}} event - phi = in degrees
      */
     sendMinionsStateUpdate(event){
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 state: event.detail
             }
@@ -485,8 +596,8 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {health: number, id: number}}} event
      */
     sendEnemyHealthUpdate(event){
-        this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        if(this.countStats) this.stats.set("damage_dealt", this.stats.get("damage_dealt") + event.detail.previous - event.detail.current);
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             minions: {
                 healthUpdate: {health: event.detail.current, id: event.detail.id}
             }
@@ -498,7 +609,7 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {state: {position: THREE.Vector3, phi: number, health}}}} event - phi = in degrees
      */
     sendPlayerStateUpdate(event){
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             player: {
                 state: event.detail.state
             }
@@ -510,8 +621,8 @@ export class MultiplayerController extends Subject{
      * @param {{detail: {health: number}}} event
      */
     sendPlayerHealthUpdate(event){
-        this.stats.set("damageDealt", this.stats.get("damageDealt") + event.detail.previous - event.detail.current);
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        if(this.countStats) this.stats.set("damage_dealt", this.stats.get("damage_dealt") + event.detail.previous - event.detail.current);
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             playerHealth: event.detail
         });
     }
@@ -521,7 +632,7 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     enemyDeathEvent(event){
-        this.stats.set("minionsKilled", this.stats.get("minionsKilled") + 1);
+        if(this.countStats) this.stats.set("minions_killed", this.stats.get("minions_killed") + 1);
         event.detail.model.removeEventListener("updatedHealth", this.updateEvents.get("minionHealthUpdate"));
         event.detail.model.removeEventListener("delete", this.updateEvents.get("minionDeath"));
     }
@@ -531,14 +642,12 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     sendPlayerDeathEvent(event){
-        this.opponentInfo
-        this.stats.set("playerKills", this.stats.get("playerKills") + 1);
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        if(this.countStats) this.stats.set("player_kills", this.stats.get("player_kills") + 1);
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             player: {
                 death: event.detail
             }
         });
-
     }
 
     /**
@@ -547,7 +656,7 @@ export class MultiplayerController extends Subject{
      */
     sendProxyHealthUpdate(event){
         console.log("proxy health update")
-        this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             proxy: {
                 healthUpdate: event.detail
             }
@@ -563,7 +672,7 @@ export class MultiplayerController extends Subject{
         event.detail.model.removeEventListener("delete", this.updateEvents.get("proxyDeath"));
         if(event.detail.model.dbType === "altar_building" && event.detail.model.team !== 0){
             console.log("altar destroyed");
-            this.forwardingNameSpace.sendAltarDestroyedEvent(this.matchId);
+            this.forwardingNameSpace.sendAltarDestroyedEvent(this.#matchId);
         } else {
             console.log("a proxy destroyed");
         }
@@ -624,6 +733,280 @@ export class MultiplayerController extends Subject{
             spawner.removeEventListener("spawn", this.updateEvents.get("createSpellEntity"));
         });
         this.minionController.removeEventListener("minionAdded", this.updateEvents.get("addMinionStateListener"));
+    }
+
+    /**
+     * Processes the island visit event
+     * @param {{request: "accept" | "reject" | "visit" | "leave" | "kick" | "cancel", sender: number}} data
+     */
+    async processIslandVisitEvent(data){
+        // if(this.pendingVisitRequest === this.peerInfo.userID) this.pendingVisitRequest = null;
+        switch (data.request) {
+            case "accept": //your friend accepted your visit request
+                //TODO: load friends' island
+                await this.loadFriendIsland(data.sender);
+                break;
+            case "reject": //your friend rejected your visit request
+                this.#addFriendNotification(`${this.peerInfo.username} rejected your visit request`, data.request, data.sender);
+                //TODO: set pendingVisitRequest to null
+                this.friendsMenu.querySelector(`#friend-${this.peerInfo.userID}`).querySelector(".View-Island").innerText = "Visit Island";
+                this.cancelIslandVisitRequest();
+                break;
+            case "kick": //your friend kicked you out of his/her island
+                //TODO: unload friend's island
+                await this.unloadFriendIsland();
+                break;
+            case "leave": // your friend left your island
+                //TODO: unload friend
+                this.unloadFriend();
+                break;
+            case "visit": //your friend requested to visit your island
+                //TODO: add notification to notification bell and show request message when friendsmenu is opened
+                //TODO: get friend name from friendslist
+                this.#addFriendNotification(`'FriendName' requested to visit your island`, data.request, data.sender);
+                break;
+            case "cancel": //your friend cancelled his/her visit request
+                //TODO: get friend name from friendslist
+                this.#addFriendNotification(`'FriendName' cancelled his/her visit request`, data.request, data.sender)
+                //TODO: reset state that was augmented when the visit request was processed
+                break;
+
+        }
+    }
+
+    /**
+     * callback for the visit island button of friendsmenu
+     * @param {Event} event
+     * @return {Promise<void>}
+     */
+    async #toggleVisitRequest(event) {
+            if(event.target.classList.contains("View-Island")){
+                let userId = event.target.parentNode.id;
+                userId = parseInt(userId.substring(userId.indexOf("-") + 1));
+                if(this.pendingVisitRequest === userId){ //cancel request
+                    this.cancelIslandVisitRequest();
+                    event.target.innerText = "Visit Island";
+                } else if(this.pendingVisitRequest) { // send a different request + cancel the current one
+                    const friendElement = this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest}`);
+                    this.cancelIslandVisitRequest();
+                    friendElement.querySelector(".View-Island").innerText = "Visit Island";
+                    await this.requestIslandVisit(userId);
+                    event.target.innerText = "Cancel Request";
+                } else { // send a request
+                    await this.requestIslandVisit(userId);
+                    event.target.innerText = "Cancel Request";
+                }
+            }
+        }
+
+    /**
+     * Sends a request to the server to visit your friend's island
+     */
+    async requestIslandVisit(userId){
+        await this.peerInfo.retrieveInfo(userId);
+        this.canMatchmake = false;
+        this.pendingVisitRequest = userId;
+        this.forwardingNameSpace.sendIslandVisitEvent(userId, "visit");
+    }
+
+    /**
+     * Cancels a request to the server to visit your friend's island
+     */
+    cancelIslandVisitRequest(){
+        this.canMatchmake = true;
+        this.pendingVisitRequest = null;
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "cancel");
+    }
+
+    /**
+     * accepts the visit request from your friend
+     * @param userId - id of the user that sent the visit request
+     */
+    async acceptIslandVisit(userId){
+        this.forwardingNameSpace.sendIslandVisitEvent(userId, "accept");
+        await this.loadFriend(userId);
+    }
+
+    /**
+     * rejects the visit request from your friend
+     * @param userId - id of the user that sent the visit request
+     */
+    rejectIslandVisit(userId) {
+        this.forwardingNameSpace.sendIslandVisitEvent(userId, "reject");
+    }
+
+    /**
+     * removes your friend from your island (kick him out)
+     */
+    removeFriendFromIsland(){
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "kick");
+        this.unloadFriend();
+    }
+
+    /**
+     * leave your friend's island
+     */
+    async leaveFriendIsland(){
+        this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "leave");
+        await this.unloadFriendIsland();
+    }
+
+    /**
+     * loads your friend's island (and unloads your own island)
+     * @param {number} userId - id of the user that sent the visit request
+     */
+    async loadFriendIsland(userId){
+        //TODO: remove own island and load friend's island
+        console.log("loading friend's island...");
+        this.togglePhysicsUpdates();
+        this.viewManager.removeBuildingPreviews();
+        const progressBar = document.getElementById('progress-bar');
+
+        progressBar.labels[0].innerText = "teleporting friend to your island...";
+
+        this.menuManager.exitMenu();
+        this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
+        this.spellCaster.multiplayer = true;
+        //TODO: totally block input and don't allow recapture of pointerlock for the duration of this method
+
+        document.querySelector('.loading-animation').style.display = 'block';
+
+        //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
+        await this.loadFriend(userId);
+        progressBar.value = 50;
+
+        progressBar.labels[0].innerText = `importing ${this.peerInfo.username}'s island...`;
+
+        //synchronise coordinate system of 2 islands: lowest user id island is the main island which is set to (0,0,0).
+        // the other island is rotated 180 degrees around the y-axis and translated from center of main island
+
+        //construct 2nd player object and island object and add to world
+        await this.worldManager.switchIslands(this.peerInfo.islandID);
+        progressBar.value = 75;
+
+        this.togglePhysicsUpdates();
+        document.querySelector('.loading-animation').style.display = 'none';
+    }
+
+    /**
+     * loads your friend on your island
+     * @param {number} userId - id of the user that sent the visit request
+     */
+    async loadFriend(userId){
+        //TODO: load friend on your island
+        await this.peerInfo.retrieveInfo(userId);
+        const friend = this.worldManager.addPeer({
+            position: this.peerInfo.playerPosition,
+            health: this.peerInfo.maxHealth,
+            maxHealth: this.peerInfo.maxHealth,
+            team: 1
+        });
+        friend.setId({entity: {player_id: this.peerInfo.userID}});
+        this.peerController = new Controller.PeerController({peer: friend});
+        this.startSendingStateUpdates(this.peerInfo.userID);
+    }
+
+    /**
+     * unloads your friend's island (and loads your own island)
+     */
+    async unloadFriendIsland(){
+        console.log("leaving friends island");
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.labels[0].innerText = "leaving match...";
+        document.querySelector('.loading-animation').style.display = 'block';
+        this.togglePhysicsUpdates();
+
+        this.spellCaster.multiplayer = false;
+        //stop sending state updates to server & remove event listeners
+        // this.stopSendingStateUpdates(); => moved to leaveMatch
+        this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
+
+        this.unloadFriend();
+
+        await this.worldManager.switchIslands(this.playerInfo.userID);
+        //stop receiving state updates from server
+        document.querySelector('.loading-animation').style.display = 'none';
+        this.togglePhysicsUpdates();
+        console.log("done leaving match");
+    }
+
+    /**
+     * removes your friend from your island
+     */
+    unloadFriend(){
+        //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
+        this.stopSendingStateUpdates();
+        this.peerController.peer = null;
+    }
+
+    /**
+     * adds a message to the mailbox
+     * @param {string} message
+     * @param {string} type - type of notification (visit, cancel, ...)
+     * @param {number} userId - id of the user that sent the message
+     */
+    #addMessageToMailbox(message, type, userId){
+        const notification = document.createElement("div");
+        const notificationText = document.createElement("p");
+        const notificationButtonsContainer = document.createElement("div");
+        const acceptButton = document.createElement('button');
+        const rejectButton = document.createElement('button');
+        notificationText.innerText = message;
+        notificationButtonsContainer.classList.add("request-buttons-container");
+        acceptButton.classList.add('Accept-Request');
+        rejectButton.classList.add('Reject-Request');
+        notificationText.classList.add('request-text');
+        notification.classList.add('request');
+
+        notification.addEventListener("click", async (event) => {
+            if(event.target.classList.contains("Accept-Request")){
+                if(type === "visit") await this.acceptIslandVisit(userId);
+            } else if(event.target.classList.contains("Reject-Request")){
+                if(type === "visit") this.rejectIslandVisit(userId);
+            }
+            this.#removeFriendNotification();
+            notification.remove();
+        });
+
+
+        notification.appendChild(notificationText);
+        notification.appendChild(notificationButtonsContainer);
+
+        switch (type) {
+            case "visit":
+                notificationButtonsContainer.appendChild(acceptButton);
+                notificationButtonsContainer.appendChild(rejectButton);
+                break;
+            case "cancel":
+                notificationButtonsContainer.appendChild(rejectButton);
+                break;
+        }
+
+        this.friendsMenu.querySelector("#listRequests").appendChild(notification);
+    }
+
+    /**
+     * adds a notification to the notification bell and puts the message in your mailbox
+     * @param {string} message
+     * @param {string} type - type of notification (visit, cancel, ...)
+     * @param {number} userId - id of the user that sent the message
+     */
+    #addFriendNotification(message, type, userId){
+        const notificationCount = this.notificationContainer.querySelector(".notification-count");
+        notificationCount.innerText = parseInt(notificationCount.innerText) + 1;
+        this.#addMessageToMailbox(message, type, userId);
+        this.notificationContainer.style.display = "block";
+    }
+
+    /**
+     * callback to subtract a notification from the notification bell (and make it disappear if there are no notifications left)
+     */
+    #removeFriendNotification(){
+        const notificationCount = this.notificationContainer.querySelector(".notification-count");
+        const newCount = parseInt(notificationCount.innerText) - 1;
+        if(newCount < 0) throw new Error("notification count cannot be negative");
+        notificationCount.innerText = newCount;
+        if(newCount === 0) this.notificationContainer.style.display = "none";
     }
 
         /**

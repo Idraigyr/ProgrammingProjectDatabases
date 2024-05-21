@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.resource.task import TaskSchema
-from src.resource import add_swagger
+from src.resource import add_swagger, check_data_ownership
 from src.schema import ErrorSchema, SuccessSchema
 from src.resource.blueprint import BlueprintSchema
 from src.model.placeable.placeable import Placeable
@@ -87,6 +87,7 @@ class PlaceableResource(Resource):
     @swagger.response(200, 'Success. Placeable has been deleted', schema=SuccessSchema)
     @swagger.response(404, 'Placeable not found', schema=ErrorSchema)
     @swagger.response(400, 'No placeable_id found', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """
@@ -99,6 +100,9 @@ class PlaceableResource(Resource):
         placeable = Placeable.query.get(id)
         if placeable is None:
             return ErrorSchema(f'Placeable {id} not found'), 404
+
+        r = check_data_ownership(placeable.island_id)  # island_id == owner_id
+        if r: return r
 
         current_app.db.session.delete(placeable)
         current_app.db.session.commit()

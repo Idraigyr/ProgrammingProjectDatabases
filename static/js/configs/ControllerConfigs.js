@@ -45,7 +45,7 @@ export const playerSpawn = {
 }
 
 //-- Minions --//
-export const minionAttackRadius = 3;
+export const minionAttackRadius = 4;
 export const minionFollowRadius = 10;
 export const minionSpeedMultiplier = 200;
 
@@ -61,17 +61,3 @@ export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?
     3: 1,
     4: 1,
 };
-
-export let multiplayerStats = {
-    playerKills: 0,
-    playerDeaths: 0,
-    minionsKilled: 0,
-    damageDealt: 0,
-    damageTaken: 0,
-    manaSpent: 0,
-    spellCasts: 0,
-    gemsWon: 0,
-    gemsLost: 0,
-    gamesPlayed: 0,
-    gamesWon: 0,
-}

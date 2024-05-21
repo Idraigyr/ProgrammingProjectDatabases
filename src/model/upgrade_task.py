@@ -7,10 +7,12 @@ from src.model.task import Task
 
 
 class BuildingUpgradeTask(Task):
-    __tablename__ = 'building_upgrade_task'
     """
     A BuildingUpgradeTask is a task that represents the construction or an upgrade of a building
     """
+    __tablename__ = 'building_upgrade_task'
+
+
     id: Mapped[int] = mapped_column(BigInteger, ForeignKey('task.id', ondelete='cascade', onupdate='cascade'), primary_key=True)
 
     to_level: Mapped[int] = Column(SmallInteger, CheckConstraint('to_level >= 0'), nullable=False)

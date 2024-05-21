@@ -62,7 +62,8 @@ export class PlayerInfo extends Subject{
                         x: Math.round(this.playerPosition.x),
                         y: Math.round(this.playerPosition.y + 20), // To prevent the player from spawning in the ground
                         z: Math.round(this.playerPosition.z)
-                    }
+                    },
+                    spells: this.spells
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',
@@ -98,6 +99,29 @@ export class PlayerInfo extends Subject{
     }
 
     /**
+     * Updates the equipped spells of the player
+     * @param event
+     */
+    updateSpells(event){
+        for(const spell of event.detail.spells){
+            this.spells.find(s => s.spell_id === spell.id).slot = spell.slot;
+        }
+        $.ajax({
+            url: `${API_URL}/${playerURI}`,
+            type: 'PUT',
+            data: JSON.stringify({
+                user_profile_id: this.userID,
+                spells: this.spells
+            }),
+            contentType: 'application/json; charset=utf-8',
+            dataType: 'json',
+            error: (e) => {
+                console.error(e);
+            }
+        });
+    }
+
+    /**
      * Retrieves the user information from the server
      * @param {number | null} playerId - optional, The id of the player to retrieve the information from
      * @returns {Promise<void>} - Promise that resolves when the user information is retrieved
@@ -110,9 +134,11 @@ export class PlayerInfo extends Subject{
             this.userID = response.entity.player_id;
             this.username = response.username;
 
+            this.spells = response.spells;
+            console.log(this.spells);
+            console.log(response)
 
             this.islandID = response.entity.island_id;
-            this.unclockedBuildings = response.blueprints;
             this.gems = response.gems;
             console.log(response);
             this.crystals = response.crystals;
@@ -260,7 +286,8 @@ export class PlayerInfo extends Subject{
                         y: Math.round(this.playerPosition.y),
                         z: Math.round(this.playerPosition.z),
                         level: this.level
-                    }
+                    },
+                    spells: this.spells
                 }),
                 contentType: 'application/json; charset=utf-8',
                 dataType: 'json',

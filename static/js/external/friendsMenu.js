@@ -2,7 +2,9 @@ import * as AllFriends from "./Friends.js"
 import {API_URL} from "../configs/EndpointConfigs.js";
 
 document.addEventListener('DOMContentLoaded', (event) => {
-    let friendsButton = document.getElementById("FriendsButton");
+    let friendsButton = document.getElementById("friends-button");
+
+    let notificationCount = document.getElementById("notification-count");
 
     let Friends = document.getElementById("Friends");
 
@@ -76,12 +78,12 @@ document.addEventListener('DOMContentLoaded', (event) => {
         for (const friends of friendsList){
             // add friend
             const friend = document.createElement('div');
-            friend.id = friends;
+            friend.id = `friend-${friends}`;
             friend.classList.add('friend');
             friend.innerHTML = `${await AllFriends.getPlayerUsername(friends)}`;
             const viewIsland = document.createElement('button');
             viewIsland.id = "viewIsland";
-            viewIsland.innerHTML = `View Island`;
+            viewIsland.innerHTML = `Visit Island`;
             viewIsland.classList.add('View-Island');
             friend.appendChild(viewIsland);
             listFriend.appendChild(friend);
