@@ -92,8 +92,6 @@ class BuildingUpgradeTaskResource(Resource):
             return r
         if 'id' in data:
             data.pop('id')
-        if 'handeled' in data:
-            data.pop('handeled')
 
         task = BuildingUpgradeTask(**data)
 
@@ -161,4 +159,3 @@ def attach_resource(app: Flask) -> None:
     api.add_resource(BuildingUpgradeTaskResource, '/api/building_upgrade_task')
     app.register_blueprint(blueprint, url_prefix='/') # Relative to api.add_resource path
     add_swagger(api)
-    # app.add_url_rule('/api/task/building_upgrade', view_func=BuildingUpgradeTaskResource.as_view('building_upgrade_task'))
