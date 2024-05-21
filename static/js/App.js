@@ -129,8 +129,9 @@ class App {
         //visualise axes -- DEBUG STATEMENTS --
         // this.scene.add(this.cameraManager.axisHelper.charModel);
         //visualise axes -- DEBUG STATEMENTS --
+        this.friendsMenu = new FriendsMenu();
 
-        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
+        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu});
 
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
@@ -163,7 +164,7 @@ class App {
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
 
-        this.friendsMenu = new FriendsMenu();
+
 
         this.multiplayerController.addEventListener("toggleMatchMaking", this.menuManager.toggleMatchMaking.bind(this.menuManager));
 
@@ -546,8 +547,9 @@ class App {
         progressBar.labels[0].innerText = "Generating collision mesh...";
         progressBar.value = 95;
         this.collisionDetector.generateColliderOnWorker();
-        await this.friendsMenu.populateRequests();
-
+        if(!this.multiplayerController.inMatch){
+            await this.friendsMenu.populateRequests();
+        }
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();
     }

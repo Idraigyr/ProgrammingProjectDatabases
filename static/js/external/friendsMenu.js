@@ -33,31 +33,37 @@ export class FriendsMenu {
 
         this.requests = [];
 
-        this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
-        this.addFriendButton.onclick = this.toggleAddFriendButton.bind(this);
-        this.listFriendButton.onclick = this.toggleListFriendButton.bind(this);
-        this.requestFriendButton.onclick = this.toggleRequestFriendButton.bind(this);
-        this.sendRequestButton.onclick = this.toggleSendRequestButton.bind(this)
-        window.addEventListener('click', this.toggleWindowbutton.bind(this));
+        this.inMatch = false;
+
+        if(!this.inMatch){
+            this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
+            this.addFriendButton.onclick = this.toggleAddFriendButton.bind(this);
+            this.listFriendButton.onclick = this.toggleListFriendButton.bind(this);
+            this.requestFriendButton.onclick = this.toggleRequestFriendButton.bind(this);
+            this.sendRequestButton.onclick = this.toggleSendRequestButton.bind(this)
+            window.addEventListener('click', this.toggleWindowbutton.bind(this));
+        }
+
     }
 
 
     async toggleFriendsDisplay() {
-        if (this.Friends.style.display === "block") {
-            this.Friends.style.display = "none";
-            this.addFriendButton.style.display = "none";
-            this.listFriendButton.style.display = "none";
-            this.requestFriendButton.style.display = "none";
-        } else {
-            this.FriendList.style.display = "none";
-            await this.populateFriends();
-            this.Friends.style.display = "block";
-            this.addFriendButton.style.display = "block";
-            this.listFriendButton.style.display = "block"
-            this.requestFriendButton.style.display = "block";
-            this.FriendList.style.display = "block";
+        if(!this.inMatch){
+            if (this.Friends.style.display === "block") {
+                this.Friends.style.display = "none";
+                this.addFriendButton.style.display = "none";
+                this.listFriendButton.style.display = "none";
+                this.requestFriendButton.style.display = "none";
+            } else {
+                this.FriendList.style.display = "none";
+                await this.populateFriends();
+                this.Friends.style.display = "block";
+                this.addFriendButton.style.display = "block";
+                this.listFriendButton.style.display = "block"
+                this.requestFriendButton.style.display = "block";
+                this.FriendList.style.display = "block";
+            }
         }
-
     }
 
     toggleAddFriendButton() {

@@ -45,7 +45,7 @@ export class MenuManager extends Subject{
 
     /**
      * ctor for the MenuManager
-     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null}} params
+     * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function}, matchMakeCallback: function, checkStakesCallback: function | null, playerInfo: PlayerInfo}} params
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -56,6 +56,7 @@ export class MenuManager extends Subject{
         this.checkStakesCallback = params?.checkStakesCallback ?? null;
         this.items = {};
         this.menus = {};
+        this.playerInfo = params.playerInfo;
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -198,9 +199,11 @@ export class MenuManager extends Subject{
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
+          this.playerInfo.changeXP(2*this.inputCrystalParams.current);
           this.inputCrystalParams.current = 0;
           this.menus["FuseInputMenu"].element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
           this.menus["FuseInputMenu"].element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+
 
           /*
           // loading bar + reset features to be removed
