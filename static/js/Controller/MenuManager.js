@@ -663,7 +663,12 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            if(param.total === 0){
+                this.items[param.building].element.style.opacity = 0.5;
+            }else{
+                this.items[param.building].element.style.opacity = 1;
+                this.items[param.building].element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            }
         }
     }
 

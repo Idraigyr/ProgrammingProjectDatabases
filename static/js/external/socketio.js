@@ -81,7 +81,7 @@ export class ChatNamespace {
                     total: this.app.playerInfo.maxMana
                     }});
             } else if (message.match(regex["level"])) {
-                if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0) {
+                if (Number(message.match(regex["level"])[1]) < 16 && Number(message.match(regex["level"])[1]) > 0) {
                     this.app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
                 } else {
                     this.socket.emit('message', messageData);

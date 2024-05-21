@@ -112,7 +112,7 @@ export class BuildingItem extends MenuItem{
         if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
         descriptionName.innerText += description;
         descriptionText.innerText = params?.description ?? "placeholder description";
-        placedDescription.innerText = "placed: 0/0";
+        //placedDescription.innerText = "placed: 0/0";
         return element;
     }
 

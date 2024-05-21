@@ -1,68 +1,203 @@
-export let Level = {}
+export let Level  = {
+    1: {
+        maxMana: 100,
+        maxHealth: 100,
+        xpThreshold: 1000,
+        Tree: 0,
+        Bush: 0,
+        Wall: 0,
+        Tower: 0,
+        WarriorHut: 0,
+        Mine: 1,
+        FusionTable: 0,
+        crystalStatue: 0,
+        goldenStatue: 0,
+        Spells: ['build']
+    },
+    2: {
+        maxMana: 120,
+        maxHealth: 120,
+        xpThreshold: 2000,
+        Tree: 0,
+        Bush: 0,
+        Wall: 0,
+        Tower: 0,
+        WarriorHut: 0,
+        Mine: 2,
+        FusionTable: 0,
+        Spells: ['build']
+    },
+    3: {
+        maxMana: 140,
+        maxHealth: 140,
+        xpThreshold: 3000,
+        Tree: 0,
+        Bush: 0,
+        Wall: 0,
+        Tower: 0,
+        WarriorHut: 0,
+        Mine: 2,
+        FusionTable: 1,
+        Spells: ['build','fireball']
+    },
+    4: {
+        maxMana: 160,
+        maxHealth: 160,
+        xpThreshold: 5000,
+        Tree: 0,
+        Bush: 0,
+        Wall: 3,
+        Tower: 0,
+        WarriorHut: 1,
+        Mine: 2,
+        FusionTable: 1,
+        Spells: ['build','fireball']
+    },
+    5: {
+        maxMana: 180,
+        maxHealth: 180,
+        xpThreshold: 7000,
+        Tree: 0,
+        Bush: 0,
+        Wall: 5,
+        Tower: 0,
+        WarriorHut: 1,
+        Mine: 3,
+        FusionTable: 1,
+        Spells: ['build','fireball']
+    },
+    6: {
+        maxMana: 200,
+        maxHealth: 200,
+        xpThreshold: 9000,
+        Tree: 0,
+        Bush: 0,
+        Wall: 6,
+        Tower: 1,
+        WarriorHut: 1,
+        Mine: 3,
+        FusionTable: 1,
+        Spells: ['build','fireball','shield']
+    },
+    7: {
+        maxMana: 220,
+        maxHealth: 220,
+        xpThreshold: 12000,
+        Tree: 0,
+        Bush: 4,
+        Wall: 8,
+        Tower: 2,
+        WarriorHut: 1,
+        Mine: 3,
+        FusionTable: 1,
+        Spells: ['build','fireball','shield','icewall']
+    },
+    8: {
+        maxMana: 240,
+        maxHealth: 240,
+        xpThreshold: 15000,
+        Tree: 4,
+        Bush: 6,
+        Wall: 9,
+        Tower: 3,
+        WarriorHut: 1,
+        Mine: 4,
+        FusionTable: 1,
+        Spells: ['build','fireball','shield','icewall']
+    },
+    9: {
+        maxMana: 260,
+        maxHealth: 260,
+        xpThreshold: 18000,
+        Tree: 5,
+        Bush: 7,
+        Wall: 10,
+        Tower: 4,
+        WarriorHut: 2,
+        Mine: 4,
+        FusionTable: 1,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
+    },
+    10: {
+        maxMana: 280,
+        maxHealth: 280,
+        xpThreshold: 22000,
+        Tree: 5,
+        Bush: 7,
+        Wall: 10,
+        Tower: 5,
+        WarriorHut: 2,
+        Mine: 5,
+        FusionTable: 1,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
 
-Level[0] = {
-    maxMana: 50,
-    maxHealth: 50,
-    maxGemAttribute: 1,
-    xpThreshold: 50,
-    Tree: 5,
-    Bush: 10,
-    Wall: 5,
-    Tower: 2,
-    WarriorHut: 1,
-    Mine: 1,
-    FusionTable: 1
-}
+    },
+    11: {
+        maxMana: 290,
+        maxHealth: 290,
+        xpThreshold: 26000,
+        Tree: 5,
+        Bush: 8,
+        Wall: 11,
+        Tower: 5,
+        WarriorHut: 3,
+        Mine: 5,
+        FusionTable: 2,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
 
-Level[1] = {
-    maxMana: 100,
-    maxHealth: 100,
-    maxGemAttribute: 2,
-    xpThreshold: 100,
-    Tree: 10,
-    Bush: 15,
-    Wall: 7,
-    Tower: 3,
-    WarriorHut: 1,
-    Mine: 2,
-    FusionTable: 2
-}
-Level[2] = {
-    maxMana: 200,
-    maxHealth: 200,
-    maxGemAttribute: 4,
-    xpThreshold: 200,
-    Tree: 15,
-    Bush: 17,
-    Wall: 9,
-    Tower: 4,
-    WarriorHut: 1,
-    Mine: 4,
-    FusionTable: 3
-}
-Level[3] = {
-    maxMana: 400,
-    maxHealth: 400,
-    maxGemAttribute: 6,
-    xpThreshold: 350,
-    Tree: 20,
-    Bush: 22,
-    Wall: 12,
-    Tower: 6,
-    WarriorHut: 1,
-    Mine: 5,
-    FusionTable: 4
-}
-Level[4] = {
-    maxMana: 600,
-    maxHealth: 600,
-    maxGemAttribute: 8,
-    xpThreshold: 100000,
-    Tree: 25,
-    Bush: 25,
-    Wall: 15,
-    Tower: 8,
-    WarriorHut: 1,
-    Mine: 7,
-    FusionTable: 5
-}
+    },
+    12: {
+        maxMana: 300,
+        maxHealth: 300,
+        xpThreshold: 31000,
+        Tree: 5,
+        Bush: 8,
+        Wall: 12,
+        Tower: 6,
+        WarriorHut: 3,
+        Mine: 5,
+        FusionTable: 2,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
+
+    },
+    13: {
+        maxMana: 310,
+        maxHealth: 310,
+        xpThreshold: 36000,
+        Tree: 7,
+        Bush: 8,
+        Wall: 14,
+        Tower: 6,
+        WarriorHut: 3,
+        Mine: 5,
+        FusionTable: 2,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
+    },
+    14: {
+        maxMana: 320,
+        maxHealth: 320,
+        xpThreshold: 41000,
+        Tree: 8,
+        Bush: 8,
+        Wall: 14,
+        Tower: 6,
+        WarriorHut: 3,
+        Mine: 5,
+        FusionTable: 2,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
+    },
+    15: {
+        maxMana: 330,
+        maxHealth: 330,
+        xpThreshold: 47000,
+        Tree: 10,
+        Bush: 10,
+        Wall: 14,
+        Tower: 6,
+        WarriorHut: 3,
+        Mine: 5,
+        FusionTable: 2,
+        Spells: ['build','fireball','shield','icewall','thundercloud']
+    }
+};
+

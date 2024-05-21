@@ -365,7 +365,7 @@ export class WorldManager{
                 const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation);
                 if (placeable) {
                     if (this.persistent) {
-                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), false);
                     }
                     this.collisionDetector.generateColliderOnWorker();
                     this.playerInfo.changeXP(100);
