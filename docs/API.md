@@ -86,3 +86,7 @@ The following variables have certain constraints on their values. It is safe to 
 - `xp`: `value` >= 0 (player)
 - `mana`: `value` >= 0 and `value` <= 1000 (player)
 - `audio_volume`: `value` >= 0 and `value` <= 100 (user settings)
+- `performance`: `value` >= 0 and `value` <= 3 (user settings)
+- `selected_currency`: `value` >= 0 and `value` <= 2 (user settings)
+- `horz_sensivity`: `value` >= 0 and `value` <= 100 (user settings)
+- `vert_sensivity`: `value` >= 0 and `value` <= 100 (user settings)
