@@ -44,6 +44,7 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("playerDeath", this.sendPlayerDeathEvent.bind(this));
         this.updateEvents.set("proxyHealthUpdate", this.sendProxyHealthUpdate.bind(this));
         this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
+        this.updateEvents.set("playerDied", this.showDeathOverlay.bind(this));
 
         this.stats = new Map();
         for(const property in multiplayerStats){
@@ -210,6 +211,7 @@ export class MultiplayerController extends Subject{
             team: 1
         });
         opponent.setId({entity: {player_id: this.opponentInfo.userID}});
+        opponent.addEventListener("characterDied", this.updateEvents.get("playerDeath"));
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
 
@@ -529,12 +531,14 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     sendPlayerDeathEvent(event){
+        this.opponentInfo
         this.stats.set("playerKills", this.stats.get("playerKills") + 1);
         this.forwardingNameSpace.sendTo(this.opponentInfo.userID, {
             player: {
                 death: event.detail
             }
         });
+
     }
 
     /**
@@ -620,5 +624,34 @@ export class MultiplayerController extends Subject{
             spawner.removeEventListener("spawn", this.updateEvents.get("createSpellEntity"));
         });
         this.minionController.removeEventListener("minionAdded", this.updateEvents.get("addMinionStateListener"));
+    }
+
+        /**
+     * function to show overlay when the player died
+     */
+    showDeathOverlay() {
+         document.getElementById('overlay').style.display = 'flex';
+        const timerElement = document.getElementById('timer');
+        const respawnButton = document.getElementById('respawn-button');
+        const textElement = document.getElementById('respawntext');
+        let countdown = 10;  // Timer duration in seconds
+
+        const timerInterval = setInterval(() => {
+            countdown -= 1;
+            timerElement.textContent = countdown;
+            if (countdown <= 0) {
+                clearInterval(timerInterval);
+                textElement.textContent = 'You can now respawn!';
+                respawnButton.classList.remove('inactive');
+                respawnButton.classList.add('active');
+                respawnButton.disabled = false;
+            }
+        }, 1000);
+
+        respawnButton.addEventListener('click', () => {
+            if (!respawnButton.disabled) {
+                document.getElementById('overlay').style.display = 'none';
+            }
+        });
     }
 }

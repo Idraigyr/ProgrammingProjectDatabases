@@ -187,6 +187,6 @@ export class Character extends Entity{
     }
 
     dies(){
-        throw new Error("cannot call abstract method Character.dies");
+        this.dispatchEvent(new CustomEvent("characterDied"));
     }
 }

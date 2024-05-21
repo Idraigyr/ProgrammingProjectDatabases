@@ -1902,6 +1902,44 @@ body {
     left: 33%;
 
 }
+/* awaiting respawn overlay */
+
+
+#overlay {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(128, 128, 128, 0.5);
+    z-index: 100;
+    font-family: Surabasa, sans-serif;
+    display: none;
+}
+
+.overlay-content {
+    text-align: center;
+}
+
+#respawn-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: not-allowed;
+}
+
+#respawn-button.active {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#respawn-button.inactive {
+    pointer-events: none;
+}
+
 
 /* xp bar and level */
 
