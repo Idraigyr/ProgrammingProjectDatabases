@@ -12,7 +12,7 @@ export let Level  = {
         FusionTable: 0,
         crystalStatue: 0,
         goldenStatue: 0,
-        Spells: ['build']
+        Spells: ['BuildSpell']
     },
     2: {
         maxMana: 120,
@@ -25,7 +25,7 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 2,
         FusionTable: 0,
-        Spells: ['build']
+        Spells: ['BuildSpell']
     },
     3: {
         maxMana: 140,
@@ -38,7 +38,7 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 2,
         FusionTable: 1,
-        Spells: ['build','fireball']
+        Spells: ['BuildSpell','Fireball']
     },
     4: {
         maxMana: 160,
@@ -51,7 +51,7 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 2,
         FusionTable: 1,
-        Spells: ['build','fireball']
+        Spells: ['BuildSpell','Fireball']
     },
     5: {
         maxMana: 180,
@@ -64,7 +64,7 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['build','fireball']
+        Spells: ['BuildSpell','Fireball']
     },
     6: {
         maxMana: 200,
@@ -77,7 +77,7 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['build','fireball','shield']
+        Spells: ['BuildSpell','Fireball','Shield']
     },
     7: {
         maxMana: 220,
@@ -90,7 +90,7 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['build','fireball','shield','icewall']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall']
     },
     8: {
         maxMana: 240,
@@ -103,7 +103,7 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 4,
         FusionTable: 1,
-        Spells: ['build','fireball','shield','icewall']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall']
     },
     9: {
         maxMana: 260,
@@ -116,7 +116,7 @@ export let Level  = {
         WarriorHut: 2,
         Mine: 4,
         FusionTable: 1,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
     },
     10: {
         maxMana: 280,
@@ -129,7 +129,7 @@ export let Level  = {
         WarriorHut: 2,
         Mine: 5,
         FusionTable: 1,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
 
     },
     11: {
@@ -143,7 +143,7 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
 
     },
     12: {
@@ -157,7 +157,7 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
 
     },
     13: {
@@ -171,7 +171,7 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
     },
     14: {
         maxMana: 320,
@@ -184,7 +184,7 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
     },
     15: {
         maxMana: 330,
@@ -197,7 +197,7 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['build','fireball','shield','icewall','thundercloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
     }
 };
 

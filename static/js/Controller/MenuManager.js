@@ -65,10 +65,8 @@ export class MenuManager extends Subject{
         this.items = new Map();
         this.menus = new Map();
 
-        /* TODO: why playerInfo here?
+        // TODO: why playerInfo here?
         this.playerInfo = params.playerInfo;
-
-         */
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -863,14 +861,17 @@ export class MenuManager extends Subject{
                 icon: {src: spells[i].src, width: 50, height: 50},
                 description: "",
                 extra: { //TODO: change this based on lvl
-                    unlocked: spells[i].unlocked,
-                    draggable: spells[i].unlocked
+                    unlocked: this.playerInfo.availableSpells.includes(spells[i].name),
+                    draggable: this.playerInfo.availableSpells.includes(spells[i].name)
                 }
             });
         }
         this.addItems(items);
     }
 
+    updateSpellItem(){
+
+    }
     /**
      * creates the buildSpell item (permanently in hotbar)
      */

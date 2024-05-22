@@ -37,7 +37,6 @@ export class MultiplayerController extends Subject{
         this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
         this.friendsMenu = params.friendsMenu;
-        this.playerInfo = params.playerInfo;
 
         //Friend visit properties
         this.pendingVisitRequest = null;

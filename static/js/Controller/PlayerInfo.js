@@ -53,6 +53,7 @@ export class PlayerInfo extends Subject{
             FusionTable: Level[this.level]["FusionTable"],
         };
         this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0};
+        this.availableSpells = Level[this.level]["Spells"]
 
     }
 
@@ -220,6 +221,7 @@ export class PlayerInfo extends Subject{
         this.dispatchEvent(this.createUpdateManaEvent());
         this.dispatchEvent(this.createUpdateHealthEvent());
         this.dispatchEvent(this.createUpdateUsernameEvent());
+        this.availableSpells = Level[this.level]["Spells"]
         this.updatePlayerInfoBackend();
     }
 
