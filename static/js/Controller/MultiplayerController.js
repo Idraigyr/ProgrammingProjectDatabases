@@ -37,6 +37,7 @@ export class MultiplayerController extends Subject{
         this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
         this.friendsMenu = params.friendsMenu;
+        this.playerInfo = params.playerInfo;
 
         //Friend visit properties
         this.pendingVisitRequest = null;
@@ -451,6 +452,9 @@ export class MultiplayerController extends Subject{
             }
             this.stakedGems = [];
         }
+        if(this.result === "win"){
+            this.playerInfo.changeXP(300);
+        }
         this.result = null;
         const progressBar = document.getElementById('progress-bar');
         progressBar.labels[0].innerText = "leaving match...";
@@ -472,6 +476,7 @@ export class MultiplayerController extends Subject{
         this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
         this.friendsMenu.inMatch = false;
+        this.playerInfo.changeXP(200);
         this.togglePhysicsUpdates();
         console.log("done leaving match");
     }
