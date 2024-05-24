@@ -16,24 +16,39 @@ keyBinds.set('open-inventory', 'e');
 keyBinds.set('eat', 'q');
 
 export class Settings {
-    constructor(inputManager, playerInfo, callbacks) {
+    grassOn = true;
+    constructor(params) {
         this.map = null;
-        this.inputManager = inputManager;
-        this.playerInfo = playerInfo;
+        this.inputManager = params.inputManager;
+        /* TODO: look and see
+        this.worldManager = params.worldManager;
 
-        inputManager.addLeaveMatchButtonListener((e) => {
-            callbacks.leaveMatch();
+         */
+        this.playerInfo = params.playerInfo;
+
+        this.inputManager.addLeaveMatchButtonListener((e) => {
+            params.callbacks.leaveMatch();
             this.exitSettingsMenu();
         });
-        inputManager.addLogoutButtonListener(this.logOut.bind(this))
-        inputManager.addRespawnButtonListener(this.respawn.bind(this));
-        inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
-        inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
-        inputManager.addApplyButtonListener(this.applySettings.bind(this))
-        inputManager.addFullscreenButtonListener(this.toggleFullscreen.bind(this))
-        inputManager.addHelpButtonListener(this.toggleHelpMenu.bind(this))
+
+        this.inputManager.addLogoutButtonListener(this.logOut.bind(this))
+        this.inputManager.addRespawnButtonListener(this.respawn.bind(this));
+        this.inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
+        this.inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
+        this.inputManager.addGrassToggleListener(this.toggleGrass.bind(this));
+        this.inputManager.addApplyButtonListener(this.applySettings.bind(this))
+        const button = document.getElementById('applyButton');
+        button.addEventListener('click', this.applySettings.bind(this));
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
+    }
+
+    toggleGrass(event) {
+        console.log("Grass toggle button clicked ", event);
+        this.grassOn = !!event.target.checked;
+        // Dispatch event to toggle grass
+        //this.worldManager.toggleGrass(this.grassOn);
+        //TODO: add a callback don't add worldmanager directly
     }
 
     loadCursors() {
@@ -62,7 +77,6 @@ export class Settings {
      * Function to log out the user
      */
     async logOut() {
-        console.log("Log out button clicked")
         // Send logout info to the backend
         await this.playerInfo.logout();
         // Redirect the user to the logout URL
@@ -70,8 +84,6 @@ export class Settings {
     }
 
     async respawn() {
-        console.log("Respawn button clicked")
-
         // Send respawn info to the backend
         await this.playerInfo.reload();
     }
@@ -96,7 +108,6 @@ export class Settings {
      */
     deleteAccountCallback() {
         if (confirm("Are you sure you want to PERMANENTLY remove your account?\nThis cannot be undone!")) {
-            console.log("Account deletion confirmed")
             $.ajax({
                 url: `${API_URL}/api/user_profile?id=${this.playerInfo.userID}`,
                 type: "DELETE",
@@ -126,7 +137,6 @@ export class Settings {
     }
 
     switchCursor(event) {
-        console.log(event);
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
     }

@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import {Entity} from "../Entity.js";
-import {pushCollidedObjects} from "../../../helpers.js";
+import {pushCollidedObjects, pushCollidedObjects2} from "../../../helpers.js";
 //abstract class
 /**
  * Abstract class for all characters in the game
@@ -100,7 +100,8 @@ export class Character extends Entity{
     }
 
     onCharacterCollision(deltaTime, other, thisBox, otherBox){
-        pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity, 1, 20, deltaTime);
+        // pushCollidedObjects(thisBox, otherBox, this.velocity, other.velocity,this.mass, other.mass, deltaTime);
+        pushCollidedObjects2(thisBox, otherBox, this, other, deltaTime);
     }
 
     /**

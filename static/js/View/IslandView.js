@@ -86,6 +86,13 @@ export class Island extends IView{
     }
 
     /**
+     * Toggle grass field visibility
+     */
+    toggleGrassField(event){
+        this.#grassField.visible = event.detail.grassOn;
+    }
+
+    /**
      * Create axes for the scene
      * @returns {THREE.Group} group of axes
      */

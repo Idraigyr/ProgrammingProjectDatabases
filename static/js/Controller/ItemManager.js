@@ -37,7 +37,6 @@ export class ItemManager {
 
     async retrieveSpells(){
         const response = await $.getJSON(`${API_URL}/${spellListURI}`);
-        console.log(response);
         if(response){
             for(let i = 0; i < response.length; i++){
                 this.spells.push(new Spell({
@@ -45,7 +44,6 @@ export class ItemManager {
                     name: response[i].name,
                 }));
             }
-            console.log("spells", this.spells)
         } else {
             throw new Error("Could not retrieve spells");
         }
@@ -188,7 +186,7 @@ export class ItemManager {
             gem.staked = !gem.staked;
             this.sendPUT(gemURI, gem, postRetries, this.insertPendingRequest(gem), ["staked"]);
         });
-        return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
+        return powerStaked >= minTotalPowerForStakes.getStakesForLvl(this.playerInfo.level);
     }
 
     checkStakedGems(){
@@ -196,7 +194,7 @@ export class ItemManager {
         this.gems.forEach(gem => {
             if(gem.staked) powerStaked += gem.power;
         });
-        return powerStaked >= minTotalPowerForStakes[this.playerInfo.level];
+        return powerStaked >= minTotalPowerForStakes.getStakesForLvl(this.playerInfo.level);
     }
 
     /**

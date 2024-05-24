@@ -64,26 +64,29 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
         // Listen for the "C" key to open the chat box
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'c' || e.key === 'C') {
-            // Check if the current active element is the chat input field
-            if (document.activeElement !== chatInput) {
-                // Check if the chatPopup is already displayed before toggling
-                if (chatPopup.style.display !== 'block') {
-                    e.preventDefault();
-                    openChat();
-                } else {
+        if (document.activeElement !==  usernameFriend){
+            if (e.key === 'c' || e.key === 'C') {
+                // Check if the current active element is the chat input field
+                if (document.activeElement !== chatInput) {
+                    // Check if the chatPopup is already displayed before toggling
+                    if (chatPopup.style.display !== 'block') {
+                        e.preventDefault();
+                        openChat();
+                    } else {
+                        // Close the chat popup only if chat input is not focused
+                        chatButton.hidden = false;
+                        chatPopup.style.display = 'none';
+                    }
+                }
+            }
+            if (e.key === 'Escape'){
+                if (chatPopup.style.display === 'block'){
                     // Close the chat popup only if chat input is not focused
                     chatButton.hidden = false;
                     chatPopup.style.display = 'none';
                 }
             }
         }
-        if (e.key === 'Escape'){
-            if (chatPopup.style.display === 'block'){
-                // Close the chat popup only if chat input is not focused
-                chatButton.hidden = false;
-                chatPopup.style.display = 'none';
-            }
-        }
+
     });
 });

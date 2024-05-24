@@ -26,7 +26,7 @@ let regex = {
     "buildCooldown": /\\buildCooldown\((0*[0-9]\d*)\)/,
     "health": /\\health\((0*[0-9]\d*)\)/,
     "forceSpells": /\\forceSpells/,
-    "forceBuildDuration": /\\forceBuildDuration/
+    "forceBuild": /\\forceBuild/
 }
 export class ChatNamespace {
 
@@ -87,7 +87,7 @@ export class ChatNamespace {
                         )}}
                 });
             } else if (message.match(regex["level"])) {
-                if (Number(message.match(regex["level"])[1]) < 5 && Number(message.match(regex["level"])[1]) >= 0) {
+                if (Number(message.match(regex["level"])[1]) < 16 && Number(message.match(regex["level"])[1]) > 0) { //TODO: don't harcode magic values here
                     this.app.playerInfo.changeLevel(Number(message.match(regex["level"])[1]));
                 } else {
                     this.socket.emit('message', messageData);
@@ -114,15 +114,17 @@ export class ChatNamespace {
             } else if (message.match(regex["shieldCooldown"])) {
                 this.app.spellCaster.changeCooldown("shield", Number(message.match(regex["shieldCooldown"])[1]));
             } else if (message.match(regex["fireCooldown"])) {
-                this.app.spellCaster.changeCooldown("fireball", Number(message.match(regex["shieldCooldown"])[1]));
+                this.app.spellCaster.changeCooldown("fireball", Number(message.match(regex["fireCooldown"])[1]));
 
             } else if (message.match(regex["buildCooldown"])) {
-                this.app.spellCaster.changeCooldown("build", Number(message.match(regex["shieldCooldown"])[1]));
+                this.app.spellCaster.changeCooldown("build", Number(message.match(regex["buildCooldown"])[1]));
 
             } else if (message.match(regex["forceSpells"])) {
                 this.app.spellCaster.changeSpellCost();
             } else if (message.match(regex["thunderCloudCooldown"])) {
-                this.app.spellCaster.changeCooldown("thundercloud", Number(message.match(regex["shieldCooldown"])[1]));
+                this.app.spellCaster.changeCooldown("thundercloud", Number(message.match(regex["thunderCloudCooldown"])[1]));
+            } else if (message.match(regex["forceBuild"])){
+                this.app.worldManager.cheats = true;
             }
             else if (message !== "" && !message.startsWith("\\")){
                 this.socket.emit('message', messageData);

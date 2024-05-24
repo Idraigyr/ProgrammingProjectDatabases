@@ -18,6 +18,7 @@ export class Foundation extends Entity{
      * @param {{width: Number, length: Number, rotation: Number, height: Number} | Foundation[]} params - width and length are always uneven, if not they are increased by 1. height is always larger than 0 otherwise = 0.1
      */
     constructor(params) {
+        params.mass = 0;
         super(params);
         this.#rotation = 0;
 
@@ -99,9 +100,7 @@ export class Foundation extends Entity{
 
     //TODO: might be convenient/necessary that 0,0 is the center of the new foundation
     setFromFoundations(foundations){
-        console.log("setFromFoundations");
         const {width, length, min, max} = this.#calculateWidthAndLength(foundations);
-        console.log("width", width, "length", length, "min", min, "max", max);
         this.width = width;
         this.length = length;
         this.min = min;
@@ -217,7 +216,6 @@ export class Foundation extends Entity{
     occupyCell(worldPosition, char){
         //check if parameter of returnWorldToGridIndex is correct
         let {x, z} = returnWorldToGridIndex(worldPosition.sub(this.position));
-        console.log("Occupying cell: x", x, "z", z);
         const index = this._calculate1DIndex(x, z);
         // this.grid[x + 7][z + 7] = buildTypes.getNumber(dbType);
         this.grid[index] = char;
@@ -281,9 +279,7 @@ export class Foundation extends Entity{
      * @param {number} value - rotation in degrees +-(0, 90, 180, 270)
      */
     set rotation(value){
-        console.log("setter rotation: new rotation:", value, "current rotation:", this.#rotation);
         if([0, -0, 90,180,270,-90,-180,-270].includes(value%360)){
-            console.log("setter rotation", value)
             const rotateAmount = value - this.#rotation;
             this.#rotation = value;
             const temp = this.width;
@@ -292,10 +288,6 @@ export class Foundation extends Entity{
 
             for(let i = 0; i < (rotateAmount + 360)%360/90; i++){
                 this.grid = this._rotateGrid90Deg(this.grid, this.width, this.length);
-                //--DEBUG--
-                console.log("rotated grid");
-                printFoundationGrid(this.grid, this.width, this.length);
-                //--DEBUG--
             }
 
             let extreme = this.calculateExtreme(this.position, this.width, this.length);
@@ -304,8 +296,8 @@ export class Foundation extends Entity{
             extreme = this.calculateExtreme(this.position, this.width, this.length, false);
             this.max.set(extreme.x, 0, extreme.z);
         } else {
-            console.error("rotation needs to be a multiple of 90 degrees");
+            // console.error("rotation needs to be a multiple of 90 degrees");
+            throw new Error("rotation needs to be a multiple of 90 degrees");
         }
-        console.log("setter rotation is done: current rotation:", this.#rotation)
     }
 }

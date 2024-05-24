@@ -313,6 +313,11 @@ export class InputManager extends Subject{
         applyButton.addEventListener('click', callback);
     }
 
+    addGrassToggleListener(callback) {
+        const grassToggle = document.getElementById('grass-toggle');
+        grassToggle.addEventListener('change', callback);
+    }
+
     addFullscreenButtonListener(callback) {
         const fulllscreenButton = document.querySelector('.fullscreenButton');
         fulllscreenButton.addEventListener('click', callback);

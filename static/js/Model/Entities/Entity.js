@@ -7,7 +7,7 @@ import * as THREE from "three";
 export class Entity extends Subject{
     /**
      * initialises Entity
-     * @param {{position: THREE.Vector3, radius: number, team: number} | {}} params - optional
+     * @param {{position: THREE.Vector3, radius: number, team: number, mass: number} | {}} params - optional
      */
     constructor(params) {
         super(params);
@@ -15,8 +15,8 @@ export class Entity extends Subject{
         this._position =  params?.position?.clone() ?? new THREE.Vector3(0,0,0);
         this.team = params?.team ?? 0;
         this.canMove = true;
-        this.box1Mass = 1;
-        this.box2Mass = 20;
+        this.mass = params?.mass ?? 1;
+        this.velocity = new THREE.Vector3(0,0,0);
         this.targettable = true;
 
     }

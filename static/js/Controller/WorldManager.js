@@ -1,5 +1,5 @@
 import {Model} from "../Model/ModelNamespace.js";
-import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
@@ -35,6 +35,7 @@ export class WorldManager{
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
 
         this.persistent = true;
+        this.cheats = false;
     }
 
     /**
@@ -67,7 +68,8 @@ export class WorldManager{
                     rotation: building.rotation*90,
                     id: building.placeable_id,
                     stats: buildingStats.getStats(building.blueprint.name),
-                    task: building.task
+                    task: building.task,
+                    level: building.level
                 };
                 let gems = [];
                 //used only for adding gem ids and stat multipliers to building
@@ -86,7 +88,6 @@ export class WorldManager{
                     }
                     buildingParams.gems = gems;
                 }
-                console.log(`importing building ${building.blueprint.name} at position ${building.x}, ${building.z}`);
                 island.buildings.push(buildingParams);
             }
 
@@ -275,12 +276,10 @@ export class WorldManager{
         const offset = this.calculateIslandOffset();
         const rotation = 180;
         if(currentIslandIsCenter){
-            console.log("%ccurrent island is center", "color: green; font-size: 20px");
             islandPosition.add(offset);
             //TODO: implement rotation in factory createIsland
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
         } else {
-            console.log("%cother island is center", "color: red; font-size: 20px");
             const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
             this.moveCurrentIsland(offset, rotation);
             this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
@@ -357,7 +356,6 @@ export class WorldManager{
     setPlayerSpells(){
         for(const spell of this.playerInfo.spells){
             if(spell.slot === null) continue;
-            console.log("setting spell on player", spell)
             this.world.player.changeEquippedSpell(spell.slot, spellTypes.getSpellObjectFromId(spell.spell_id));
         }
     }
@@ -388,22 +386,26 @@ export class WorldManager{
         $.getJSON(`${API_URL}/${taskURI}/list?island_id=${this.playerInfo.islandID}&is_over=true`).done((data) => {
             // Delete all tasks that are finished
             data.forEach((task) => {
-                $.ajax({
-                    url: `${API_URL}/${taskURI}?id=${task.id}`,
-                    type: "DELETE",
-                    error: (e) => {
-                        console.error(e);
-                    }
-                }).done((data, textStatus, jqXHR) => {
-                    console.log("DELETE success");
-                    console.log(textStatus, data);
-                }).fail((jqXHR, textStatus, errorThrown) => {
-                    console.log("DELETE fail");
-                    console.error(textStatus, errorThrown);
-                });
+                this.deleteTask(task.id);
             });
         }).fail((jqXHR, textStatus, errorThrown) => {
             console.error("GET request failed");
+            console.error(textStatus, errorThrown);
+        });
+    }
+
+    async deleteTask(taskID){
+        $.ajax({
+            url: `${API_URL}/${taskURI}?id=${taskID}`,
+            type: "DELETE",
+            error: (e) => {
+                console.error(e);
+            }
+        }).done((data, textStatus, jqXHR) => {
+            console.log("DELETE success");
+            console.log(textStatus, data);
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.log("DELETE fail");
             console.error(textStatus, errorThrown);
         });
     }
@@ -419,21 +421,86 @@ export class WorldManager{
             console.log("Cannot place");
         }
         else {
-            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
-            if (placeable) {
-                if (this.persistent) {
-                    this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+            if(!this.cheats){
+                const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
+                if (placeable) {
+                    if (this.persistent) {
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+                    }
+                    this.collisionDetector.generateColliderOnWorker();
+                    this.playerInfo.changeXP(100);
+                    this.playerInfo.buildingsPlaced[buildingName]++;
+                    return true;
+                } else {
+                    console.error("failed to add new building at that position");
                 }
-                this.collisionDetector.generateColliderOnWorker();
-                this.playerInfo.changeXP(10);
-                this.playerInfo.buildingsPlaced[buildingName]++;
-                return true;
-            } else {
-                console.error("failed to add new building at that position");
+            } else{
+                const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation);
+                if (placeable) {
+                    if (this.persistent) {
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), false);
+                    }
+                    this.collisionDetector.generateColliderOnWorker();
+                    this.playerInfo.changeXP(100);
+                    this.playerInfo.buildingsPlaced[buildingName]++;
+                    return true;
+                } else {
+                    console.error("failed to add new building at that position");
+                }
+
             }
+
         }
         return false;
     }
+
+    /**
+     * Create a new task to fuse a gem
+     * @param params {{timeInSeconds: number, buildingID: number}}
+     * @returns {Promise<void>} - a promise that resolves when the task has been created
+     */
+    async createFuseTask(params){
+        try {
+            // Get server time
+            let response = await this.playerInfo.getCurrentTime();
+            let serverTime = new Date(response);
+            serverTime.setSeconds(serverTime.getSeconds()+params.timeInSeconds);
+            let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+            let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+            // Convert local time to ISO string
+            let time = localTime.toISOString();
+            let formattedDate = time.slice(0, 19);
+            // TODO: change uri + add crystal_amount to JSON.stringify
+            const result = await $.ajax({
+                url: `${API_URL}/${taskURI}`,
+                type: "POST",
+                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID}),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                throw new Error(`Could not send POST request to fuse a gem: Error: ${textStatus} ${errorThrown}`);
+            });
+            return result;
+        } catch (err){
+            console.error(err);
+        }
+    }
+    /**
+     * Places a building in the world
+     * @param uri - the URI to send the POST request to
+     * @param timeInSeconds - the time in seconds to build the building
+     * @param buildingID - the id of the building to upgrade
+     * @param islandId - the id of the island the building is on
+     * @param retries - the number of retries to resend the POST request
+     * @returns {Promise<void>} - a promise that resolves when the building has been placed
+     */
     async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
         try {
             // Get server time
@@ -445,11 +512,11 @@ export class WorldManager{
             // Convert local time to ISO string
             let time = localTime.toISOString();
             let formattedDate = time.slice(0, 19);
-            console.log(JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId}));
+            console.log(JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId, to_level: 1}));
             $.ajax({
                 url: `${API_URL}/${uri}`,
                 type: "POST",
-                data: JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId}),
+                data: JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId, to_level: 1, used_crystals: 0}),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -505,10 +572,13 @@ export class WorldManager{
      * @param {{spell: {type: ConcreteSpell, params: Object}, interval: number}} params - the parameters for the spell spawner
      */
     generateSpellSpawners(params){
+        console.log("generating spell spawners")
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const towerProxies = island.getProxysByType("tower_building");
+            console.log("towerProxies", towerProxies)
             towerProxies.forEach((towerProxy) => {
+
                 if(!towerProxy.building.ready) return;
                 const position = towerProxy.position;
                 position.y += 40;
@@ -524,6 +594,7 @@ export class WorldManager{
                     spawner.dispose();
                 });
                 spawner.addEventListener("spawn", (event) => {
+                    console.log("spawning spell")
                     this.spellFactory.createSpell(event);
                 });
                 this.world.addSpellSpawner(spawner);
@@ -712,7 +783,7 @@ export class WorldManager{
                 entity.setId(data);
                 this.removePendingPostRequest(requestIndex);
                 if (withTimer){
-                    this.postBuildingTimer(taskURI, entity.timeToBuild, entity.id, this.playerInfo.islandID, postRetries);
+                    this.postBuildingTimer(buildingUpgradeURI, entity.timeToBuild, entity.id, this.playerInfo.islandID, postRetries);
                 }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");
@@ -726,6 +797,35 @@ export class WorldManager{
         } catch (err){
             console.error(err);
         }
+    }
+
+    /**
+     * Send a DELETE request to the server
+     * @param building - the building to delete
+     */
+    deleteBuilding(building){
+        try {
+            $.ajax({
+                url: `${API_URL}/${placeableURI}?placeable_id=${building.id}`,
+                type: "DELETE",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("DELETE success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("DELETE fail");
+                console.error(textStatus, errorThrown);
+            });
+        } catch (err){
+            console.error(err);
+        }
+        // Delete building from world
+        this.world.deleteBuilding(building);
+        const buildingName = building.constructor.name;
+        this.playerInfo.buildingsPlaced[buildingName]--;
+        this.collisionDetector.generateColliderOnWorker();
     }
 
     /**
@@ -763,6 +863,14 @@ export class WorldManager{
         } catch (err){
             console.error(err);
         }
+    }
+
+    /**
+     * Toggle the grass on the world
+     * @param on - whether to turn the grass on or off
+     */
+    toggleGrass(on){
+        this.world.toggleGrass(on);
     }
 
     async updateBuildings(){

@@ -169,7 +169,7 @@ export class Projectile extends SpellEntity{
 
         if(this.hitSomething) {
             if (character.canMove){
-                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, character.box1Mass, character.box2Mass, deltaTime);
+                  launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, this.mass, character.mass, deltaTime);
             }
             this.timer += this.duration;
             console.log("Projectile hit something, deleting")

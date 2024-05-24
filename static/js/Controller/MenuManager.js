@@ -19,7 +19,11 @@ import {
     StakesMenu,
     StatsMenu,
     TowerMenu,
-    BuildingMenu, MultiplayerMenu, MultiplayerStatsMenu, MultiplayerGemsMenu
+    BuildingMenu,
+    MultiplayerMenu,
+    MultiplayerStatsMenu,
+    MultiplayerGemsMenu,
+    PropMenu
 } from "../View/menus/IMenu.js";
 import {
     BuildingItem,
@@ -47,7 +51,8 @@ export class MenuManager extends Subject{
      * ctor for the MenuManager
      * @param {{container: HTMLDivElement, blockInputCallback: {block: function, activate: function},
      * matchMakeCallback: function, checkStakesCallback: function | null,
-     * closedMultiplayerMenuCallback: function}} params
+     * closedMultiplayerMenuCallback: function,
+     * playerInfo: PlayerInfo}} params - TODO: possibly remove playerInfo as param
      * @property {Object} items - {id: MenuItem} id is of the form "Item.type-Item.id"
      */
     constructor(params) {
@@ -59,6 +64,11 @@ export class MenuManager extends Subject{
         this.closedMultiplayerMenuCallback = params?.closedMultiplayerMenuCallback;
         this.items = new Map();
         this.menus = new Map();
+
+        /* TODO: why playerInfo here?
+        this.playerInfo = params.playerInfo;
+
+         */
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -125,6 +135,9 @@ export class MenuManager extends Subject{
     #addMenuCallbacks(menu){
         if(menu instanceof BaseMenu){
             menu.element.querySelector(".close-button").addEventListener("click", this.exitMenu.bind(this));
+        }
+        if (menu instanceof PropMenu) {
+            menu.element.querySelector(".delete-button").addEventListener("click", this.dispatchDeleteEvent.bind(this));
         }
         if(menu instanceof BuildingMenu){
             menu.element.querySelector(".lvl-up-button").addEventListener("click", this.dispatchLvlUpEvent.bind(this));
@@ -262,9 +275,13 @@ export class MenuManager extends Subject{
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
+          /* TODO: don't change xp here do this when fusion task is done
+          this.playerInfo.changeXP(2*this.inputCrystalParams.current);
+          */
           this.inputCrystalParams.current = 0;
           this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
           this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
+
 
           /*
           // loading bar + reset features to be removed
@@ -296,7 +313,6 @@ export class MenuManager extends Subject{
 
     // Function to start or stop the fusing arrow animation based on condition
     toggleAnimation(condition) {
-        console.log(condition);
         if (condition) {
             this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.add('move-right');
         } else {
@@ -410,6 +426,13 @@ export class MenuManager extends Subject{
     }
 
     /**
+     * dispatches a delete event
+     */
+    dispatchDeleteEvent(){
+        this.dispatchEvent(new CustomEvent("delete"));
+    }
+
+    /**
      * dispatches a build event
      * @param {{target: HTMLElement}} event
      */
@@ -424,7 +447,6 @@ export class MenuManager extends Subject{
      * @param event
      */
     dispatchCollectEvent(event){
-        console.log("Collecting resources");
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
@@ -719,9 +741,6 @@ export class MenuManager extends Subject{
      * @param {{name: string, stats: Map}} params
      */
     #arrangeStatMenuItems(params){
-        console.log("params: ");
-        console.log(params);
-        console.log("inside arrangeItems:",  params.stats);
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
         // update stats for according to the building
@@ -754,7 +773,12 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            if(param.total === 0){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
+                this.items.get(param.building).element.style.opacity = 0.5;
+            }else{
+                this.items.get(param.building).element.style.opacity = 1;
+                this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+            }
         }
     }
 
@@ -894,7 +918,7 @@ export class MenuManager extends Subject{
      */
     createMenus(){
         //TODO: right now StakesMenu is hardcoded to be after AltarMenu, this should be dynamic (is important for the active state of the play button)
-        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu, MultiplayerStatsMenu, MultiplayerGemsMenu, MultiplayerMenu]);
+        this.#createMenus([AltarMenu, SpellsMenu, HotbarMenu, GemsMenu, StakesMenu, GemInsertMenu, StatsMenu, TowerMenu, MineMenu, FusionTableMenu, CombatBuildingsMenu, ResourceBuildingsMenu, DecorationsMenu, BuildMenu, CollectMenu, FuseInputMenu, MultiplayerStatsMenu, MultiplayerGemsMenu, MultiplayerMenu, PropMenu]);
         this.collectParams.meter = this.menus.get("CollectMenu").element.querySelector(".crystal-meter");
         this.#createStatMenuItems();
         this.#createBuildingItems();

@@ -225,7 +225,26 @@ export class World{
         }
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.collisionDetector.checkCharacterCollisions(deltaTime);
-        this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
+        this.spellFactory.models.forEach((model) => model.update(deltaTime));
+    }
+
+    /**
+     * Toggle the grass on the islands
+     * @param grassOn - boolean to toggle grass on or off
+     */
+    toggleGrass(grassOn){
+        this.islands.forEach((island) => {
+            island.toggleGrass(grassOn);
+        });
+    }
+
+    /**
+     * Delete a building from the world
+     * @param building - the building to delete
+     */
+    deleteBuilding(building){
+        const island = this.getIslandByPosition(building.position);
+        island.deleteBuilding(building);
     }
 }

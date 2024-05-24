@@ -18,8 +18,8 @@
 :root{
     cursor: url('../assets/images/wand.png'), auto;
     --game-timer-height: 5vh;
-    --fuse-button-height: 80px;
-    --fuse-button-width: 80px;
+    --fuse-button-height: 60px;
+    --fuse-button-width: 10vw;
     --close-button-size: 50px;
     --play-button-height: 60px;
     --play-button-width: 120px;
@@ -65,11 +65,29 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.close-button:hover {
-  transform: scale(1.10);
+.delete-button {
+    position: relative;
+    width: var(--close-button-size);
+    height: var(--close-button-size);
+    background-image: url('/static/assets/images/menu/delete.png');
+    background-color: transparent;
+    background-size: cover;
+    z-index: 12;
+    cursor: pointer;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.close-button:active {
+.close-button:hover, .delete-button:hover {
+    transform: scale(1.10);
+}
+
+/* Hide delete button if it in the Altar Menu */
+#AltarMenu .delete-button-container {
+    display: none;
+}
+
+.close-button:active, .delete-button:active {
   transform: translateY(5px);
 }
 
@@ -83,6 +101,7 @@
     display: flex;
     flex-direction: column;
     align-items: end;
+    font-family: 'Surabasa', sans-serif;
 }
 
 .page-menu{
@@ -110,6 +129,11 @@
     flex-direction: column;
     justify-content: start;
     align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    font-family: Surabasa, sans-serif;
+    line-height: 1.1;
+    z-index: 9;
 }
 
 .lvl-up-button-text{
@@ -288,20 +312,23 @@
 }
 
 .fuse-button {
-    background-color: transparent; /* Remove background color */
     color: white;
-    border: none;
     cursor: pointer;
     display: inline-block; /* Change display to inline-block */
     margin: 5px;
     height: var(--fuse-button-height); /* Set height */
     width: var(--fuse-button-width); /* Set width */
-    background-image: url('/static/assets/images/menu/fuseButton.png'); /* Set background image */
     background-size: cover; /* Cover the entire button with the image */
     background-position: center; /* Center the background image */
     background-repeat: no-repeat; /* Prevent the background image from repeating */
+    background-color: rgba(24, 0, 84, 0.99);
+    border-radius: 10px;
+    border-color: #5c40b6;
+    drop-shadow(0 0 10px rgba(24, 0, 84, 0.5));
     transition: transform 0.3s ease, box-shadow 0.3s ease; /* Add transition effect */
+    font-family: "Surabasa", sans-serif;
     z-index: 1;
+    font-size: 24px;
 }
 
 .fuse-button:hover {
@@ -487,6 +514,8 @@
     padding: 0;
     font-size: 24px; /* Adjust font size accordingly */
     aspect-ratio: 2/1;
+    font-family: Surabasa, sans-serif;
+    line-height: 1.1;
 }
 
 .add-button:hover, .remove-button:hover {
@@ -860,6 +889,7 @@
     overflow: hidden;
     margin: 5px;
     flex-grow: 1;
+    line-height: 1.1;
 }
 .menu-item-description-placed{
     color: orange;
@@ -2655,10 +2685,10 @@ a[data-tooltip][data-placement="right"]::after {
     display: block;
     position: fixed; /* Use fixed or absolute positioning */
     top: 80%; /* Align vertically at the middle */
-    right: 0; /* Align to the right edge of the viewport */
+    left: 0.4vw; /* Align to the right edge of the viewport */
     transform: translateY(-50%); /* Adjust the position to be truly centered vertically */
-    width: 3%; /* Optional: Set a specific width */
-    height: 3%; /* Optional: Set a specific height */
+    width: calc(2.75vw + 14px); /* Optional: Set a specific width */
+    height: calc(2.75vw + 14px); /* Optional: Set a specific height */
     background-color: lightblue; /* Optional: Just for better visibility */
     text-align: center; /* Optional: Align text within the div */
     padding: 10px; /* Optional: Add padding inside the div */
@@ -2667,7 +2697,8 @@ a[data-tooltip][data-placement="right"]::after {
     background-size: 30%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
-    text-align: center;
+    box-shadow: 2px 2px 8px -3px #000;
+    cursor: pointer;
 }
 
 .Friends-Content{
@@ -2683,6 +2714,7 @@ a[data-tooltip][data-placement="right"]::after {
     padding: 10px; /* Optional: Add padding inside the div */
     border: solid black;
     border-radius: 10px;
+    overflow-y: auto;
     z-index: 10;
 }
 
@@ -2704,8 +2736,6 @@ a[data-tooltip][data-placement="right"]::after {
     border: solid black;
     border-radius: 10px 0px 0px 0px;
     cursor: pointer;
-
-
 }
 
 .Friend-Add-Button{
@@ -2754,6 +2784,13 @@ a[data-tooltip][data-placement="right"]::after {
     top: 20%;
     text-decoration-color: black;
 
+}
+
+.Username-Exist{
+    display: none;
+    color: red;
+    margin-left: 90px;
+    margin-top: 5px;
 }
 
 .Request-Submit{

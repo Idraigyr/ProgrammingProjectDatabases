@@ -18,6 +18,9 @@ export class MultiplayerController extends Subject{
     viewManager;
     spellCaster;
     spellFactory;
+    /* TODO: look and see
+    settings;
+    */
     factory;
     minionController;
     forwardingNameSpace;
@@ -33,6 +36,7 @@ export class MultiplayerController extends Subject{
         this.stakedGems = [];
         this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
+        this.friendsMenu = params.friendsMenu;
 
         //Friend visit properties
         this.pendingVisitRequest = null;
@@ -151,8 +155,6 @@ export class MultiplayerController extends Subject{
         const connectionPoint = this.worldManager.getIslandConnectionPoint();
         if(this.worldManager.world.getBuildingByPosition(connectionPoint)) throw new Error("Connection point is occupied by a building");
         const altarPosition = this.worldManager.getAltarPosition();
-        console.log("connection point: ", connectionPoint);
-        console.log("altar position: ", altarPosition);
         if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("No path from connection point to altar");
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
@@ -250,7 +252,7 @@ export class MultiplayerController extends Subject{
         this.minionController.worldMap = this.worldManager.world.islands;
         progressBar.value = 90;
 
-        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 10});
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 2});
         this.worldManager.generateSpellSpawners({
             spell: {
                 type: new Fireball({}),
@@ -260,13 +262,17 @@ export class MultiplayerController extends Subject{
                     duration: 4,
                 }
             },
-            interval: 1
+            interval: 15
         });
 
         //start sending state updates to server
         this.startSendingStateUpdates(this.peerInfo.userID);
         //announce to the server that the player is ready to start the match
         this.forwardingNameSpace.sendPlayerReadyEvent(this.#matchId);
+        /* TODO: look and see
+        // Time for settings
+        this.settings.toggleGrass({target: {checked: this.settings.grassOn}});
+        */
     }
 
     /**
@@ -275,6 +281,7 @@ export class MultiplayerController extends Subject{
     startMatch(){
         console.log("match started");
         this.inMatch = true;
+        this.friendsMenu.inMatch = true;
         document.querySelector('.loading-animation').style.display = 'none';
         this.togglePhysicsUpdates();
     }
@@ -375,7 +382,7 @@ export class MultiplayerController extends Subject{
                     reject(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("GET success");
+                console.log("GET lifetimeStats success");
                 console.log(textStatus, data);
                 delete data["player_id"];
                 resolve(data);
@@ -464,6 +471,7 @@ export class MultiplayerController extends Subject{
         this.toggleTimer(false);
         this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
+        this.friendsMenu.inMatch = false;
         this.togglePhysicsUpdates();
         console.log("done leaving match");
     }
@@ -757,7 +765,8 @@ export class MultiplayerController extends Subject{
                 player: {
                     position: this.worldManager.world.player.position,
                     phi: this.worldManager.world.player.phi,
-                    health: this.worldManager.world.player.health
+                    health: this.worldManager.world.player.health,
+                    velocity: this.worldManager.world.player.velocity
                 }
             });
             //minion state (position, rotation, health) => just check minionModel

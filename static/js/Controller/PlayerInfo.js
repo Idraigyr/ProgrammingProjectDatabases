@@ -1,6 +1,14 @@
 // import * as $ from "jquery"
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {API_URL, playerProfileURI, playerURI, timeURI, islandURI} from "../configs/EndpointConfigs.js";
+import {
+    API_URL,
+    playerProfileURI,
+    playerURI,
+    timeURI,
+    logoutURI,
+    islandURI,
+    buildingUpgradeURI
+} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import {popUp} from "../external/LevelUp.js";
 import {assert} from "../helpers.js";
@@ -29,7 +37,7 @@ export class PlayerInfo extends Subject{
 
         this.maxBuildings = 2;
 
-        this.level = 0;
+        this.level = 1;
         this.experience = 0;
         this.xpThreshold = 50;
 
@@ -42,9 +50,9 @@ export class PlayerInfo extends Subject{
             Tower: Level[this.level]["Tower"],
             WarriorHut: Level[this.level]["WarriorHut"],
             Mine: Level[this.level]["Mine"],
-            FusionTable: Level[this.level]["FusionTable"]
+            FusionTable: Level[this.level]["FusionTable"],
         };
-        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0}
+        this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0};
 
     }
 
@@ -135,12 +143,9 @@ export class PlayerInfo extends Subject{
             this.username = response.username;
 
             this.spells = response.spells;
-            console.log(this.spells);
-            console.log(response)
 
             this.islandID = response.entity.island_id;
             this.gems = response.gems;
-            console.log(response);
             this.crystals = response.crystals;
 
             this.gems = response.gems;
@@ -182,7 +187,6 @@ export class PlayerInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${playerURI}?id=${this.userID}`);
-            console.log(response);
             return response.gems;
         } catch (err){
             console.error(err);
@@ -198,7 +202,6 @@ export class PlayerInfo extends Subject{
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${timeURI}`);
-            console.log(response.time);
             return response.time;
         } catch (err){
             console.error(err);
@@ -246,7 +249,7 @@ export class PlayerInfo extends Subject{
      * @returns {boolean} - True if the crystals were changed, false otherwise
      */
     changeCrystals(amount){
-        if(!amount) throw new Error("playerInfo.changeCrystals: amount is not defined");
+        if(!Number.isFinite(amount)) throw new Error("playerInfo.changeCrystals: amount is not defined");
         if(amount < 0 && Math.abs(amount) > this.crystals) return false;
         this.crystals = amount > 0 ? this.crystals + amount : Math.max(0, this.crystals + amount);
         this.dispatchEvent(this.createUpdateCrystalsEvent());
@@ -293,10 +296,49 @@ export class PlayerInfo extends Subject{
                 dataType: 'json',
                 error: (e) => {
                     console.error(e);
+                    console.error("MAna: ", this.mana);
                 }
             });
         } catch (err){
             console.error(err);
+        }
+    }
+    /**
+     * Creates level up task on the server
+     * @param building - Building to level up
+     */
+    async createLevelUpTask(building){ //TODO: WHY DO THIS HERE?
+        // Get time
+        let response = await this.getCurrentTime();
+        let serverTime = new Date(response);
+        serverTime.setSeconds(serverTime.getSeconds()+ building.upgradeTime);
+        let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+        let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+        // Convert local time to ISO string
+        let time = localTime.toISOString();
+        let formattedDate = time.slice(0, 19);
+        try{
+            await $.ajax({
+                url: `${API_URL}/${buildingUpgradeURI}`,
+                type: "POST",
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                data: JSON.stringify({
+                    island_id: this.islandID,
+                    to_level: building.level + 1,
+                    building_id: building.id,
+                    used_crystals: building.upgradeCost,
+                    endtime: formattedDate
+                }),
+                success: (data) => {
+                    console.log(data);
+                },
+                error: (err) => {
+                    console.log(err);
+                }
+            });
+        } catch (e){
+            console.log(e);
         }
     }
     changeHealth(amount) {
@@ -386,7 +428,7 @@ export class PlayerInfo extends Subject{
             if(increase){
                 let old = this.level;
                 this.level = this.level + 1;
-                if (this.level < 0 || this.level > 4){
+                if (this.level < 0 || this.level > 15){
                     this.level = old;
                     return false;
                 }
@@ -395,7 +437,7 @@ export class PlayerInfo extends Subject{
             }
         } else{
             if(amount < 0 && Math.abs(amount) > this.level) return false;
-            if(amount < 0 || amount > 4) return false;
+            if(amount < 0 || amount > 15) return false;
             this.level = amount;
         }
         this.dispatchEvent(this.createUpdateLevelEvent());
@@ -418,7 +460,6 @@ export class PlayerInfo extends Subject{
      * @returns {CustomEvent<{xp: number, threshold: number}>} - Event that contains the new amount of xp threshold
      */
     createUpdateXpThresholdEvent() {
-        console.log(this.xpThreshold)
         return new CustomEvent("updateXpThreshold", {detail: {xp: this.experience, threshold: this.xpThreshold}});
     }
 

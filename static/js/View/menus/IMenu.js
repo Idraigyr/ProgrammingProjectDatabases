@@ -424,7 +424,6 @@ export class MultiplayerGemsMenu extends GemsMenu{
      * @param {"win" | "lose" | "draw"} result
      */
     setTitle(result){
-        console.log("setting title:", result)
         if(result === "win"){
             this.getTitleBar().innerText = "Won";
         } else if(result === "lose"){
@@ -544,9 +543,9 @@ export class BaseMenu extends IMenu{
         subMenuDiv.classList.add("sub-menu-container");
         closeButton.classList.add("close-button");
         closeButtonDiv.appendChild(closeButton);
-        titleDiv.appendChild(title);
         headerDiv.appendChild(titleDiv);
         headerDiv.appendChild(closeButtonDiv);
+        titleDiv.appendChild(title);
         element.appendChild(headerDiv);
         element.appendChild(subMenuDiv);
         element.id = this.name;
@@ -565,6 +564,35 @@ export class BaseMenu extends IMenu{
         return "Base";
     }
 
+}
+
+export class PropMenu extends BaseMenu{
+    constructor(params) {
+        params.classes ? params.classes.push("prop-menu") : params.classes = ["prop-menu"];
+        super(params);
+    }
+
+    get name(){
+        return "PropMenu";
+    }
+
+    createElement(params) {
+        const element = super.createElement(params);
+        const deleteButton = document.createElement("button");
+        const deleteButtonDiv = document.createElement("div");
+        deleteButton.classList.add("delete-button");
+        // Add title to the button
+        deleteButton.title = "Vanish this";
+        deleteButtonDiv.appendChild(deleteButton);
+        deleteButtonDiv.classList.add("delete-button-container");
+        const headerDiv = element.querySelector(".menu-header");
+        headerDiv.insertBefore(deleteButtonDiv, headerDiv.lastChild);
+        return element;
+    }
+
+    get title(){
+        return "Decoration";
+    }
 }
 
 export class MultiplayerMenu extends BaseMenu{
@@ -618,9 +646,7 @@ export class MultiplayerStatsMenu extends IMenu{
         buttonContainer.appendChild(lifetimeButton);
         buttonContainer.addEventListener("click", this.toggleStats.bind(this));
         statsDiv.appendChild(buttonContainer);
-        console.log(multiplayerStats.getKeys())
         for(const key of multiplayerStats.getKeys()){
-            console.log(key)
             const statElement = document.createElement("li");
             statElement.id = key;
             statElement.classList.add("multiplayer-stats-menu-li");
@@ -680,7 +706,7 @@ export class MultiplayerStatsMenu extends IMenu{
     }
 }
 
-export class BuildingMenu extends BaseMenu{
+export class BuildingMenu extends PropMenu{
     constructor(params) {
         params.classes ? params.classes.push("building-menu") : params.classes = ["building-menu"];
         super(params);
@@ -799,7 +825,7 @@ export class FusionTableMenu extends BuildingMenu{
         const fuseButton = document.createElement("button");
         fuseButtonDiv.classList.add("fuse-button-container");
         fuseButton.classList.add("fuse-button");
-        //fuseButton.innerText = "Fuse";
+        fuseButton.innerText = "Fuse ✨";
         fuseButtonDiv.appendChild(fuseButton);
         const headerDiv = element.querySelector(".menu-header");
         headerDiv.insertAdjacentElement("afterend", fuseButtonDiv);

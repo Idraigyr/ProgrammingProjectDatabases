@@ -5,7 +5,7 @@ export let playerList = [];
 
 $(document).ready(function(){
     try {
-        $.ajax({url: '/api/player/list', type: "GET"}).done(function(data){
+        $.ajax({url: `${API_URL}/api/player/list`, type: "GET"}).done(function(data){
              playerList = data;
          });
     } catch (e) {
@@ -14,13 +14,13 @@ $(document).ready(function(){
 
 });
 
-async function setPlayerList() {
-    try {playerList = await $.ajax({url: '/api/player/list', type: "GET"}); } catch (error) {console.error(error)}
+export async function setPlayerList() {
+    try {playerList = await $.ajax({url: `${API_URL}/api/player/list`, type: "GET"}); } catch (error) {console.error(error)}
 }
 
 export function sendRequest(receiverID){
     $.ajax({
-        url: '/api/friend_request',
+        url: `${API_URL}/api/friend_request`,
         type: "POST",
         data: JSON.stringify({sender_id: userId, receiver_id:receiverID}),
         dataType: "json",
@@ -95,4 +95,45 @@ export async function getFriendRequestStatus(friendRequestID){
         // Handle error appropriately, maybe throw it again or return an empty array
         return [];
     }
+}
+
+export function acceptFriendRequest(request_id) {
+        // Handle accepting a friend request here
+        try {
+            $.ajax({
+                url: `${API_URL}/api/friend_request`,
+                type: "PUT",
+                data: JSON.stringify(formatPUTFriend(request_id, "accepted")),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            })
+        } catch (err){
+            console.error(err);
+        }
+
+    }
+
+export function rejectFriendRequest(requestID) {
+    // Handle rejecting a friend request here
+    try {
+        $.ajax({
+            url: `${API_URL}/api/friend_request`,
+            type: "PUT",
+            data: JSON.stringify(formatPUTFriend(requestID, "rejected")),
+            dataType: "json",
+            contentType: "application/json",
+            error: (e) => {
+                console.error(e);
+            }
+        })
+    } catch (err){
+        console.error(err);
+    }
+}
+
+export function formatPUTFriend(requestID, status) {
+    return {id: requestID, status: status};
 }
