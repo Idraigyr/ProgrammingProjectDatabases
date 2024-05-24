@@ -645,7 +645,7 @@ class App {
 
         progressBar.labels[0].innerText = "Logging in...";
         await this.playerInfo.login();
-        progressBar.labels[0].innerText = "Generating collision mesh...";
+        progressBar.labels[0].innerText = "Last magical touches...";
         progressBar.value = 95;
 
         await this.friendsMenu.populateRequests();
