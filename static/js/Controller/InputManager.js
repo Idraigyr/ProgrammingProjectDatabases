@@ -312,4 +312,14 @@ export class InputManager extends Subject{
         const applyButton = document.querySelector('.applyButton');
         applyButton.addEventListener('click', callback);
     }
+
+    addFullscreenButtonListener(callback) {
+        const fulllscreenButton = document.querySelector('.fullscreenButton');
+        fulllscreenButton.addEventListener('click', callback);
+    }
+
+    addHelpButtonListener(callback) {
+        const helpButton = document.querySelector('.helpButton');
+        helpButton.addEventListener('click', callback);
+    }
 }

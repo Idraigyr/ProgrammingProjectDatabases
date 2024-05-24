@@ -30,6 +30,8 @@ export class Settings {
         inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
         inputManager.addApplyButtonListener(this.applySettings.bind(this))
+        inputManager.addFullscreenButtonListener(this.toggleFullscreen.bind(this))
+        inputManager.addHelpButtonListener(this.toggleHelpMenu.bind(this))
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
@@ -131,5 +133,24 @@ export class Settings {
 
     changeKeyBind(event) {
         console.log(event);
+    }
+
+    toggleFullscreen() {
+        console.log("Fullscreen button clicked");
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            try {
+                document.documentElement.requestFullscreen();
+            }
+            catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
+    toggleHelpMenu() {
+        const helpMenu = document.querySelector('.help-container');
+        helpMenu.classList.toggle('hide');
     }
 }
