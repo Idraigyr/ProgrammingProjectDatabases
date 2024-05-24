@@ -494,10 +494,6 @@ export function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function objectIsInArray(object, array){
-    return array.some(obj => obj === object);
-}
-
 /*
 const timeout = function (s) {
     return new Promise(function(_,reject){
