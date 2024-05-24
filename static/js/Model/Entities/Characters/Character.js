@@ -181,11 +181,12 @@ export class Character extends Entity{
         if(damage <= 0) return;
         const prevHealth = this.health;
         this.health -= damage;
-        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
         if(this.health <= 0){
             this.health = 0;
             this.dies();
         }
+        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
+
     }
 
     dies(){
