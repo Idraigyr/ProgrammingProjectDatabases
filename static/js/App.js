@@ -289,7 +289,7 @@ class App {
             if(buildingNumber === buildTypes.getNumber("void")) return;
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
-            // If the selected cell is empty
+            // If the new selected cell is empty
             if ((buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject)) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
@@ -306,7 +306,6 @@ class App {
                 // Remove the object from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
-                this.spellCaster.previousRotation = null;
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -339,11 +338,11 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
-                // Update static mesh
-                this.collisionDetector.generateColliderOnWorker();
                 // Get if the cell is occupied
                 let buildOnCell = island.getCellIndex(pos);
                 if (buildOnCell !== building.cellIndex) return;
+                // Update static mesh
+                this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
                 if(this.worldManager.persistent){
                     this.worldManager.sendPUT(placeableURI, building, postRetries);
@@ -351,8 +350,6 @@ class App {
                 // You have placed the same building on the same cell, so remove info from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
-                this.spellCaster.previousRotation = null;
-                this.spellCaster.previousSelectedPosition = null;
 
                 //allow menus to be opened again
                 this.menuManager.menusEnabled = true;
@@ -370,6 +367,7 @@ class App {
 
                 //disable opening menus while building is selected
                 this.menuManager.menusEnabled = false;
+                this.collisionDetector.generateColliderOnWorker([selectedObject]);
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {

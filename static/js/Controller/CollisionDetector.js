@@ -96,10 +96,11 @@ export class CollisionDetector extends Subject{
 
     /**
      * generates a collider mesh from the building and island charModels in the viewManager
+     * @param {[]} modelsToIgnore - models to ignore when generating the collider
      * @return {THREE.Mesh}
      */
-    generateCollider(){
-        this.viewManager.getColliderModels(this.charModel);
+    generateCollider(modelsToIgnore = []){
+        this.viewManager.getColliderModels(this.charModel, modelsToIgnore);
         let staticGenerator = new StaticGeometryGenerator(this.charModel);
         staticGenerator.attributes = [ 'position' ];
 
@@ -111,13 +112,14 @@ export class CollisionDetector extends Subject{
 
     /**
      * generates a collider mesh from the building and island charModels in the viewManager on a webWorker if supported, currently just calls generateCollider
+     * @param {[]} modelsToIgnore - models to ignore when generating the collider
      */
-    generateColliderOnWorker(){
+    generateColliderOnWorker(modelsToIgnore = []){
         if(typeof Worker === 'undefined' || this.startUp || true){
             //show loading screen
             document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
             document.querySelector('.loading-animation').style.display = 'block';
-            this.collider = this.generateCollider();
+            this.collider = this.generateCollider(modelsToIgnore);
             document.querySelector('.loading-animation').style.display = 'none';
         } else {
             console.log("starting worker...");
@@ -125,7 +127,7 @@ export class CollisionDetector extends Subject{
             this.worker = new Worker(workerURI, {type: 'module'});
             console.log(this.worker);
             this.worker.addEventListener('message', this.receiveCollider.bind(this));
-            this.viewManager.getColliderModels(this.charModel);
+            this.viewManager.getColliderModels(this.charModel, modelsToIgnore);
             this.worker.postMessage(this.stringifyCharModel());
         }
         this.startUp = false;
