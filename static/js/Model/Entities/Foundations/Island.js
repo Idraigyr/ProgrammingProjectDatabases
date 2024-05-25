@@ -158,7 +158,7 @@ export class Island extends Foundation{
         let pos = position.clone();
         pos = returnWorldToGridIndex(pos.sub(this.position));
         // Transform position to cell index
-        return (pos.x + (this.width - 1)/2)*this.width + (pos.z + (this.length -1)/2);
+        return this._calculate1DIndex(pos.x, pos.z);
     }
 
     /**

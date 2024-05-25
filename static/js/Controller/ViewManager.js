@@ -247,11 +247,23 @@ export class ViewManager extends Subject{
     /**
      * Get the collider models of the manager
      * @param array array to fill with collider models
+     * @param toIgnore array of models to ignore
      */
-    getColliderModels(array){
+    getColliderModels(array, toIgnore=[]){
         array.splice(0, array.length);
-        this.pairs.building.forEach((pair) => array.push(pair.view.charModel));
-        this.pairs.island.forEach((pair) => array.push(pair.view.charModel));
+        this.pairs.building.forEach(
+            (pair) => {
+                if(!toIgnore.includes(pair.model)){
+                    array.push(pair.view.charModel);
+                }
+            }
+        );
+        this.pairs.island.forEach(
+            (pair) => {
+                if (!toIgnore.includes(pair.model)){
+                    array.push(pair.view.charModel);
+                }
+            });
     }
 
     /**

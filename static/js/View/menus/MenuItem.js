@@ -42,7 +42,7 @@ export class MenuItem{
         element.appendChild(this.icon);
         element.appendChild(description);
         descriptionName.innerText = this.name;
-        descriptionText.innerText = params?.description ?? "placeholder description";
+        descriptionText.innerText = params?.description ?? "";
         return element;
     }
 
@@ -116,7 +116,7 @@ export class BuildingItem extends MenuItem{
         // If there is this.extra.buildTime, add it to the name
         if(params?.extra?.buildTime) description += ` ⌛ ${params.extra.buildTime}`;
         descriptionName.innerText += description;
-        descriptionText.innerText = params?.description ?? "placeholder description";
+        descriptionText.innerText = params?.description ?? "";
         //placedDescription.innerText = "placed: 0/0";
         return element;
     }

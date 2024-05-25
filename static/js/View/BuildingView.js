@@ -1,4 +1,5 @@
 import {IView} from "./View.js";
+import * as THREE from "three";
 
 /**
  * Building view base class
@@ -7,6 +8,7 @@ export class Building extends IView{
     constructor(params) {
         super(params);
         this.boundingBox.setFromObject(this.charModel);
+        this.rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
     }
 
     updatePosition(event) {
@@ -21,5 +23,28 @@ export class Building extends IView{
         super.updateRotation(event);
         //check updatePosition for explanation
         this.charModel.updateMatrixWorld();
+    }
+    updateReady(event) {
+        if(event.detail.ready){
+            this.charModel.traverse (function (child) {
+                if (child instanceof THREE.Mesh) {
+                    if(child.originalMaterial !== undefined) {
+                        // Save the original color
+                        child.material = child.originalMaterial;
+                    }
+                }
+            });
+        } else {
+            const greenMaterial = this.rollOverMaterial;
+            // Make charModel green and set opacity to 0.5
+            this.charModel.traverse (function (child) {
+                if (child instanceof THREE.Mesh) {
+                    // Save the original color
+                    if (child.material !== greenMaterial) child.originalMaterial = child.material;
+                    // Make it green
+                    child.material = greenMaterial;
+                }
+            });
+        }
     }
 }

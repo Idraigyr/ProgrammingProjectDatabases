@@ -190,7 +190,7 @@ export class World{
     addBuilding(buildingName, position, rotation = 0, withTimer = false){
         const island = this.getIslandByPosition(position);
         if(island.team !== this.player.team){
-            console.error("cannot add building to enemy island");
+            console.error("Cannot add building to island of another player");
             return null;
         }
         //buildTypes.getNumber("empty") is more readable than 1

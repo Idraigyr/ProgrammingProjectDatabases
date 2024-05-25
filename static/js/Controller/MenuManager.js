@@ -720,10 +720,10 @@ export class MenuManager extends Subject{
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
         const descriptions = [
-            "placeholder description",
-            "placeholder description",
-            "placeholder description",
-            "placeholder description"
+            "increases probability of positive events",
+            "shows how fast the building can produce items",
+            "mesures the pain the building can inflict",
+            "shows the amount of items the building can contain"
         ];
         let items = [];
         for (let i = 0; i < stats.length; i++){
@@ -745,7 +745,7 @@ export class MenuManager extends Subject{
         const stats = ["fortune", "speed", "damage", "capacity"];
         // update stats for according to the building
         if (params.name === "MineMenu"){
-            params.stats.set("capacity", params.stats.get("capacity")*1000);
+            params.stats.set("capacity", params.maxCrystals);
         }
         if (params.name === "TowerMenu"){
             params.stats.set("capacity", params.stats.get("capacity")*100);
@@ -757,7 +757,16 @@ export class MenuManager extends Subject{
                 //TODO: change the text based on the type of building
                 console.log(params.stats.get(stat));
                 let name = `${stat}: ${Math.round(params.stats.get(stat))}`;
-                let text = `placeholder description`;
+                let text = "";
+                if(stat === "fortune"){
+                    text = `increases probability of positive events`;
+                }else if (stat === "speed"){
+                    text = `shows how fast the building can produce items`;
+                }else if (stat === "damage"){
+                    text = `mesures the pain the building can inflict`;
+                }else if (stat === "capacity"){
+                    text = `shows the amount of items the building can contain`;
+                }
                 this.items.get(stat).element.querySelector(".menu-item-description-name").innerText = name;
                 this.items.get(stat).element.querySelector(".menu-item-description-text").innerText = text;
             } else {
