@@ -2,7 +2,7 @@ export let Level  = {
     1: {
         maxMana: 100,
         maxHealth: 100,
-        xpThreshold: 1000,
+        xpThreshold: 100,
         Tree: 0,
         Bush: 0,
         Wall: 0,
@@ -12,12 +12,13 @@ export let Level  = {
         FusionTable: 0,
         crystalStatue: 0,
         goldenStatue: 0,
-        Spells: ['BuildSpell']
+        Spells: ['BuildSpell'],
+        BuildingProgress: 1
     },
     2: {
         maxMana: 120,
         maxHealth: 120,
-        xpThreshold: 2000,
+        xpThreshold: 250,
         Tree: 0,
         Bush: 0,
         Wall: 0,
@@ -25,12 +26,13 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 2,
         FusionTable: 0,
-        Spells: ['BuildSpell']
+        Spells: ['BuildSpell'],
+        BuildingProgress: 1
     },
     3: {
         maxMana: 140,
         maxHealth: 140,
-        xpThreshold: 3000,
+        xpThreshold: 500,
         Tree: 0,
         Bush: 0,
         Wall: 0,
@@ -38,12 +40,13 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 2,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball']
+        Spells: ['BuildSpell','Fireball'],
+        BuildingProgress: 1
     },
     4: {
         maxMana: 160,
         maxHealth: 160,
-        xpThreshold: 5000,
+        xpThreshold: 1500,
         Tree: 0,
         Bush: 0,
         Wall: 3,
@@ -51,12 +54,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 2,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball']
+        Spells: ['BuildSpell','Fireball'],
+        BuildingProgress: 1
     },
     5: {
         maxMana: 180,
         maxHealth: 180,
-        xpThreshold: 7000,
+        xpThreshold: 30000,
         Tree: 0,
         Bush: 0,
         Wall: 5,
@@ -64,12 +68,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball']
+        Spells: ['BuildSpell','Fireball'],
+        BuildingProgress: 2
     },
     6: {
         maxMana: 200,
         maxHealth: 200,
-        xpThreshold: 9000,
+        xpThreshold: 4000,
         Tree: 0,
         Bush: 0,
         Wall: 6,
@@ -77,12 +82,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield']
+        Spells: ['BuildSpell','Fireball','Shield'],
+        BuildingProgress: 2
     },
     7: {
         maxMana: 220,
         maxHealth: 220,
-        xpThreshold: 12000,
+        xpThreshold: 6000,
         Tree: 0,
         Bush: 4,
         Wall: 8,
@@ -90,12 +96,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall'],
+        BuildingProgress: 2
     },
     8: {
         maxMana: 240,
         maxHealth: 240,
-        xpThreshold: 15000,
+        xpThreshold: 8000,
         Tree: 4,
         Bush: 6,
         Wall: 9,
@@ -103,12 +110,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 4,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall'],
+        BuildingProgress: 2
     },
     9: {
         maxMana: 260,
         maxHealth: 260,
-        xpThreshold: 18000,
+        xpThreshold: 10000,
         Tree: 5,
         Bush: 7,
         Wall: 10,
@@ -116,12 +124,13 @@ export let Level  = {
         WarriorHut: 2,
         Mine: 4,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
     },
     10: {
         maxMana: 280,
         maxHealth: 280,
-        xpThreshold: 22000,
+        xpThreshold: 13000,
         Tree: 5,
         Bush: 7,
         Wall: 10,
@@ -129,13 +138,14 @@ export let Level  = {
         WarriorHut: 2,
         Mine: 5,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
 
     },
     11: {
         maxMana: 290,
         maxHealth: 290,
-        xpThreshold: 26000,
+        xpThreshold: 16000,
         Tree: 5,
         Bush: 8,
         Wall: 11,
@@ -143,13 +153,14 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
 
     },
     12: {
         maxMana: 300,
         maxHealth: 300,
-        xpThreshold: 31000,
+        xpThreshold: 20000,
         Tree: 5,
         Bush: 8,
         Wall: 12,
@@ -157,13 +168,14 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
 
     },
     13: {
         maxMana: 310,
         maxHealth: 310,
-        xpThreshold: 36000,
+        xpThreshold: 24000,
         Tree: 7,
         Bush: 8,
         Wall: 14,
@@ -171,12 +183,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
     },
     14: {
         maxMana: 320,
         maxHealth: 320,
-        xpThreshold: 41000,
+        xpThreshold: 28000,
         Tree: 8,
         Bush: 8,
         Wall: 14,
@@ -184,12 +197,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
     },
     15: {
         maxMana: 330,
         maxHealth: 330,
-        xpThreshold: 47000,
+        xpThreshold: 32000,
         Tree: 10,
         Bush: 10,
         Wall: 14,
@@ -197,7 +211,8 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud']
+        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        BuildingProgress: 2
     }
 };
 

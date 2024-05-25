@@ -133,7 +133,7 @@ export class CharacterController extends Subject{
      * @returns {CustomEvent<{}>}
      */
     createEatingEvent(){
-        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 25}}});
+        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -30, health: 30, mana: 30, xp: 25}}});
     }
 
     /**

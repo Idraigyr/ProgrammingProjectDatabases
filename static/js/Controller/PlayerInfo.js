@@ -54,6 +54,7 @@ export class PlayerInfo extends Subject{
         };
         this.buildingsPlaced = {Tree: 0, Bush: 0, Wall: 0, Tower: 0, WarriorHut: 0, Mine: 0, FusionTable: 0};
         this.availableSpells = Level[this.level]["Spells"]
+        this.builds = []
 
     }
 
@@ -343,6 +344,15 @@ export class PlayerInfo extends Subject{
             console.log(e);
         }
     }
+
+    buildings(){
+        for(let b in this.buildingsThreshold){
+            if (this.buildingsThreshold[b] !== 0){
+                this.builds.push(b);
+            }
+
+        }
+    }
     changeHealth(amount) {
         this.health = amount
         this.dispatchEvent(this.createUpdateHealthEvent());
@@ -411,6 +421,7 @@ export class PlayerInfo extends Subject{
             this.buildingsThreshold["WarriorHut"] = Level[this.level]["WarriorHut"];
             this.buildingsThreshold["Mine"] = Level[this.level]["Mine"];
             this.buildingsThreshold["FusionTable"] = Level[this.level]["FusionTable"];
+            this.availableSpells = Level[this.level]["Spells"];
             this.dispatchEvent(this.createUpdateManaEvent());
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -444,9 +455,14 @@ export class PlayerInfo extends Subject{
         }
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.setLevelStats();
-        popUp(this.level, this.maxMana, this.maxHealth, this.maxGemAttribute);
+        this.buildings();
+        popUp(this.level, this.maxMana, this.maxHealth, this.builds, this.availableSpells);
         this.updatePlayerInfoBackend();
         return true;
+    }
+
+    getLevel(){
+        return this.level;
     }
 
     /**

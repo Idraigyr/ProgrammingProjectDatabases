@@ -864,6 +864,9 @@ export class WorldManager{
             console.error(err);
         }
     }
+    checkBuildingsInProgress() {
+
+    }
 
     /**
      * Toggle the grass on the world

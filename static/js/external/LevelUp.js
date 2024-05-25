@@ -4,9 +4,10 @@ import {API_URL} from "../configs/EndpointConfigs.js";
  * @param level level of the player
  * @param maxMana maximum mana of the player
  * @param maxHealth maximum health of the player
- * @param maxGemAttribute maximum number of gem attributes of the player
+ * @param buildings
+ * @param Spells
  */
-export function popUp(level, maxMana, maxHealth, maxGemAttribute){
+export function popUp(level, maxMana, maxHealth, buildings, Spells){
 
     let modal = document.getElementById("LevelUp");
     let levelContent = document.getElementById("LevelPopupContent");
@@ -40,13 +41,16 @@ export function popUp(level, maxMana, maxHealth, maxGemAttribute){
         }
     }
 
+
+
     details.onclick = function() {
         newLevelP.remove();
         modal.style.display = "none";
         levelDetails.id = "levelDetails"
         levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
             MaxHealth: ${maxHealth} <br>
-            MaxGemAttribute: ${maxGemAttribute} <br>
+            Buildings: ${arrayStringConverter(buildings)} <br>
+            Spells: ${arrayStringConverter(Spells)}
         `;
         detailsContent.appendChild(levelDetails);
         detailsInfo.style.display = "block";
@@ -57,4 +61,18 @@ export function popUp(level, maxMana, maxHealth, maxGemAttribute){
         detailsInfo.style.display = "none";
     }
 
+
+
+}
+
+function arrayStringConverter(array) {
+    let string = "[ ";
+    for(let i = 0; i < array.length; i++){
+        if (i !== array.length-1){
+            string += array[i] + ", ";
+        } else{
+            string += array[i] + "]";
+        }
+    }
+    return string;
 }

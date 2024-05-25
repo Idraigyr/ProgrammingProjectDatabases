@@ -234,7 +234,23 @@ upgrade buildings.
 
 ## Friends
 
-TODO - @Aaditya
+In the game, you can access the Friends Menu through the button located at the bottom right of the screen.
+
+![Friend List image](/docs/img/friend.png)
+
+
+Click on the first icon to view your Friends List. Here, you can see the list of your friends. There is also a "Visit Island" button next to each friend's name. Pressing this button will send a visit request to your friend. If your friend accepts the request, you will be able to visit their island.
+
+![Friend List image](/docs/img/friendList.png)
+
+Click on the second icon to open the Add Friend forum. Here, you can enter the username of the player you wish to add as a friend.
+
+![Friend Add image](/docs/img/friendAdd.png)
+
+
+Click on the third icon to view the list of friend requests and "Visit Island" requests you have received. From here, you can accept or decline these requests.
+
+![Friend Request image](/docs/img/friendRequest.png)
 
 # Optimizations
 ___

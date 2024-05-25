@@ -314,6 +314,17 @@ export class MultiplayerController extends Subject{
         const lifetimeStats = [];
         this.stats.forEach((value, key) => {
             currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+            switch (key) {
+                case "player_kills":
+                    this.playerInfo.changeXP(50*value);
+                    //bonus
+                    if(this.peerInfo.level > this.playerInfo.level) this.playerInfo.changeXP(50);
+                    break
+                case "minions_killed":
+                    this.playerInfo.changeXP(10*value);
+                    break;
+
+            }
             this.lifetimeStats.set(key, this.lifetimeStats.get(key) + value);
         });
         this.lifetimeStats.forEach((value, key) => {

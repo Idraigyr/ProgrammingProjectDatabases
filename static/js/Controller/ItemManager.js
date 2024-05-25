@@ -3,6 +3,7 @@ import {API_URL, gemAttributesURI, gemURI, postRetries, spellListURI} from "../c
 import {minTotalPowerForStakes, powerScaling} from "../configs/ControllerConfigs.js";
 import {gemTypes} from "../configs/Enums.js";
 import {spellTypes} from "../Model/Spell.js";
+import {min} from "three/nodes";
 
 /**
  * Class for managing items in menu's
@@ -435,9 +436,9 @@ export class ItemManager {
         };
         const gem = new Gem(params);
 
-        const maxAttributes = 3; //TODO: change this depending on player level
-        const maxMultiplier = 3; //TODO: change this depending on player level
-        const minMultiplier = 1; //TODO: change this depending on player level
+        const maxAttributes = min(this.gemAttributes.length, Math.floor(this.playerInfo.getLevel()/4)); //TODO: change this depending on player level
+        const maxMultiplier = 1.75 + 0.2*(this.playerInfo.getLevel()-1) + 0.4 * fusionLevel-1; //TODO: change this depending on player level
+        const minMultiplier = 1.25 + 0.1*(this.playerInfo.getLevel()-1) + 0.1 * fusionLevel-1; //TODO: change this depending on player level
 
         const numberOfAttributes = Math.floor(Math.random() * maxAttributes) + 1;
 

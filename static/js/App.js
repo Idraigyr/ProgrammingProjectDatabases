@@ -427,6 +427,9 @@ class App {
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
+            if(buildingNumber === buildTypes.getNumber("altar_building")){
+                params.spells = this.playerInfo.availableSpells
+            }
             if(params.name === undefined) params.name = "PropMenu";
             this.menuManager.renderMenu(params);
             //temp solution:
