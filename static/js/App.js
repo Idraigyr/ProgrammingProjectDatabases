@@ -652,8 +652,6 @@ class App {
         progressBar.labels[0].innerText = "Generating collision mesh...";
         progressBar.value = 95;
         this.collisionDetector.generateColliderOnWorker();
-
-        await this.friendsMenu.populateRequests();
         
         if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});

@@ -64,6 +64,7 @@ export class FriendsMenu {
                 this.listFriendButton.style.display = "block"
                 this.requestFriendButton.style.display = "block";
                 this.FriendList.style.display = "block";
+                this.listRequest.style.display = "none";
             }
         }
     }
@@ -118,8 +119,8 @@ export class FriendsMenu {
 
         }
         else {
-            this.usernameExist.style.display = "block";
             this.usernameFriend.value = '';
+            this.usernameExist.style.display = "block";
 
         }
     }
@@ -165,7 +166,7 @@ export class FriendsMenu {
         this.listFriend.appendChild(friend);
     }
 
-    async addRequestMenu(request){
+    async addRequestMenu(request) {
         let status = await AllFriends.getFriendRequestStatus(request.id);
         if (status === "pending") {
             const requestElement = document.createElement('div');
@@ -173,30 +174,37 @@ export class FriendsMenu {
             requestElement.classList.add('request');
             requestElement.innerHTML = `${await AllFriends.getPlayerUsername(request.sender_id)}`;
 
+            const friendsMenu = this;
             const acceptButton = document.createElement('button');
             acceptButton.classList.add('Accept-Request');
             acceptButton.setAttribute('data-request-id', request.id);
-            acceptButton.onclick = async function () {
-                AllFriends.acceptFriendRequest(request.id);
-                this.requests = await AllFriends.getFriendRequests();
-                requestElement.remove()
-
-            }
 
             const rejectButton = document.createElement('button');
             rejectButton.classList.add('Reject-Request');
             rejectButton.setAttribute('data-request-id', request.id);
-            rejectButton.onclick = async function () {
-                AllFriends.rejectFriendRequest(request.id);
-                this.requests = await AllFriends.getFriendRequests();
-                requestElement.remove()
 
+            acceptButton.onclick = async function () {
+                await AllFriends.acceptFriendRequest(request.id);
+                await friendsMenu.updateRequests();
+                requestElement.remove();
             }
+
+            rejectButton.onclick = async function () {
+                await AllFriends.rejectFriendRequest(request.id);
+                console.log("Request rejected, request ID:", request.id);
+                await friendsMenu.updateRequests();
+                requestElement.remove();
+            }
+
             requestElement.appendChild(acceptButton);
             requestElement.appendChild(rejectButton);
             this.listRequest.appendChild(requestElement);
         }
+    }
 
+    async updateRequests() {
+        this.requests = await AllFriends.getFriendRequests();
+        await this.populateRequests();
     }
     toggleWindowbutton() {
         if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {

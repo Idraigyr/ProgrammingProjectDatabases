@@ -1047,7 +1047,6 @@ export class MultiplayerController extends Subject{
                 notificationButtonsContainer.appendChild(rejectButton);
                 break;
         }
-
         this.friendsMenu.querySelector("#listRequests").appendChild(notification);
     }
 
