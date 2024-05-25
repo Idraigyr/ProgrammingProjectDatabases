@@ -73,6 +73,7 @@ export class SpellItem extends MenuItem{
         this.element.classList.add("unlocked");
     }
 
+
     get type(){
         return "Spell";
     }

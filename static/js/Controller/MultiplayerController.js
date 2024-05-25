@@ -332,6 +332,17 @@ export class MultiplayerController extends Subject{
         const lifetimeStats = [];
         this.stats.forEach((value, key) => {
             currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+            switch (key) {
+                case "player_kills":
+                    this.playerInfo.changeXP(50*value);
+                    //bonus
+                    if(this.peerInfo.level > this.playerInfo.level) this.playerInfo.changeXP(50);
+                    break
+                case "minions_killed":
+                    this.playerInfo.changeXP(10*value);
+                    break;
+
+            }
             this.lifetimeStats.set(key, this.lifetimeStats.get(key) + value);
         });
         this.lifetimeStats.forEach((value, key) => {
@@ -467,6 +478,9 @@ export class MultiplayerController extends Subject{
             }
             this.stakedGems = [];
         }
+        if(this.result === "win"){
+            this.playerInfo.changeXP(300);
+        }
         this.result = null;
         const progressBar = document.getElementById('progress-bar');
         progressBar.labels[0].innerText = "leaving match...";
@@ -488,6 +502,7 @@ export class MultiplayerController extends Subject{
         this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
         this.friendsMenu.inMatch = false;
+        this.playerInfo.changeXP(200);
         this.togglePhysicsUpdates();
         this.state = "singlePlayer";
         this.toggleLeaveMatchButton();
@@ -1156,7 +1171,6 @@ export class MultiplayerController extends Subject{
                 notificationButtonsContainer.appendChild(rejectButton);
                 break;
         }
-
         this.friendsMenu.querySelector("#listRequests").appendChild(notification);
     }
 

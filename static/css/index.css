@@ -2907,9 +2907,8 @@ a[data-tooltip][data-placement="right"]::after {
 }
 
 .Request-List{
-    display: flex;
+    display: none;
     flex-direction: column;
-    padding: 10px;
     position: relative;
     top: 20%;
     height: 80%;
@@ -2950,7 +2949,7 @@ a[data-tooltip][data-placement="right"]::after {
     text-align: center;
     border-color: black;
     background-image: url('../assets/images/accept.png'); /* Replace with the path to your image */
-    background-size: 100%; /* This will cover the entire element, may also use contain */
+    background-size: 50%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
@@ -2962,7 +2961,7 @@ a[data-tooltip][data-placement="right"]::after {
     text-align: center;
     border-color: black;
     background-image: url('../assets/images/reject.png'); /* Replace with the path to your image */
-    background-size: 100%; /* This will cover the entire element, may also use contain */
+    background-size: 50%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }

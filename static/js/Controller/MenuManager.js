@@ -36,6 +36,7 @@ import {
 } from "../View/menus/MenuItem.js";
 import {Subject} from "../Patterns/Subject.js";
 import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
+import {spellTypes} from "../Model/Spell.js";
 
 // loading bar
 
@@ -65,10 +66,8 @@ export class MenuManager extends Subject{
         this.items = new Map();
         this.menus = new Map();
 
-        /* TODO: why playerInfo here?
+        // TODO: why playerInfo here?
         this.playerInfo = params.playerInfo;
-
-         */
 
         this.menusEnabled = true;
         this.matchmaking = false;
@@ -907,14 +906,21 @@ export class MenuManager extends Subject{
                 icon: {src: spells[i].src, width: 50, height: 50},
                 description: "",
                 extra: { //TODO: change this based on lvl
-                    unlocked: spells[i].unlocked,
-                    draggable: spells[i].unlocked
+                    unlocked: this.playerInfo.availableSpells.includes(spells[i].name),
+                    draggable: this.playerInfo.availableSpells.includes(spells[i].name)
                 }
             });
         }
         this.addItems(items);
     }
 
+    updateSpellItems(spells){
+        for(let spell in spells){
+            if(spells[spell] !== "BuildSpell") {
+                this.items.get(spells[spell]).unlock();
+            }
+        }
+    }
     /**
      * creates the buildSpell item (permanently in hotbar)
      */
@@ -1093,6 +1099,7 @@ export class MenuManager extends Subject{
         const icons = [];
         switch (params.name){
             case "AltarMenu":
+                this.updateSpellItems(params.spells);
                 this.#moveMenu("StakesMenu", "AltarMenu", "afterbegin");
                 this.#moveMenu("GemsMenu", "AltarMenu", "afterbegin");
                 this.#moveMenu("HotbarMenu", "AltarMenu", "afterbegin");

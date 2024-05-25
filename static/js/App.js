@@ -148,9 +148,10 @@ class App {
         //visualise axes -- DEBUG STATEMENTS --
         this.friendsMenu = new FriendsMenu();
 
-        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
+        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
         //TODO: check why you need to put friendsMenu into MultiplayerController
-        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu});
+        // This is needed to disable friends menu
+        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu, playerInfo: this.playerInfo});
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager, camera: this.cameraManager.camera});
@@ -176,7 +177,8 @@ class App {
                 activate: this.inputManager.requestPointerLock.bind(this.inputManager)
             },
             matchMakeCallback: this.multiplayerController.toggleMatchMaking.bind(this.multiplayerController),
-            closedMultiplayerMenuCallback: this.multiplayerController.unloadMatch.bind(this.multiplayerController)
+            closedMultiplayerMenuCallback: this.multiplayerController.unloadMatch.bind(this.multiplayerController),
+            playerInfo: this.playerInfo
         });
         this.itemManager = new Controller.ItemManager({playerInfo: this.playerInfo, menuManager: this.menuManager});
         this.menuManager.addCallbacks({
@@ -233,7 +235,7 @@ class App {
                 const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune)); //TODO: make this parameter persistent? & don't just put a magic formula here
                 // Delete the old task
                 this.worldManager.deleteTask(response.id);
-                // this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
+                // this.menuManager.addItemrenderM({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
             }]);
         });
@@ -439,6 +441,9 @@ class App {
                 // default values: hp: 100, damage: 20, attackSpeed: 1
                 console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
+            }
+            if(buildingNumber === buildTypes.getNumber("altar_building")){
+                params.spells = this.playerInfo.availableSpells
             }
             if(params.name === undefined) params.name = "PropMenu";
             params.playerCrystals = this.playerInfo.crystals;
@@ -667,7 +672,6 @@ class App {
         progressBar.labels[0].innerText = "Last magical touches...";
         progressBar.value = 95;
 
-        await this.friendsMenu.populateRequests();
         // IMPORTANT: THIS LINE HAS TO BE CALLED LAST
         this.collisionDetector.generateColliderOnWorker();
 
