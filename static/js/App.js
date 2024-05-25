@@ -146,9 +146,10 @@ class App {
         //visualise axes -- DEBUG STATEMENTS --
         this.friendsMenu = new FriendsMenu();
 
-        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
+        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
         //TODO: check why you need to put friendsMenu into MultiplayerController
-        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu, playerInfo: this.playerInfo});
+        // This is needed to disable friends menu
+        this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu, playerInfo: this.playerInfo});
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;
         this.spellCaster = new Controller.SpellCaster({playerInfo: this.playerInfo, raycaster: this.raycastController, viewManager: this.viewManager, camera: this.cameraManager.camera});
@@ -653,7 +654,7 @@ class App {
         this.collisionDetector.generateColliderOnWorker();
 
         await this.friendsMenu.populateRequests();
-
+        
         if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});
         // this.menuManager.exitMenu();
