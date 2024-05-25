@@ -2000,7 +2000,9 @@ body {
   left:0px;
   width:110%;
   height:100px;
-    font-family: Surabasa, sans-serif; /* Assigning font */
+    font-family: Surabasa, sans-serif;
+    color: #ffffffe0;
+  text-shadow: #000 1px 0 10px;
 }
 
 #account-bar{

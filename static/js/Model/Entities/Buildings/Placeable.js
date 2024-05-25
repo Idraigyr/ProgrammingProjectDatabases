@@ -174,11 +174,13 @@ export class Placeable extends Entity{
         const gridPos = new THREE.Vector3().copy(this.position);
         gridPos.add(islandPosition);
         convertWorldToGridPosition(gridPos);
+        // Transform the rotation to be positive
+        this.rotation = (this.rotation + 360) % 360;
         const obj = {
             island_id: playerInfo.islandID,
             x: gridPos.x/gridCellSize,
             z: gridPos.z/gridCellSize,
-            rotation: this.rotation/90,
+            rotation: (this.rotation/90) % 4,
             // type: this.dbType,
             level: this.level,
             // gems: []
@@ -232,7 +234,7 @@ export class Placeable extends Entity{
             return false;
         }
         if(this.level === 0){
-            this.upgradeTime = this.timeToBuild;
+            this.upgradeTime = 10;
             this.upgradeCost = 0;
             this.gemSlots = 0;
         } else if(this.level === 1){

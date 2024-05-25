@@ -25,6 +25,7 @@ import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
 import {spellTypes} from "./Model/Spell.js";
+import {Altar} from "./View/Buildings/Altar.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -251,6 +252,7 @@ class App {
         });
         this.menuManager.addEventListener("delete", async (event) =>{
             const toDelete = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            if(toDelete instanceof Altar) return;
             this.worldManager.deleteBuilding(toDelete);
             // await this.playerInfo.retrieveInfo();
             let buildings = [];
@@ -373,7 +375,7 @@ class App {
         this.spellCaster.addEventListener("interact", async (event) => {
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
-            console.log(building)
+            console.log(building);
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
@@ -392,6 +394,8 @@ class App {
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
+                // Update all stats
+                building.changeLevel(0);
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
                 params.stats = building.getStats();
                 params.level = building.level;
@@ -611,9 +615,10 @@ class App {
             }
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
+                // TODO: show message
                 console.log("Not enough crystals");
                 return;
-            } // TODO: show message
+            }
             else {
                 // Subtract the price from the player's crystals
                 if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){

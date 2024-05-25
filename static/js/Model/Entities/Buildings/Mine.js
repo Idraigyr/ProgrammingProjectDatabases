@@ -85,7 +85,11 @@ export class Mine extends Placeable{
      */
     checkStoredCrystals(currentTime){
         let timePassed = timeDifferenceInSeconds(this.lastCollected, currentTime);
-        if(this.lastCollected.getFullYear() <= 2000){
+        if(!this.lastCollected || timePassed < 0){
+            // The last collected time is not set or the current time is before the last collected time
+            this.updateLastCollected(currentTime);
+            timePassed = 0;
+        }else if(this.lastCollected.getFullYear() <= 2000){
             // Our game is not that old
             this.updateLastCollected(currentTime);
             timePassed = 0;
@@ -145,5 +149,13 @@ export class Mine extends Placeable{
         const obj = super.formatPUTData(playerInfo, islandPosition);
         obj.mine_type = "crystal";
         return obj;
+    }
+
+    changeLevel(amount) {
+        const result =  super.changeLevel(amount);
+        try{
+            this.#maxCrystals = this.#calculateMaxCrystals();
+        }catch(e){}
+        return result;
     }
 }
