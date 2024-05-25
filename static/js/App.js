@@ -26,6 +26,7 @@ import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
 import {spellTypes} from "./Model/Spell.js";
 import {Altar} from "./View/Buildings/Altar.js";
+import {Mine} from "./Model/Entities/Buildings/Mine.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -253,6 +254,15 @@ class App {
         this.menuManager.addEventListener("delete", async (event) =>{
             const toDelete = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(toDelete instanceof Altar) return;
+            // Check number of mines
+            if(toDelete instanceof Mine){
+                let mines = this.playerInfo.buildingsPlaced["Mine"];
+                if(mines <= 1) {
+                    // TODO: popup message
+                    console.log("Cannot delete last mine");
+                    return;
+                }
+            }
             this.worldManager.deleteBuilding(toDelete);
             // await this.playerInfo.retrieveInfo();
             let buildings = [];
