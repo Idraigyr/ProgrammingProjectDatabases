@@ -459,7 +459,6 @@ export class MenuManager extends Subject{
      */
     dispatchAddEvent(event){ //TODO: check first if you have enough crystals for this
         if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
-            console.log("Adding 10 crystals of fuse stakes");
             this.inputCrystalParams.current += 10;
             this.dispatchEvent(this.createRemoveEvent());
         }
@@ -473,7 +472,6 @@ export class MenuManager extends Subject{
      */
     dispatchRemoveEvent(event){
         if(this.inputCrystalParams.current-10 >= 0 && this.loadingprogress === 0){
-            console.log("Removing 10 crystals of fuse stakes");
             this.inputCrystalParams.current -= 10;
             this.dispatchEvent(this.createAddEvent());
         }
@@ -945,7 +943,7 @@ export class MenuManager extends Subject{
     /**
      * updates the current menu with the given params
      * currently only necessary for stats and BuildingItems
-     * @param {Object} params
+     * @param {{name: string, buildings: {building: string, placed: number, total: number}[] | null, stats: {Object} | null}} params
      */
     updateMenu(params){
         if(!params.name || !this.menusEnabled) return;

@@ -297,18 +297,10 @@ export class WorldManager{
      * @param {number} rotation - the new rotation of the island in degrees
      */
     moveCurrentIsland(translation, rotation){
-        console.log("moving island")
         const island = this.world.islands[0];
         island.position = island.position.add(translation);
 
-        //--DEBUG--
-        console.log("original island:")
-        printFoundationGrid(island.grid, island.width, island.length);
-        //--DEBUG--
-
-        console.log("rotation:", rotation);
         island.rotation += rotation;
-        console.log("I moved myself with the island", this.world.player.position);
         this.world.player.spawnPoint = this.world.player.spawnPoint.add(translation);
         this.world.player.position = this.world.player.spawnPoint; //TODO: fix this currently the player is not moved
     }
@@ -319,14 +311,11 @@ export class WorldManager{
      * @param {number} team
      */
     resetWorldState(currentIslandIsCenter = true){
-        console.log("resetting world state: currentIslandIsCenter:", currentIslandIsCenter);
         this.clearSpawners();
         this.world.removeEntitiesByTeam(1);
         this.world.removeProxys();
         if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
         this.collisionDetector.generateColliderOnWorker();
-        console.log("reset world state island:", this.world.islands[0]);
-        console.log("reset world state player", this.world.player);
     }
 
     /**

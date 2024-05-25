@@ -6,6 +6,8 @@ import {Fireball, spellTypes} from "../Model/Spell.js";
 import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
 import {multiplayerStats} from "../configs/Enums.js";
+import {passiveManaGenerationAmount, passiveManaGenerationInterval} from "../configs/ControllerConfigs.js";
+import {alertPopUp} from "../external/LevelUp.js";
 
 /**
  * MultiplayerController class
@@ -37,6 +39,7 @@ export class MultiplayerController extends Subject{
         this.peerInfo = new PlayerInfo();
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
         this.friendsMenu = params.friendsMenu;
+        this.state = "singlePlayer"; // singlePlayer, matchmaking, inMatch, visiting, visited
 
         //Friend visit properties
         this.pendingVisitRequest = null;
@@ -132,6 +135,13 @@ export class MultiplayerController extends Subject{
      * @return {Promise<void>}
      */
     async toggleMatchMaking(bool = null){
+        if(!this.canMatchmake) {
+            const message = this.pendingVisitRequest ?
+                "You can't start matchmaking while you have a pending visit request, cancel it first." :
+                "You can't start matchmaking while you are being visited by a friend, kick him out first.";
+            alertPopUp(message);
+            return;
+        }
         //TODO: refactor; is pretty confusing because menuManager (play-buton is pressed) => this method => menuManager update the view
         //matchmake = do we want to matchmake or not?
         const matchmake = bool ?? !this.matchmaking;
@@ -142,6 +152,7 @@ export class MultiplayerController extends Subject{
                 await this.startMatchMaking();
             } catch (err){
                 console.error(err);
+                alertPopUp(err.message);
                 //TODO: handle pathfinding error (no path to altar) => show error message to player
             }
         } else {
@@ -153,9 +164,9 @@ export class MultiplayerController extends Subject{
     async startMatchMaking(){
         //TODO: first test if path is available to altar if not throw error
         const connectionPoint = this.worldManager.getIslandConnectionPoint();
-        if(this.worldManager.world.getBuildingByPosition(connectionPoint)) throw new Error("Connection point is occupied by a building");
+        if(this.worldManager.world.getBuildingByPosition(connectionPoint)) throw new Error("Can't start match: Connection point is occupied by a building");
         const altarPosition = this.worldManager.getAltarPosition();
-        if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("No path from connection point to altar");
+        if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("Can't start match: No path from connection point to altar");
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
         console.log(response);
@@ -175,13 +186,16 @@ export class MultiplayerController extends Subject{
     }
 
     /**
-     * Updates the game timer
+     * Updates the game timer & adds generation of resources (currently only mana generation)
      * @param data
      * @return {Promise<void>}
      */
     async updateMatchTimer(data){
         const timer = document.getElementById('game-timer');
         timer.innerText = formatSeconds(data.time_left);
+        if(data.time_left % passiveManaGenerationInterval === 0){
+            this.worldManager.world.player.changeCurrentMana(passiveManaGenerationAmount);
+        }
     }
 
     /**
@@ -220,7 +234,7 @@ export class MultiplayerController extends Subject{
         document.querySelector('.loading-animation').style.display = 'block';
 
         //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
-        await this.peerInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1']);
+        await this.peerInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1'], false);
         progressBar.value = 50;
 
         progressBar.labels[0].innerText = "importing Opponent's island...";
@@ -265,6 +279,8 @@ export class MultiplayerController extends Subject{
             interval: 15
         });
 
+        this.state = "inMatch";
+        this.toggleLeaveMatchButton();
         //start sending state updates to server
         this.startSendingStateUpdates(this.peerInfo.userID);
         //announce to the server that the player is ready to start the match
@@ -407,9 +423,7 @@ export class MultiplayerController extends Subject{
         let counter = 0;
         let data = {player_id: this.playerInfo.userID};
         this.lifetimeStats.forEach((value, key) => {
-            const currentValue = this.stats.get(key);
-            this.lifetimeStats.set(key, currentValue + value);
-            data[key] = currentValue + value;
+            data[key] = value;
         });
         return new Promise((resolve, reject)=> {
             $.ajax({
@@ -473,15 +487,33 @@ export class MultiplayerController extends Subject{
         this.inMatch = false;
         this.friendsMenu.inMatch = false;
         this.togglePhysicsUpdates();
+        this.state = "singlePlayer";
+        this.toggleLeaveMatchButton();
         console.log("done leaving match");
     }
 
     /**
-     * sends a message to the server that the player is leaving the match
+     * sends a message to the server that the player is leaving the match, leaving friend's island or kicking a friend from their island
      */
     leaveMatch(){
-        if (confirm("Are you sure you want to leave the match?\nYou will lose your stakes!")) {
-            this.forwardingNameSpace.sendPlayerLeavingEvent(this.#matchId);
+        console.log(this.state);
+        switch (this.state) {
+            case "inMatch":
+                if (confirm("Are you sure you want to leave the match?\nYou will lose your stakes!")) {
+                    this.forwardingNameSpace.sendPlayerLeavingEvent(this.#matchId);
+                }
+                break;
+            case "visited":
+                this.removeFriendFromIsland();
+                break;
+            case "visiting":
+                this.leaveFriendIsland();
+                break;
+            case "singlePlayer":
+                console.log("leaveMatch called in singlePlayer state");
+                break;
+            default:
+                console.error("leaveMatch called in wrong state");
         }
     }
 
@@ -782,6 +814,7 @@ export class MultiplayerController extends Subject{
      * Stops sending state updates to the server and removes the event listeners
      */
     stopSendingStateUpdates(){
+        console.log("%cstopping state updates", "color: red; font-size: 20px; font-weight: bold;");
         clearInterval(this.updateInterval);
         this.updateInterval = null;
         this.peerController.peer.removeEventListener("updateHealth", this.updateEvents.get("playerHealthUpdate"));
@@ -802,37 +835,55 @@ export class MultiplayerController extends Subject{
      * @param {{request: "accept" | "reject" | "visit" | "leave" | "kick" | "cancel", sender: number}} data
      */
     async processIslandVisitEvent(data){
-        // if(this.pendingVisitRequest === this.peerInfo.userID) this.pendingVisitRequest = null;
+        console.log(`%cprocessing visit event... type: ${data.request}, sender: ${data.sender}`, "color: green; font-size: 20px; font-weight: bold;");
         switch (data.request) {
             case "accept": //your friend accepted your visit request
-                //TODO: load friends' island
+                //TODO: close & disable friendsMenu
+                //reset visit request button
+                this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest} > .View-Island`).innerText = "Visit Island";
+                this.pendingVisitRequest = null;
                 await this.loadFriendIsland(data.sender);
                 break;
             case "reject": //your friend rejected your visit request
                 this.#addFriendNotification(`${this.peerInfo.username} rejected your visit request`, data.request, data.sender);
-                //TODO: set pendingVisitRequest to null
-                this.friendsMenu.querySelector(`#friend-${this.peerInfo.userID}`).querySelector(".View-Island").innerText = "Visit Island";
-                this.cancelIslandVisitRequest();
+                this.friendsMenu.querySelector(`#friend-${this.peerInfo.userID} > .View-Island`).innerText = "Visit Island";
+                this.canMatchmake = true;
+                this.pendingVisitRequest = null;
                 break;
             case "kick": //your friend kicked you out of his/her island
-                //TODO: unload friend's island
                 await this.unloadFriendIsland();
                 break;
             case "leave": // your friend left your island
-                //TODO: unload friend
                 this.unloadFriend();
                 break;
             case "visit": //your friend requested to visit your island
-                //TODO: add notification to notification bell and show request message when friendsmenu is opened
                 //TODO: get friend name from friendslist
                 this.#addFriendNotification(`'FriendName' requested to visit your island`, data.request, data.sender);
                 break;
             case "cancel": //your friend cancelled his/her visit request
                 //TODO: get friend name from friendslist
                 this.#addFriendNotification(`'FriendName' cancelled his/her visit request`, data.request, data.sender)
-                //TODO: reset state that was augmented when the visit request was processed
                 break;
 
+        }
+    }
+
+    /**
+     * changes the text of the leave match button in the settings menu
+     */
+    toggleLeaveMatchButton(){
+        switch (this.state) {
+            case "visiting":
+                document.getElementById("leaveMatchButton").innerText = "Leave Island";
+                break;
+            case "visited":
+                document.getElementById("leaveMatchButton").innerText = "Kick Friend";
+                break;
+            case "singlePlayer":
+            case "inMatch":
+            default:
+                document.getElementById("leaveMatchButton").innerText = "Leave Match";
+                break;
         }
     }
 
@@ -842,30 +893,30 @@ export class MultiplayerController extends Subject{
      * @return {Promise<void>}
      */
     async #toggleVisitRequest(event) {
-            if(event.target.classList.contains("View-Island")){
-                let userId = event.target.parentNode.id;
-                userId = parseInt(userId.substring(userId.indexOf("-") + 1));
-                if(this.pendingVisitRequest === userId){ //cancel request
-                    this.cancelIslandVisitRequest();
-                    event.target.innerText = "Visit Island";
-                } else if(this.pendingVisitRequest) { // send a different request + cancel the current one
-                    const friendElement = this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest}`);
-                    this.cancelIslandVisitRequest();
-                    friendElement.querySelector(".View-Island").innerText = "Visit Island";
-                    await this.requestIslandVisit(userId);
-                    event.target.innerText = "Cancel Request";
-                } else { // send a request
-                    await this.requestIslandVisit(userId);
-                    event.target.innerText = "Cancel Request";
-                }
+        if(event.target.classList.contains("View-Island")){
+            let userId = event.target.parentNode.id;
+            userId = parseInt(userId.substring(userId.indexOf("-") + 1));
+            if(this.pendingVisitRequest === userId){ //cancel request
+                this.cancelIslandVisitRequest();
+                event.target.innerText = "Visit Island";
+            } else if(this.pendingVisitRequest) { // send a different request + cancel the current one
+                const friendElement = this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest}`);
+                this.cancelIslandVisitRequest();
+                friendElement.querySelector(".View-Island").innerText = "Visit Island";
+                await this.requestIslandVisit(userId);
+                event.target.innerText = "Cancel Request";
+            } else { // send a request
+                await this.requestIslandVisit(userId);
+                event.target.innerText = "Cancel Request";
             }
         }
+    }
 
     /**
      * Sends a request to the server to visit your friend's island
      */
     async requestIslandVisit(userId){
-        await this.peerInfo.retrieveInfo(userId);
+        await this.peerInfo.retrieveInfo(userId, false);
         this.canMatchmake = false;
         this.pendingVisitRequest = userId;
         this.forwardingNameSpace.sendIslandVisitEvent(userId, "visit");
@@ -886,6 +937,7 @@ export class MultiplayerController extends Subject{
      */
     async acceptIslandVisit(userId){
         this.forwardingNameSpace.sendIslandVisitEvent(userId, "accept");
+        this.canMatchmake = false;
         await this.loadFriend(userId);
     }
 
@@ -908,9 +960,11 @@ export class MultiplayerController extends Subject{
     /**
      * leave your friend's island
      */
-    async leaveFriendIsland(){
+    leaveFriendIsland(){
         this.forwardingNameSpace.sendIslandVisitEvent(this.peerInfo.userID, "leave");
-        await this.unloadFriendIsland();
+        this.unloadFriendIsland().then(() => {
+            console.log("done leaving friend's island");
+        });
     }
 
     /**
@@ -928,6 +982,7 @@ export class MultiplayerController extends Subject{
 
         this.menuManager.exitMenu();
         this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
+        this.friendsMenu.inMatch = true;
         this.spellCaster.multiplayer = true;
         //TODO: totally block input and don't allow recapture of pointerlock for the duration of this method
 
@@ -947,6 +1002,8 @@ export class MultiplayerController extends Subject{
         progressBar.value = 75;
 
         this.togglePhysicsUpdates();
+        this.state = "visiting";
+        this.toggleLeaveMatchButton();
         document.querySelector('.loading-animation').style.display = 'none';
     }
 
@@ -956,7 +1013,8 @@ export class MultiplayerController extends Subject{
      */
     async loadFriend(userId){
         //TODO: load friend on your island
-        await this.peerInfo.retrieveInfo(userId);
+        await this.peerInfo.retrieveInfo(userId, false);
+        this.friendsMenu.inMatch = true;
         const friend = this.worldManager.addPeer({
             position: this.peerInfo.playerPosition,
             health: this.peerInfo.maxHealth,
@@ -965,6 +1023,8 @@ export class MultiplayerController extends Subject{
         });
         friend.setId({entity: {player_id: this.peerInfo.userID}});
         this.peerController = new Controller.PeerController({peer: friend});
+        this.state = "visited";
+        this.toggleLeaveMatchButton();
         this.startSendingStateUpdates(this.peerInfo.userID);
     }
 
@@ -979,6 +1039,7 @@ export class MultiplayerController extends Subject{
         this.togglePhysicsUpdates();
 
         this.spellCaster.multiplayer = false;
+        this.friendsMenu.inMatch = false;
         //stop sending state updates to server & remove event listeners
         // this.stopSendingStateUpdates(); => moved to leaveMatch
         this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
@@ -990,6 +1051,7 @@ export class MultiplayerController extends Subject{
         document.querySelector('.loading-animation').style.display = 'none';
         this.togglePhysicsUpdates();
         console.log("done leaving match");
+        this.canMatchmake = true;
     }
 
     /**
@@ -998,7 +1060,12 @@ export class MultiplayerController extends Subject{
     unloadFriend(){
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.stopSendingStateUpdates();
+        this.worldManager.world.removeEntitiesByTeam(1);
+        this.friendsMenu.inMatch = false;
         this.peerController.peer = null;
+        this.state = "singlePlayer";
+        this.toggleLeaveMatchButton();
+        this.canMatchmake = true;
     }
 
     /**
@@ -1022,7 +1089,13 @@ export class MultiplayerController extends Subject{
 
         notification.addEventListener("click", async (event) => {
             if(event.target.classList.contains("Accept-Request")){
-                if(type === "visit") await this.acceptIslandVisit(userId);
+                if(type === "visit") {
+                    if(this.matchmaking) {
+                        alertPopUp("cannot accept visit request while in matchmaking");
+                        return;
+                    }
+                    await this.acceptIslandVisit(userId);
+                }
             } else if(event.target.classList.contains("Reject-Request")){
                 if(type === "visit") this.rejectIslandVisit(userId);
             }

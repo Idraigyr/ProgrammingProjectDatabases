@@ -6,7 +6,7 @@ import {API_URL} from "../configs/EndpointConfigs.js";
  * @param maxHealth maximum health of the player
  * @param maxGemAttribute maximum number of gem attributes of the player
  */
-export function popUp(level, maxMana, maxHealth, maxGemAttribute){
+export function popUp(level, maxMana, maxHealth, maxGemAttribute){ //TODO: rewrite this make it more general
 
     let modal = document.getElementById("LevelUp");
     let levelContent = document.getElementById("LevelPopupContent");
@@ -56,5 +56,48 @@ export function popUp(level, maxMana, maxHealth, maxGemAttribute){
         levelDetails.remove();
         detailsInfo.style.display = "none";
     }
+}
 
+let interval = null;
+let timeout = null;
+
+/**
+ * shows an alert pop up with the given message that disappears after a certain amount of time,
+ * when this function is called again before the alert disappears, the pop up content is overwritten
+ * @param {string} message - the message to display
+ * @param {number} duration - the duration of the alert in milliseconds
+ * @param {number} updateInterval - the interval at which the alert updates in milliseconds
+ */
+export function alertPopUp(message, duration = 3000, updateInterval = 10){
+    const alertContainer = document.getElementById("alert-container");
+    const alertContent = document.getElementById("alert-content");
+    const timeBar = document.getElementById("alert-time-fill");
+    alertContent.innerText = message;
+    alertContainer.style.display = "flex";
+    const decrement = 100*updateInterval/duration;
+
+    if(interval){
+        clearInterval(interval);
+        interval = null;
+    }
+    if(timeout){
+        clearTimeout(timeout);
+        timeBar.style.width = "100%";
+        timeout = null;
+    }
+
+    let width = 100;
+
+    interval = setInterval(() => {
+        width -= decrement;
+        console.log(width);
+        timeBar.style.width = `${width}%`;
+        console.log(timeBar.getBoundingClientRect().width);
+    }, updateInterval)
+
+    timeout = setTimeout(function () {
+        alertContainer.style.display = "none";
+        timeBar.style.width = "100%";
+        clearInterval(interval);
+    }, duration);
 }

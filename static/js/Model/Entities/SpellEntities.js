@@ -172,7 +172,6 @@ export class Projectile extends SpellEntity{
                   launchCollidedObject(spellBBox, characterBBox, this.velocity, character.velocity, this.mass, character.mass, deltaTime);
             }
             this.timer += this.duration;
-            console.log("Projectile hit something, deleting")
             this.dispatchEvent(this.createDeleteEvent());
         }
     }
@@ -212,7 +211,6 @@ export class Immobile extends SpellEntity{
                 this.hitSomething = true;
                 character.hit = true;
             }
-            console.log("Immobile hit something, applying effects")
             this.timeSinceLastEffect = 0;
         }
     }
@@ -249,7 +247,6 @@ export class FollowPlayer extends SpellEntity{
     }
     takeDamage(damage) {
         this.shields -= 1;
-        console.log("Shield hit, " + this.shields + " left");
         if(this.shields > 0){
             this.dispatchEvent(this.createShieldLostEvent());
         }

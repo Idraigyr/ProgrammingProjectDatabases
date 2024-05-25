@@ -13,7 +13,6 @@ export class SpellSpawner extends Spawner{
     constructor(params) {
         super(params);
         this.spell = params?.spell?.type ?? null;
-        console.log("Spell of spellSpawner: ", this.spell)
         this.spellParams = params?.spell?.params ?? null;
         if(this.spellParams) this.spellParams.position = this.position.clone();
         this.nearestTarget = null; //TODO: remove?
@@ -69,7 +68,6 @@ export class SpellSpawner extends Spawner{
                 params.position = this.position.clone();
                 //random offset
                 // params.direction.add(new THREE.Vector3(Math.random() * 4 - 2, -Math.random() * 4, Math.random() * 4 - 2).normalize());
-                console.log("Spawning spell");
                 this.dispatchEvent(this._createSpawnEvent({
                     type: this.spell.constructor,
                     params: params

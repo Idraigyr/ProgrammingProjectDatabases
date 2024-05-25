@@ -132,9 +132,10 @@ export class PlayerInfo extends Subject{
     /**
      * Retrieves the user information from the server
      * @param {number | null} playerId - optional, The id of the player to retrieve the information from
+     * @param {boolean} propagate - optional, Whether to propagate the information across the frontend (set to false when retrieving info that is not for the current player)
      * @returns {Promise<void>} - Promise that resolves when the user information is retrieved
      */
-    async retrieveInfo(playerId=null){
+    async retrieveInfo(playerId=null, propagate=true){
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${playerURI}${playerId ? `?id=${playerId}` : ''}`);
@@ -169,6 +170,7 @@ export class PlayerInfo extends Subject{
                 }
             }
 
+            if(!propagate) return;
             this.setLevelStats();
             this.advertiseCurrentCondition();
 
@@ -228,7 +230,7 @@ export class PlayerInfo extends Subject{
      * @returns {number} - Health bonus
      */
     calculateHealthBonus(){
-        return this.level*10;
+        return Math.min(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
     }
 
     isPlayerLoggedIn(){
@@ -240,7 +242,7 @@ export class PlayerInfo extends Subject{
      * @returns {number} - Mana bonus
      */
     calculateManaBonus(){
-        return this.level*10;
+        return Math.min(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
     }
 
     /**

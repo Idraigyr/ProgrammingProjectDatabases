@@ -195,11 +195,9 @@ export class ViewManager extends Subject{
     * @param {{detail: model}} event
     */
     deleteView(event){
-        console.log(`deleting view of type: ${event.detail.model.type}`)
         this.pairs[event.detail.model.type] = this.pairs[event.detail.model.type].filter((pair) => {
             if(pair.model === event.detail.model){
                 if(pair.view.staysAlive){
-                    console.log("pushing to dying views");
                     this.dyingViews.push(pair.view);
                 }
                 pair.view.dispose();
@@ -207,7 +205,6 @@ export class ViewManager extends Subject{
             }
             return true;
         });
-        console.log(this.pairs.spellEntity);
     }
 
     /**

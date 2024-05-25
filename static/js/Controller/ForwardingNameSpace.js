@@ -89,6 +89,7 @@ export class ForwardingNameSpace extends Subject{
      * @param {"accept" | "reject" | "visit" | "leave" | "kick" | "cancel"} request
      */
     sendIslandVisitEvent(userId, request) {
+        console.log(`sending island visit event type: ${request} to user: ${userId}`);
         this.socket.emit('island_visit', {'target': userId, 'request': request});
     }
 

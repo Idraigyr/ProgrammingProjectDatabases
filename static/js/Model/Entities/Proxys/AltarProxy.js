@@ -10,7 +10,6 @@ export class AltarProxy extends ProxyEntity{
      */
     dies() {
         //TODO: Implement match end
-        console.log("AltarProxy dies");
         super.dispose();
     }
 }
