@@ -19,6 +19,7 @@ export class SpellFactory{
         this.assetManager = params.assetManager;
         //TODO: change this
         this.models = [];
+        this.spellNumber = 0;
     }
 
     /**
@@ -50,6 +51,8 @@ export class SpellFactory{
         }
         if(!entityModel) return;
         this.models.push(entityModel);
+        entityModel.setId(this.spellNumber)
+        this.spellNumber++;
         return entityModel;
     }
 

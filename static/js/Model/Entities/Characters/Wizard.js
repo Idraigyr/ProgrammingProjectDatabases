@@ -60,7 +60,6 @@ export class Wizard extends Character{
      * Update cooldown of the current spell
      */
     cooldownSpell(){
-        console.log("cooldown spell")
         this.spellCooldowns[this.currentSpell] = this.#spells[this.currentSpell].getCooldown();
         this.mana -= this.#spells[this.currentSpell].cost;
         this.dispatchEvent(this.#createUpdateManaEvent());

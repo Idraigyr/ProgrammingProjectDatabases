@@ -164,6 +164,16 @@ export class ViewManager extends Subject{
     }
 
     /**
+     * retrieve the spell Model by id
+     * @param id
+     * @returns {Model|*}
+     */
+    getSpellEntityModelByID(id){
+        console.log("id to find: ", id);
+        return this.pairs.spellEntity.find((pair) => pair.model.id === id).model;
+    }
+
+    /**
      * Change the view asset of the given model
      * @param event {{detail: {model: Model, viewAsset: THREE.Object3D}}}
      */

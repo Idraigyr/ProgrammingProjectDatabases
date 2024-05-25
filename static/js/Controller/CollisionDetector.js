@@ -187,7 +187,7 @@ export class CollisionDetector extends Subject{
                 }
             });
             this.viewManager.pairs.spellEntity.forEach((spell) => {
-                console.log("checking spell collision of", spell.model);
+                //console.log("checking spell collision of", spell.model);
                 if(this.boxToBoxCollision(spellEntity.view.boundingBox, spell.view.boundingBox)){
                     spellEntity.model.onCharacterCollision(deltaTime, spell.model, spellEntity.view.boundingBox, spell.view.boundingBox);
                 }

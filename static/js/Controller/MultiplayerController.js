@@ -55,6 +55,7 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("playerDeath", this.sendPlayerDeathEvent.bind(this));
         this.updateEvents.set("proxyHealthUpdate", this.sendProxyHealthUpdate.bind(this));
         this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
+        this.updateEvents.set("shieldUpdate", this.sendShieldUpdate.bind(this));
 
         this.countStats = false;
         this.stats = new Map();
@@ -242,6 +243,7 @@ export class MultiplayerController extends Subject{
         opponent.addEventListener("characterDied", this.updateEvents.get("playerDeath"));
         console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
+
 
         progressBar.labels[0].innerText = "creating proxys for buildings...";
         this.worldManager.generateProxys();
@@ -511,7 +513,17 @@ export class MultiplayerController extends Subject{
             this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
         }
         if(data.spellEvent) {
-            data.spellEvent.type = spellTypes.getCtor(data.spellEvent.type);
+            console.log(data.spellEvent)
+            if(data.spellEvent.shieldUpdate){
+                console.log("shield update")
+                //get spell from id
+                console.log("ID:  ", data.spellEvent.shieldUpdate.detail.id)
+                const shield = this.viewManager.getSpellEntityModelByID(data.spellEvent.shieldUpdate.detail.id);
+                if(shield) shield.takeDamage(10);
+                else throw new Error("Shield not found");
+            }
+            else{
+                data.spellEvent.type = spellTypes.getCtor(data.spellEvent.type);
             for (const property in data.spellEvent.params) {
                 //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
                 if(data.spellEvent.params[property]?.x) data.spellEvent.params[property] = new THREE.Vector3(
@@ -523,6 +535,16 @@ export class MultiplayerController extends Subject{
             data.spellEvent.params.team = 1;
             data.spellEvent.params.playerID = this.peerInfo.userID;
             this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
+            if (data.spellEvent.type.name === "Shield") {
+
+                const shield = this.viewManager.getSpellEntityModelByID(data.spellEvent.id);
+                if(shield) shield.addEventListener("shieldLost", this.updateEvents.get("shieldUpdate"));
+                else throw new Error("Shield not found");
+                console.log("shield created", shield)
+            }
+            }
+
+
         }
         if(data.minions){
             if(data.minions.create){
@@ -561,6 +583,10 @@ export class MultiplayerController extends Subject{
                 else throw new Error("Proxy not found");
             }
         }
+
+
+
+
 
         // console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
     }
@@ -681,6 +707,18 @@ export class MultiplayerController extends Subject{
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             proxy: {
                 healthUpdate: event.detail
+            }
+        });
+    }
+
+    /**
+     * send shield update to opponent
+     */
+    sendShieldUpdate(event){
+        console.log("SENDING shield update")
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
+            spellEvent: {
+                shieldUpdate: event.detail
             }
         });
     }
