@@ -7,6 +7,7 @@ import {API_URL, placeableURI} from "../../../configs/EndpointConfigs.js"
  */
 export class Mine extends Placeable{
     #maxCrystals;
+    #rateMultiplier = 1;
 
     /**
      * Constructor for the mine model
@@ -90,7 +91,7 @@ export class Mine extends Placeable{
             this.updateLastCollected(currentTime);
             timePassed = 0;
         }
-        return Math.min(this.maxCrystals, timePassed * this.productionRate);
+        return Math.min(this.maxCrystals, timePassed * (this.productionRate * this.#rateMultiplier));
     }
 
     levelUp() {
@@ -105,6 +106,15 @@ export class Mine extends Placeable{
     #calculateMaxCrystals(){
         if (this.level === 0) return 100;
         return this.level * 1000;
+    }
+
+    /**
+     * update max crystal gem multiplier
+     * @return {number}
+     */
+    updateGemMultipliers(speed, capacity){
+        this.#rateMultiplier = speed;
+        this.#maxCrystals *= capacity;
     }
 
     /**

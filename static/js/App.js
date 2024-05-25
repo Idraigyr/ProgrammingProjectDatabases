@@ -211,6 +211,10 @@ class App {
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
+        this.menuManager.addEventListener("mineGem", (event) => {
+            console.log("Mining gem");
+            const gem = this.itemManager.createGem((3));
+        });
 
         this.menuManager.addEventListener("startFusion", async (event) => {
             const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
@@ -375,7 +379,6 @@ class App {
         this.spellCaster.addEventListener("interact", async (event) => {
             // Check if the building is ready
             const building = this.worldManager.world.getBuildingByPosition(event.detail.position);
-            console.log(building)
             if (building && !building.ready) return;
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
@@ -411,12 +414,12 @@ class App {
             //if the building is a mine, forward stored crystal information
             if(buildingNumber === buildTypes.getNumber("mine_building")){
                 const currentTime = new Date(await this.playerInfo.getCurrentTime());
+                building.updateGemMultipliers(params.stats.get("speed"), params.stats.get("capacity"));
                 params.crystals = building.checkStoredCrystals(currentTime);
                 params.maxCrystals = building.maxCrystals;
                 params.rate = building.productionRate;
-
-                // params.maxCrystals = params.stats.get("capacity");
-                // params.rate = params.stats.get("mineSpeed");
+                //params.maxCrystals = params.stats.get("capacity");
+                //params.rate = params.stats.get("mineSpeed");
             }
             if(buildingNumber === buildTypes.getNumber("tower_building")){
                 // tower stats for Lucas
@@ -426,6 +429,7 @@ class App {
                     " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
             if(params.name === undefined) params.name = "PropMenu";
+            params.playerCrystals = this.playerInfo.crystals;
             this.menuManager.renderMenu(params);
             //temp solution:
             this.worldManager.currentPos = event.detail.position;

@@ -79,6 +79,7 @@ export class MenuManager extends Subject{
         this.slot = null;
         this.infoFromDatabase = {};
         this.#ctorToDBNameList = this.#createCtorToDBNameList();
+        this.playerCrystals = 0;
 
         this.collectParams = {
             meter: null,
@@ -87,6 +88,7 @@ export class MenuManager extends Subject{
             rate: 0
         };
         this.collectInterval = null;
+        this.fortune = 0;
 
         this.inputCrystalParams = {
             meter: null,
@@ -311,6 +313,10 @@ export class MenuManager extends Subject{
         return new CustomEvent("startFusion");
     }
 
+    createMineGemEvent() {
+        return new CustomEvent("mineGem");
+    }
+
     // Function to start or stop the fusing arrow animation based on condition
     toggleAnimation(condition) {
         if (condition) {
@@ -457,13 +463,17 @@ export class MenuManager extends Subject{
      * dispatches a add event
      * @param event
      */
-    dispatchAddEvent(event){ //TODO: check first if you have enough crystals for this
-        if(this.inputCrystalParams.current+10 <= this.inputCrystalParams.max && this.loadingprogress === 0){
-            this.inputCrystalParams.current += 10;
-            this.dispatchEvent(this.createRemoveEvent());
+    dispatchAddEvent(event){
+        console.log(this.playerCrystals);
+        if (this.playerCrystals >= 10 ) {
+            if (this.inputCrystalParams.current + 10 <= this.inputCrystalParams.max && this.loadingprogress === 0) {
+                this.inputCrystalParams.current += 10;
+                this.playerCrystals -= 10;
+                this.dispatchEvent(this.createRemoveEvent());
+            }
+            this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
+            this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
         }
-        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
-        this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
     }
 
     /**
@@ -473,6 +483,7 @@ export class MenuManager extends Subject{
     dispatchRemoveEvent(event){
         if(this.inputCrystalParams.current-10 >= 0 && this.loadingprogress === 0){
             this.inputCrystalParams.current -= 10;
+            this.playerCrystals += 10;
             this.dispatchEvent(this.createAddEvent());
         }
         this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
@@ -753,9 +764,44 @@ export class MenuManager extends Subject{
             if(params.stats.has(stat)){
                 this.items.get(stat).element.style.display = this.items.get(stat).display;
                 //TODO: change the text based on the type of building
-                console.log(params.stats.get(stat));
                 let name = `${stat}: ${Math.round(params.stats.get(stat))}`;
                 let text = `placeholder description`;
+                if (params.name === "MineMenu") {
+                    if (stat === "capacity") {
+                        text = "Max stored crystals";
+                    }
+                    else if (stat === "speed") {
+                        text = "Mine speed";
+                    }
+                    else if (stat === "fortune") {
+                        text = "Chance of mining gem";
+                    }
+                }
+                else if (params.name === "TowerMenu") {
+                    if (stat === "capacity") {
+                        text = "Hitpoints";
+                    }
+                    else if (stat === "damage") {
+                        text = "Attack damage";
+                    }
+                    else if (stat === "speed") {
+                        text = "Attack speed";
+                    }
+                    else if (stat === "fortune") {
+                        text = "Critical hit chance";
+                    }
+                }
+                else if (params.name === "FusionTableMenu") {
+                    if (stat === "capacity") {
+                        text = "Max crystals to fuse";
+                    }
+                    else if (stat === "speed") {
+                        text = "Fusion speed";
+                    }
+                    else if (stat === "fortune") {
+                        text = "Power of generated gem";
+                    }
+                }
                 this.items.get(stat).element.querySelector(".menu-item-description-name").innerText = name;
                 this.items.get(stat).element.querySelector(".menu-item-description-text").innerText = text;
             } else {
@@ -937,6 +983,7 @@ export class MenuManager extends Subject{
         this.menus.get(params.name).allows.forEach(child => {
             this.menus.get(child).render();
         });
+        this.playerCrystals = params.playerCrystals;
         this.menus.get(params.name).render();
     }
 
@@ -987,11 +1034,17 @@ export class MenuManager extends Subject{
 
     /**
      * update the amount of crystals that appear in the CollectMenu
+     * random crystal generation
      */
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
-        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;        // random crystal generation
+        if(Math.random()*100 < this.fortune){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
+            console.log("Gem mined!");
+            this.dispatchEvent(this.createMineGemEvent());
+
+        }
     }
 
     /**
@@ -1060,10 +1113,15 @@ export class MenuManager extends Subject{
             case "MineMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#arrangeStatMenuItems(params);
+                this.collectParams.current = params.crystals;
+                this.collectParams.max = Math.ceil(params.stats.get("capacity"));
+                this.collectParams.rate = Math.ceil(params.stats.get("speed"))*10;
+                this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
+                this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
-                this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = `${(params.crystals/params.maxCrystals)*100}%`; //TODO: change this so text stays in the middle of the meter
-                this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${params.maxCrystals}`;
+                this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = `${(params.crystals/this.collectParams.max)*100}%`; //TODO: change this so text stays in the middle of the meter
+                this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${this.collectParams.max}`;
                 this.menus.get("MineMenu").updateLvlUpButton(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;

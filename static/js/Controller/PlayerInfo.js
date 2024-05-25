@@ -260,6 +260,10 @@ export class PlayerInfo extends Subject{
         return true;
     }
 
+    getCrystals(){
+        return this.crystals;
+    }
+
     updateMana(event){
         this.mana = event.detail.current;
         this.maxMana = event.detail.total;
