@@ -34,7 +34,7 @@ export class IView {
         try {
             this.boxHelper.parent.remove(this.boxHelper);
         } catch (err){
-            console.log("BoxHelper not added to scene.");
+            // console.log("BoxHelper not added to scene.");
         }
         this.charModel.parent.remove(this.charModel);
     }

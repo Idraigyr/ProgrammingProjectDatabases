@@ -1098,6 +1098,8 @@ export class MultiplayerController extends Subject{
                 }
             } else if(event.target.classList.contains("Reject-Request")){
                 if(type === "visit") this.rejectIslandVisit(userId);
+            } else{
+                return;
             }
             this.#removeFriendNotification();
             notification.remove();

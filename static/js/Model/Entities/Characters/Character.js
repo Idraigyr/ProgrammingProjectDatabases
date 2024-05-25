@@ -122,6 +122,14 @@ export class Character extends Entity{
     }
 
     /**
+     * Create a CustomEvent for the character dying
+     * @return {CustomEvent<{id}>}
+     */
+    createCharacterDiedEvent(){
+        return new CustomEvent("characterDied", {detail: {id: this.id}});
+    }
+
+    /**
      * Send a CustomEvent for updating the position of the character
      * @param vector {Vector3} the new position of the character
      */
@@ -189,6 +197,6 @@ export class Character extends Entity{
     }
 
     dies(){
-        this.dispatchEvent(new CustomEvent("characterDied", {detail: {id: this.id}}));
+        this.dispatchEvent(this.createCharacterDiedEvent());
     }
 }

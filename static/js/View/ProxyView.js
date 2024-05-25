@@ -42,7 +42,7 @@ export class ProxyView extends IView{
         try {
             this.boxHelper.parent.remove(this.boxHelper);
         } catch (err){
-            console.log("BoxHelper not added to scene.");
+            // console.log("BoxHelper not added to scene.");
         }
         this.healthBar.parent.remove(this.healthBar);
     }

@@ -53,6 +53,7 @@ export class Minion extends Character{
      * Function that gets called when the minion dies
      */
     dies() {
+        this.dispatchEvent(this.createCharacterDiedEvent());
         this.dispatchEvent(this.createDeleteEvent());
     }
 

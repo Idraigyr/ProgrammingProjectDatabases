@@ -62,8 +62,7 @@ export class Island extends IView{
         let pos = {x: this.position.x, y: -this.#islandThickness/2, z: this.position.z};
         let scale = {x: this.#width*gridCellSize, y: this.#islandThickness, z: this.#length*gridCellSize};
 
-        //threeJS Section
-        let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
+        let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial({color: 0x589b80}));
 
         blockPlane.position.set(pos.x, pos.y, pos.z);
         blockPlane.scale.set(scale.x, scale.y, scale.z);

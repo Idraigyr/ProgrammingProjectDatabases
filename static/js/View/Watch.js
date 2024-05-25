@@ -139,7 +139,7 @@ export class Timer3D extends IView{
         try {
             this.boxHelper.parent.remove(this.boxHelper);
         } catch (err){
-            console.log("BoxHelper not added to scene.");
+            // console.log("BoxHelper not added to scene.");
         }
         this.charAccess.freeAssets();
     }

@@ -50,7 +50,7 @@ export class Factory{
 
     /**
      * Creates minion model and view
-     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue", buildingID: number, team: number}} params - spawn needs to be in world coords, buildingID is the id of the building that spawned the minion (buildingID is only used for friendly minions)
+     * @param {{spawn: THREE.vector3, type: "Minion" | "Mage" | "Warrrior" | "Rogue", buildingID: number, team: number, spawner: MinionSpawner}} params - spawn needs to be in world coords, buildingID is the id of the building that spawned the minion (buildingID is only used for friendly minions)
      * @return {Minion}
      */
     createMinion(params){
@@ -95,6 +95,9 @@ export class Factory{
         model.addEventListener("updatePosition",view.updatePosition.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        model.addEventListener("characterDied", () => {
+            if(params.spawner) params.spawner.increaseMaxSpawns();
+        });
         model.addEventListener("updateHealth",view.OnHealth_.bind(view));
 
         this.viewManager.addPair(model, view);

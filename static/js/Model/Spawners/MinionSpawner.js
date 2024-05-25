@@ -13,6 +13,14 @@ export class MinionSpawner extends Spawner{
     }
 
     /**
+     * increase amount of max spawns
+     * @param amount {number} amount to increase by
+     */
+    increaseMaxSpawns(amount = 1){
+        this.maxSpawn += amount;
+    }
+
+    /**
      * Update the spawner
      * @param deltaTime {number} Time since last update
      */
@@ -23,7 +31,8 @@ export class MinionSpawner extends Spawner{
                 type: this.types[Math.floor(Math.random()*4)],
                 spawn: this.position,
                 buildingID: this.buildingID,
-                team: this.team
+                team: this.team,
+                spawner: this
             }));
             this.timer = 0;
             this.counter++;

@@ -291,7 +291,7 @@ export class Fireball extends ConcreteSpell{
             }),
             effects: [
                 new InstantDamage({
-                    damage: 10
+                    damage: 50
             }), new DoT({
                     damage: 0,
                     interval: 0,

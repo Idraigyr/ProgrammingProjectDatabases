@@ -101,4 +101,5 @@ export const islandLength = 15;
 
 export const displayViewBoxHelper = false;
 
-export const shadowCasting = false;
+//experimental: buildings & entities cast shadows
+export const shadowCasting = true;
