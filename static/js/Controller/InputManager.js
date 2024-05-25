@@ -317,4 +317,14 @@ export class InputManager extends Subject{
         const grassToggle = document.getElementById('grass-toggle');
         grassToggle.addEventListener('change', callback);
     }
+
+    addFullscreenButtonListener(callback) {
+        const fulllscreenButton = document.querySelector('.fullscreenButton');
+        fulllscreenButton.addEventListener('click', callback);
+    }
+
+    addHelpButtonListener(callback) {
+        const helpButton = document.querySelector('.helpButton');
+        helpButton.addEventListener('click', callback);
+    }
 }

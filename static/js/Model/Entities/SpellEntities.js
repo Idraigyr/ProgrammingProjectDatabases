@@ -17,6 +17,8 @@ class SpellEntity extends Entity{
         this.timer = 0;
         this.targettable = params?.targettable ?? false;
         this.canMove = false;
+        this.id = null;
+
     }
 
     /**
@@ -57,6 +59,9 @@ class SpellEntity extends Entity{
     }
     takeDamage(damage){
         //skip
+    }
+    setId(number)  {
+        this.id = number;
     }
 }
 
@@ -253,10 +258,12 @@ export class FollowPlayer extends SpellEntity{
         else{
             this.dispose();
         }
+        this.dispatchEvent(new CustomEvent("shieldUpdate", {detail: this}));
 
     }
 
     createShieldLostEvent(){
-        return new CustomEvent("shieldLost");
+        return new CustomEvent("shieldLost", {detail: this.id});
+        console.log("Dispatching shieldLost event", this.id);
     }
 }

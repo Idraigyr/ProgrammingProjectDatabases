@@ -271,6 +271,7 @@ export class Factory{
         model.addEventListener("updateBoundingBox",view.updateBoundingBox.bind(view));
         model.addEventListener("updateRotation",view.updateRotation.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        model.addEventListener("updateReady",view.updateReady.bind(view));
 
         model.rotate(params.rotation);
 

@@ -164,6 +164,16 @@ export class ViewManager extends Subject{
     }
 
     /**
+     * retrieve the spell Model by id
+     * @param id
+     * @returns {Model|*}
+     */
+    getSpellEntityModelByID(id){
+        console.log("id to find: ", id);
+        return this.pairs.spellEntity.find((pair) => pair.model.id === id).model;
+    }
+
+    /**
      * Change the view asset of the given model
      * @param event {{detail: {model: Model, viewAsset: THREE.Object3D}}}
      */
@@ -234,11 +244,23 @@ export class ViewManager extends Subject{
     /**
      * Get the collider models of the manager
      * @param array array to fill with collider models
+     * @param toIgnore array of models to ignore
      */
-    getColliderModels(array){
+    getColliderModels(array, toIgnore=[]){
         array.splice(0, array.length);
-        this.pairs.building.forEach((pair) => array.push(pair.view.charModel));
-        this.pairs.island.forEach((pair) => array.push(pair.view.charModel));
+        this.pairs.building.forEach(
+            (pair) => {
+                if(!toIgnore.includes(pair.model)){
+                    array.push(pair.view.charModel);
+                }
+            }
+        );
+        this.pairs.island.forEach(
+            (pair) => {
+                if (!toIgnore.includes(pair.model)){
+                    array.push(pair.view.charModel);
+                }
+            });
     }
 
     /**

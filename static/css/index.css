@@ -255,6 +255,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    font-family: Surabasa, sans-serif;
 }
 
 .menu-title{
@@ -531,13 +532,13 @@
 
 .collect-button{
     position: relative;
-    aspect-ratio: 2/1;
     background-color: #69644a;
     border: 5px solid #0f172a;
     border-radius: 10px;
     margin: 0;
     padding: 0;
     font-size: 30px;
+    font-family: Surabasa, sans-serif;
 }
 
 .collect-button:hover {
@@ -808,7 +809,7 @@
 .sub-menu-bookmark-container{
     position: relative;
     width: 100%;
-    height: 10%;
+    /*height: 10%;*/
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -823,12 +824,22 @@
     padding: 0;
     flex-grow: 1;
     font-size: 30px;
+    font-family: Surabasa, sans-serif;
 }
 
 .bookmark-button:active {
     background-color: #3e8e41;
     box-shadow: 0 5px #666;
     transform: translateY(4px);
+}
+
+/*#BuildMenu{*/
+/*  font-family: Surabasa, sans-serif;*/
+/*}*/
+
+.building-item .menu-item-description-text {
+  font-size: 20px;
+  margin-top: 5px;
 }
 
 .building-item:active {
@@ -934,10 +945,12 @@
     width: 100%;
     height: 100%;
     color: orange;
-    font-size: 20px;
+    font-size: 14px;
     text-overflow: ellipsis;
     overflow: hidden;
     margin: 5px;
+    margin-left: 0;
+    margin-top: 0;
     flex-grow: 1;
     line-height: 1.1;
 }
@@ -956,6 +969,7 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    font-family: Surabasa, sans-serif;
 }
 
 .settings-menu {
@@ -1016,6 +1030,11 @@ h1 {
 
 #performance{
     font-size: 20px;
+    font-family: inherit;
+}
+
+input::placeholder {
+    font-family: Surabasa, sans-serif;
 }
 
 .slider, .checkbox, .radio-group, .dropdown {
@@ -1100,6 +1119,7 @@ h1 {
     padding: 16px;
     font-size: 16px;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .cursor-options{
@@ -2030,7 +2050,9 @@ body {
   left:0px;
   width:110%;
   height:100px;
-    font-family: Surabasa, sans-serif; /* Assigning font */
+    font-family: Surabasa, sans-serif;
+    color: #ffffffe0;
+  text-shadow: #000 1px 0 10px;
 }
 
 #account-bar{
@@ -2262,7 +2284,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-
+    font-family: inherit;
 }
 .countdown-overlay {
     position: absolute;

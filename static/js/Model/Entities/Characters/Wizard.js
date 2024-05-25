@@ -221,11 +221,11 @@ export class Wizard extends Character{
         if(damage <= 0 || this.shielded) return;
         const prevHealth = this.health;
         this.health -= damage;
-        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
         if(this.health <= 0){
             this.health = 0;
             this.dies();
         }
+        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
     }
 
     /**

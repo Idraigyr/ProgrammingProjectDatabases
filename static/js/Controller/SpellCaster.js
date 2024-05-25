@@ -47,6 +47,10 @@ export class SpellCaster extends Subject{
         this.#currentObject = object;
         this.previousSelectedPosition = object?.position.clone();
         this.previousRotation = object?.rotation;
+        if(object ===null){
+            this.previousRotation = null;
+            this.previousSelectedPosition = null;
+        }
     }
 
     /**

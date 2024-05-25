@@ -201,6 +201,18 @@
                     </label>
                     <input type="range" id="volume" name="volume" min="0" max="100" value="50">
                 </div>
+                <div class="slider">
+                    <label for="horizontal-sensitivity">
+                        Horizontal sensitivity:
+                    </label>
+                    <input type="range" id="horizontal-sensitivity" name="horizontal-sensitivity" min="0" max="100" value="50">
+                </div>
+                <div class="slider">
+                    <label for="vertical-sensitivity">
+                        Vertical sensitivity:
+                    </label>
+                    <input type="range" id="vertical-sensitivity" name="vertical-sensitivity" min="0" max="100" value="50">
+                </div>
                 <!--<div class="checkbox">
                     <label for="sound">
                         Sound Effects
@@ -271,10 +283,16 @@
                         <input type="text" id="jump" name="jump" placeholder="default" maxlength="1">
                     </div>
                     <div class="key-bind">
-                        <label for="open-menu">
-                            Open inventory:
+                        <label for="sprint">
+                            Sprint:
                         </label>
-                        <input type="text" id="open-menu" name="open-inventory" placeholder="default" maxlength="1">
+                        <input type="text" id="sprint" name="sprint" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="interact">
+                            Interact:
+                        </label>
+                        <input type="text" id="interact" name="interact" placeholder="default" maxlength="1">
                     </div>
                     <div class="key-bind">
                         <label for="eat">
@@ -282,11 +300,49 @@
                         </label>
                         <input type="text" id="eat" name="eat" placeholder="default" maxlength="1">
                     </div>
+                    <div class="key-bind">
+                        <label for="chat">
+                            Open Chat:
+                        </label>
+                        <input type="text" id="chat" name="chat" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="spelSlot1">
+                            Spell slot 1:
+                        </label>
+                        <input type="text" id="spelSlot1" name="spelSlot1" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="spelSlot2">
+                            Spell slot 2:
+                        </label>
+                        <input type="text" id="spelSlot2" name="spelSlot2" placeholder="default" maxlength="1">
+                        </div>
+                    <div class="key-bind">
+                        <label for="spelSlot3">
+                            Spell slot 3:
+                        </label>
+                        <input type="text" id="spelSlot3" name="spelSlot3" placeholder="default" maxlength="1">
+                        </div>
+                    <div class="key-bind">
+                        <label for="spelSlot4">
+                            Spell slot 4:
+                        </label>
+                        <input type="text" id="spelSlot4" name="spelSlot4" placeholder="default" maxlength="1">
+                        </div>
+                    <div class="key-bind">
+                        <label for="spelSlot5">
+                            Spell slot 5:
+                        </label>
+                        <input type="text" id="spelSlot5" name="spelSlot5" placeholder="default" maxlength="1">
+                        </div>
                 </div>
             </div>
             <button class="button respawnButton" id="respawnButton" title="Stuck in a wall? Don't panic!">Reload the world</button>
             <button class="button leaveMatchButton" id="leaveMatchButton">Leave Match</button>
             <button class="button logOutButton" id="logOutButton">Log out</button>
+            <button class="button fullscreenButton" id="fullscreenButton">Fullscreen</button>
+            <button class="button helpButton" id="helpButton">Help</button>
             <button class="button alert deleteAccountButton" id="applyButton">Delete account</button>
             <button class="button applyButton right-align" id="applyButton">Apply</button>
         </div>

@@ -144,4 +144,23 @@ export class Settings {
     changeKeyBind(event) {
         console.log(event);
     }
+
+    toggleFullscreen() {
+        console.log("Fullscreen button clicked");
+        if (document.fullscreenElement) {
+            document.exitFullscreen();
+        } else {
+            try {
+                document.documentElement.requestFullscreen();
+            }
+            catch (e) {
+                console.error(e);
+            }
+        }
+    }
+
+    toggleHelpMenu() {
+        const helpMenu = document.querySelector('.help-container');
+        helpMenu.classList.toggle('hide');
+    }
 }

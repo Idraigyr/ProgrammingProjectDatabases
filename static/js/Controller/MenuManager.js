@@ -729,10 +729,10 @@ export class MenuManager extends Subject{
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
         const descriptions = [
-            "placeholder description",
-            "placeholder description",
-            "placeholder description",
-            "placeholder description"
+            "increases probability of positive events",
+            "shows how fast the building can produce items",
+            "mesures the pain the building can inflict",
+            "shows the amount of items the building can contain"
         ];
         let items = [];
         for (let i = 0; i < stats.length; i++){
@@ -754,7 +754,7 @@ export class MenuManager extends Subject{
         const stats = ["fortune", "speed", "damage", "capacity"];
         // update stats for according to the building
         if (params.name === "MineMenu"){
-            params.stats.set("capacity", params.stats.get("capacity")*1000);
+            params.stats.set("capacity", params.maxCrystals);
         }
         if (params.name === "TowerMenu"){
             params.stats.set("capacity", params.stats.get("capacity")*100);

@@ -10,6 +10,7 @@ import {API_URL, buildingUpgradeURI} from "../../../configs/EndpointConfigs.js";
  */
 export class Placeable extends Entity{
     #stats;
+    #ready;
     #statMultipliers;
     constructor(params) {
         params.mass = 0;
@@ -28,7 +29,7 @@ export class Placeable extends Entity{
         this.#statMultipliers = new Map();
         this.inputCrystals = 0; // input for fusion
         //TODO: set stat multipliers (defaults to 1)
-        this.ready = true;
+        this.#ready = true;
         this.cellIndex = null;
         this.timeToBuild = 10; // in seconds
         this.changeLevel(0); // Set correct level stats
@@ -173,11 +174,13 @@ export class Placeable extends Entity{
         const gridPos = new THREE.Vector3().copy(this.position);
         gridPos.add(islandPosition);
         convertWorldToGridPosition(gridPos);
+        // Transform the rotation to be positive
+        this.rotation = (this.rotation + 360) % 360;
         const obj = {
             island_id: playerInfo.islandID,
             x: gridPos.x/gridCellSize,
             z: gridPos.z/gridCellSize,
-            rotation: this.rotation/90,
+            rotation: (this.rotation/90) % 4,
             // type: this.dbType,
             level: this.level,
             // gems: []
@@ -231,7 +234,7 @@ export class Placeable extends Entity{
             return false;
         }
         if(this.level === 0){
-            this.upgradeTime = this.timeToBuild;
+            this.upgradeTime = 10;
             this.upgradeCost = 0;
             this.gemSlots = 0;
         } else if(this.level === 1){
@@ -262,7 +265,7 @@ export class Placeable extends Entity{
      * @fires {CustomEvent<{rotation: THREE.Quaternion}>} the event
      */
     rotate(degrees = 90){
-        this.rotation += degrees;
+        this.rotation -= degrees;
         this.rotation = Math.round(this.rotation/90)*90;
         this.rotation %= 360;
         // Create quaternion from rotation
@@ -285,5 +288,12 @@ export class Placeable extends Entity{
     }
     levelUp(){
         this.changeLevel(1);
+    }
+    set ready(value){
+        this.#ready = value;
+        this.dispatchEvent(new CustomEvent("updateReady", {detail: {ready: value}}));
+    }
+    get ready(){
+        return this.#ready;
     }
 }

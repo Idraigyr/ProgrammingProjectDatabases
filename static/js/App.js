@@ -25,6 +25,8 @@ import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
 import {Settings} from "./Menus/settings.js";
 import {Cursor} from "./Controller/Cursor.js";
 import {spellTypes} from "./Model/Spell.js";
+import {Altar} from "./View/Buildings/Altar.js";
+import {Mine} from "./Model/Entities/Buildings/Mine.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -255,6 +257,16 @@ class App {
         });
         this.menuManager.addEventListener("delete", async (event) =>{
             const toDelete = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
+            if(toDelete instanceof Altar) return;
+            // Check number of mines
+            if(toDelete instanceof Mine){
+                let mines = this.playerInfo.buildingsPlaced["Mine"];
+                if(mines <= 1) {
+                    // TODO: popup message
+                    console.log("Cannot delete last mine");
+                    return;
+                }
+            }
             this.worldManager.deleteBuilding(toDelete);
             // await this.playerInfo.retrieveInfo();
             let buildings = [];
@@ -293,7 +305,7 @@ class App {
             if(buildingNumber === buildTypes.getNumber("void")) return;
             // Skip altar
             if(buildingNumber === buildTypes.getNumber("altar_building")) return;
-            // If the selected cell is empty
+            // If the new selected cell is empty
             if ((buildingNumber === buildTypes.getNumber("empty") && this.spellCaster.currentObject)) { //move object
                 // If there is an object selected, drop it
                 // TODO: more advanced
@@ -310,7 +322,6 @@ class App {
                 // Remove the object from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
-                this.spellCaster.previousRotation = null;
                 // Update static mesh
                 this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
@@ -343,11 +354,11 @@ class App {
                 // Update occupied cells
                 const pos = event.detail.params.position;
                 const island = this.worldManager.world.getIslandByPosition(pos);
-                // Update static mesh
-                this.collisionDetector.generateColliderOnWorker();
                 // Get if the cell is occupied
                 let buildOnCell = island.getCellIndex(pos);
                 if (buildOnCell !== building.cellIndex) return;
+                // Update static mesh
+                this.collisionDetector.generateColliderOnWorker();
                 // Send put request to the server if persistence = true
                 if(this.worldManager.persistent){
                     this.worldManager.sendPUT(placeableURI, building, postRetries);
@@ -355,8 +366,6 @@ class App {
                 // You have placed the same building on the same cell, so remove info from spellCaster
                 this.spellCaster.currentObject.ready = true;
                 this.spellCaster.currentObject = null;
-                this.spellCaster.previousRotation = null;
-                this.spellCaster.previousSelectedPosition = null;
 
                 //allow menus to be opened again
                 this.menuManager.menusEnabled = true;
@@ -374,6 +383,7 @@ class App {
 
                 //disable opening menus while building is selected
                 this.menuManager.menusEnabled = false;
+                this.collisionDetector.generateColliderOnWorker([selectedObject]);
             }
         });
         this.spellCaster.addEventListener("interact", async (event) => {
@@ -397,6 +407,8 @@ class App {
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
+                // Update all stats
+                building.changeLevel(0);
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);
                 params.stats = building.getStats();
                 params.level = building.level;
@@ -617,9 +629,10 @@ class App {
             }
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
+                // TODO: show message
                 console.log("Not enough crystals");
                 return;
-            } // TODO: show message
+            }
             else {
                 // Subtract the price from the player's crystals
                 if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){
@@ -651,11 +664,12 @@ class App {
 
         progressBar.labels[0].innerText = "Logging in...";
         await this.playerInfo.login();
-        progressBar.labels[0].innerText = "Generating collision mesh...";
+        progressBar.labels[0].innerText = "Last magical touches...";
         progressBar.value = 95;
-        this.collisionDetector.generateColliderOnWorker();
 
         await this.friendsMenu.populateRequests();
+        // IMPORTANT: THIS LINE HAS TO BE CALLED LAST
+        this.collisionDetector.generateColliderOnWorker();
 
         if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});
