@@ -419,7 +419,9 @@ export class ItemManager {
             const multiplier = Math.random() * (maxMultiplier - minMultiplier) + minMultiplier;
             if(multiplier > power) break;
             gem.attributes[i - 1].multiplier = multiplier;
-            power -= multiplier;
+            if (multiplier >= 1) {
+                power -= multiplier;
+            }
         }
         gem.attributes.push(this.#generateRandomAttribute());
         gem.attributes[gem.attributes.length - 1].multiplier = power;
