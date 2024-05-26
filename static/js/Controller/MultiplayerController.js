@@ -800,6 +800,7 @@ export class MultiplayerController extends Subject{
         let countdown = 10;  // Timer duration in seconds
         respawnButton.classList.remove('active');
         respawnButton.disabled = true;
+        document.exitPointerLock();
 
 
 
