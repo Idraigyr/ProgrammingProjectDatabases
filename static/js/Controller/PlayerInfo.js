@@ -157,8 +157,7 @@ export class PlayerInfo extends Subject{
             this.experience = response.xp
             this.mana = response?.mana
             // this.mana += this.calculateManaBonus();
-            this.health += this.calculateHealthBonus();
-
+            this.maxHealth += this.calculateHealthBonus();
             this.playerPosition.x = response?.entity?.x ?? playerSpawn.x;
             this.playerPosition.y = response?.entity?.y ?? playerSpawn.y;
             this.playerPosition.z = response?.entity?.z ?? playerSpawn.z;
@@ -233,7 +232,7 @@ export class PlayerInfo extends Subject{
      * @returns {number} - Health bonus
      */
     calculateHealthBonus(){
-        return Math.min(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
+        return Math.max(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
     }
 
     isPlayerLoggedIn(){

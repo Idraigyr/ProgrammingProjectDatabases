@@ -255,7 +255,6 @@ export class MultiplayerController extends Subject{
         });
         opponent.setId({entity: {player_id: this.peerInfo.userID}});
         opponent.addEventListener("characterDied", this.updateEvents.get("playerDeath"));
-        console.log("opponent: ", opponent)
         this.peerController = new Controller.PeerController({peer: opponent});
 
 
@@ -297,7 +296,6 @@ export class MultiplayerController extends Subject{
      * Starts the match and resumes physics updates
      */
     startMatch(){
-        console.log("match started");
         this.inMatch = true;
         this.friendsMenu.inMatch = true;
         document.querySelector('.loading-animation').style.display = 'none';
@@ -738,6 +736,10 @@ export class MultiplayerController extends Subject{
             playerDeath: event.detail
         });
     }
+    /**
+     * Send the player respawn event to the opponent (to notify the opponent that his enemy has respawned)
+     * @param event
+     */
 
     sendPlayerRespawnEvent(event){
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
