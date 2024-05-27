@@ -3,9 +3,6 @@ import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths} from "../configs/ViewConfigs.js";
 let volume = 50;
-let soundEffects = true;
-let backgroundMusic = true;
-let resolution = 1080;
 let keyBinds = new Map();
 keyBinds.set('move-forward', 'w');
 keyBinds.set('move-left', 'a');
@@ -37,8 +34,9 @@ export class Settings {
         this.inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
         this.inputManager.addGrassToggleListener(this.toggleGrass.bind(this));
         this.inputManager.addApplyButtonListener(this.applySettings.bind(this))
-        const button = document.getElementById('applyButton');
-        button.addEventListener('click', this.applySettings.bind(this));
+        this.inputManager.addFullscreenButtonListener(this.toggleFullscreen.bind(this))
+        this.inputManager.addHelpButtonListener(this.toggleHelpMenu.bind(this))
+        this.inputManager.addHelpCloseButtonListener(this.toggleHelpMenu.bind(this))
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
@@ -101,6 +99,7 @@ export class Settings {
     exitSettingsMenu() {
         const settingsMenu = document.querySelector(`.settings-container`);
         settingsMenu.classList.toggle('hide');
+
     }
 
     /**
@@ -132,7 +131,7 @@ export class Settings {
     }
 
     applySettings(){
-        console.log("Settings applied");
+
         this.exitSettingsMenu();
     }
 

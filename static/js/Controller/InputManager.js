@@ -327,4 +327,9 @@ export class InputManager extends Subject{
         const helpButton = document.querySelector('.helpButton');
         helpButton.addEventListener('click', callback);
     }
+
+    addHelpCloseButtonListener(callback) {
+        const helpCloseButton = document.querySelector('.close-help');
+        helpCloseButton.addEventListener('click', callback);
+    }
 }
