@@ -195,6 +195,8 @@ class App {
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
 
+        this.friendsMenu.setForwardingNameSpace(this.forwardingNameSpace);
+
         // setup abort signal for when the player is already connected
         this.forwardingNameSpace.addEventListener("abort", () => {
             this.abort = true;
@@ -465,7 +467,8 @@ class App {
             handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
             processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
             updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
-            processIslandVisitEvent: this.multiplayerController.processIslandVisitEvent.bind(this.multiplayerController)
+            processIslandVisitEvent: this.multiplayerController.processIslandVisitEvent.bind(this.multiplayerController),
+            processOnlineStatus: this.friendsMenu.setOnlineIndicator.bind(this.friendsMenu)
         });
 
         //visualise camera line -- DEBUG STATEMENTS --

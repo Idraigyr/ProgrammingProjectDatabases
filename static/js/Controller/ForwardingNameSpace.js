@@ -13,7 +13,7 @@ export class ForwardingNameSpace extends Subject{
      * Register the handlers for the socket events
      * @param {{handleMatchFound: function, handleMatchStart: function, handleMatchAbort: function,
      * processReceivedState: function, updateMatchTimer: function, handleMatchEnd: function, processIslandVisitEvent: function,
-     * alreadyConnected: function}} params - The object containing the handlers
+     * alreadyConnected: function, processOnlineStatus: function}} params - The object containing the handlers
      * @param params
      */
     registerHandlers(params) {
@@ -26,9 +26,7 @@ export class ForwardingNameSpace extends Subject{
         this.socket.on('match_timer', (data) => params.updateMatchTimer(data));
         this.socket.on('already_connected', this.dispatchAbortSignal.bind(this));
         this.socket.on('island_visit', (data) => params.processIslandVisitEvent(data));
-        this.socket.on('online_status', (data) => {
-            console.log(data);
-        });
+        this.socket.on('online_status', (data) => params.processOnlineStatus(data));
     }
 
     /**
