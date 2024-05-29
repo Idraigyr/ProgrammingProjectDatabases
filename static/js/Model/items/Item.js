@@ -102,7 +102,7 @@ export class Gem extends Item{
     }
 
     addAttribute(attribute){
-        const hasAttribute = this.attributes.find(attr => attr.name === attribute.name);
+        const hasAttribute = this.attributes.find(attr => attr.id === attribute.id);
         if(hasAttribute){
             hasAttribute.multiplier += attribute.multiplier;
         } else {
