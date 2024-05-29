@@ -9,6 +9,9 @@ export let horizontalSensitivity = 0.25;
 export let verticalSensitivity = 0.15;
 export let zoomSensitivity = 1;
 
+export const sensitivity = { verticalSensitivity,  horizontalSensitivity};
+export const baseHorizontalSensitivity = 0.25;
+export const baseVerticalSensitivity = 0.15;
 export const cameraPosition = {
     offset: {
         x: -5,

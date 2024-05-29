@@ -2,6 +2,8 @@
 import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths} from "../configs/ViewConfigs.js";
+import {baseHorizontalSensitivity, baseVerticalSensitivity, sensitivity} from "../configs/ControllerConfigs.js";
+
 let volume = 50;
 let keyBinds = new Map();
 keyBinds.set('move-forward', 'w');
@@ -130,10 +132,18 @@ export class Settings {
 
     }
 
-    applySettings(){
+    applySensitivity(){
+        let docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
+        let docVerticalSensitivity = document.getElementById('vertical-sensitivity');
+        sensitivity.horizontalSensitivity = baseHorizontalSensitivity * ( 0.5 + (docHorizontalSensitivity.value/100));
+        sensitivity.verticalSensitivity = baseVerticalSensitivity * ( 0.5 + (docVerticalSensitivity.value/100));
+    }
 
+    applySettings(){
+        this.applySensitivity();
         this.exitSettingsMenu();
     }
+
 
     switchCursor(event) {
         const crosshair = document.querySelector('#crosshair-img');
@@ -145,7 +155,6 @@ export class Settings {
     }
 
     toggleFullscreen() {
-        console.log("Fullscreen button clicked");
         if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
