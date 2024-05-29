@@ -46,6 +46,10 @@ export const playerSpawn = {
     y: 50,
     z: -10
 }
+//-- Volume --//
+export let overalVolume = 50;
+
+export const volume = {overalVolume};
 
 //-- Minions --//
 export const minionAttackRadius = 4;

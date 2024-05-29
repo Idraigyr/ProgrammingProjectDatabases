@@ -2,9 +2,14 @@
 import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths} from "../configs/ViewConfigs.js";
-import {baseHorizontalSensitivity, baseVerticalSensitivity, sensitivity} from "../configs/ControllerConfigs.js";
+import {
+    baseHorizontalSensitivity,
+    baseVerticalSensitivity,
+    overalVolume,
+    sensitivity,
+    volume
+} from "../configs/ControllerConfigs.js";
 
-let volume = 50;
 let keyBinds = new Map();
 keyBinds.set('move-forward', 'w');
 keyBinds.set('move-left', 'a');
@@ -131,6 +136,10 @@ export class Settings {
         }
 
     }
+    applyVolume(){
+        let docVolume = document.getElementById('volume');
+        volume.overalVolume = docVolume.value;
+    }
 
     applySensitivity(){
         let docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
@@ -140,7 +149,9 @@ export class Settings {
     }
 
     applySettings(){
+        this.applyVolume();
         this.applySensitivity();
+
         this.exitSettingsMenu();
     }
 
