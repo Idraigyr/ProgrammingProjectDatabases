@@ -20,8 +20,8 @@ depends_on = None
 
 def upgrade():
     # Fuck the previous layout
-    with op.batch_alter_table('player', schema=None) as batch_op:
-        batch_op.drop_constraint('player_user_profile_id_fkey1', type_='foreignkey')
+    # with op.batch_alter_table('player', schema=None) as batch_op:
+    #     batch_op.drop_constraint('player_user_profile_id_fkey1', type_='foreignkey')
 
     op.drop_table('user_settings')
 
@@ -73,9 +73,8 @@ def upgrade():
     # A bit of data migration
     session = sa.orm.Session(bind=op.get_bind())
     for player in session.query(Player).all():
-        player.user_settings = UserSettings(player_id=player.user_profile_id)
+        session.execute(sa.text(f"INSERT INTO user_settings (\"Player\", audio_volume, performance, selected_cursor, horz_sensitivity, vert_sensitivity, move_fwd_key, move_bkwd_key, move_left_key, move_right_key, jump_key, interact_key, eat_key, chat_key, slot_1_key, slot_2_key, slot_3_key, slot_4_key, slot_5_key) VALUES ({player.user_profile_id}, 100, 2, 0, 50, 50, 'KeyW', 'KeyS', 'KeyA', 'KeyD', 'Space', 'KeyE', 'KeyQ', 'KeyC', 'Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5')"))
 
-    session.commit()
 
     # ### end Alembic commands ###
 
@@ -101,8 +100,8 @@ def downgrade():
                     sa.ForeignKeyConstraint(['Player'], ['player.user_profile_id'], ),
                     sa.PrimaryKeyConstraint('Player')
                     )
-    with op.batch_alter_table('player', schema=None) as batch_op:
-        batch_op.create_foreign_key('player_user_profile_id_fkey1', 'user_profile', ['user_profile_id'], ['id'])
+    # with op.batch_alter_table('player', schema=None) as batch_op:
+    #     batch_op.create_foreign_key('player_user_profile_id_fkey1', 'user_profile', ['user_profile_id'], ['id'])
 
     session = sa.orm.Session(bind=op.get_bind())
     for player in session.query(Player).all():

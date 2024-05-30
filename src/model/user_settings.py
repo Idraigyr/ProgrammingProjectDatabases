@@ -48,12 +48,15 @@ class UserSettings(current_app.db.Model):
     slot_4_val: Mapped[str] = Column(String(12), nullable=True)
     slot_5_key: Mapped[str] = Column(String(12), nullable=False, default='Digit5')
     slot_5_val: Mapped[str] = Column(String(12), nullable=True)
+    sprint_key: Mapped[str] = Column(String(12), nullable=False, default='ShiftLeft')
+    sprint_val: Mapped[str] = Column(String(12), nullable=True)
 
     def __init__(self, player_id: int, audio_volume: int = 100, performance: int = 2, selected_cursor: int = 0, horz_sensitivity: int = 50, vert_sensitivity: int = 50,
                     move_fwd_key: str = 'KeyW', move_fwd_val: str = None, move_bkwd_key: str = 'KeyS', move_bkwd_val: str = None, move_left_key: str = 'KeyA', move_left_val: str = None,
                     move_right_key: str = 'KeyD', move_right_val: str = None, jump_key: str = 'Space', jump_val: str = None, interact_key: str = 'KeyE', interact_val: str = None,
                     eat_key: str = 'KeyQ', eat_val: str = None, chat_key: str = 'KeyC', chat_val: str = None, slot_1_key: str = 'Digit1', slot_1_val: str = None, slot_2_key: str = 'Digit2',
-                    slot_2_val: str = None, slot_3_key: str = 'Digit3', slot_3_val: str = None, slot_4_key: str = 'Digit4', slot_4_val: str = None, slot_5_key: str = 'Digit5', slot_5_val: str = None):
+                    slot_2_val: str = None, slot_3_key: str = 'Digit3', slot_3_val: str = None, slot_4_key: str = 'Digit4', slot_4_val: str = None, slot_5_key: str = 'Digit5', slot_5_val: str = None,
+                    sprint_key: str = 'ShiftLeft', sprint_val: str = None):
         """
         Initialize the UserSettings object
         """
@@ -101,6 +104,8 @@ class UserSettings(current_app.db.Model):
         self.slot_4_val = slot_4_val
         self.slot_5_key = slot_5_key
         self.slot_5_val = slot_5_val
+        self.sprint_key = sprint_key
+        self.sprint_val = sprint_val
 
 
     def update(self, data: dict):
@@ -151,4 +156,5 @@ class UserSettings(current_app.db.Model):
         self.slot_4_val = data.get('slot_4_val', self.slot_4_val)
         self.slot_5_key = data.get('slot_5_key', self.slot_5_key)
         self.slot_5_val = data.get('slot_5_val', self.slot_5_val)
-
+        self.sprint_key = data.get('sprint_key', self.sprint_key)
+        self.sprint_val = data.get('sprint_val', self.sprint_val)
