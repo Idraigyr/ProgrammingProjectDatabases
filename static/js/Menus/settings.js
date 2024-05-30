@@ -9,16 +9,41 @@ import {
     sensitivity,
     volume
 } from "../configs/ControllerConfigs.js";
+import {keyBinds} from "../configs/Keybinds.js";
 
+// Define the mapping object
+const keyMapping = {
+    'move-forward': 'primaryForwardKey',
+    'move-left': 'primaryLeftKey',
+    'move-right': 'primaryRightKey',
+    'move-backwards': 'primaryBackwardKey',
+    'jump': 'upKey',
+    'sprint': 'sprintKey',
+    'interact': 'interactKey',
+    'eat': 'eatingKey',
+    'chat': 'chatKey',
+    'spellSlot1': 'slot1Key',
+    'spellSlot2': 'slot2Key',
+    'spellSlot3': 'slot3Key',
+    'spellSlot4': 'slot4Key',
+    'spellSlot5': 'slot5Key'
+};
 
-let keyBinds = new Map();
-keyBinds.set('move-forward', 'w');
-keyBinds.set('move-left', 'a');
-keyBinds.set('move-right', 'd');
-keyBinds.set('move-backwards', 's');
-keyBinds.set('jump', ' ');
-keyBinds.set('open-inventory', 'e');
-keyBinds.set('eat', 'q');
+let keyMap = new Map();
+keyMap.set('move-forward', 'KeyW');
+keyMap.set('move-left', 'KeyA');
+keyMap.set('move-right', 'KeyD');
+keyMap.set('move-backwards', 'KeyS');
+keyMap.set('jump', 'Space');
+keyMap.set('sprint', 'ShiftLeft');
+keyMap.set('interact', 'keyE');
+keyMap.set('eat', 'KeyQ');
+keyMap.set('chat', 'KeyC');
+keyMap.set('spellSlot1', 'Digit1');
+keyMap.set('spellSlot2', 'Digit2');
+keyMap.set('spellSlot3', 'Digit3');
+keyMap.set('spellSlot4', 'Digit4');
+keyMap.set('spellSlot5', 'Digit5');
 
 export class Settings extends Subject{
     grassOn = true;
@@ -175,6 +200,19 @@ export class Settings extends Subject{
     }
 
     /**
+     * Function to apply the keybinds from the settings menu to the game
+     */
+
+    applyKeys(){
+        for (let [key, value] of keyMap.entries()) {
+            const objectKey = keyMapping[key];
+            if (objectKey) {
+                keyBinds[objectKey] = value;
+            }
+        }
+    }
+
+    /**
      * Function to apply all the settings from the settings menu to the game
      */
 
@@ -182,6 +220,8 @@ export class Settings extends Subject{
         this.applyVolume();
         this.applySensitivity();
         this.applyPerformace();
+        this.applyKeys();
+        console.log(keyBinds)
 
         this.exitSettingsMenu();
     }
@@ -198,7 +238,8 @@ export class Settings extends Subject{
     * Function to change the keybinds
      */
     changeKeyBind(event) {
-        console.log(event);
+        console.log(event.target.name, event.code)
+        keyMap.set(event.target.name, event.code);
     }
 
     /**

@@ -1,12 +1,9 @@
 import {
     buildKey, subSpellKey,
-    DownKey, eatingKey, primaryBackwardKey,
-    primaryForwardKey,
-    primaryLeftKey,
-    primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
+    DownKey,
+    secondaryBackwardKey, secondaryForwardKey,
     secondaryLeftKey,
-    secondaryRightKey, slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, sprintKey,
-    upKey
+    secondaryRightKey, keyBinds
 } from "../configs/Keybinds.js";
 import {Subject} from "../Patterns/Subject.js";
 import {assert} from "../helpers.js";
@@ -205,50 +202,50 @@ export class InputManager extends Subject{
     //TODO: remove all keys that need not be checked within an update function
     #onKey(KeyBoardEvent, bool){
         switch (KeyBoardEvent.code){
-            case upKey:
+            case keyBinds.upKey:
                 this.keys.up = bool;
                 break;
             case DownKey:
                 this.keys.down = bool;
                 break;
-            case primaryLeftKey:
+            case keyBinds.primaryLeftKey:
             case secondaryLeftKey:
                 this.keys.left = bool;
                 break;
-            case primaryRightKey:
+            case keyBinds.primaryRightKey:
             case secondaryRightKey:
                 this.keys.right = bool;
                 break;
-            case primaryForwardKey:
+            case keyBinds.primaryForwardKey:
             case secondaryForwardKey:
                 this.keys.forward = bool;
                 break;
-            case primaryBackwardKey:
+            case keyBinds.primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = bool;
                 break;
-            case sprintKey:
+            case keyBinds.sprintKey:
                 this.keys.sprint = bool;
                 break;
             case buildKey:
                 this.keys.build = bool;
                 break;
-            case slot1Key:
+            case keyBinds.slot1Key:
                 this.dispatchEvent(this.createSpellSlotChangeEvent(1));
                 break;
-            case slot2Key:
+            case keyBinds.slot2Key:
                 this.dispatchEvent(this.createSpellSlotChangeEvent(2));
                 break;
-            case slot3Key:
+            case keyBinds.slot3Key:
                 this.dispatchEvent(this.createSpellSlotChangeEvent(3));
                 break;
-            case slot4Key:
+            case keyBinds.slot4Key:
                 this.dispatchEvent(this.createSpellSlotChangeEvent(4));
                 break;
-            case slot5Key:
+            case keyBinds.slot5Key:
                 this.dispatchEvent(this.createSpellSlotChangeEvent(5));
                 break;
-            case eatingKey:
+            case keyBinds.eatingKey:
                 this.keys.eating = bool;
                 break;
 
