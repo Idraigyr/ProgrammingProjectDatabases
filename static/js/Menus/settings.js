@@ -238,8 +238,11 @@ export class Settings extends Subject{
     * Function to change the keybinds
      */
     changeKeyBind(event) {
-        console.log(event.target.name, event.code)
-        keyMap.set(event.target.name, event.code);
+        console.log(event.code);
+        if(!(event.code === 'Backspace'))
+        {
+                    keyMap.set(event.target.name, event.code);
+        }
     }
 
     /**
