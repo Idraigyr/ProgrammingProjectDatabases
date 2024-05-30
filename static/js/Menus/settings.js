@@ -1,5 +1,5 @@
 // all variables for game settings
-import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
+import {API_URL, logoutURI, settingsURI} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 import { } from "../Controller/PlayerInfo.js";
 import {cursorImgPaths, shadows} from "../configs/ViewConfigs.js";
@@ -31,6 +31,23 @@ const keyMapping = {
     'spellSlot5': 'slot5Key'
 };
 
+const dbToKeyMap = {
+    'move_fwd': 'move-forward',
+    'move_left': 'move-left',
+    'move_right': 'move-right',
+    'move_bkwd': 'move-backwards',
+    'jump': 'jump',
+    'sprint': 'sprint',
+    'eat': 'eat',
+    'interact': 'interact',
+    'chat': 'chat',
+    'slot_1': 'spellSlot1',
+    'slot_2': 'spellSlot2',
+    'slot_3': 'spellSlot3',
+    'slot_4': 'spellSlot4',
+    'slot_5': 'spellSlot5'
+};
+
 /**
  *Map to store keys from input in the settings menu
  */
@@ -49,6 +66,37 @@ keyMap.set('spellSlot2', 'Digit2');
 keyMap.set('spellSlot3', 'Digit3');
 keyMap.set('spellSlot4', 'Digit4');
 keyMap.set('spellSlot5', 'Digit5');
+
+let dbMap = {
+    "move_fwd_key": "KeyW",
+    "move_fwd_val": "NULL",
+    "move_bkwd_key": "KeyS",
+    "move_bkwd_val": "NULL",
+    "move_left_key": "KeyA",
+    "move_left_val": "NULL",
+    "move_right_key": "KeyD",
+    "move_right_val": "NULL",
+    "jump_key": "Space",
+    "jump_val": "NULL",
+    "sprint_key": "ShiftLeft",
+    "sprint_val": "NULL",
+    "eat_key": "KeyQ",
+    "eat_val": "NULL",
+    "interact_key": "KeyE",
+    "interact_val": "NULL",
+    "chat_key": "KeyC",
+    "chat_val": "NULL",
+    "slot_1_key": "Digit1",
+    "slot_1_val": "NULL",
+    "slot_2_key": "Digit2",
+    "slot_2_val": "NULL",
+    "slot_3_key": "Digit3",
+    "slot_3_val": "NULL",
+    "slot_4_key": "Digit4",
+    "slot_4_val": "NULL",
+    "slot_5_key": "Digit5",
+    "slot_5_val": "NULL"
+};
 
 export class Settings extends Subject{
     grassOn = true;
@@ -157,59 +205,104 @@ export class Settings extends Subject{
             console.log("Account deletion cancelled")
         }
 
+    }/**
+     * Send a PUT request to the server
+     * @param uri - the URI to send the PUT request to
+     * @param entity - the Entity that we want to update in the db
+     * @param retries - the number of retries to resend the PUT request
+     */
+    sendPUT(data){
+        console.log(data)
+        try {
+            $.ajax({
+                url: `${API_URL}/${settingsURI}`,
+                type: "PUT",
+                data: JSON.stringify(data),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                throw new Error(`Could not send PUT request for settings: Error: ${textStatus} ${errorThrown}`);
+
+            });
+        } catch (err){
+            console.error(err);
+        }
     }
 
     /**
      * Function to apply the volume from the settings menu to the game
      */
-    applyVolume(){
+    applyVolume(obj){
         let docVolume = document.getElementById('volume');
         volume.overalVolume = docVolume.value;
+        obj.audio_volume = parseInt(docVolume.value);
+
     }
 
     /**
      * Function to apply the sensitivity from the settings menu to the game
      */
 
-    applySensitivity(){
+    applySensitivity(obj){
         let docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
         let docVerticalSensitivity = document.getElementById('vertical-sensitivity');
         sensitivity.horizontalSensitivity = baseHorizontalSensitivity * ( 0.5 + (docHorizontalSensitivity.value/100));
         sensitivity.verticalSensitivity = baseVerticalSensitivity * ( 0.5 + (docVerticalSensitivity.value/100));
+        obj.horz_sensitivity = parseInt(docHorizontalSensitivity.value);
+        obj.vert_sensitivity = parseInt(docVerticalSensitivity.value);
+
     }
 
     /**
      * Function to apply the performance settings from the settings menu to the game
      */
 
-    applyPerformace(){
+    applyPerformace(obj){
         let docPerformance = document.getElementById('performance');
         if (docPerformance.value === 'low'){
             shadows.shadowCasting = false;
             this.grassOn = false;
+            obj.performance = 0;
         }
         if (docPerformance.value === 'middle'){
             shadows.shadowCasting = false;
             this.grassOn = true;
+            obj.performance = 1;
         }
         if (docPerformance.value === 'high'){
             shadows.shadowCasting = true;
             this.grassOn = true;
+            obj.performance = 2;
         }
         this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
+
     }
 
     /**
      * Function to apply the keybinds from the settings menu to the game
      */
 
-    applyKeys(){
+    applyKeys(obj){
         for (let [key, value] of keyMap.entries()) {
             const objectKey = keyMapping[key];
             if (objectKey) {
                 keyBinds[objectKey] = value;
             }
         }
+        for (let key in dbMap) {
+            if (dbMap.hasOwnProperty(key)) {
+                console.log(key, dbMap[key])
+                obj[key] =  dbMap[key];
+            }
+        }
+
     }
 
     /**
@@ -217,11 +310,12 @@ export class Settings extends Subject{
      */
 
     applySettings(){
-        this.applyVolume();
-        this.applySensitivity();
-        this.applyPerformace();
-        this.applyKeys();
-        console.log(keyBinds)
+        let data = {player_id: this.playerInfo.userID};
+        this.applyVolume(data);
+        this.applySensitivity(data);
+        this.applyPerformace(data);
+        this.applyKeys(data);
+        this.sendPUT(data);
 
         this.exitSettingsMenu();
     }
@@ -238,10 +332,14 @@ export class Settings extends Subject{
     * Function to change the keybinds
      */
     changeKeyBind(event) {
-        console.log(event.code);
         if(!(event.code === 'Backspace'))
         {
-                    keyMap.set(event.target.name, event.code);
+            keyMap.set(event.target.name, event.code);
+            const dbKey = dbToKeyMap[event.target.name];
+            if (dbKey) {
+                dbMap[dbKey + "_key"] = event.code;
+                dbMap[dbKey + "_val"] = event.key;
+            }
         }
     }
 
