@@ -219,7 +219,6 @@ class App {
             console.log("Mining gem");
             const gem = this.itemManager.createGem((3));
         });
-
         this.menuManager.addEventListener("startFusion", async (event) => {
             const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             const fusionLevel = fusionTable.level;
@@ -395,7 +394,9 @@ class App {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
             let params = {name: buildTypes.getMenuName(buildingNumber)}
-
+            // get all placed buildings
+            this.itemManager.stopGemProduction();
+            this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
             if(buildingNumber === buildTypes.getNumber("empty")){
                 params.buildings = [];
                 for(const building in this.playerInfo.buildingsPlaced){

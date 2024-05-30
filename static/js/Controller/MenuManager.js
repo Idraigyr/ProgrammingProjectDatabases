@@ -1038,6 +1038,15 @@ export class MenuManager extends Subject{
         this.blockInputCallback.activate();
     }
 
+
+    generateRandomGems(worldManager) {
+        if (this.generateGems) {
+            setInterval(() => {
+            }, 2000);
+            console.log("testing gem generation");
+        }
+    }
+
     /**
      * update the amount of crystals that appear in the CollectMenu
      * random crystal generation
@@ -1046,11 +1055,10 @@ export class MenuManager extends Subject{
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;        // random crystal generation
-        if(Math.random()*100 < this.fortune){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
-            console.log("Gem mined!");
-            this.dispatchEvent(this.createMineGemEvent());
-
-        }
+        //if(Math.random()*100 < this.fortune){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
+        //    console.log("Gem mined!");
+        //    this.dispatchEvent(this.createMineGemEvent());
+        //}
     }
 
     /**
