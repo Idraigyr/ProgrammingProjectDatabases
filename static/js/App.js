@@ -252,6 +252,7 @@ class App {
         this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
+            if(this.playerInfo.buildingProgress >= this.worldManager.checkBuildingsInProgress()) return;
             this.playerInfo.changeCrystals(-building.upgradeCost);
             await this.playerInfo.createLevelUpTask(building);
             building.startUpgrade();

@@ -409,6 +409,9 @@ export class WorldManager{
         if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
             console.log("Cannot place");
         }
+        else if(this.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+            console.log("Cannot place");
+        }
         else {
             if(!this.cheats){
                 const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
@@ -853,7 +856,17 @@ export class WorldManager{
             console.error(err);
         }
     }
+
+    /**
+     * Checks for buildings in progress
+     * @return {number} Total number of buildings in progress
+     */
     checkBuildingsInProgress() {
+        let progress = 0;
+        for(let i = 0; i < this.world.islands[0].buildings.length; i++){
+            if(this.world.islands[0].buildings[i].ready === false) progress++;
+        }
+        return progress
 
     }
 
