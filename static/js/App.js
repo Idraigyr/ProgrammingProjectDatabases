@@ -18,7 +18,7 @@ import {
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
 import {eatingKey, interactKey} from "./configs/Keybinds.js";
-import {shadowCasting, gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
+import {shadows, gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
 import {buildTypes, gemTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/ChatNamespace.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
@@ -77,7 +77,7 @@ class App {
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
 
-        if(shadowCasting){
+        if(shadows.shadowCasting){
             this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
             this.renderer.shadowMap.enabled = true;
         }
@@ -165,6 +165,8 @@ class App {
                 leaveMatch: this.multiplayerController.leaveMatch.bind(this.multiplayerController)
             }
         });
+
+
 
         /*TODO: look and see
         this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
@@ -567,6 +569,7 @@ class App {
         /* TODO: look and see
         this.settings.worldManager = this.worldManager;
         */
+        this.settings.addEventListener("grassChange", this.worldManager.toggleGrass.bind(this.worldManager));
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.createPlayer();
 
@@ -692,7 +695,7 @@ class App {
         dirLight.position.set(-100,50, 100);
         dirLight.castShadow = true;
 
-        if(shadowCasting){
+        if(shadows.shadowCasting){
             //2048, 4096, 8192, 16384
             //Set up shadow properties for the light
             dirLight.shadow.mapSize.width = 8192;

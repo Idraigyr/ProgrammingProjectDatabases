@@ -861,8 +861,8 @@ export class WorldManager{
      * Toggle the grass on the world
      * @param on - whether to turn the grass on or off
      */
-    toggleGrass(on){
-        this.world.toggleGrass(on);
+    toggleGrass(event){
+        this.world.toggleGrass(event.detail.on);
     }
 
     async updateBuildings(){

@@ -1,14 +1,15 @@
 // all variables for game settings
 import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
+import {Subject} from "../Patterns/Subject.js";
 import { } from "../Controller/PlayerInfo.js";
-import {cursorImgPaths} from "../configs/ViewConfigs.js";
+import {cursorImgPaths, shadows} from "../configs/ViewConfigs.js";
 import {
     baseHorizontalSensitivity,
     baseVerticalSensitivity,
-    overalVolume,
     sensitivity,
     volume
 } from "../configs/ControllerConfigs.js";
+
 
 let keyBinds = new Map();
 keyBinds.set('move-forward', 'w');
@@ -19,15 +20,12 @@ keyBinds.set('jump', ' ');
 keyBinds.set('open-inventory', 'e');
 keyBinds.set('eat', 'q');
 
-export class Settings {
+export class Settings extends Subject{
     grassOn = true;
     constructor(params) {
+        super(params);
         this.map = null;
         this.inputManager = params.inputManager;
-        /* TODO: look and see
-        this.worldManager = params.worldManager;
-
-         */
         this.playerInfo = params.playerInfo;
 
         this.inputManager.addLeaveMatchButtonListener((e) => {
@@ -39,7 +37,6 @@ export class Settings {
         this.inputManager.addRespawnButtonListener(this.respawn.bind(this));
         this.inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         this.inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
-        this.inputManager.addGrassToggleListener(this.toggleGrass.bind(this));
         this.inputManager.addApplyButtonListener(this.applySettings.bind(this))
         this.inputManager.addFullscreenButtonListener(this.toggleFullscreen.bind(this))
         this.inputManager.addHelpButtonListener(this.toggleHelpMenu.bind(this))
@@ -48,13 +45,13 @@ export class Settings {
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
 
-    toggleGrass(event) {
+    /*toggleGrass(event) {
         console.log("Grass toggle button clicked ", event);
         this.grassOn = !!event.target.checked;
         // Dispatch event to toggle grass
-        //this.worldManager.toggleGrass(this.grassOn);
+        this.worldManager.toggleGrass(this.grassOn);
         //TODO: add a callback don't add worldmanager directly
-    }
+    }*/
 
     loadCursors() {
         const cursors = document.querySelector('.cursors');
@@ -136,10 +133,18 @@ export class Settings {
         }
 
     }
+
+    /**
+     * Function to apply the volume from the settings menu to the game
+     */
     applyVolume(){
         let docVolume = document.getElementById('volume');
         volume.overalVolume = docVolume.value;
     }
+
+    /**
+     * Function to apply the sensitivity from the settings menu to the game
+     */
 
     applySensitivity(){
         let docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
@@ -148,22 +153,57 @@ export class Settings {
         sensitivity.verticalSensitivity = baseVerticalSensitivity * ( 0.5 + (docVerticalSensitivity.value/100));
     }
 
+    /**
+     * Function to apply the performance settings from the settings menu to the game
+     */
+
+    applyPerformace(){
+        let docPerformance = document.getElementById('performance');
+        if (docPerformance.value === 'low'){
+            shadows.shadowCasting = false;
+            this.grassOn = false;
+        }
+        if (docPerformance.value === 'middle'){
+            shadows.shadowCasting = false;
+            this.grassOn = true;
+        }
+        if (docPerformance.value === 'high'){
+            shadows.shadowCasting = true;
+            this.grassOn = true;
+        }
+        this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
+    }
+
+    /**
+     * Function to apply all the settings from the settings menu to the game
+     */
+
     applySettings(){
         this.applyVolume();
         this.applySensitivity();
+        this.applyPerformace();
 
         this.exitSettingsMenu();
     }
 
-
+    /**
+     * Function to switch the cursor
+     * @param event
+     */
     switchCursor(event) {
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
     }
-
+    /**
+    * Function to change the keybinds
+     */
     changeKeyBind(event) {
         console.log(event);
     }
+
+    /**
+     * Function to toggle fullscreen
+     */
 
     toggleFullscreen() {
         if (document.fullscreenElement) {
@@ -177,6 +217,10 @@ export class Settings {
             }
         }
     }
+
+    /**
+     * Function to toggle the help menu
+     */
 
     toggleHelpMenu() {
         const helpMenu = document.querySelector('.help-container');
