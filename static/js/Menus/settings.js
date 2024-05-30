@@ -11,7 +11,9 @@ import {
 } from "../configs/ControllerConfigs.js";
 import {keyBinds} from "../configs/Keybinds.js";
 
-// Define the mapping object
+/**
+ *Map to map keys from settings to the keybinds in config
+ */
 const keyMapping = {
     'move-forward': 'primaryForwardKey',
     'move-left': 'primaryLeftKey',
@@ -29,6 +31,9 @@ const keyMapping = {
     'spellSlot5': 'slot5Key'
 };
 
+/**
+ *Map to store keys from input in the settings menu
+ */
 let keyMap = new Map();
 keyMap.set('move-forward', 'KeyW');
 keyMap.set('move-left', 'KeyA');
@@ -70,14 +75,9 @@ export class Settings extends Subject{
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
 
-    /*toggleGrass(event) {
-        console.log("Grass toggle button clicked ", event);
-        this.grassOn = !!event.target.checked;
-        // Dispatch event to toggle grass
-        this.worldManager.toggleGrass(this.grassOn);
-        //TODO: add a callback don't add worldmanager directly
-    }*/
-
+    /**
+     * Function to load the cursors
+     */
     loadCursors() {
         const cursors = document.querySelector('.cursors');
         for(let cursor in cursorImgPaths) {

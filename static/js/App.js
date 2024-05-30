@@ -168,10 +168,7 @@ class App {
 
 
 
-        /*TODO: look and see
-        this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
-        this.multiplayerController.settings = this.settings;
-        */
+
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -566,9 +563,7 @@ class App {
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
         progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
-        /* TODO: look and see
-        this.settings.worldManager = this.worldManager;
-        */
+
         this.settings.addEventListener("grassChange", this.worldManager.toggleGrass.bind(this.worldManager));
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.createPlayer();
