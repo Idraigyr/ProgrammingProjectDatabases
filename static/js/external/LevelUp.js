@@ -6,8 +6,9 @@ import {API_URL} from "../configs/EndpointConfigs.js";
  * @param maxHealth maximum health of the player
  * @param buildings
  * @param Spells
+ * @param buildingsProgress
  */
-export function popUp(level, maxMana, maxHealth, buildings, Spells){ //TODO: rewrite this make it more general
+export function popUp(level, maxMana, maxHealth, buildings, Spells, buildingsProgress){ //TODO: rewrite this make it more general
 
     let modal = document.getElementById("LevelUp");
     let levelContent = document.getElementById("LevelPopupContent");
@@ -50,7 +51,8 @@ export function popUp(level, maxMana, maxHealth, buildings, Spells){ //TODO: rew
         levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
             MaxHealth: ${maxHealth} <br>
             Buildings: ${arrayStringConverter(buildings)} <br>
-            Spells: ${arrayStringConverter(Spells)}
+            Spells: ${arrayStringConverter(Spells)} <br>
+            Building in Progress: ${buildingsProgress}
         `;
         detailsContent.appendChild(levelDetails);
         detailsInfo.style.display = "block";

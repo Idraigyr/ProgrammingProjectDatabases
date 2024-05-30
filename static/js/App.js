@@ -228,6 +228,7 @@ class App {
             fusionTable.resetInputCrystals();
             let speed = stats.get("speed");
             let fortune = stats.get("fortune");
+            this.playerInfo.changeXP(2 * inputCrystals);
             console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
             // Send post request to create new task TODO: connect this to the new Thomas' code
             const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: inputCrystals});
@@ -252,10 +253,11 @@ class App {
         this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
-            if(this.playerInfo.buildingProgress >= this.worldManager.checkBuildingsInProgress()) return;
+            if(this.worldManager.checkBuildingsInProgress() >= this.playerInfo.buildingProgress) return;
             this.playerInfo.changeCrystals(-building.upgradeCost);
             await this.playerInfo.createLevelUpTask(building);
             building.startUpgrade();
+            this.playerInfo.changeXP(150);
             this.menuManager.exitMenu();
         });
         this.menuManager.addEventListener("delete", async (event) =>{
