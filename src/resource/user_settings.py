@@ -1,4 +1,4 @@
-from flask import request, Flask, Blueprint
+from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
@@ -236,6 +236,7 @@ class UserSettingsResource(Resource):
             if r: return r
 
             user_settings.update(data)
+            current_app.db.session.commit()
 
             return UserSettingsSchema(user_settings), 200
         except (ValueError, KeyError) as e:
