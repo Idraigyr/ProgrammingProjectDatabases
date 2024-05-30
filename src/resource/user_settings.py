@@ -139,6 +139,14 @@ class UserSettingsSchema(Schema):
         'slot_5_val': {
             'type': 'string',
             'description': 'The value for slot 5'
+        },
+        'sprint_key': {
+            'type': 'string',
+            'description': 'The key for sprinting'
+        },
+        'sprint_val': {
+            'type': 'string',
+            'description': 'The value for sprinting'
         }
     }
     required = []
@@ -164,6 +172,7 @@ class UserSettingsSchema(Schema):
                                 slot_3_key=user_settings.slot_3_key, slot_3_val=user_settings.slot_3_val,
                                 slot_4_key=user_settings.slot_4_key, slot_4_val=user_settings.slot_4_val,
                                 slot_5_key=user_settings.slot_5_key, slot_5_val=user_settings.slot_5_val,
+                                sprint_key=user_settings.sprint_key, sprint_val=user_settings.sprint_val,
                                 **kwargs)
         else:  # schema -> user_settings
             super().__init__(**kwargs)
