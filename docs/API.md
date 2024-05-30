@@ -55,10 +55,10 @@ The reason this is done this way is because the current flask-restful-swagger-3 
 blueprints. So they all have to be bundled to one. The package is the only that adds Swagger 3 support, but is unfortunately unmaintained and broken in many ways.
 
 
-#### A special note on creating new buildings and entities that belong to an island
+#### A special note on creating new buildings, entities and tasks that belong to an island
 When creating a new entity or building that belongs to an island (and all implementing classes), the accompanying `Schema` should also be 
-registered in the `resource/island.py` file. Entity schema's should be added to the `_resolve_placeable_schema_for_type()` method and buildings
-in the `_resolve_building_schema_for_type()` method. This is necessary for the `island` class to parse the entities and buildings to JSON values to pass
+registered in the `resource/island.py` file. For new task subclasses, these schema's should be registered in the `resource/placeable.py` class. Entity schema's should be added to the `_resolve_placeable_schema_for_type()` method and buildings
+in the `_resolve_building_schema_for_type()` method. Tasks in the `_resolve_task_schema_for_type()` method in `placeable.py`. This is necessary for the `island` class to parse the entities and buildings to JSON values to pass
 on to the frontend.
 
 #### A special note on grouped objects

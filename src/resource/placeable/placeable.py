@@ -64,10 +64,30 @@ class PlaceableSchema(Schema):
                              type=placeable.type,
                              blueprint=BlueprintSchema(placeable.blueprint),
                              rotation=placeable.rotation,
-                             task=TaskSchema(placeable.task) if placeable.task is not None else None,
+                             task=self._resolve_task_schema_for_type(placeable.task) if placeable.task is not None else None,
                              **kwargs)
         else:
             super().__init__(**kwargs)
+
+
+    def _resolve_task_schema_for_type(self, task: any):
+        """
+        Resolve the task schema for the given task type
+        :param task: THe task object to resolve the schema for
+        :return: The schema for the given task type
+        """
+        if task.type == "building_upgrade_task":
+            from src.resource.upgrade_task import BuildingUpgradeTaskSchema
+            return BuildingUpgradeTaskSchema(task)
+        elif task.type == "fuse_task":
+            from src.resource.fuse_task import FuseTaskSchema
+            return FuseTaskSchema(task)
+        elif task.type == "task":
+            return TaskSchema(task)
+        else:
+            raise ValueError(f'Cannot find Schema for unknown task type {task.type}')
+
+
 
 
 class PlaceableResource(Resource):
