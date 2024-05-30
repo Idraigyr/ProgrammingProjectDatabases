@@ -211,20 +211,22 @@ class UserSettingsResource(Resource):
         Update the settings of a player
         :return: The updated settings of the player
         """
-        id = request.args.get('player_id', type=int)
-
-        if id is None:
-            return ErrorSchema('Player id absent'), 400
-
-        user_settings = UserSettings.query.get(id)
-        if user_settings is None:
-            return ErrorSchema('The player does not exist'), 404
 
         try:
             data = request.get_json()
             data = clean_dict_input(data)
 
             UserSettingsSchema(**data, _check_requirements=False)
+
+            id = int(data['player_id'])
+
+            if id is None:
+                return ErrorSchema('Player id absent'), 400
+
+            user_settings = UserSettings.query.get(id)
+            if user_settings is None:
+                return ErrorSchema('The player does not exist'), 404
+
 
             data = request.get_json()
             data = clean_dict_input(data)
@@ -236,7 +238,7 @@ class UserSettingsResource(Resource):
             user_settings.update(data)
 
             return UserSettingsSchema(user_settings), 200
-        except ValueError as e:
+        except (ValueError, KeyError) as e:
             return str(e), 400
 
 
