@@ -187,7 +187,7 @@ class App {
         });
 
 
-        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector, camera: this.cameraManager.camera, playerInfo: this.playerInfo});
+        this.factory = new Factory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, timerManager: this.timerManager, collisionDetector: this.collisionDetector, camera: this.cameraManager.camera, itemManager: this.itemManager});
         this.spellFactory = new SpellFactory({scene: this.scene, viewManager: this.viewManager, assetManager: this.assetManager, camera: this.cameraManager.camera});
         this.BuildManager = new Controller.BuildManager(this.raycastController, this.scene);
 

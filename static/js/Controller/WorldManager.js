@@ -1,5 +1,5 @@
 import {Model} from "../Model/ModelNamespace.js";
-import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI, fuseTaskURI} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
@@ -445,7 +445,7 @@ export class WorldManager{
 
     /**
      * Create a new task to fuse a gem
-     * @param params {{timeInSeconds: number, buildingID: number}}
+     * @param params {{timeInSeconds: number, buildingID: number, crystal_amount: number}}
      * @returns {Promise<void>} - a promise that resolves when the task has been created
      */
     async createFuseTask(params){
@@ -461,9 +461,9 @@ export class WorldManager{
             let formattedDate = time.slice(0, 19);
             // TODO: change uri + add crystal_amount to JSON.stringify
             const result = await $.ajax({
-                url: `${API_URL}/${taskURI}`,
+                url: `${API_URL}/${fuseTaskURI}`,
                 type: "POST",
-                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID}),
+                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID, crystal_amount: params.crystal_amount}),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {

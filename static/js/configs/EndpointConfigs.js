@@ -31,4 +31,6 @@ export const taskURI = 'api/task';
 
 export const buildingUpgradeURI = 'api/building_upgrade_task';
 
+export const fuseTaskURI = 'api/fuse_task';
+
 export const postRetries = 3;
