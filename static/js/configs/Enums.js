@@ -171,3 +171,29 @@ export const buildingStats = (function (){
         }
     }
 })();
+
+export const Cursors = (function (){
+    const number = {
+        "./static/assets/images/crosshairs/aim.png": 0,
+        "./static/assets/images/crosshairs/cross.png": 1,
+        "./static/assets/images/crosshairs/crosshairs.png": 2,
+        "./static/assets/images/crosshairs/target.png": 3,
+    }
+
+    const name = {
+        0: "./static/assets/images/crosshairs/aim.png",
+        1: "./static/assets/images/crosshairs/cross.png",
+        2: "./static/assets/images/crosshairs/crosshairs.png",
+        3: "./static/assets/images/crosshairs/target.png",
+    }
+
+    return {
+        getNumber: function (name) {
+            return number[name];
+        },
+        getName: function (number) {
+            return name[number];
+        },
+        getSize: Object.keys(number).length
+    };
+})();

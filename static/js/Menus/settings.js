@@ -10,6 +10,7 @@ import {
     volume
 } from "../configs/ControllerConfigs.js";
 import {keyBinds} from "../configs/Keybinds.js";
+import {Cursors} from "../configs/Enums.js";
 
 /**
  *Map to map keys from settings to the keybinds in config
@@ -97,6 +98,7 @@ let dbMap = {
     "slot_5_key": "Digit5",
     "slot_5_val": "NULL"
 };
+let cursorId = 0;
 
 export class Settings extends Subject{
     grassOn = true;
@@ -298,8 +300,7 @@ export class Settings extends Subject{
         }
         for (let key in dbMap) {
             if (dbMap.hasOwnProperty(key)) {
-                console.log(key, dbMap[key])
-                obj[key] =  dbMap[key];
+                if (dbMap[key] !== "NULL") {obj[key] =  dbMap[key];}
             }
         }
 
@@ -311,6 +312,7 @@ export class Settings extends Subject{
 
     applySettings(){
         let data = {player_id: this.playerInfo.userID};
+        data.selected_cursor = cursorId;
         this.applyVolume(data);
         this.applySensitivity(data);
         this.applyPerformace(data);
@@ -327,6 +329,8 @@ export class Settings extends Subject{
     switchCursor(event) {
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
+        console.log(cursorImgPaths[event.target.dataset.cursor])
+        cursorId = Cursors.getNumber([cursorImgPaths[event.target.dataset.cursor]]);
     }
     /**
     * Function to change the keybinds
