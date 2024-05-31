@@ -234,7 +234,6 @@ export class Settings extends Subject {
      * @param retries - the number of retries to resend the PUT request
      */
     sendPUT(data) {
-        console.log(data)
         try {
             $.ajax({
                 url: `${API_URL}/${settingsURI}`,
@@ -262,7 +261,6 @@ export class Settings extends Subject {
      * Function to get the settings data from the server
      */
     async getSettings() {
-        console.log(this.playerInfo.userID)
           $.ajax({
             url: `${API_URL}/${settingsURI}?player_id=${this.playerInfo.userID}`,
             type: "GET",
@@ -326,7 +324,6 @@ export class Settings extends Subject {
         for (let [key, value] of keyMap.entries()) {
             const objectKey = keyMapping[key];
             if (objectKey) {
-                console.log("inLoad", objectKey, value)
                 keyBinds[objectKey] = value;
             }
         }
@@ -390,7 +387,6 @@ export class Settings extends Subject {
         for (let [key, value] of keyMap.entries()) {
             const objectKey = keyMapping[key];
             if (objectKey) {
-                console.log("onApply",objectKey, value)
                 keyBinds[objectKey] = value;
             }
         }
@@ -439,12 +435,10 @@ export class Settings extends Subject {
             keyMap.set(event.target.name, event.code);
             const dbKey = keyMapToDb[event.target.name];
             if (dbKey) {
-                console.log(event.target.name)
                 dbMap[dbKey + "_key"] = event.code;
                 dbMap[dbKey + "_val"] = event.key;
             }
-            console.log('KeyMap:', keyMap);
-            console.log('DbMap:', dbMap);
+
         }
     }
 
