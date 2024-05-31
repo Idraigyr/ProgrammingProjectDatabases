@@ -9,6 +9,9 @@ class UserSettings(current_app.db.Model):
     """
     UserSettings contains all the settings for a player
     This includes audio settings, keybinds, etc.
+
+    Keybinds are represented as a key and a value. The key is the key code that is universally the same for each keyboard
+     layout. The value is the actual symbol on that key, which may differ when using different keyboard layouts.
     """
 
     player_id: Mapped[int] = mapped_column("Player", ForeignKey("player.user_profile_id"), primary_key=True)

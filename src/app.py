@@ -19,6 +19,9 @@ from sqlalchemy.orm import DeclarativeBase
 
 """
 This is the main entry point for the application.
+
+Direclty invocating this file will start the Flask debug server.
+When using a production server, use the WSGI script (wsgi.py) with a production WSGI server (e.g. gunicorn) to start the app.
 """
 
 
@@ -160,7 +163,8 @@ def setup_jwt(app: Flask):
 def setup(app: Flask):
     """
     Set up the Flask app with the given configuration from environment variables (in .env or system)
-    Also initializes the database (SQLAlchemy), JWT manager and imports & registers the routes
+    Also initializes the database (SQLAlchemy), JWT manager, imports & registers the routes, setup the Swagger API,
+    setup SocketIO and generate the documentation
     :param app: The flask app
     :return: None
     """
@@ -250,7 +254,6 @@ def setup(app: Flask):
 
         app.socketio = SocketIO(cors_allowed_origins='*')
         app.socketio.init_app(app)
-        import src.socketio # Leave this import here, it registers the socketio events
         from src.socketio import attach_namespaces
         attach_namespaces(app)
 

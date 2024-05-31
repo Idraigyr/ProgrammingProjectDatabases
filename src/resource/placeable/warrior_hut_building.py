@@ -2,7 +2,7 @@ from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
-from src.model.placeable.buildings import WarriorHutBuilding
+from src.model.placeable.warrior_hut_building import WarriorHutBuilding
 from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema

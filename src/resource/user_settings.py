@@ -9,6 +9,9 @@ from src.swagger_patches import Schema, summary
 
 
 class UserSettingsSchema(Schema):
+    """
+    JSON Schema for the player settings
+    """
 
     type = 'object'
     properties = {

@@ -8,6 +8,9 @@ Available at `<url>/api/docs` with `APP_SWAGGER_ENABLED=true` set as environment
 ## General API structure (backend)
 For the complete, detailed relationships between entities: please refer to the ER diagram.
 
+The entire API backend is stateless and RESTful. This means that multiple instances of the backend can be run at the same time, and they will all function correctly.
+However, the websocket server (everything inside `src.socketio`) is not stateless and should be run as a single instance. Running multiple instances will result in undefined behaviour.
+
 Each entity has a Model, a Schema and a Resource class. The Model lies in the `model` package, in a file with the same name as the entity.
 The model is the Mapper for SQLAlchemy and has all column definitions and relationships between other SQLAlchemy models.
 
@@ -43,7 +46,7 @@ For more details, please consult the Swagger documentation.
 - `DELETE` - Requires an `id` parameter in the **query string**. It will return a HTTP 200 with `status` key `success` if the object is deleted. It will return a 404 if the object is not found.
 
 Unless clearly specified otherwise, the `type` field is always IGNORED in the request body. The `type` field is used for polymorphic identities. For POST request, this type is determined by the used endpoint and is therefore also never required.
-When applicable, the `type` field is present in the response body and can be safely used to determine which fields are present in the response body, depending on the properties the polymorphic object has.
+When applicable, the `type` field is present in the response body and can be safely used to determine the polymophic identity (so which fields are present in the response body), depending on the properties the polymorphic object has.
 Eg. a mine has a `mined_amount` field that is only present in the `Mine` object. The `type` field can be used to determine if the object is a `Mine` or not. For a complete overview of polymorphic object and their fields, please refer to the ER-diagram.
 
 #### A special note on registering new endpoints

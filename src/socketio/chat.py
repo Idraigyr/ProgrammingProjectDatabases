@@ -4,6 +4,10 @@ from time import localtime, strftime
 from src.model.chat_message import ChatMessage
 
 class ChatNamespace(Namespace):
+    """
+    The chat namespace is used to handle chat messages from the client
+    It simply broadcasts the message to all connected clients and saves the message to the database
+    """
 
     def __init__(self, namespace):
         super().__init__(namespace)

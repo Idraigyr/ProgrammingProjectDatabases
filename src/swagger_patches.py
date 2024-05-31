@@ -6,6 +6,10 @@ from flask_restful_swagger_3 import Schema, REGISTRY_SCHEMA
 
 
 def check_type(self, type_, key, value):
+        """
+        Copied from original flask_restful_swagger_3 source code, but fixed the broken parts that were
+        incomplete with our own implementation/usage
+        """
         if type_:
             if type_ == 'array':
                 if not isinstance(value, list):
@@ -108,6 +112,11 @@ def __init__(self, **kwargs):
 
 # Monkey patch the broken __init__ method
 Schema.__init__ = __init__
+
+# Default docstring for Schema
+Schema.__doc__ = """
+    A schema that represents the model in JSON format.
+    """
 
 
 def summary(summary: str):
