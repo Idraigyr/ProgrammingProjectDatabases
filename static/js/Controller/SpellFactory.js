@@ -52,7 +52,7 @@ export class SpellFactory{
         if(!entityModel) return;
         this.models.push(entityModel);
         entityModel.setId(this.spellNumber)
-        this.spellNumber++;
+        this.spellNumber += 1;
         return entityModel;
     }
 

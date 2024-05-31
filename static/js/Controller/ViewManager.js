@@ -169,7 +169,6 @@ export class ViewManager extends Subject{
      * @returns {Model|*}
      */
     getSpellEntityModelByID(id){
-        console.log("id to find: ", id);
         return this.pairs.spellEntity.find((pair) => pair.model.id === id).model;
     }
 

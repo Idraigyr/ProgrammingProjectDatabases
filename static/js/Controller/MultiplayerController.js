@@ -562,8 +562,8 @@ export class MultiplayerController extends Subject{
             if(data.spellEvent.shieldUpdate){
                 console.log("shield update")
                 //get spell from id
-                console.log("ID:  ", data.spellEvent.shieldUpdate.detail.id)
-                const shield = this.viewManager.getSpellEntityModelByID(data.spellEvent.shieldUpdate.detail.id);
+                console.log("ID:  ", data.spellEvent.shieldUpdate)
+                const shield = this.viewManager.getSpellEntityModelByID(data.spellEvent.shieldUpdate - 1000);
                 if(shield) shield.takeDamage(10);
                 else throw new Error("Shield not found");
             }
@@ -579,13 +579,11 @@ export class MultiplayerController extends Subject{
             }
             data.spellEvent.params.team = 1;
             data.spellEvent.params.playerID = this.peerInfo.userID;
-            this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
+            let spell = this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
+            spell.setId(spell.id + 1000);
             if (data.spellEvent.type.name === "Shield") {
-
-                const shield = this.viewManager.getSpellEntityModelByID(data.spellEvent.id);
-                if(shield) shield.addEventListener("shieldLost", this.updateEvents.get("shieldUpdate"));
+                if(spell) spell.addEventListener("shieldUpdate", this.updateEvents.get("shieldUpdate"));
                 else throw new Error("Shield not found");
-                console.log("shield created", shield)
             }
             }
 
