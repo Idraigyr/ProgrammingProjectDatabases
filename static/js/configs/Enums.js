@@ -197,3 +197,27 @@ export const Cursors = (function (){
         getSize: Object.keys(number).length
     };
 })();
+
+export const Performace = (function (){
+    const number = {
+        "low": 0,
+        "./static/assets/images/crosshairs/cross.png": 1,
+        "./static/assets/images/crosshairs/crosshairs.png": 2,
+    }
+
+    const name = {
+        0: "./static/assets/images/crosshairs/aim.png",
+        1: "./static/assets/images/crosshairs/cross.png",
+        2: "./static/assets/images/crosshairs/crosshairs.png",
+    }
+
+    return {
+        getNumber: function (name) {
+            return number[name];
+        },
+        getName: function (number) {
+            return name[number];
+        },
+        getSize: Object.keys(number).length
+    };
+})();

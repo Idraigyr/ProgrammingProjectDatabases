@@ -49,6 +49,23 @@ const dbToKeyMap = {
     'slot_5': 'spellSlot5'
 };
 
+const keyMapToDb = {
+    'move-forward': 'move_fwd',
+    'move-left': 'move_left',
+    'move-right': 'move_right',
+    'move-backwards': 'move_bkwd',
+    'jump': 'jump',
+    'sprint': 'sprint',
+    'eat': 'eat',
+    'interact': 'interact',
+    'chat': 'chat',
+    'spellSlot1': 'slot_1',
+    'spellSlot2': 'slot_2',
+    'spellSlot3': 'slot_3',
+    'spellSlot4': 'slot_4',
+    'spellSlot5': 'slot_5'
+}
+
 /**
  *Map to store keys from input in the settings menu
  */
@@ -100,8 +117,9 @@ let dbMap = {
 };
 let cursorId = 0;
 
-export class Settings extends Subject{
+export class Settings extends Subject {
     grassOn = true;
+
     constructor(params) {
         super(params);
         this.map = null;
@@ -130,7 +148,7 @@ export class Settings extends Subject{
      */
     loadCursors() {
         const cursors = document.querySelector('.cursors');
-        for(let cursor in cursorImgPaths) {
+        for (let cursor in cursorImgPaths) {
             const cursorDiv = document.createElement('div');
             cursorDiv.addEventListener('click', this.switchCursor.bind(this));
             const cursorName = document.createElement('p');
@@ -207,13 +225,15 @@ export class Settings extends Subject{
             console.log("Account deletion cancelled")
         }
 
-    }/**
+    }
+
+    /**
      * Send a PUT request to the server
      * @param uri - the URI to send the PUT request to
      * @param entity - the Entity that we want to update in the db
      * @param retries - the number of retries to resend the PUT request
      */
-    sendPUT(data){
+    sendPUT(data) {
         console.log(data)
         try {
             $.ajax({
@@ -233,9 +253,84 @@ export class Settings extends Subject{
                 throw new Error(`Could not send PUT request for settings: Error: ${textStatus} ${errorThrown}`);
 
             });
-        } catch (err){
+        } catch (err) {
             console.error(err);
         }
+    }
+
+    /**
+     * Function to get the settings data from the server
+     */
+    async getSettings() {
+        console.log(this.playerInfo.userID)
+          $.ajax({
+            url: `${API_URL}/${settingsURI}?player_id=${this.playerInfo.userID}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                this.loadSettings(data)
+            }
+        });
+    }
+
+    /**
+     * Function to load the settings data from the server in the settings menu
+     * @param data
+     */
+
+    loadSettings(data) {
+        const docVolume = document.getElementById('volume');
+        const docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
+        const docVerticalSensitivity = document.getElementById('vertical-sensitivity');
+        const docPerformance = document.getElementById('performance');
+        const crosshair = document.querySelector('#crosshair-img');
+        docVolume.value = data.audio_volume;
+        docHorizontalSensitivity.value = data.horz_sensitivity;
+        docVerticalSensitivity.value = data.vert_sensitivity;
+        docPerformance.selectedIndex = data.performance;
+        crosshair.src = Cursors.getName(data.selected_cursor);
+        cursorId = data.selected_cursor;
+        this.loadKeys(data);
+    }
+
+    /**
+     * Function to load the keybinds from the server in the settings menu
+     */
+    loadKeys(data) {
+        for (let key in dbMap) {
+            if (dbMap.hasOwnProperty(key)) {
+                dbMap[key] = data[key];
+            }
+        }
+        for (const [dbKey, dbValue] of Object.entries(dbMap)) {
+            if (dbKey.endsWith('_key')) {
+                const baseKey = dbKey.slice(0, -4); // Remove '_key'
+                const keyMappingValue = dbToKeyMap[baseKey]; // Find the key in dbToKeyMap
+                if (keyMappingValue) {
+                    keyMap.set(keyMappingValue, dbValue); // Update keyMap
+                }
+            }
+        }
+        for (const [dbKey, dbValue] of Object.entries(dbMap)) {
+                if (dbKey.endsWith('_val')) {
+                    const baseKey = dbKey.slice(0, -4); // Remove '_val'
+                    const keyMappingValue = dbToKeyMap[baseKey]; // Find the key in dbToKeyMap
+                    if (keyMappingValue) {
+                        const inputElement = document.getElementById(keyMappingValue); // Get the input element
+                        if (inputElement) {
+                            inputElement.value = dbValue; // Update the input element's value
+                        }
+                    }
+                }
+            }
+        for (let [key, value] of keyMap.entries()) {
+            const objectKey = keyMapping[key];
+            if (objectKey) {
+                console.log("inLoad", objectKey, value)
+                keyBinds[objectKey] = value;
+            }
+        }
+
     }
 
     /**
@@ -295,6 +390,7 @@ export class Settings extends Subject{
         for (let [key, value] of keyMap.entries()) {
             const objectKey = keyMapping[key];
             if (objectKey) {
+                console.log("onApply",objectKey, value)
                 keyBinds[objectKey] = value;
             }
         }
@@ -304,22 +400,25 @@ export class Settings extends Subject{
             }
         }
 
+
     }
 
     /**
      * Function to apply all the settings from the settings menu to the game
      */
 
-    applySettings(){
+    applySettings(onLoad) {
         let data = {player_id: this.playerInfo.userID};
         data.selected_cursor = cursorId;
         this.applyVolume(data);
         this.applySensitivity(data);
         this.applyPerformace(data);
         this.applyKeys(data);
-        this.sendPUT(data);
+        if(onLoad === true) {return;}
 
+        this.sendPUT(data);
         this.exitSettingsMenu();
+
     }
 
     /**
@@ -329,7 +428,6 @@ export class Settings extends Subject{
     switchCursor(event) {
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
-        console.log(cursorImgPaths[event.target.dataset.cursor])
         cursorId = Cursors.getNumber([cursorImgPaths[event.target.dataset.cursor]]);
     }
     /**
@@ -339,11 +437,14 @@ export class Settings extends Subject{
         if(!(event.code === 'Backspace'))
         {
             keyMap.set(event.target.name, event.code);
-            const dbKey = dbToKeyMap[event.target.name];
+            const dbKey = keyMapToDb[event.target.name];
             if (dbKey) {
+                console.log(event.target.name)
                 dbMap[dbKey + "_key"] = event.code;
                 dbMap[dbKey + "_val"] = event.key;
             }
+            console.log('KeyMap:', keyMap);
+            console.log('DbMap:', dbMap);
         }
     }
 

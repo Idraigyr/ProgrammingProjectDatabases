@@ -169,6 +169,7 @@ class App {
 
 
 
+
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -541,6 +542,8 @@ class App {
         progressBar.value = 10;
         progressBar.labels[0].innerText = "loading assets...";
         this.settings.loadCursors();
+        this.settings.getSettings();
+
         await this.assetManager.loadViews();
         this.assetManager.createTimerViews(minCharCount, "SurabanglusFont", this.scene);
 
@@ -567,6 +570,7 @@ class App {
         this.settings.addEventListener("grassChange", this.worldManager.toggleGrass.bind(this.worldManager));
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.createPlayer();
+        this.settings.applySettings(true);
 
         if(this.abort) return false;
 
