@@ -1000,6 +1000,7 @@
 .settings-menu > .close-button-container{
     display: flex;
     justify-content: flex-end;
+    position: fixed;
 }
 .close-setting {
     left: 10px;
@@ -1054,8 +1055,14 @@
 .help-menu > .close-button-container{
     display: flex;
     justify-content: flex-end;
+    position: fixed;
 }
-
+.help-menu img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
 
 .hide{
     display: none
