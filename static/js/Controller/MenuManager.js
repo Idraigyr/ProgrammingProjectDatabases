@@ -454,7 +454,7 @@ export class MenuManager extends Subject{
     dispatchCollectEvent(event){
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
-        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${Math.ceil(this.collectParams.max)}`;
         this.dispatchEvent(this.createCollectEvent());
     }
 
@@ -1003,7 +1003,13 @@ export class MenuManager extends Subject{
         if(!this.currentMenu) throw new Error("No menu is currently active");
         switch (params.name){
             case "TowerMenu":
+                this.#arrangeStatMenuItems(params);
+                break;
             case "MineMenu":
+                // Also update max crystals
+                this.collectParams.max = params.stats.get("capacity");
+                this.#arrangeStatMenuItems(params);
+                break;
             case "FusionTableMenu":
                 this.#arrangeStatMenuItems(params);
                 break;
@@ -1045,8 +1051,8 @@ export class MenuManager extends Subject{
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
-        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;        // random crystal generation
-        if(Math.random()*100 < this.fortune){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${Math.ceil(this.collectParams.current)}/${Math.ceil(this.collectParams.max)}`;        // random crystal generation
+        if(Math.random()*100 < this.fortune/10.0){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
             console.log("Gem mined!");
             this.dispatchEvent(this.createMineGemEvent());
 
@@ -1122,7 +1128,7 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
-                this.collectParams.rate = Math.ceil(params.stats.get("speed"))*10;
+                this.collectParams.rate = Math.ceil(params.stats.get("speed")); // Todo: Or add * 10 back?
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
                 this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
