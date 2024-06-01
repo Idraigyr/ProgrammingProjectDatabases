@@ -28,6 +28,7 @@ import {spellTypes} from "./Model/Spell.js";
 import {Altar} from "./View/Buildings/Altar.js";
 import {Mine} from "./Model/Entities/Buildings/Mine.js";
 import {alertPopUp} from "./external/LevelUp.js";
+import * as SpellConfigs from "./configs/SpellConfigs.js"
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -293,7 +294,32 @@ class App {
             const spells = []
             for(let i = 0; i < 5; i++){
                 let spell = null;
-                if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                if(event.detail.spellIds[i]){
+                    spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                    switch (spell){
+                        case "Fireball":
+                            spell.updateSpell(SpellConfigs.Fireball(this.playerInfo.level));
+                            break;
+                        case "ThunderCloud":
+                            spell.updateSpell(SpellConfigs.ThunderCloud(this.playerInfo.level));
+                            break;
+                        case "IceWall":
+                            spell.updateSpell(SpellConfigs.IceWall(this.playerInfo.level));
+                            break;
+                        case "Shield":
+                            spell.updateSpell(SpellConfigs.Shield(this.playerInfo.level));
+                            break;
+                        case "Heal":
+                            spell.updateSpell(SpellConfigs.Heal(this.playerInfo.level));
+                            break;
+                        case "Zap":
+                            spell.updateSpell(SpellConfigs.Zap(this.playerInfo.level));
+                            break;
+                        case "BuildSpell":
+                            spell.updateSpell(SpellConfigs.BuildSpell(this.playerInfo.level));
+                            break;
+                    }
+                }
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
                 if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
             }
