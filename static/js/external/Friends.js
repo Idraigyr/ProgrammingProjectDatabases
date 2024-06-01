@@ -15,7 +15,12 @@ $(document).ready(function(){
 });
 
 export async function setPlayerList() {
-    try {playerList = await $.ajax({url: `${API_URL}/api/player/list`, type: "GET"}); } catch (error) {console.error(error)}
+    try {
+        playerList = await $.ajax({url: `${API_URL}/api/player/list`, type: "GET"});
+        console.log("setting player list");
+    } catch (error) {
+        console.error(error)
+    }
 }
 
 export function sendRequest(receiverID){

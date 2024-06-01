@@ -8,6 +8,7 @@ import {Subject} from "../Patterns/Subject.js";
 import {multiplayerStats} from "../configs/Enums.js";
 import {passiveManaGenerationAmount, passiveManaGenerationInterval} from "../configs/ControllerConfigs.js";
 import {alertPopUp} from "../external/LevelUp.js";
+import {loadingScreen} from "./LoadingScreen.js";
 
 /**
  * MultiplayerController class
@@ -222,9 +223,9 @@ export class MultiplayerController extends Subject{
         this.togglePhysicsUpdates();
         this.toggleTimer(true);
         this.viewManager.toggleHideBuildingPreviews();
-        const progressBar = document.getElementById('progress-bar');
 
-        progressBar.labels[0].innerText = "retrieving Opponent info...";
+        await loadingScreen.setText("retrieving Opponent info...");
+        await loadingScreen.render();
 
         this.menuManager.exitMenu();
         this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
@@ -232,20 +233,18 @@ export class MultiplayerController extends Subject{
         this.spellCaster.multiplayer = true;
         //TODO: totally block input and don't allow recapture of pointerlock for the duration of this method
 
-        document.querySelector('.loading-animation').style.display = 'block';
 
         //get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
         await this.peerInfo.retrieveInfo(matchInfo['player1'] === this.playerInfo.userID ? matchInfo['player2'] : matchInfo['player1'], false);
-        progressBar.value = 50;
-
-        progressBar.labels[0].innerText = "importing Opponent's island...";
+        await loadingScreen.setValue(50);
+        await loadingScreen.setText("importing Opponent's island...");
 
         //synchronise coordinate system of 2 islands: lowest user id island is the main island which is set to (0,0,0).
         // the other island is rotated 180 degrees around the y-axis and translated from center of main island
 
         //construct 2nd player object and island object and add to world
         await this.worldManager.addImportedIslandToWorld(this.peerInfo.islandID, this.playerInfo.userID < this.peerInfo.userID);
-        progressBar.value = 75;
+        await loadingScreen.setValue(75);
         // console.log(this.playerInfo.userID < this.opponentInfo.userID ? "%cI am center" : "%cOpponent is center", "color: red; font-size: 20px; font-weight: bold;")
         const opponent = this.worldManager.addPeer({
             position: this.peerInfo.playerPosition,
@@ -258,14 +257,14 @@ export class MultiplayerController extends Subject{
         this.peerController = new Controller.PeerController({peer: opponent});
 
 
-        progressBar.labels[0].innerText = "creating proxys for buildings...";
+        await loadingScreen.setText("creating proxys for buildings...");
         this.worldManager.generateProxys();
-        progressBar.value = 80;
+        await loadingScreen.setValue(80);
 
-        progressBar.labels[0].innerText = "creating paths for minions...";
+        await loadingScreen.setText("creating paths for minions...");
         //TODO: construct worldmap and instantiate minionSpawners
         this.minionController.worldMap = this.worldManager.world.islands;
-        progressBar.value = 90;
+        await loadingScreen.setValue(90);
 
         this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 2});
         this.worldManager.generateSpellSpawners({
@@ -298,7 +297,7 @@ export class MultiplayerController extends Subject{
     startMatch(){
         this.inMatch = true;
         this.friendsMenu.inMatch = true;
-        document.querySelector('.loading-animation').style.display = 'none';
+        loadingScreen.hide();
         this.togglePhysicsUpdates();
     }
 
@@ -328,24 +327,6 @@ export class MultiplayerController extends Subject{
         const renderGems = [];
         const currentStats = [];
         const lifetimeStats = [];
-        this.stats.forEach((value, key) => {
-            currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
-            switch (key) {
-                case "player_kills":
-                    this.playerInfo.changeXP(50*value);
-                    //bonus
-                    if(this.peerInfo.level > this.playerInfo.level) this.playerInfo.changeXP(50);
-                    break
-                case "minions_killed":
-                    this.playerInfo.changeXP(10*value);
-                    break;
-
-            }
-            this.lifetimeStats.set(key, this.lifetimeStats.get(key) + value);
-        });
-        this.lifetimeStats.forEach((value, key) => {
-            lifetimeStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
-        });
 
         if(data.winner_id === this.playerInfo.userID){
             //show win screen
@@ -373,6 +354,24 @@ export class MultiplayerController extends Subject{
             });
             console.log("draw");
         }
+        this.stats.forEach((value, key) => {
+            currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+            switch (key) {
+                case "player_kills":
+                    this.playerInfo.changeXP(50*value);
+                    //bonus
+                    if(this.peerInfo.level > this.playerInfo.level) this.playerInfo.changeXP(50);
+                    break
+                case "minions_killed":
+                    this.playerInfo.changeXP(10*value);
+                    break;
+
+            }
+            this.lifetimeStats.set(key, this.lifetimeStats.get(key) + value);
+        });
+        this.lifetimeStats.forEach((value, key) => {
+            lifetimeStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
+        });
         //update lifetime stats
         await this.updateLifetimeStats();
         //reset current stats
@@ -467,7 +466,7 @@ export class MultiplayerController extends Subject{
     /**
      * sets the game state back to single player
      */
-    unloadMatch(){
+    async unloadMatch(){
         console.log("leaving match");
         if(this.result === "lose"){
             for(const gem of this.stakedGems) {
@@ -480,9 +479,9 @@ export class MultiplayerController extends Subject{
             this.playerInfo.changeXP(300);
         }
         this.result = null;
-        const progressBar = document.getElementById('progress-bar');
-        progressBar.labels[0].innerText = "leaving match...";
-        document.querySelector('.loading-animation').style.display = 'block';
+        await loadingScreen.setValue(0);
+        await loadingScreen.setText("leaving match...");
+        await loadingScreen.render();
         this.togglePhysicsUpdates();
 
         this.spellCaster.multiplayer = false;
@@ -495,7 +494,6 @@ export class MultiplayerController extends Subject{
         this.minionController.clearMinions();
         this.worldManager.resetWorldState(this.playerInfo.userID < this.peerInfo.userID);
         //stop receiving state updates from server
-        document.querySelector('.loading-animation').style.display = 'none';
         this.toggleTimer(false);
         this.viewManager.toggleHideBuildingPreviews();
         this.inMatch = false;
@@ -504,6 +502,7 @@ export class MultiplayerController extends Subject{
         this.togglePhysicsUpdates();
         this.state = "singlePlayer";
         this.toggleLeaveMatchButton();
+        await loadingScreen.hide();
         console.log("done leaving match");
     }
 

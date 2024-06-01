@@ -398,8 +398,8 @@ export class PlayerInfo extends Subject{
      * @returns {boolean} - True if the experience was changed, false otherwise
      */
     changeXP(amount){
-        if(!amount) throw new Error("playerInfo.changeXP: amount is not defined");
-        if(amount < 0 && Math.abs(amount) > this.experience) return false;
+        if(!Number.isFinite(amount)) throw new Error("playerInfo.changeXP: amount is not defined");
+        if(amount <= 0 && Math.abs(amount) > this.experience) return false;
         if(amount + this.experience >= this.xpThreshold){
             var oldThreshold = this.xpThreshold
             this.changeLevel(0,true);

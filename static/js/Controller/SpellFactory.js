@@ -8,6 +8,7 @@ import * as THREE from "three";
  * Factory class that creates models and views for the spells
  */
 export class SpellFactory{
+    #thunderCloudPool = null;
     /**
      * Constructs the factory with the given parameters
      * @param params parameters (with scene, viewManager and AssetManager)
@@ -20,6 +21,15 @@ export class SpellFactory{
         //TODO: change this
         this.models = [];
         this.spellNumber = 0;
+    }
+
+    /**
+     * Sets the thunderCloudPool
+     * @param {ThunderCloudPool} thunderCloudPool
+     */
+    set thunderCloudPool(thunderCloudPool){
+        if(this.#thunderCloudPool) throw new Error("ThunderCloudPool already set");
+        this.#thunderCloudPool = thunderCloudPool;
     }
 
     /**
@@ -113,11 +123,7 @@ export class SpellFactory{
         });
         let position = new THREE.Vector3().copy(details.params.position);
         position.y += 15;
-        let view = new View.ThunderCloud({
-            camera: this.camera,
-            texture: this.assetManager.getAsset("cloud"),
-            position: position
-        });
+        let view = this.#thunderCloudPool.get(position);
 
         this.scene.add(view.charModel);
 

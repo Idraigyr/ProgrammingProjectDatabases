@@ -1,0 +1,65 @@
+### <ins> Feature overview: </ins>
+
+Our purpose for our game was implementing all the necessary requirements according to the assignment while also making the game as enjoyable as possible. This is why besides the idle aspect of the game we also implemented a real-time 1v1 multiplayer mode that is a combination of a 3d person hero shooter and a tower defence game. The tower defence aspect of the game works well with the idle nature of placing buildings, slowly increasing your strength in multiplayer by increasing the amount of buildings that can be placed and how powerful those buildings can be as you level up. The spell casting is a feature that will enhance the enjoyability and immersion of the game by really allowing the player to participate in the game & interacting with the different entities. It also makes the game more competitive since you can try to kill the other player. 
+
+Another important part for our game was the progression. We felt it was really important that our players are rewarded while they are playing our game so that they will want to keep coming back. In general we have the following progression scheme: 
+
+1. The player spawns on their island for the first time. They can familiarize themselves with the controls and get a first taste of how the resource collection and building placement works. From lvl 1-3 the player will collect crystals from the mine, eat the crystals to gain xp and place buildings to increase their resource generation. 
+
+2. Starting from lvl 3 the player will unlock the fusion table, a very important building that is necessary for starting multiplayer. After building the fusion table the player can start creating gems or if they’re lucky get one from a mine. These gems can be put up as stakes to start a multiplayer match. 
+
+3. The player will get their first taste of multiplayer. Depending on their progression they could have a hard time if their opponent has placed more buildings (especially towers and warrior huts). To mitigate unbalanced multiplayer matches we introduced a cap on how many buildings of a certain type can be present on your island as well as with which players you can match during matchmaking: the max building cap is determined by your lvl and a player can match with another player that has a difference of max 1 lvl. At lvl 3 though the player will not have unlocked towers or warrior huts yet and the game basically comes down to which player can kill the other’s altar first with their fireball spell. 
+
+4. As the player progresses and increases their lvl, they will unlock more buildings that can both increase their power during multiplayer as well as increase their resource regeneration. Currently this is our endgame content where players mainly increase their xp by playing multiplayer matches (winning gives double xp, killing players & minions also gives xp). 
+
+During this progression the player will have periods of “down time” where they are waiting for a gem or crystals to be produced or they’re waiting for a building to be completed. 
+
+---
+
+### <ins> Program Design: <ins>
+
+We have tried to maximize the extendibility & efficiency of our code although this was not always an easy feat when working together with multiple people. 
+
+
+For our front-end we decided to keep things simple and (mostly) stick to vanilla javaScript. The main reason was to increase our initial development speed by not needing to go through the hassle of learning both javaScript itself and a new framework like React, Angular, etc. The exception being the use of Three.js for our rendering, socketIO for managing state during multiplayer (and real time chat) and some other small libraries/modules. We think this was also the better choice from a learning standpoint since most of us have never developed a web application and creating a good foundation and understanding of the basics is never a bad thing. 
+
+At the start of our development we were thinking about also using a physics engine for our collision detection and movement but decided against it since we thought it would unnecessarily complicate things and also the player movement that we got with a physics engine was not really “snappy” like we wanted to. Looking back on it, it might have been a better choice to use one since, during development, we had to implement a lot of physics on our own, which did not always yield the greatest results. 
+
+While we are talking about physics one of the great optimisations in our game is the use of an axis aligned bounding box volume hierarchy for our collision detection. We used a library for this and this allowed us to greatly optimize the collision detection. The way it works is that when we update our static geometry (the island + the buildings placed). We run all this geometry through a collider generator that will calculate a bounding box for every face in the geometry and also calculate bounding boxes that encapsulate these smaller ones recursively until we get one singular bounding box that encapsulates the entire geometry. We can then traverse this tree of bounding boxes to efficiently determine where an entity collides with the static geometry. Note that this is only done for the static geometry. For collision detection between 2 moving entities we just use a boxCollision function from threejs. One issue we encountered with our implementation is that for high velocity and/or low framerate our entities/static geometry could phase through each other since we did not have swept AABB (continuous) collision detection but just regular AABB (discrete) collision detection. We considered a 2 different solutions: 
+
+1. Implementing swept AABB: this would allow us to calculate all collisions by determining a collision at each frame just before it happened (use velocity and deltaTime to check whether the collision will happen on the next frame) however this proved hard to combine with the BVH library which we were not willing to discard since it was a drastic optimisation 
+
+2. Separating the control update loop from our physics updates: We decided to adjust the way our game update works. Now every frame we do the basic updates (updating animated views, checking player input, etc) and seperately we do a physics update multiple times where newDeltaTime = deltaTime/NrOfPhysicsSteps. This is an easy way to mitigate the phasing issue (at the cost of performance) while not having to drastically change our codebase. This did improve our situation but we still had to implement some tricks to totally remove phasing and clipping through the static geometry. 
+
+Another great optimisation was the use of and instanced mesh with our timers (for the buildings). When we first implemented our fancy rotating 3d timers, we quickly realized we had to optimise this since the framerate would drop in half for every timer that was in our game. We did some research and decided on an instancedMesh implementation. An instanced mesh leverages the power of GPU instancing by re-using the same mesh and rendering it in 1 draw call (with different transformations for every instance). We now have an instancedMesh (using threejs InstancedMesh class) for every number that is generated at game load and is rendered when necessary. A downside of this implementation is that we need to have a static amount of instances for every mesh and if we want to change the amount of instances we would need to create a new InstancedMesh. However this is a non-issue since our game progression limits the amount of buildings that can be built at the same time to two (at lvl 5). The amount of instances reserved on game load (as with most of our “magic values”) is configurable in the files contained within the configs folder. This optimisation drastically improved our framerate and we can now have multiple timers without seeing any notable framerate drop. 
+
+The general lay-out of our front-end tries to take advantage of a MVC-model with subject-observer (models & views) and factory (Factory & SpellFactory) patterns while also making use of interfaces (Placeable & Entity) and composition (ConcreteSpell) to make our code easily extendible. We also tried to make our code event-driven by utilising javaScript’s asynchronous & events capabilities. During development however, our app object (the main entrance object to our code which is responsible for updating/controlling the game) became quite the god object. We could improve on this by better encapsulating code in our different classes but had to leave this optimisation behind due to prioritisation of other features. We have tried to take into account the single responsibility principle as much as possible, which is why the front-end has around 80 different classes. 
+
+For the multiplayer itself we use the socketIO library which integrates nicely both on the front-end and the back-end with the flask-socketIO extension. We use websockets for the real time chat, checking if a player is online in the friend menu and syncing state between peers during a multiplayer match. One of the design choices we made was keeping as much of the multiplayer game as possible on the front-end to reduce the load on our server since first and foremost this would reduce costs for upkeep of multiplayer services and second because most if not all of the game itself was run on the front-end already. During a multiplayer match a player is responsible for sending state updates of the player itself and also for their minions every 16ms (corresponds to 60 fps, we have not implemented a dynamic update interval). A player is also responsible for updating the health of the opponent’s entities as to reduce delay between the player seeing their spells hit the entity and seeing the health being updated. Both the animation state (i.e. which animation is playing for that 3d model) and the health updates of the player and the minions is sent separately because generally they do not change every frame. The back-end receives these update events (and other control events which the server handles itself) and forwards these to the other player (peer to peer). The back-end is the final authority on the results of the match (who won/lost, which stakes are assigned to who, when the match is stopped) and this is why we need to keep state for the multiplayer matches (this is also the only case were the server is stateful). 
+
+The communication between the players and the server for multiplayer follows a certain protocol: 
+
+1. The player tell the server they want to start matchmaking: On the front-end players can start matchmaking from the altar menu. The will player will only be able to activate matchmaking if he has put up enough stakes, there is a path from the connection point to the altar that minions can follow & the connection point of the island (the point where the bridge will attach to) is not occupied by a building. 
+
+2. When the player presses the matchmake button, he will be added to the matchmaking_queue table in our database. When another player of similar lvl (difference of max 1 lvl) enters the queue, the back-end will emit a “match_found” signal to the players. 
+
+3. On receival of the “match_found” signal, both players will start retrieving the info of their opponent and start setting up the multiplayer match. 
+
+4. When a player has finished loading everything a “player_ready” signal is emitted to the back-end where the server will keep state of the match (players & match timer) & if both players have sent the signal, the server will fire the “match_start” signal to tell the players they can start playing. 
+
+5. During the match state updates are exchanged as described earlier and the match can finish in 4 different ways: 
+
+    1. The server ends the match because the timer reached 0, The result will be a draw. 
+
+    2. The websocket on the server detects a player disconnected and gives an automatic win to the other player. 
+
+    3. One of the player presses the leave match button in the settings menu & fires the “player_leaving” signal. The server also gives an automatic win to the other player in this case. 
+
+    4. One of the players destroyed the opponent’s altar and fired the “altar_destroyed” signal. 
+
+6. All different cases of ending a match are handled by the server which will redistribute staked gems based on who won & fire the “match_end” signal which the players use as a signal to reset their game state to singleplayer. 
+
+The other form of communication between the front-end and back-end is via our REST API. This is mainly used for updating our database but also for authorisation purposes and getting the server time (which is needed for calculating resource production). For our idle implementation we again try to do as much as possible on the front-end which is why the back-end keeps time stamps for when certain tasks started or need to be completed and the front-end handles the calculation part and when to remove/create those tasks. 
+
+
+ 

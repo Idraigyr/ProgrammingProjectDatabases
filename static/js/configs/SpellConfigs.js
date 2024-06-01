@@ -17,6 +17,8 @@ export const thunderCloud = (level) => ({
     castTime: 0
 });
 
+export const maxThunderClouds = 4; //Math.ceil(thunderCloud(1).duration / thunderCloud(1).cooldown)*2; //*2 for multiplayer
+
 export const iceWall = {
     blocks: 5,
     width: 10,

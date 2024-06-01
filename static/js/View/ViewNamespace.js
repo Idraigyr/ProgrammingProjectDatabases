@@ -1,6 +1,6 @@
 import {Player} from "./PlayerView.js";
 import {Island} from "./IslandView.js";
-import {Fireball, ThunderCloud, RitualSpell, IceWall} from "./SpellView.js";
+import {Fireball, ThunderCloudPool, RitualSpell, IceWall} from "./SpellView.js";
 import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
@@ -26,7 +26,7 @@ export const View = Object.freeze({
     Minion: Minion,
     Island: Island,
     Fireball: Fireball,
-    ThunderCloud: ThunderCloud,
+    ThunderCloudPool: ThunderCloudPool,
     Tree: Tree,
     Altar: Altar,
     Bush: Bush,

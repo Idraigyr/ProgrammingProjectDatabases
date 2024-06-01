@@ -37,6 +37,8 @@ export class FriendsMenu {
 
         this.inMatch = false;
 
+        this.forwardingNameSpace = null;
+
         if(!this.inMatch){
             this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
             this.addFriendButton.onclick = this.toggleAddFriendButton.bind(this);
@@ -46,6 +48,10 @@ export class FriendsMenu {
             window.addEventListener('click', this.toggleWindowbutton.bind(this));
         }
 
+    }
+
+    setForwardingNameSpace(nameSpace){
+        this.forwardingNameSpace = nameSpace;
     }
 
 
@@ -125,9 +131,8 @@ export class FriendsMenu {
         }
     }
 
-
-
     async populateFriends() {
+        console.log("Populating friends");
         let tempFriends = await AllFriends.getFriends();
         if (this.friends.length !== tempFriends.length){
             const unique = tempFriends.filter(element => !this.friends.includes(element));
@@ -137,7 +142,35 @@ export class FriendsMenu {
             this.friends = tempFriends;
             return true;
         }
+        for(let f of this.friends){
+            this.forwardingNameSpace.sendCheckOnlineStatusEvent(f);
+        }
         return false;
+    }
+
+    /**
+     * Set the online indicator for a friend
+     * @param {{target: number, status: 'online' | 'offline' | 'in_match'}} data
+     */
+    setOnlineIndicator(data) {
+        console.log(`setting online indicator for ${data.target}: ${data.status}`);
+        const onlineIndicator = document.getElementById(`online-indicator-${data.target}`);
+        const visitButton = document.getElementById(`visit-${data.target}`);
+        switch (data.status) {
+            case 'online':
+                onlineIndicator.classList.add('online');
+                onlineIndicator.classList.remove('in-match');
+                visitButton.classList.add('enabled');
+                break;
+            case 'in_match':
+                onlineIndicator.classList.add('in-match');
+                onlineIndicator.classList.remove('online');
+                visitButton.classList.remove('enabled');
+                break;
+            default:
+                onlineIndicator.classList.remove('online', 'in-match');
+                visitButton.classList.remove('enabled');
+        }
     }
 
 
@@ -157,11 +190,21 @@ export class FriendsMenu {
         const friend = document.createElement('div');
         friend.id = `friend-${playerId}`;
         friend.classList.add('friend');
-        friend.innerHTML = `${await AllFriends.getPlayerUsername(playerId)}`;
+        const username = document.createElement('div');
+        username.innerText = `${await AllFriends.getPlayerUsername(playerId)}`;
         const viewIsland = document.createElement('button');
-        viewIsland.id = "viewIsland";
+        const onlineIndicator = document.createElement('div');
+        const filler = document.createElement('div');
+        filler.classList.add('friend-filler');
+        username.classList.add('friend-username');
+        onlineIndicator.id = `online-indicator-${playerId}`;
+        onlineIndicator.classList.add('online-indicator');
+        viewIsland.id = `visit-${playerId}`;
         viewIsland.innerHTML = `Visit Island`;
         viewIsland.classList.add('View-Island');
+        friend.appendChild(username);
+        friend.appendChild(onlineIndicator);
+        friend.appendChild(filler);
         friend.appendChild(viewIsland);
         this.listFriend.appendChild(friend);
     }

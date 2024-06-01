@@ -233,6 +233,10 @@ class ConcreteSpell{
         }
     }
 
+    updateParams(params){
+
+    }
+
     /**
      * Apply effects to the target
      * @param target - the target of the effects
@@ -348,7 +352,7 @@ export class ThunderCloud extends ConcreteSpell{
         super({
             spell: new Cloud({
                 duration: 20,
-                cooldown: 10, //TODO: need animations that last equally long
+                cooldown: 0, //TODO: need animations that last equally long
                 castTime: 0,
             }),
             effects: [new InstantDamage({
