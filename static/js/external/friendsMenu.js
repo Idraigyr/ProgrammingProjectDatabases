@@ -1,13 +1,12 @@
 import * as AllFriends from "./Friends.js"
 import {userId} from "./ChatNamespace.js"
 import {getFriendRequestStatus} from "./Friends.js";
+import {addFriendNotification, removeFriendNotification} from "./LevelUp.js";
 
 export class FriendsMenu {
 
     constructor() {
         this.friendsButton = document.getElementById("friends-button");
-
-        this.notificationCount = document.getElementById("notification-count");
 
         this.Friends = document.getElementById("Friends");
 
@@ -35,6 +34,9 @@ export class FriendsMenu {
         this.friends =  [];
 
         this.requests = [];
+
+        this.initial = true;
+
 
         this.inMatch = false;
 
@@ -162,8 +164,14 @@ export class FriendsMenu {
             const unique = this.findUniqueRequests(this.requests, tempRequests);
             for(let r of unique){
                 await this.addRequest(r);
+                if(this.initial){
+                    addFriendNotification();
+                }
             }
             this.requests = tempRequests;
+            if(this.initial){
+                this.initial = false;
+            }
             return true;
         }
         return false;
@@ -202,6 +210,7 @@ export class FriendsMenu {
                 await AllFriends.acceptFriendRequest(request.id);
                 await friendsMenu.updateRequests();
                 requestElement.remove();
+                removeFriendNotification();
                 await friendsMenu.populateFriends();
             }
 
@@ -209,6 +218,7 @@ export class FriendsMenu {
                 await AllFriends.rejectFriendRequest(request.id);
                 console.log("Request rejected, request ID:", request.id);
                 await friendsMenu.updateRequests();
+                removeFriendNotification();
                 requestElement.remove();
             }
 
@@ -265,4 +275,6 @@ export class FriendsMenu {
 
         return uniqueMaps;
     }
+
+
 }

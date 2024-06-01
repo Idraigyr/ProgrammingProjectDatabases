@@ -553,6 +553,8 @@ class App {
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
 
+        await this.friendsMenu.populateRequests();
+
         if(this.abort) return false;
 
         await this.itemManager.retrieveGemAttributes();
@@ -677,6 +679,8 @@ class App {
 
         // IMPORTANT: THIS LINE HAS TO BE CALLED LAST
         this.collisionDetector.generateColliderOnWorker();
+
+
 
         if(this.abort) return false;
         // this.menuManager.renderMenu({name: "AltarMenu"});

@@ -121,3 +121,25 @@ export function alertPopUp(message, duration = 3000, updateInterval = 10){
         clearInterval(interval);
     }, duration);
 }
+
+/**
+ * Add notification for friendRequest
+ */
+export function addFriendNotification(){
+    let notificationContainer = document.getElementById("friends-notification-container");
+    const notificationCount = notificationContainer.querySelector(".notification-count");
+    notificationCount.innerText = parseInt(notificationCount.innerText) + 1;
+    notificationContainer.style.display = "block";
+}
+
+/**
+ * callback to subtract a notification from the notification bell (and make it disappear if there are no notifications left)
+ */
+export function removeFriendNotification(){
+    let notificationContainer = document.getElementById("friends-notification-container");
+    const notificationCount = notificationContainer.querySelector(".notification-count");
+    const newCount = parseInt(notificationCount.innerText) - 1;
+    if(newCount < 0) throw new Error("notification count cannot be negative");
+    notificationCount.innerText = newCount;
+    if(newCount === 0) notificationContainer.style.display = "none";
+}
