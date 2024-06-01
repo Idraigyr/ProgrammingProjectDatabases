@@ -27,6 +27,8 @@ import {Cursor} from "./Controller/Cursor.js";
 import {spellTypes} from "./Model/Spell.js";
 import {Altar} from "./View/Buildings/Altar.js";
 import {Mine} from "./Model/Entities/Buildings/Mine.js";
+import {loadingScreen} from "./Controller/LoadingScreen.js";
+import {maxThunderClouds} from "./configs/SpellConfigs.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -288,6 +290,7 @@ class App {
             const spells = []
             for(let i = 0; i < 5; i++){
                 let spell = null;
+
                 if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
                 if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
@@ -535,18 +538,22 @@ class App {
      */
     async loadAssets(){
         console.log( await this.playerInfo.getCurrentTime());
-        const progressBar = document.getElementById('progress-bar');
         //TODO: try to remove awaits? what can we complete in parallel?
-        progressBar.labels[0].innerText = "retrieving user info...";
+        await loadingScreen.setText("retrieving user info...");
         await this.playerInfo.retrieveInfo();
 
         if(this.abort) return false;
 
-        progressBar.value = 10;
-        progressBar.labels[0].innerText = "loading assets...";
+        await loadingScreen.setValue(10);
+        await loadingScreen.setText("loading assets...");
         this.settings.loadCursors();
         await this.assetManager.loadViews();
         this.assetManager.createTimerViews(minCharCount, "SurabanglusFont", this.scene);
+        this.spellFactory.thunderCloudPool = new View.ThunderCloudPool({
+            texture: this.assetManager.getAsset("cloud"),
+            length: maxThunderClouds,
+            scene: this.scene
+        });
 
         if(this.abort) return false;
 
@@ -563,9 +570,9 @@ class App {
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
-        progressBar.value = 80;
+        await loadingScreen.setValue(70);
+        await loadingScreen.setText("loading world...");
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
-        progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
         /* TODO: look and see
         this.settings.worldManager = this.worldManager;
@@ -576,13 +583,13 @@ class App {
         if(this.abort) return false;
 
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
-        progressBar.value = 90;
+        await loadingScreen.setValue(80);
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
             InputManager: this.inputManager,
             collisionDetector: this.collisionDetector
         });
-        progressBar.labels[0].innerText = "last touches...";
+        await loadingScreen.setText("connecting the dots...");
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded
@@ -670,10 +677,11 @@ class App {
 
         if(this.abort) return false;
 
-        progressBar.labels[0].innerText = "Logging in...";
+        await loadingScreen.setValue(90);
+        await loadingScreen.setText("Logging in...");
         await this.playerInfo.login();
-        progressBar.labels[0].innerText = "Last magical touches...";
-        progressBar.value = 95;
+        await loadingScreen.setValue(95);
+        await loadingScreen.setText("sprinkling fairy dust everywhere...");
 
         // IMPORTANT: THIS LINE HAS TO BE CALLED LAST
         this.collisionDetector.generateColliderOnWorker();

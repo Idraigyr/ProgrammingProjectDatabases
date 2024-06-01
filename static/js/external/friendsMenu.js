@@ -131,8 +131,6 @@ export class FriendsMenu {
         }
     }
 
-
-
     async populateFriends() {
         console.log("Populating friends");
         let tempFriends = await AllFriends.getFriends();

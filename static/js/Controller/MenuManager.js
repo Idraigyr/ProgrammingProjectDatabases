@@ -687,8 +687,8 @@ export class MenuManager extends Subject{
 
     /**
      * move a subMenu from one menu to another
-     * @param {ListMenu | SlotMenu | CollectMenu} child
-     * @param {BaseMenu | PageMenu} parent
+     * @param {"ListMenu" | "SlotMenu" | "CollectMenu"} child
+     * @param {"BaseMenu" | "PageMenu"} parent
      * @param {"afterbegin" | "beforeend"} position
      * @return {boolean}
      */
@@ -816,12 +816,12 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            if(param.total === 0){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
-                this.items.get(param.building).element.style.opacity = 0.5;
+            if(param.total === 0 || param.placed/param.total === 1){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
+                this.items.get(param.building).lock();
             }else{
-                this.items.get(param.building).element.style.opacity = 1;
-                this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+                this.items.get(param.building).unlock();
             }
+            if(param.total !== 0) this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
         }
     }
 
@@ -906,8 +906,8 @@ export class MenuManager extends Subject{
                 icon: {src: spells[i].src, width: 50, height: 50},
                 description: "",
                 extra: { //TODO: change this based on lvl
-                    unlocked: this.playerInfo.availableSpells.includes(spells[i].name),
-                    draggable: this.playerInfo.availableSpells.includes(spells[i].name)
+                    unlocked: this.playerInfo.availableSpells[spells[i].name] ?? false,
+                    draggable: this.playerInfo.availableSpells[spells[i].name] ?? false
                 }
             });
         }
@@ -915,9 +915,13 @@ export class MenuManager extends Subject{
     }
 
     updateSpellItems(spells){
-        for(let spell in spells){
-            if(spells[spell] !== "BuildSpell") {
-                this.items.get(spells[spell]).unlock();
+        for(const spellType in spells){
+            if(spellType !== "BuildSpell" && spells[spellType]){
+                console.log("unlocking spell", spellType, ":", spells[spellType]);
+                this.items.get(spellType).unlock();
+            } else {
+                console.log("locking spell", spellType);
+                this.items.get(spellType).lock();
             }
         }
     }
@@ -1004,6 +1008,7 @@ export class MenuManager extends Subject{
         switch (params.name){
             case "TowerMenu":
             case "MineMenu":
+
             case "FusionTableMenu":
                 this.#arrangeStatMenuItems(params);
                 break;
@@ -1087,7 +1092,7 @@ export class MenuManager extends Subject{
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu"} |
+     * @param {{name: "AltarMenu", spells: *} |
      * {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} |
      * {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} |
      * {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map} |

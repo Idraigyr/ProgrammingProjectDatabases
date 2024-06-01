@@ -916,6 +916,14 @@
     justify-content: start;
     align-items: center;
     gap: 10px;
+
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.unlocked-menu-item{
+    opacity: 1;
+    pointer-events: all;
 }
 
 .menu-item-icon{

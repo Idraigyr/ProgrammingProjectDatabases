@@ -23,7 +23,7 @@ export class Mine extends Placeable{
         }else if (this.id){
             this.fetchLastCollected();
         }
-        this.productionRate = 1; //TODO: calculate based on level and equipped gems
+        this.productionRate = 10; //TODO: calculate based on level and equipped gems => use stats & stat multipliers
         this.#maxCrystals = this.#calculateMaxCrystals();
         this.upgradable = true;
     }
