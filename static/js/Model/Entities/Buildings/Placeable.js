@@ -52,7 +52,7 @@ export class Placeable extends Entity{
     getStats(){
         const stats = new Map();
         this.#stats.forEach((value, key) => {
-            stats.set(key, this.#statMultipliers.get(key) ?? 1 * value);
+            stats.set(key, this.#statMultipliers.get(key) ? this.#statMultipliers.get(key) * value: 1 * value);
         });
         return stats;
     }

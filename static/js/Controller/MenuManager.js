@@ -752,12 +752,12 @@ export class MenuManager extends Subject{
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
         // update stats for according to the building
-        if (params.name === "MineMenu"){
-            params.stats.set("capacity", params.maxCrystals);
-        }
+        // if (params.name === "MineMenu"){
+        //     params.stats.set("capacity", params.maxCrystals);
+        // }
         if (params.name === "TowerMenu"){
-            params.stats.set("capacity", params.stats.get("capacity")*100);
-            params.stats.set("damage", params.stats.get("damage")*5);
+            params.stats.set("capacity", params.stats.get("capacity"));
+            params.stats.set("damage", params.stats.get("damage")*5); // TODO: remove * 5?
         }
         for(const stat of stats){
             if(params.stats.has(stat)){

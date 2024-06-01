@@ -109,7 +109,14 @@ export class Mine extends Placeable{
      */
     #calculateMaxCrystals(){
         if (this.level === 0) return 100;
-        return this.level * 1000;
+        // Force capacity stat to be correct
+        if(this.getStats().get("capacity") < this.level*1000){
+            const stat = new Map();
+            stat.set("capacity", this.level*1000);
+            this.setStats(stat);
+            this.#maxCrystals = this.getStats().get("capacity");
+        }
+        return this.getStats().get("capacity");
     }
 
     /**
@@ -118,7 +125,7 @@ export class Mine extends Placeable{
      */
     updateGemMultipliers(speed, capacity){
         this.#rateMultiplier = speed;
-        this.#maxCrystals *= capacity;
+        // this.#maxCrystals *= capacity;
     }
 
     /**
@@ -163,7 +170,11 @@ export class Mine extends Placeable{
 
     changeLevel(amount) {
         const result =  super.changeLevel(amount);
+        const stat = new Map();
+        stat.set("capacity", this.level === 0 ? 100 : this.level*1000);
+        try {this.setStats(stat);} catch(e){this.addStat("capacity", this.level === 0 ? 100 : this.level*1000)}
         try{
+            this.#maxCrystals = this.getStats().get("capacity");
             this.#maxCrystals = this.#calculateMaxCrystals();
         }catch(e){}
         return result;
