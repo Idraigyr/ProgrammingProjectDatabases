@@ -117,6 +117,10 @@ let dbMap = {
 };
 let cursorId = 0;
 
+let performance = 1;
+
+let performanceChange = false;
+
 export class Settings extends Subject {
     grassOn = true;
 
@@ -286,6 +290,7 @@ export class Settings extends Subject {
         docHorizontalSensitivity.value = data.horz_sensitivity;
         docVerticalSensitivity.value = data.vert_sensitivity;
         docPerformance.selectedIndex = data.performance;
+        performance = data.performance;
         crosshair.src = Cursors.getName(data.selected_cursor);
         cursorId = data.selected_cursor;
         this.loadKeys(data);
@@ -375,6 +380,12 @@ export class Settings extends Subject {
             this.grassOn = true;
             obj.performance = 2;
         }
+        if (obj.performance != performance)
+        {
+            performanceChange = true;
+            performance = obj.performance;
+            console.log("performance changed")
+        }
         this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
 
     }
@@ -400,7 +411,7 @@ export class Settings extends Subject {
     }
 
     /**
-     * Function to apply all the settings from the settings menu to the game
+     * Function to apply all the settings from the settings menu to the game and send data to the backend, except when this function is called on loading the game
      */
 
     applySettings(onLoad) {
@@ -413,7 +424,13 @@ export class Settings extends Subject {
         if(onLoad === true) {return;}
 
         this.sendPUT(data);
+        if (performanceChange)
+        {
+            //reload for shadows
+            this.respawn();
+        }
         this.exitSettingsMenu();
+
 
     }
 
