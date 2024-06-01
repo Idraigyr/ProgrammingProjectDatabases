@@ -215,5 +215,4 @@ export class Island extends Foundation{
         this.buildings = this.buildings.filter(b => b !== building);
         building.dispose();
     }
-
 }

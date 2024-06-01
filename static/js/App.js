@@ -29,6 +29,8 @@ import {Altar} from "./View/Buildings/Altar.js";
 import {Mine} from "./Model/Entities/Buildings/Mine.js";
 import {loadingScreen} from "./Controller/LoadingScreen.js";
 import {maxThunderClouds} from "./configs/SpellConfigs.js";
+import {alertPopUp} from "./external/LevelUp.js";
+import * as SpellConfigs from "./configs/SpellConfigs.js"
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -231,6 +233,7 @@ class App {
             fusionTable.resetInputCrystals();
             let speed = stats.get("speed");
             let fortune = stats.get("fortune");
+            this.playerInfo.changeXP(2 * inputCrystals);
             console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
             // Send post request to create new task TODO: connect this to the new Thomas' code
             const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: inputCrystals});
@@ -255,9 +258,14 @@ class App {
         this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
+            if(this.worldManager.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+                alertPopUp("Maximum Buildings in process reached.")
+                return
+            }
             this.playerInfo.changeCrystals(-building.upgradeCost);
             await this.playerInfo.createLevelUpTask(building);
             building.startUpgrade();
+            this.playerInfo.changeXP(150);
             this.menuManager.exitMenu();
         });
         this.menuManager.addEventListener("delete", async (event) =>{
@@ -289,8 +297,32 @@ class App {
             const spells = []
             for(let i = 0; i < 5; i++){
                 let spell = null;
-
-                if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                if(event.detail.spellIds[i]){
+                    spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                    switch (spell){
+                        case "Fireball":
+                            spell.updateSpell(SpellConfigs.Fireball(this.playerInfo.level));
+                            break;
+                        case "ThunderCloud":
+                            spell.updateSpell(SpellConfigs.ThunderCloud(this.playerInfo.level));
+                            break;
+                        case "IceWall":
+                            spell.updateSpell(SpellConfigs.IceWall(this.playerInfo.level));
+                            break;
+                        case "Shield":
+                            spell.updateSpell(SpellConfigs.Shield(this.playerInfo.level));
+                            break;
+                        case "Heal":
+                            spell.updateSpell(SpellConfigs.Heal(this.playerInfo.level));
+                            break;
+                        case "Zap":
+                            spell.updateSpell(SpellConfigs.Zap(this.playerInfo.level));
+                            break;
+                        case "BuildSpell":
+                            spell.updateSpell(SpellConfigs.BuildSpell(this.playerInfo.level));
+                            break;
+                    }
+                }
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
                 if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
             }
@@ -562,6 +594,8 @@ class App {
 
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
+
+        await this.friendsMenu.populateRequests();
 
         if(this.abort) return false;
 
