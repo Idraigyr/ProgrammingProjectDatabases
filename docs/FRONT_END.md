@@ -12,13 +12,13 @@ Another important part for our game was the progression. We felt it was really i
 
 4. As the player progresses and increases their lvl, they will unlock more buildings that can both increase their power during multiplayer as well as increase their resource regeneration. Currently this is our endgame content where players mainly increase their xp by playing multiplayer matches (winning gives double xp, killing players & minions also gives xp). 
 
-During this progression the player will have periods of “down time” where they are waiting for a gem or crystals to be produced or they’re waiting for a building to be completed. 
+During this progression the player will have periods of “downtime” where they are waiting for a gem or crystals to be produced or they’re waiting for a building to be completed. 
 
 ---
 
 ### <ins> Program Design: <ins>
 
-We have tried to maximize the extendibility & efficiency of our code although this was not always an easy feat when working together with multiple people. 
+We have tried to maximize the extendability & efficiency of our code although this was not always an easy feat when working together with multiple people. 
 
 
 For our front-end we decided to keep things simple and (mostly) stick to vanilla javaScript. The main reason was to increase our initial development speed by not needing to go through the hassle of learning both javaScript itself and a new framework like React, Angular, etc. The exception being the use of Three.js for our rendering, socketIO for managing state during multiplayer (and real time chat) and some other small libraries/modules. We think this was also the better choice from a learning standpoint since most of us have never developed a web application and creating a good foundation and understanding of the basics is never a bad thing. 
@@ -62,4 +62,36 @@ The communication between the players and the server for multiplayer follows a c
 The other form of communication between the front-end and back-end is via our REST API. This is mainly used for updating our database but also for authorisation purposes and getting the server time (which is needed for calculating resource production). For our idle implementation we again try to do as much as possible on the front-end which is why the back-end keeps time stamps for when certain tasks started or need to be completed and the front-end handles the calculation part and when to remove/create those tasks. 
 
 
- 
+ ### <ins> Combat System: <ins>
+
+Here, we will try to explain some of the decisions and techniques used in regard to the combat system.
+First of all, at the start of multiplayer, for 
+each altar and tower present on the islands of both players, an extra entity gets created at the same position
+as the building it is made for, called a proxyEntity. This proxy entity has a view and a model, as expected. The view consists 
+of a bounding box for easy collision detection, and a visual health bar that changes color and percentage filled 
+based on the health of its model. The model has functions for taking damage and for death. By using these proxys, we make the 
+single player less messy. For all towers, a spellspawner gets created too. These spellspawners fire a spell (given in the parameters of the spawner)
+at a certain interval with a certain amount of damage, dedicated by the stats of its corresponding tower. These spawned spells then function 
+the same as spells cast by a player. 
+Dealing damage is done fairly simple. Every entity that can take damage has a `takeDamage(damage)` function. These are spells,
+proxy, and characters. This function 
+updates the health according to the given damage, and also checks if death of the entity needs to be handled. The takeDamage function
+is always called by the damage dealer. For spells this is done by collision detection, and when collision occurs with a target, 
+it will call the takeDamage function on the target, if dealing damage is one of the effects of the spell. Minions on the other hand
+will have a target they are locked on, which can be a building, an altar or a shield spell, determined by the 
+`getClosestEnemy(character, targets[])` function. When they are close enough to their target, they will go in the attack state 
+and periodically call the takeDamage() function on their target. As mentioned before, the takeDamage() function checks if 
+the receiver has reached 0 or less hp. If this is the case, the `dies()` function will be called. For towers, this makes the 
+spellspawner stop shooting, minions will be deleted, characters will get an overlay with a respawn timer after which they can respawn,
+and an altar dying will result in the end of the match and a victory for the destroyer. Finally, we will quickly go over the 
+spell effects. First, we have the fireball. This shoots a projectile that checks for collision, and will be deleted on the first enemy
+entity hit. If that enemy is targetable, it wil deal damage using the previously described method. The thundercloud spell 
+is a bit different, as it doesn't get removed after the first collision. Instead, it stays on the field for a certain amount of time,
+and deals damage to ALL enemies within its bounding box every x amount of time. The shield spell will form a bounding box around the
+player and thus make sure all attacks that would hit the player, hit the shield. While the shield is active, the player will
+have a boolean `shielded = true` and therefore won't take damage when the takeDamge() function is called on the player. 
+Instead, the takeDamage() will be called on the shield. The takeDamage() function of shield will decrease the amount of shields there are
+(visually through a listener and in the model with a shield variable). Once this amount reaches zero, the shield is deleted and the 
+shielded variable on the character is removed. Through using this implementation, we basically make sure the next three damaging
+effects on the player deal no damage. The last spell is the icewall, which just creates an entity with a bounding box, so it can
+block enemy spells and paths.
