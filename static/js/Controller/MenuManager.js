@@ -918,6 +918,9 @@ export class MenuManager extends Subject{
         for(let spell in spells){
             if(spells[spell] !== "BuildSpell") {
                 this.items.get(spells[spell]).unlock();
+                this.items.get(spells[spell]).changeOpacity("1");
+            } else{
+                this.items.get(spells[spell]).changeOpacity("1");
             }
         }
     }

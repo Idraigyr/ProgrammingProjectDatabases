@@ -56,6 +56,7 @@ export class SpellItem extends MenuItem{
         super(params);
         this.unlocked = params?.extra?.unlocked ?? false;
         this.element.draggable = params?.extra?.draggable ?? false;
+        this.element.style.opacity = "0.5";
         this.display = "flex";
     }
 
@@ -76,6 +77,10 @@ export class SpellItem extends MenuItem{
 
     get type(){
         return "Spell";
+    }
+
+    changeOpacity(value){
+        this.element.style.opacity = value;
     }
 }
 
