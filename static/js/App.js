@@ -27,6 +27,7 @@ import {Cursor} from "./Controller/Cursor.js";
 import {spellTypes} from "./Model/Spell.js";
 import {Altar} from "./View/Buildings/Altar.js";
 import {Mine} from "./Model/Entities/Buildings/Mine.js";
+import {alertPopUp} from "./external/LevelUp.js";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -253,7 +254,10 @@ class App {
         this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
-            if(this.worldManager.checkBuildingsInProgress() >= this.playerInfo.buildingProgress) return;
+            if(this.worldManager.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+                alertPopUp("Maximum Buildings in process reached.")
+                return
+            }
             this.playerInfo.changeCrystals(-building.upgradeCost);
             await this.playerInfo.createLevelUpTask(building);
             building.startUpgrade();

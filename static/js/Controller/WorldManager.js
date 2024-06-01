@@ -10,6 +10,7 @@ import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
 import {printFoundationGrid} from "../helpers.js";
+import {alertPopUp} from "../external/LevelUp.js";
 
 
 /**
@@ -410,7 +411,7 @@ export class WorldManager{
             console.log("Cannot place");
         }
         else if(this.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
-            console.log("Cannot place");
+            alertPopUp("Maximum Buildings in process reached.")
         }
         else {
             if(!this.cheats){
