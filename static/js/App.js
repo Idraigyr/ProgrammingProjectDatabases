@@ -741,6 +741,9 @@ class App {
 
 
             document.querySelector('.loading-animation').style.display = 'none';
+            if (this.playerInfo.level == 1 && this.playerInfo.experience == 0) {
+                this.settings.toggleHelpMenu();
+            }
             this.togglePhysicsUpdates(true);
             this.update();
         } else {
