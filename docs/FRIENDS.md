@@ -1,5 +1,6 @@
 # Friends making
 
+This document describes the friend request system and general usage in the backend / API.
 For information about the frontend usage, please refer to the [user manual](USER_MANUAL.md).
 For specific JSON body information & endpoint usage, please refer to the Swagger documentation.
 

@@ -19,6 +19,8 @@ A 'session' is a single WebSocket connection between a client and the server. A 
 The chat is a simple example of a SocketIO namespace. It has a single event: `message` that holds the chat message, a username and the timestamp. Client sends a message to the server using the `message` event with the given parameters and the server will broadcast this message to all connected clients (thus also to the original sender).
 
 ## Forwarding
+Forwarding is a Peer-to-Peer communication system that allows clients to send messages to other clients. This is used for real-time multiplayer and friend visiting where the server should not be involved in the communication between clients. The server will only forward the message to the target client (specified by the sender) and will not store nor intervene in the communication.
+
 A client can forward a message to another client using the `forward` namespace. The sender is required to set a target user id in the `target` field of the message. The server will then forward this message to the target user. The target user will receive the message using the `forwarded` event and the original JSON object.
 The server will also send the message to other sessions (not the sending session) of the same player to keep the state in sync. A `sender` field is added to the root JSON object with the userid of the original sender of the message.
 

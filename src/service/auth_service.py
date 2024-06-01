@@ -9,7 +9,8 @@ from src.model.player_stats import PlayerStats
 from src.model.player import PlayerSpellAssociation
 from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
-from src.model.placeable.buildings import AltarBuilding, MineBuilding
+from src.model.placeable.altar_building import AltarBuilding
+from src.model.placeable.mine_building import MineBuilding
 from src.model.user_profile import UserProfile
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
@@ -19,7 +20,8 @@ db: SQLAlchemy = current_app.db
 
 class AuthService:
     """
-    This class is responsible for managing & authenticating users
+    This class is responsible for managing & authenticating user operations that do not fit in the REST API endpoints
+    (because they require more complex logic, or short-term statefullness like social login etc)
     """
     def __init__(self):
         self._log = logging.getLogger(__name__)

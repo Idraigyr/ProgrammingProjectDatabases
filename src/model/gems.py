@@ -170,6 +170,9 @@ class GemAttribute(current_app.db.Model):
 
 # Association Object for Gem-GemAttribute with multiplier
 class GemAttributeAssociation(current_app.db.Model):
+    """
+    Represents the relationship between a gem and a gem attribute with a multiplier as relationship attribute
+    """
     __tablename__ = 'gem_attribute_association'
     gem_id = Column(BigInteger, ForeignKey('gem.id'), primary_key=True)
     gem_attribute_id = Column(SmallInteger, ForeignKey('gem_attribute.id'), primary_key=True)
