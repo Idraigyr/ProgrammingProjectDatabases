@@ -454,7 +454,7 @@ export class MenuManager extends Subject{
     dispatchCollectEvent(event){
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = "0%";
         this.collectParams.current = 0;
-        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${Math.ceil(this.collectParams.max)}`;
         this.dispatchEvent(this.createCollectEvent());
     }
 
@@ -751,14 +751,15 @@ export class MenuManager extends Subject{
     #arrangeStatMenuItems(params){
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
+        //TODO: remove
         // update stats for according to the building
-        if (params.name === "MineMenu"){
-            params.stats.set("capacity", params.maxCrystals);
-        }
-        if (params.name === "TowerMenu"){
-            params.stats.set("capacity", params.stats.get("capacity")*100);
-            params.stats.set("damage", params.stats.get("damage")*5);
-        }
+        // if (params.name === "MineMenu"){
+        //     params.stats.set("capacity", params.maxCrystals);
+        // }
+        // if (params.name === "TowerMenu"){
+        //     params.stats.set("capacity", params.stats.get("capacity"));
+        //     params.stats.set("damage", params.stats.get("damage")*5); // TODO: remove * 5?
+        // }
         for(const stat of stats){
             if(params.stats.has(stat)){
                 this.items.get(stat).element.style.display = this.items.get(stat).display;
@@ -1007,8 +1008,13 @@ export class MenuManager extends Subject{
         if(!this.currentMenu) throw new Error("No menu is currently active");
         switch (params.name){
             case "TowerMenu":
+                this.#arrangeStatMenuItems(params);
+                break;
             case "MineMenu":
-
+                // Also update max crystals
+                this.collectParams.max = params.stats.get("capacity");
+                this.#arrangeStatMenuItems(params);
+                break;
             case "FusionTableMenu":
                 this.#arrangeStatMenuItems(params);
                 break;
@@ -1050,8 +1056,8 @@ export class MenuManager extends Subject{
     updateCrystals(){
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
-        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${this.collectParams.current}/${this.collectParams.max}`;        // random crystal generation
-        if(Math.random()*100 < this.fortune){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
+        this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${Math.ceil(this.collectParams.current)}/${Math.ceil(this.collectParams.max)}`;        // random crystal generation
+        if(Math.random()*100 < this.fortune/10.0){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
             console.log("Gem mined!");
             this.dispatchEvent(this.createMineGemEvent());
 
@@ -1127,7 +1133,7 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
-                this.collectParams.rate = Math.ceil(params.stats.get("speed"))*10;
+                this.collectParams.rate = Math.ceil(params.stats.get("speed")); // Todo: Or add * 10 back?
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
                 this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");

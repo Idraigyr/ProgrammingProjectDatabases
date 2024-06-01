@@ -2,9 +2,9 @@ import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {MinionFSM, PlayerFSM} from "./CharacterFSM.js";
 import {convertGridIndexToWorldPosition} from "../helpers.js";
-import {API_URL, buildingUpgradeURI, placeableURI, taskURI} from "../configs/EndpointConfigs.js";
+import {API_URL, buildingUpgradeURI, fuseTaskURI, placeableURI, taskURI} from "../configs/EndpointConfigs.js";
 import * as THREE from "three";
-import {playerSpawn} from "../configs/ControllerConfigs.js";
+import {fusionTime, playerSpawn} from "../configs/ControllerConfigs.js";
 import {displayViewBoxHelper, gridCellSize} from "../configs/ViewConfigs.js";
 import {Timer3D} from "../View/Watch.js";
 
@@ -16,7 +16,7 @@ export class Factory{
 
     /**
      * Constructor for the factory
-     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector, camera: Camera}} params
+     * @param {{scene: THREE.Scene, viewManager: ViewManager, assetManager: AssetManager, timerManager: timerManager, collisionDetector: collisionDetector, camera: Camera, itemManager: ItemManager}} params
      */
     constructor(params) {
         this.scene = params.scene;
@@ -25,6 +25,7 @@ export class Factory{
         this.timerManager = params.timerManager;
         this.collisionDetector = params.collisionDetector;
         this.camera = params.camera;
+        this.itemManager = params.itemManager;
         this.#currentTime = null;
     }
 
@@ -218,8 +219,7 @@ export class Factory{
     createIsland(params){
         let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, team: params.team});
 
-        let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1}); //TODO: remove magic numbers
-        //TODO: island asset?
+        let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1, model: this.assetManager.getAsset("Island")}); //TODO: remove magic numbers
         //this.AssetLoader.loadAsset(view);
         this.scene.add(view.initScene());
 
@@ -325,16 +325,40 @@ export class Factory{
                 if(params.task.type === "building_upgrade_task") {
                     this._levelUpBuilding(params, model);
                 }
-                // TODO: check the name
                 else if (params.task.type === "fuse_task") {
                     // Time to create a new gem!
-                    // TODO: ask how to get the corresponding menu to make gem there
+                    const fusionLevel = model.level;
+                    const inputCrystals = params.task.crystal_amount;
+                    const stats = model.getStats();
+                    const fortune = stats.get("fortune") ?? 1;
+                    this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune));
                 }
                 return model;
-                // TODO: check the name
             } else if (params.task.type === "fuse_task"){
-                // TODO: Time to create a new task for the gem in timeManager! => copy ~line 186 App.js
-
+                const fusionLevel = model.level;
+                const inputCrystals = params.task.crystal_amount;
+                const stats = model.getStats();
+                const fortune = stats.get("fortune") ?? 1;
+                this.timerManager.createTimer((timeEnd - this.currentTime) / 1000, [async () => {
+                    // get info of the task
+                    // const res = await this.#getFuseTaskParams(params, model);
+                    const gem = this.itemManager.createGem((fusionLevel + inputCrystals / 10 * fortune)); //TODO: make this parameter persistent? & don't just put a magic formula here
+                    // Delete the old task
+                    $.ajax({
+                        url: `${API_URL}/${taskURI}?id=${params.task.id}`,
+                        type: "DELETE",
+                        contentType: "application/json",
+                        success: (data) => {
+                            console.log(data);
+                        },
+                        error: (xhr, status, error) => {
+                            console.error(xhr.responseText);
+                            console.log("Task ", params.task.id, " cannot be deleted");
+                        }
+                    })
+                    // this.menuManager.addItemrenderM({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
+                    //line above is moved to the itemManager because it needs to wait for server response => TODO: change createGem to a promise, is it worth the trouble though?
+                }]);
             }
             params.withTimer = true;
             // Get difference in seconds
@@ -356,7 +380,7 @@ export class Factory{
                     }, () => {
                     model.ready = true;
                     this.collisionDetector.generateColliderOnWorker(); // TODO: find another solution
-                    if(params.task) this.#checkIfBuildingHasUpgradeTask(params, model);
+                    if(params.task && params.task.type === "building_upgrade_task") this.#checkIfBuildingHasUpgradeTask(params, model);
                 }]
             );
             const buildingPreview = new View.BuildingPreview({
@@ -385,6 +409,16 @@ export class Factory{
             success: (data) => {
                 // If there is a task, we have to upgrade the building
                 this._levelUpBuilding(params, model);
+            }});
+    }
+    async #getFuseTaskParams(params, model){
+        // Send get request to the server to check if the model already have the correct level
+        await $.ajax({
+            url: `${API_URL}/${fuseTaskURI}?id=${params.task.id}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                return data;
             }});
     }
     async _levelUpBuilding(params, model){

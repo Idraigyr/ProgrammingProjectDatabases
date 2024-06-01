@@ -33,4 +33,6 @@ export const buildingUpgradeURI = 'api/building_upgrade_task';
 
 export const settingsURI = 'api/settings';
 
+export const fuseTaskURI = 'api/fuse_task';
+
 export const postRetries = 3;

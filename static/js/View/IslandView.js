@@ -13,10 +13,11 @@ export class Island extends IView{
     #islandThickness;
     #grassField;
     #yOffset;
+    #model;
 
     /**
      * Constructor for Island view
-     * @param {{width: number, length: number, islandThickness: number}} params of grid cell
+     * @param {{width: number, length: number, islandThickness: number, model: Object}} params of grid cell
      * islandThickness thickness of the island plane
      */
     constructor(params) {
@@ -26,6 +27,7 @@ export class Island extends IView{
         this.#length = params?.length ?? 15;
         this.#islandThickness = params?.islandThickness ?? 0.1;
         this.#yOffset = 0;
+        this.#model = params?.model ?? null;
     }
     /**
      * Create lights for the scene - DEPRECATED, now in App.initScene
@@ -141,8 +143,25 @@ export class Island extends IView{
         // group.add(this.createGrassField());
         // new implementation
         group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
+        group.add(this.createModel());
         this.charModel = plane;
         return group;
+    }
+
+    /**
+     * Create 3d model for the island view
+     */
+    createModel(){
+        const toAdd = this.#model;
+        const boundingBox = new THREE.Box3().setFromObject(toAdd);
+        const size = new THREE.Vector3();
+        boundingBox.getSize(size);
+        toAdd.scale.set((this.#width*gridCellSize)/size.x, this.#length*gridCellSize/size.y, this.#length*gridCellSize/size.z);
+        toAdd.position.copy(this.position);
+        // Set top position to the top of the island
+        const y = new THREE.Box3().setFromObject(toAdd).max.y;
+        toAdd.position.y -= y;
+        return toAdd;
     }
 
     /**
