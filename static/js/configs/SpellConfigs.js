@@ -9,8 +9,6 @@ export const Fireball = (level) => ({
     castTime: 0
 });
 
-export const maxThunderClouds = Math.ceil(thunderCloud(1).duration / thunderCloud(1).cooldown)*2; //*2 for multiplayer
-
 export const ThunderCloud = (level) => ({
     duration: 10,
     damage: 50 + 10 * Math.min(0,level-10),
@@ -18,6 +16,8 @@ export const ThunderCloud = (level) => ({
     cooldown: 10,
     castTime: 0
 });
+
+export const maxThunderClouds = Math.ceil(ThunderCloud(1).duration / ThunderCloud(1).cooldown)*2; //*2 for multiplayer
 
 export const IceWall = (level) => ({
     blocks: 5,

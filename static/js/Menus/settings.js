@@ -263,16 +263,20 @@ export class Settings extends Subject {
 
     /**
      * Function to get the settings data from the server
+     * @returns {Promise<number>}
      */
     async getSettings() {
-          $.ajax({
+        let performance = -1;
+        await $.ajax({
             url: `${API_URL}/${settingsURI}?player_id=${this.playerInfo.userID}`,
             type: "GET",
             contentType: "application/json",
             success: (data) => {
-                this.loadSettings(data)
+                this.loadSettings(data);
+                performance = data.performance;
             }
         });
+        return performance;
     }
 
     /**

@@ -65,7 +65,7 @@ export class Fireball extends IView{
 class ThunderCloudWrapper{
     /**
      * Create a wrapper around + a new thundercloud object
-     * @param {{parent: ThunderCloudPool, texture: THREE.Texture}} params
+     * @param {{parent: ThunderCloudPool, texture: THREE.Texture, position: THREE.Vector3}} params
      */
     constructor(params) {
         this.hasUpdates = true;

@@ -81,11 +81,6 @@ class App {
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
 
-        if(shadows.shadowCasting){
-            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            this.renderer.shadowMap.enabled = true;
-        }
-
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
 
@@ -580,7 +575,14 @@ class App {
         await loadingScreen.setValue(10);
         await loadingScreen.setText("loading assets...");
         this.settings.loadCursors();
-        this.settings.getSettings();
+        await this.settings.getSettings().then(
+            (performance) => {
+                if(performance === 2){
+                    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                    this.renderer.shadowMap.enabled = true;
+                }
+            }
+        );
 
         await this.assetManager.loadViews();
         this.assetManager.createTimerViews(minCharCount, "SurabanglusFont", this.scene);
