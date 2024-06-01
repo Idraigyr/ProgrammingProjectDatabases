@@ -1057,11 +1057,11 @@ export class MenuManager extends Subject{
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${Math.ceil(this.collectParams.current)}/${Math.ceil(this.collectParams.max)}`;        // random crystal generation
-        if(Math.random()*100 < this.fortune/10.0){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
-            console.log("Gem mined!");
-            this.dispatchEvent(this.createMineGemEvent());
-
-        }
+        // if(Math.random()*100 < this.fortune/10.0){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
+        //     console.log("Gem mined!");
+        //     this.dispatchEvent(this.createMineGemEvent());
+        //
+        // }
     }
 
     /**
@@ -1131,17 +1131,15 @@ export class MenuManager extends Subject{
             case "MineMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#arrangeStatMenuItems(params);
-                this.collectParams.current = params.crystals;
+                params.crystals = this.collectParams.current;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
                 this.collectParams.rate = Math.ceil(params.stats.get("speed")); // Todo: Or add * 10 back?
-                this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
                 this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
                 this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = `${(params.crystals/this.collectParams.max)*100}%`; //TODO: change this so text stays in the middle of the meter
                 this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${this.collectParams.max}`;
                 this.menus.get("MineMenu").updateLvlUpButton(params);
-                this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
                 this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);

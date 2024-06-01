@@ -223,7 +223,6 @@ class App {
             console.log("Mining gem");
             const gem = this.itemManager.createGem((3));
         });
-
         this.menuManager.addEventListener("startFusion", async (event) => {
             const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             const fusionLevel = fusionTable.level;
@@ -411,6 +410,8 @@ class App {
                     });
                 }
             }
+            this.itemManager.stopGemProduction();
+            this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
