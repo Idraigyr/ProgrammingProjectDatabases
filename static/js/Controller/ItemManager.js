@@ -53,14 +53,14 @@ export class ItemManager {
     }
 
     startGemProduction(params){
-        console.log(params);
+        let fortune = 0;
         for (const key in params){
-            console.log(params[key]);
+            fortune = fortune + params[key].getStats().get("fortune");
         }
-        //todo change based on fortune
+        console.log("fortune: " + fortune);
         this.interval = setInterval(() => {
             console.log("creating gem");
-            this.createGem(3);
+            this.createGem(Math.floor(3));
         }, gemProductionInterval*1000);
     }
 

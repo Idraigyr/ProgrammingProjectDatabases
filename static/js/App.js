@@ -394,9 +394,7 @@ class App {
             const buildingNumber = this.worldManager.checkPosForBuilding(event.detail.position);
 
             let params = {name: buildTypes.getMenuName(buildingNumber)}
-            // get all placed buildings
-            this.itemManager.stopGemProduction();
-            this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
+
             if(buildingNumber === buildTypes.getNumber("empty")){
                 params.buildings = [];
                 for(const building in this.playerInfo.buildingsPlaced){
@@ -407,6 +405,8 @@ class App {
                     });
                 }
             }
+            this.itemManager.stopGemProduction();
+            this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
