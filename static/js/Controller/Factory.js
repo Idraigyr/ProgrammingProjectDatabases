@@ -219,8 +219,7 @@ export class Factory{
     createIsland(params){
         let islandModel = new Model.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, team: params.team});
 
-        let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1}); //TODO: remove magic numbers
-        //TODO: island asset?
+        let view = new View.Island({position: new THREE.Vector3(params.position.x, params.position.y, params.position.z), width: params.width, length: params.length, islandThickness: 0.1, model: this.assetManager.getAsset("Island")}); //TODO: remove magic numbers
         //this.AssetLoader.loadAsset(view);
         this.scene.add(view.initScene());
 

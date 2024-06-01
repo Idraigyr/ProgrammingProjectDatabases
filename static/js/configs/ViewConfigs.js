@@ -36,6 +36,7 @@ export let assetPaths = Object.freeze({
     Wall2: ["./static/assets/3d-models/wall/wall_lvl2.glb",".glb"],
     Wall3: ["./static/assets/3d-models/wall/wall_lvl3.glb",".glb"],
     Wall: ["./static/assets/3d-models/wall/Wall_Alt.glb",".glb"],
+    Island: ["./static/assets/3d-models/island_compressed.glb",".glb"],
 });
 
 export const buildingAssetsKeys = Object.freeze([
