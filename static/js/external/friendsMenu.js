@@ -42,14 +42,12 @@ export class FriendsMenu {
 
         this.forwardingNameSpace = null;
 
-        if(!this.inMatch){
-            this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
-            this.addFriendButton.onclick = this.toggleAddFriendButton.bind(this);
-            this.listFriendButton.onclick = this.toggleListFriendButton.bind(this);
-            this.requestFriendButton.onclick = this.toggleRequestFriendButton.bind(this);
-            this.sendRequestButton.onclick = this.toggleSendRequestButton.bind(this)
-            window.addEventListener('click', this.toggleWindowbutton.bind(this));
-        }
+        this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
+        this.addFriendButton.onclick = this.toggleAddFriendButton.bind(this);
+        this.listFriendButton.onclick = this.toggleListFriendButton.bind(this);
+        this.requestFriendButton.onclick = this.toggleRequestFriendButton.bind(this);
+        this.sendRequestButton.onclick = this.toggleSendRequestButton.bind(this)
+        window.addEventListener('click', this.toggleWindowbutton.bind(this));
 
     }
 
@@ -59,24 +57,21 @@ export class FriendsMenu {
 
 
     async toggleFriendsDisplay() {
-        if(!this.inMatch){
-            if (this.Friends.style.display === "block") {
-                this.Friends.style.display = "none";
-                this.addFriendButton.style.display = "none";
-                this.listFriendButton.style.display = "none";
-                this.addFriend.style.display = "none";
-                this.requestFriendButton.style.display = "none";
-            } else {
-                this.FriendList.style.display = "none";
-                await this.populateFriends();
-                this.Friends.style.display = "block";
-                this.addFriendButton.style.display = "block";
-                this.listFriendButton.style.display = "block"
-                this.requestFriendButton.style.display = "block";
-                this.addFriend.style.display = "none";
-                this.FriendList.style.display = "block";
-                this.listRequest.style.display = "none";
-            }
+        if (this.Friends.style.display === "block") {
+            this.Friends.style.display = "none";
+            this.addFriendButton.style.display = "none";
+            this.listFriendButton.style.display = "none";
+            this.addFriend.style.display = "none";
+            this.requestFriendButton.style.display = "none";
+        } else if(!this.inMatch) {
+            this.populateFriends(); //don't use await here will delay the display of the friends list
+            this.Friends.style.display = "block";
+            this.addFriendButton.style.display = "block";
+            this.listFriendButton.style.display = "block"
+            this.requestFriendButton.style.display = "block";
+            this.addFriend.style.display = "none";
+            this.FriendList.style.display = "block";
+            this.listRequest.style.display = "none";
         }
     }
 
@@ -90,14 +85,14 @@ export class FriendsMenu {
         this. FriendList.style.display = "none";
         this.addFriend.style.display = "none";
         this.requestList.style.display = "none";
-        await this.populateFriends();
+        this.populateFriends(); //don't use await here will delay the display of the friends list
         this.FriendList.style.display = "block";
 
     }
     async toggleRequestFriendButton(){
         this.addFriend.style.display = "none";
         this.FriendList.style.display = "none";
-        await this.populateRequests();
+        this.populateRequests(); //don't use await here will delay the display of the friends list
         this.requestList.style.display = "block";
     }
     async toggleSendRequestButton() {
@@ -151,18 +146,19 @@ export class FriendsMenu {
     async populateFriends() {
         console.log("Populating friends");
         let tempFriends = await AllFriends.getFriends();
+        let changed = false;
         if (this.friends.length !== tempFriends.length){
             const unique = tempFriends.filter(element => !this.friends.includes(element));
             for(let u of unique){
                 await this.addFriendMenu(u);
             }
             this.friends = tempFriends;
-            return true;
+            changed = true;
         }
         for(let f of this.friends){
             this.forwardingNameSpace.sendCheckOnlineStatusEvent(f);
         }
-        return false;
+        return changed;
     }
 
     /**

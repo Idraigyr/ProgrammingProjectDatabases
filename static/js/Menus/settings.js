@@ -510,9 +510,17 @@ export class Settings extends Subject {
 
             for (const [key, value] of Object.entries(details)) {
                 if (typeof value === 'object') {
-                    const spells = Object.keys(value).filter(spell => value[spell]).join(', ');
+                    const spells = Object.keys(value).filter(spell => value[spell]); //.join(', ');
                     const li = document.createElement('li');
-                    li.textContent = `Spells: ${spells}`;
+                    // li.textContent = `Spells: ${spells}`;
+                    li.textContent = `Spells:`;
+                    const spellsul = document.createElement('ul');
+                    spells.forEach(spell => {
+                        const spellLi = document.createElement('li');
+                        spellLi.textContent = spell;
+                        spellsul.appendChild(spellLi);
+                    });
+                    li.appendChild(spellsul);
                     ul.appendChild(li);
                 } else {
                     const li = document.createElement('li');

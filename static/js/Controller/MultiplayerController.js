@@ -45,7 +45,7 @@ export class MultiplayerController extends Subject{
         //Friend visit properties
         this.pendingVisitRequest = null;
         this.notificationContainer = document.getElementById("friends-notification-container");
-        this.friendsMenu = document.getElementById("Friends");
+        // this.friendsMenu = document.getElementById("Friends");
         document.querySelector("#listFriend").addEventListener("click", this.#toggleVisitRequest.bind(this));
 
         this.updateEvents = new Map();
@@ -893,13 +893,13 @@ export class MultiplayerController extends Subject{
             case "accept": //your friend accepted your visit request
                 //TODO: close & disable friendsMenu
                 //reset visit request button
-                this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest} > .View-Island`).innerText = "Visit Island";
+                this.friendsMenu.Friends.querySelector(`#friend-${this.pendingVisitRequest} > .View-Island`).innerText = "Visit Island";
                 this.pendingVisitRequest = null;
                 await this.loadFriendIsland(data.sender);
                 break;
             case "reject": //your friend rejected your visit request
                 this.#addFriendNotification(`${this.peerInfo.username} rejected your visit request`, data.request, data.sender);
-                this.friendsMenu.querySelector(`#friend-${this.peerInfo.userID} > .View-Island`).innerText = "Visit Island";
+                this.friendsMenu.Friends.querySelector(`#friend-${this.peerInfo.userID} > .View-Island`).innerText = "Visit Island";
                 this.canMatchmake = true;
                 this.pendingVisitRequest = null;
                 break;
@@ -953,7 +953,7 @@ export class MultiplayerController extends Subject{
                 this.cancelIslandVisitRequest();
                 event.target.innerText = "Visit Island";
             } else if(this.pendingVisitRequest) { // send a different request + cancel the current one
-                const friendElement = this.friendsMenu.querySelector(`#friend-${this.pendingVisitRequest}`);
+                const friendElement = this.friendsMenu.Friends.querySelector(`#friend-${this.pendingVisitRequest}`);
                 this.cancelIslandVisitRequest();
                 friendElement.querySelector(".View-Island").innerText = "Visit Island";
                 await this.requestIslandVisit(userId);
@@ -1171,7 +1171,7 @@ export class MultiplayerController extends Subject{
                 notificationButtonsContainer.appendChild(rejectButton);
                 break;
         }
-        this.friendsMenu.querySelector("#listRequests").appendChild(notification);
+        this.friendsMenu.Friends.querySelector("#listRequests").appendChild(notification);
     }
 
     /**
