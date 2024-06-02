@@ -55,12 +55,16 @@ export class ItemManager {
     startGemProduction(params){
         let fortune = 0;
         for (const key in params){
-            fortune = fortune + params[key].getStats().get("fortune");
+            if (typeof params[key].getStats().get("fortune") !== "undefined"){
+                if ('lastCollected' in params[key]){
+                    fortune += params[key].getStats().get("fortune");
+                }
+            }
         }
         console.log("fortune: " + fortune);
         this.interval = setInterval(() => {
             console.log("creating gem");
-            this.createGem(Math.floor(3));
+            this.createGem(Math.floor(fortune));
         }, gemProductionInterval*1000);
     }
 
