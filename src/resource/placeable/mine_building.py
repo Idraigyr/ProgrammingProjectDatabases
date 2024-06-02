@@ -4,7 +4,7 @@ from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
 
-from src.model.placeable.buildings import MineBuilding
+from src.model.placeable.mine_building import MineBuilding
 from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.gems import GemSchema
 from src.resource.placeable.building import BuildingSchema

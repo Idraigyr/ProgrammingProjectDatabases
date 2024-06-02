@@ -59,7 +59,9 @@ export const minionSpeedMultiplier = 200;
 //-- Gems --//
 export const powerScaling = 0.5;
 
-export const fusionTime = 2;
+export const fusionTime = 20;
+
+export const gemProductionInterval = 10;
 
 //-- multiplayer --//
 export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?

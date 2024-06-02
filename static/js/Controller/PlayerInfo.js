@@ -35,8 +35,6 @@ export class PlayerInfo extends Subject{
 
         this.maxGemAttribute = 2;
 
-        this.maxBuildings = 2;
-
         this.level = 1;
         this.experience = 0;
         this.xpThreshold = 50;
@@ -427,6 +425,7 @@ export class PlayerInfo extends Subject{
             this.buildingsThreshold["Mine"] = Level[this.level]["Mine"];
             this.buildingsThreshold["FusionTable"] = Level[this.level]["FusionTable"];
             this.availableSpells = Level[this.level]["Spells"];
+            this.buildingProgress= Level[this.level]["BuildingProgress"];
             this.dispatchEvent(this.createUpdateManaEvent());
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -461,7 +460,7 @@ export class PlayerInfo extends Subject{
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.setLevelStats();
         this.buildings();
-        popUp(this.level, this.maxMana, this.maxHealth, this.builds, this.availableSpells);
+        popUp(this.level, this.maxMana, this.maxHealth, this.builds, this.availableSpells, this.buildingProgress);
         this.updatePlayerInfoBackend();
         return true;
     }

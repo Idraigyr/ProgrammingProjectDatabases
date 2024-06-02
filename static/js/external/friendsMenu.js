@@ -1,12 +1,12 @@
 import * as AllFriends from "./Friends.js"
+import {userId} from "./ChatNamespace.js"
 import {getFriendRequestStatus} from "./Friends.js";
+import {addFriendNotification, removeFriendNotification} from "./LevelUp.js";
 
 export class FriendsMenu {
 
     constructor() {
         this.friendsButton = document.getElementById("friends-button");
-
-        this.notificationCount = document.getElementById("notification-count");
 
         this.Friends = document.getElementById("Friends");
 
@@ -35,6 +35,9 @@ export class FriendsMenu {
 
         this.requests = [];
 
+        this.initial = true;
+
+
         this.inMatch = false;
 
         this.forwardingNameSpace = null;
@@ -61,6 +64,7 @@ export class FriendsMenu {
                 this.Friends.style.display = "none";
                 this.addFriendButton.style.display = "none";
                 this.listFriendButton.style.display = "none";
+                this.addFriend.style.display = "none";
                 this.requestFriendButton.style.display = "none";
             } else {
                 this.FriendList.style.display = "none";
@@ -69,6 +73,7 @@ export class FriendsMenu {
                 this.addFriendButton.style.display = "block";
                 this.listFriendButton.style.display = "block"
                 this.requestFriendButton.style.display = "block";
+                this.addFriend.style.display = "none";
                 this.FriendList.style.display = "block";
                 this.listRequest.style.display = "none";
             }
@@ -99,6 +104,7 @@ export class FriendsMenu {
         this.usernameExist.style.display = "none";
         let exists = false;
         await AllFriends.setPlayerList();
+        await this.updateRequests();
         for (let player of AllFriends.playerList) {
             if (player.username === this.usernameFriend.value.trim()) {
                 exists = true;
@@ -112,8 +118,15 @@ export class FriendsMenu {
                 break;
             }
         }
-
-        if (exists && !requestExists) {
+        let friendsExists = false;
+        for (let friend of this.friends)
+        {
+            if(await AllFriends.getPlayerUsername(friend) === this.usernameFriend.value.trim()){
+                friendsExists = true;
+                break;
+            }
+        }
+        if (exists && !requestExists && !friendsExists) {
             let receiver_id = await AllFriends.getPlayerID(this.usernameFriend.value.trim());
             AllFriends.sendRequest(receiver_id);
             this.usernameFriend.value = '';
@@ -123,6 +136,10 @@ export class FriendsMenu {
             this.usernameExist.style.display = "block";
             this.usernameFriend.value = '';
 
+        } else if(friendsExists){
+            this.usernameExist.innerHTML = `Friend already exists.`;
+            this.usernameExist.style.display = "block";
+            this.usernameFriend.value = '';
         }
         else {
             this.usernameFriend.value = '';
@@ -179,9 +196,15 @@ export class FriendsMenu {
         if (this.requests.length !== tempRequests.length){
             const unique = this.findUniqueRequests(this.requests, tempRequests);
             for(let r of unique){
-                await this.addRequestMenu(r);
+                await this.addRequest(r);
+                if(this.initial){
+                    addFriendNotification();
+                }
             }
             this.requests = tempRequests;
+            if(this.initial){
+                this.initial = false;
+            }
             return true;
         }
         return false;
@@ -209,7 +232,7 @@ export class FriendsMenu {
         this.listFriend.appendChild(friend);
     }
 
-    async addRequestMenu(request) {
+    async addRequest(request) {
         let status = await AllFriends.getFriendRequestStatus(request.id);
         if (status === "pending") {
             const requestElement = document.createElement('div');
@@ -230,12 +253,15 @@ export class FriendsMenu {
                 await AllFriends.acceptFriendRequest(request.id);
                 await friendsMenu.updateRequests();
                 requestElement.remove();
+                removeFriendNotification();
+                await friendsMenu.populateFriends();
             }
 
             rejectButton.onclick = async function () {
                 await AllFriends.rejectFriendRequest(request.id);
                 console.log("Request rejected, request ID:", request.id);
                 await friendsMenu.updateRequests();
+                removeFriendNotification();
                 requestElement.remove();
             }
 
@@ -247,7 +273,6 @@ export class FriendsMenu {
 
     async updateRequests() {
         this.requests = await AllFriends.getFriendRequests();
-        await this.populateRequests();
     }
     toggleWindowbutton() {
         if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {
@@ -293,4 +318,6 @@ export class FriendsMenu {
 
         return uniqueMaps;
     }
+
+
 }

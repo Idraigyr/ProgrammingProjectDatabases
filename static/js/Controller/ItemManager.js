@@ -1,6 +1,7 @@
 import {Attribute, Gem, Spell} from "../Model/items/Item.js";
 import {API_URL, gemAttributesURI, gemURI, postRetries, spellListURI} from "../configs/EndpointConfigs.js";
 import {minTotalPowerForStakes, powerScaling} from "../configs/ControllerConfigs.js";
+import {gemProductionInterval} from "../configs/ControllerConfigs.js";
 import {gemTypes} from "../configs/Enums.js";
 import {spellTypes} from "../Model/Spell.js";
 
@@ -19,6 +20,8 @@ export class ItemManager {
         this.playerInfo = params.playerInfo;
         this.menuManager = params.menuManager;
         this.dbRequests = [];
+        this.interval = 10;
+
 
         this.persistent = true;
     }
@@ -47,6 +50,22 @@ export class ItemManager {
         } else {
             throw new Error("Could not retrieve spells");
         }
+    }
+
+    startGemProduction(params){
+        let fortune = 0;
+        for (const key in params){
+            fortune = fortune + params[key].getStats().get("fortune");
+        }
+        console.log("fortune: " + fortune);
+        this.interval = setInterval(() => {
+            console.log("creating gem");
+            this.createGem(Math.floor(3));
+        }, gemProductionInterval*1000);
+    }
+
+    stopGemProduction(){
+        clearInterval(this.interval);
     }
 
     /**

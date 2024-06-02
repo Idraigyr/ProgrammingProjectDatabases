@@ -10,6 +10,9 @@ from src.swagger_patches import Schema, summary
 
 
 class PlayerStatsSchema(Schema):
+    """
+    JSON Schema for the player statistics
+    """
 
     properties = {
         'player_id': {

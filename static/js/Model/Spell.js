@@ -253,6 +253,12 @@ class ConcreteSpell{
         this.effects.filter((effect) => !effect.damage).forEach((effect) => effect.apply(target));
 
     }
+
+    /**
+     * update the spell attributes
+     * @param params
+     */
+    updateSpell(params){}
 }
 
 /**
@@ -305,6 +311,20 @@ export class Fireball extends ConcreteSpell{
         this.name = "fireball";
         this.cost = 5;
     }
+
+    /**
+     * update the spell attributes
+     * @param params
+     */
+    updateSpell(params) {
+        this.spell.duration = params.duration;
+        this.spell.cooldown = params.cooldown;
+        this.spell.cost = params.cost;
+        this.spell.castTime = params.castTime;
+        this.spell.velocity = params.velocity;
+        this.spell.fallOf = params.fallOf;
+        this.effects[0].damage = params.damage;
+    }
 }
 
 /**
@@ -327,6 +347,17 @@ export class IceWall extends ConcreteSpell{
         this.previewRotates = true;
         this.worldHitScan = true;
         this.cost = 20;
+    }
+
+    /**
+     * update the spell attributes
+     * @param params
+     */
+    updateSpell(params) {
+        this.spell.duration = params.duration;
+        this.spell.cooldown = params.cooldown;
+        this.spell.cost = params.cost;
+        this.spell.castTime = params.castTime;
     }
 }
 
@@ -364,6 +395,19 @@ export class ThunderCloud extends ConcreteSpell{
         this.worldHitScan = true;
         this.cost = 20;
     }
+
+    /**
+     * update the spell attributes
+     * @param params
+     */
+
+    updateSpell(params) {
+        this.spell.duration = params.duration;
+        this.spell.cooldown = params.cooldown;
+        this.spell.cost = params.cost;
+        this.spell.castTime = params.castTime;
+        this.effects[0].damage = params.damage;
+    }
 }
 
 /**
@@ -384,6 +428,14 @@ export class Shield extends ConcreteSpell{
         });
         this.cost = 15;
         this.name = "shield";
+    }
+
+    updateSpell(params) {
+        this.spell.duration = params.duration;
+        this.spell.cooldown = params.cooldown;
+        this.spell.cost = params.cost;
+        this.spell.castTime = params.castTime;
+        this.effects[0].damage = params.damage;
     }
 }
 

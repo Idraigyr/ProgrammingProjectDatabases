@@ -1,5 +1,5 @@
 import {Model} from "../Model/ModelNamespace.js";
-import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI, fuseTaskURI} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
 import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
 import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
@@ -10,6 +10,7 @@ import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
 import {printFoundationGrid} from "../helpers.js";
+import {alertPopUp} from "../external/LevelUp.js";
 
 
 /**
@@ -409,6 +410,9 @@ export class WorldManager{
         if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
             console.log("Cannot place");
         }
+        else if(this.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+            alertPopUp("Maximum Buildings in process reached.")
+        }
         else {
             if(!this.cheats){
                 const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
@@ -445,7 +449,7 @@ export class WorldManager{
 
     /**
      * Create a new task to fuse a gem
-     * @param params {{timeInSeconds: number, buildingID: number}}
+     * @param params {{timeInSeconds: number, buildingID: number, crystal_amount: number}}
      * @returns {Promise<void>} - a promise that resolves when the task has been created
      */
     async createFuseTask(params){
@@ -461,9 +465,9 @@ export class WorldManager{
             let formattedDate = time.slice(0, 19);
             // TODO: change uri + add crystal_amount to JSON.stringify
             const result = await $.ajax({
-                url: `${API_URL}/${taskURI}`,
+                url: `${API_URL}/${fuseTaskURI}`,
                 type: "POST",
-                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID}),
+                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID, crystal_amount: params.crystal_amount}),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -853,7 +857,17 @@ export class WorldManager{
             console.error(err);
         }
     }
+
+    /**
+     * Checks for buildings in progress
+     * @return {number} Total number of buildings in progress
+     */
     checkBuildingsInProgress() {
+        let progress = 0;
+        for(let i = 0; i < this.world.islands[0].buildings.length; i++){
+            if(this.world.islands[0].buildings[i].ready === false) progress++;
+        }
+        return progress
 
     }
 

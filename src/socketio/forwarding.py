@@ -19,6 +19,15 @@ MATCH_TIME: int = 10*60  # 10 minutes
 
 
 class ForwardingNamespace(Namespace):
+    """
+    The forwarding namespace is a Peer-to-Peer namespace that forwards messages between clients.
+    It is the core of the multiplayer (competitive and friend visiting) functionality.
+
+    Unlike the rest of the application, this class is inherently stateful, as it needs to keep track of the clients,
+    the matches and the players that are currently playing.
+    This should not be an issue as it is clearly stated that only a single, global instance of the websocket server should
+    exist. Note that this class is NOT thread-safe, as it is not designed to be used in a multi-threaded environment.
+    """
 
     def __init__(self, namespace, app):
         super().__init__(namespace)
@@ -29,6 +38,11 @@ class ForwardingNamespace(Namespace):
         self.app = app
 
     def get_user_from_sid(self, sid):
+        """
+        Get the user_id from the socketio session id
+        :param sid:
+        :return:
+        """
         for user_id, current_sid in self.clients.items():
             if sid == current_sid:
                 return user_id

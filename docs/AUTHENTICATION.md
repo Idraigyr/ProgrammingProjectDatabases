@@ -7,6 +7,7 @@
 - `/login` - Login page: this is the login page. It is only accessible when the user is not logged in. When the user is logged in, the user is redirected to the index page.
 - `/logout` - Logout page: this is the logout page. It simply unsets the `access_token_cookie` cookie.
 - `/landing` - Landing page: this is the landing page. It is always accessible and is the first page the user sees when accessing the application. It contains a brief description of the application and a link to the register page.
+- `/password-reset` - Password reset page: this is the password reset page. It is only accessible when the user is not logged in. When the user is logged in, the user is redirected to the index page.
 
 ### JSON-Web-Tokens (JWT)
 The application uses the stateless JSON-Web-Tokens for user authentication. The inner functions are primarly managed by the `flask_jwt_extended` package. 
@@ -24,6 +25,13 @@ The `user` role is the default and has access to all api endpoints, but is limit
 The tokens are stored as a `http-only` `access_token_cookie` cookie. The cookie is only valid for the domain of the site (as per default cookie behaviour).
 A token is valid for 1 hour by default, but can be changed through the `APP_JWT_TOKEN_EXPIRE` env variable.
 The token is automatically refreshed if the user makes a new request 30 minutes before the token is about to expire.  
+
+### User Profile Permissions
+Across all API endpoint a data ownership check is performed. This means that a user can only create (POST), modify (PUT) or delete (DELETE) data that is owned by the user.
+A user can only see (GET) data that is not owned by him. This is done by checking the `user_id` field of the owning entity against the JWT identity that the invoking user uses to authenticate in the first place.
+Violations of this rule will result in a `403 Forbidden` response.
+
+Please refer to the individual API endpoint documentation for more information on the permissions of each endpoint.
 
 ### Password-based authentication
 #### Registration
@@ -50,7 +58,7 @@ When using the frontend, the user is automatically redirected to the index page,
 **Note**: There is NO CSRF protection in the entire application. This would otherwise complicate the use of the application even more and is beyond the scope of this project.
 When implementing CSRF protection for the JWT cookie, please refer to [this page](https://flask-jwt-extended.readthedocs.io/en/stable/token_locations.html#cookies).
 
-### OAuth2
+### OAuth2 based authentication
 The app currently supports the OAuth2 protocol for external authentication. The current design works for Google login, but should be usable for any OAuth2 complient provider (slight modifications may or may not be required).
 For more information about the workings of the OAuth2 protocol & implementation, see the [oauthlib documentation](https://oauthlib.readthedocs.io/en/latest/).
 
