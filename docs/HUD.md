@@ -76,7 +76,9 @@ this button, the game goes fullscreen, as it would when you press F11. This is s
 There is also the help button, which opens a help menu. This menu displays aims to help the player with the game, and contains
 information about the game, the controls, the spells, etc. This menu also features images to make it more visually appealing and clear, 
 as wel as an image with the default layout of the keybinds marked on a keyboard. This menu was partially made by converting the 
-`USER_MANUAL.md` file to html, and then adding some extra styling and changing the text a bit. The last button is the 'delete account' button.
+`USER_MANUAL.md` file to html, and then adding some extra styling and changing the text a bit. It also includes an overview of everything you unlock and at which level, 
+which gets dynamically made based on the config file, so it doesn't need to be changed when the levels get balanced differently.
+The last button is the 'delete account' button.
 When the player clicks this button, the player is asked to confirm the deletion of the account. When the player confirms, the account is permanently
 deleted from the database. This is done by sending a `DELETE` request to the `/api/user_profile` endpoint. 
 The player is then redirected to the landing page.
