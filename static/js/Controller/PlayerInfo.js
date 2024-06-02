@@ -35,8 +35,6 @@ export class PlayerInfo extends Subject{
 
         this.maxGemAttribute = 2;
 
-        this.maxBuildings = 2;
-
         this.level = 1;
         this.experience = 0;
         this.xpThreshold = 50;
@@ -157,8 +155,7 @@ export class PlayerInfo extends Subject{
             this.experience = response.xp
             this.mana = response?.mana
             // this.mana += this.calculateManaBonus();
-            this.health += this.calculateHealthBonus();
-
+            this.maxHealth += this.calculateHealthBonus();
             this.playerPosition.x = response?.entity?.x ?? playerSpawn.x;
             this.playerPosition.y = response?.entity?.y ?? playerSpawn.y;
             this.playerPosition.z = response?.entity?.z ?? playerSpawn.z;
@@ -233,7 +230,7 @@ export class PlayerInfo extends Subject{
      * @returns {number} - Health bonus
      */
     calculateHealthBonus(){
-        return Math.min(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
+        return Math.max(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
     }
 
     isPlayerLoggedIn(){
@@ -399,8 +396,8 @@ export class PlayerInfo extends Subject{
      * @returns {boolean} - True if the experience was changed, false otherwise
      */
     changeXP(amount){
-        if(!amount) throw new Error("playerInfo.changeXP: amount is not defined");
-        if(amount < 0 && Math.abs(amount) > this.experience) return false;
+        if(!Number.isFinite(amount)) throw new Error("playerInfo.changeXP: amount is not defined");
+        if(amount <= 0 && Math.abs(amount) > this.experience) return false;
         if(amount + this.experience >= this.xpThreshold){
             var oldThreshold = this.xpThreshold
             this.changeLevel(0,true);
@@ -428,6 +425,7 @@ export class PlayerInfo extends Subject{
             this.buildingsThreshold["Mine"] = Level[this.level]["Mine"];
             this.buildingsThreshold["FusionTable"] = Level[this.level]["FusionTable"];
             this.availableSpells = Level[this.level]["Spells"];
+            this.buildingProgress= Level[this.level]["BuildingProgress"];
             this.dispatchEvent(this.createUpdateManaEvent());
             this.dispatchEvent(this.createUpdateHealthEvent());
             this.dispatchEvent(this.createUpdateXpEvent());
@@ -462,7 +460,7 @@ export class PlayerInfo extends Subject{
         this.dispatchEvent(this.createUpdateLevelEvent());
         this.setLevelStats();
         this.buildings();
-        popUp(this.level, this.maxMana, this.maxHealth, this.builds, this.availableSpells);
+        popUp(this.level, this.maxMana, this.maxHealth, this.builds, this.availableSpells, this.buildingProgress);
         this.updatePlayerInfoBackend();
         return true;
     }

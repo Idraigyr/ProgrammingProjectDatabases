@@ -21,17 +21,6 @@ blueprint = Blueprint('api_auth', __name__)
 db = current_app.db
 _log = logging.getLogger(__name__)
 
-# Disable JWT if not enabled, JWT is enabled by default
-# We override the jwt_required decorator to be a no-op
-# We also override the get_jwt_identity function to return the default user
-if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
-    jwt_required = lambda *args, **kwargs: lambda x: x  # no-op decorator
-    def f():
-        # When JWT is disabled, return the default user (id=0)
-        return AUTH_SERVICE.get_user(user_id=1)
-    get_jwt_identity = f
-
-
 @blueprint.route("/register", methods=['POST'])
 def register():
     """

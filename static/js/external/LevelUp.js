@@ -6,8 +6,9 @@ import {API_URL} from "../configs/EndpointConfigs.js";
  * @param maxHealth maximum health of the player
  * @param buildings
  * @param Spells
+ * @param buildingsProgress
  */
-export function popUp(level, maxMana, maxHealth, buildings, Spells){ //TODO: rewrite this make it more general
+export function popUp(level, maxMana, maxHealth, buildings, Spells, buildingsProgress){ //TODO: rewrite this make it more general
 
     let modal = document.getElementById("LevelUp");
     let levelContent = document.getElementById("LevelPopupContent");
@@ -50,7 +51,8 @@ export function popUp(level, maxMana, maxHealth, buildings, Spells){ //TODO: rew
         levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
             MaxHealth: ${maxHealth} <br>
             Buildings: ${arrayStringConverter(buildings)} <br>
-            Spells: ${arrayStringConverter(Spells)}
+            Spells: ${arrayStringConverter(Spells)} <br>
+            Building in Progress: ${buildingsProgress}
         `;
         detailsContent.appendChild(levelDetails);
         detailsInfo.style.display = "block";
@@ -118,4 +120,26 @@ export function alertPopUp(message, duration = 3000, updateInterval = 10){
         timeBar.style.width = "100%";
         clearInterval(interval);
     }, duration);
+}
+
+/**
+ * Add notification for friendRequest
+ */
+export function addFriendNotification(){
+    let notificationContainer = document.getElementById("friends-notification-container");
+    const notificationCount = notificationContainer.querySelector(".notification-count");
+    notificationCount.innerText = parseInt(notificationCount.innerText) + 1;
+    notificationContainer.style.display = "block";
+}
+
+/**
+ * callback to subtract a notification from the notification bell (and make it disappear if there are no notifications left)
+ */
+export function removeFriendNotification(){
+    let notificationContainer = document.getElementById("friends-notification-container");
+    const notificationCount = notificationContainer.querySelector(".notification-count");
+    const newCount = parseInt(notificationCount.innerText) - 1;
+    if(newCount < 0) throw new Error("notification count cannot be negative");
+    notificationCount.innerText = newCount;
+    if(newCount === 0) notificationContainer.style.display = "none";
 }

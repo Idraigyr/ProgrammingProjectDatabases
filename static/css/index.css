@@ -916,6 +916,14 @@
     justify-content: start;
     align-items: center;
     gap: 10px;
+
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.unlocked-menu-item{
+    opacity: 1;
+    pointer-events: all;
 }
 
 .menu-item-icon{
@@ -996,9 +1004,11 @@
     scrollbar-width: thin;
 }
 
+
 .settings-menu > .close-button-container{
     display: flex;
     justify-content: flex-end;
+    position: fixed;
 }
 .close-setting {
     left: 10px;
@@ -1007,6 +1017,61 @@
 .borderless{
     border: none;
 }
+
+.help-container{
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: Surabasa, sans-serif;
+}
+
+.help-menu {
+    padding: 10px;
+    position: relative;
+    top: 20px;
+    max-width: 800px;
+    bottom: 20px;
+    background-color: #f9f3d2;
+    border: 2px solid #0f172a;
+    border-radius: 10px;
+    z-index: 8;
+
+    overflow-x: hidden;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-gutter: stable;
+}
+
+.help-menu:hover{
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-color: #67604e #1d1d21;
+    scrollbar-width: thin;
+}
+
+.help:hover{
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-color: #67604e #1d1d21;
+    scrollbar-width: thin;
+}
+
+.help-menu > .close-button-container{
+    display: flex;
+    justify-content: flex-end;
+    position: fixed;
+}
+.help-menu img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
 .hide{
     display: none
 }
@@ -2198,26 +2263,25 @@ body {
 }
 
 
-
 .ManaAmount {
     font-family: Surabasa, sans-serif; /* Assigning font */
     font-size: 3vh; /* Font size */
     color: #b0c5d9; /* Text color */
-    position: absolute; /* Relative positioning */
     bottom: 4%;
     right: 27.7%;
+    position: absolute;
+
 
 
 }
 
 .HealthAmount {
     font-family: Surabasa, sans-serif; /* Assigning font */
-    font-size: 3vh; /* Font size */
     color: #d3a4a4; /* Text color */
-    position: absolute; /* Relative positioning */
     bottom: 4%;
     left: 27.7%;
-
+    font-size: 3vh; /* Font size */
+     position: absolute;
 
 }
 
@@ -2265,6 +2329,7 @@ body {
 .item:active  {
     content: url('../assets/images/buttons/Button_Blue_9Slides_Pressed.png');
 }
+
 
 .HotBar {
     display: flex;
@@ -2891,19 +2956,53 @@ a[data-tooltip][data-placement="right"]::after {
     color: #333; /* Dark grey text color */
     box-sizing: border-box;
     width: 100%;
-    height: 1%;
+    height: 50px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 
 }
 
+.friend-username{
+    width: fit-content;
+    text-align: center;
+    padding-right: 10px;
+}
+
+.friend-filler{
+    flex-grow: 10;
+}
+
+.online-indicator{
+    position: relative;
+    width: 10px;
+    height: 10px;
+    background-color: #ff0000;
+    border: 2px solid #000;
+    border-radius: 50%;
+}
+
+.online-indicator.online{
+    background-color: #00ff00;
+}
+
+.online-indicator.in-match{
+    background-color: #ffb700;
+}
+
 .View-Island{
-    transform: translateY(-45%); /* Center it vertically */
-    transform: translateX(300%);
     width: 20%; /* Set a specific width */
-    height: 5%; /* Set a specific height */
     background-color: white; /* Visibility */
     padding: 10px;
     text-align: center;
     border-color: black;
+    pointer-events: none;
+    filter: brightness(50%);
+}
+
+.View-Island.enabled {
+    pointer-events: all;
+    filter: brightness(100%);
 }
 
 .Request-List{
@@ -2965,3 +3064,6 @@ a[data-tooltip][data-placement="right"]::after {
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
+
+
+

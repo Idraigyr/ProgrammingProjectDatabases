@@ -12,7 +12,13 @@ export let Level  = {
         FusionTable: 0,
         crystalStatue: 0,
         goldenStatue: 0,
-        Spells: ['BuildSpell'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': false,
+            'Shield': false,
+            'IceWall': false,
+            'ThunderCloud': false
+        },
         BuildingProgress: 1
     },
     2: {
@@ -26,7 +32,13 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 2,
         FusionTable: 0,
-        Spells: ['BuildSpell'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': false,
+            'Shield': false,
+            'IceWall': false,
+            'ThunderCloud': false
+        },
         BuildingProgress: 1
     },
     3: {
@@ -40,7 +52,13 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 2,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': false,
+            'IceWall': false,
+            'ThunderCloud': false
+        },
         BuildingProgress: 1
     },
     4: {
@@ -54,7 +72,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 2,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': false,
+            'IceWall': false,
+            'ThunderCloud': false
+        },
         BuildingProgress: 1
     },
     5: {
@@ -68,7 +92,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': false,
+            'IceWall': false,
+            'ThunderCloud': false
+        },
         BuildingProgress: 2
     },
     6: {
@@ -82,7 +112,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': false,
+            'ThunderCloud': false
+        },
         BuildingProgress: 2
     },
     7: {
@@ -96,7 +132,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 3,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': false
+        },
         BuildingProgress: 2
     },
     8: {
@@ -110,7 +152,13 @@ export let Level  = {
         WarriorHut: 1,
         Mine: 4,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': false
+        },
         BuildingProgress: 2
     },
     9: {
@@ -124,7 +172,13 @@ export let Level  = {
         WarriorHut: 2,
         Mine: 4,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
     },
     10: {
@@ -138,7 +192,13 @@ export let Level  = {
         WarriorHut: 2,
         Mine: 5,
         FusionTable: 1,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
 
     },
@@ -153,7 +213,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
 
     },
@@ -168,7 +234,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
 
     },
@@ -183,7 +255,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
     },
     14: {
@@ -197,7 +275,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
     },
     15: {
@@ -211,7 +295,13 @@ export let Level  = {
         WarriorHut: 3,
         Mine: 5,
         FusionTable: 2,
-        Spells: ['BuildSpell','Fireball','Shield','IceWall','ThunderCloud'],
+        Spells: {
+            'BuildSpell': true,
+            'Fireball': true,
+            'Shield': true,
+            'IceWall': true,
+            'ThunderCloud': true
+        },
         BuildingProgress: 2
     }
 };

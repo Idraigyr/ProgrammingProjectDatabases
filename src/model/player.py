@@ -156,6 +156,9 @@ class Player(current_app.db.Model):
 
 
 class PlayerSpellAssociation(current_app.db.Model):
+    """
+    Represents the relationship between a player and a spell with a slot as relationship attribute
+    """
     __tablename__ = 'player_spells'
 
     player_id: Mapped[int] = Column(Integer, ForeignKey('player.user_profile_id', ondelete='CASCADE'), primary_key=True)

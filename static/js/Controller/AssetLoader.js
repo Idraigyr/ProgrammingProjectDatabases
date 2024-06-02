@@ -6,7 +6,8 @@ import {DRACOLoader} from "three-DRACOLoader";
 import * as THREE from "three";
 import {getFileExtension, setIndexAttribute} from "../helpers.js";
 import {AnimationMixer} from "three";
-import {shadowCasting} from "../configs/ViewConfigs.js";
+import {shadows} from "../configs/ViewConfigs.js";
+import {loadingScreen} from "./LoadingScreen.js";
 
 /**
  * Class to load assets
@@ -16,9 +17,8 @@ export class AssetLoader{
         //code to update loading screen progress bar via loadingmanager
         this.loadingManager = new THREE.LoadingManager();
         // Use arrow functions or bind `this` to retain the correct context
-        const progressBar = document.getElementById('progress-bar');
         this.loadingManager.onProgress = (url, loaded, total) => {
-            progressBar.value = (loaded / total) * 60 + 10;
+            loadingScreen.setValue((loaded / total) * 70);
         };
         this.logLoading = false;
     }
@@ -65,7 +65,7 @@ export class AssetLoader{
             charModel = gltf.scene;
             charModel.traverse(c => {
                 c.castShadow = true;
-                if(shadowCasting) c.receiveShadow = true;
+                if(shadows.shadowCasting) c.receiveShadow = true;
             });
             if(gltf.animations.length > 0){
                 animations = gltf.animations;
@@ -96,7 +96,7 @@ export class AssetLoader{
                     setIndexAttribute(c.geometry);
                 }
                 c.castShadow = true;
-                if(shadowCasting) c.receiveShadow = true;
+                if(shadows.shadowCasting) c.receiveShadow = true;
             });
             if(fbx.animations.length > 0){
                 animations = fbx.animations;

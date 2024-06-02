@@ -17,8 +17,8 @@ import {
 } from "./configs/EndpointConfigs.js";
 import {acceleratedRaycast} from "three-mesh-bvh";
 import {View} from "./View/ViewNamespace.js";
-import {eatingKey, interactKey} from "./configs/Keybinds.js";
-import {shadowCasting, gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
+import {keyBinds} from "./configs/Keybinds.js";
+import {shadows, gridCellSize, minCharCount} from "./configs/ViewConfigs.js";
 import {buildTypes, gemTypes} from "./configs/Enums.js";
 import {ChatNamespace} from "./external/ChatNamespace.js";
 import {ForwardingNameSpace} from "./Controller/ForwardingNameSpace.js";
@@ -27,6 +27,10 @@ import {Cursor} from "./Controller/Cursor.js";
 import {spellTypes} from "./Model/Spell.js";
 import {Altar} from "./View/Buildings/Altar.js";
 import {Mine} from "./Model/Entities/Buildings/Mine.js";
+import {loadingScreen} from "./Controller/LoadingScreen.js";
+import {maxThunderClouds} from "./configs/SpellConfigs.js";
+import {alertPopUp} from "./external/LevelUp.js";
+import * as SpellConfigs from "./configs/SpellConfigs.js"
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 const canvas = document.getElementById("canvas");
@@ -76,11 +80,6 @@ class App {
 
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setPixelRatio(window.devicePixelRatio); // improve picture quality
-
-        if(shadowCasting){
-            this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            this.renderer.shadowMap.enabled = true;
-        }
 
         this.deltaTime = 0; // time between updates in seconds
         this.blockedInput = true;
@@ -166,10 +165,10 @@ class App {
             }
         });
 
-        /*TODO: look and see
-        this.settings = new Settings({inputManager: this.inputManager, playerInfo: this.playerInfo, worldManager: this.worldManager});
-        this.multiplayerController.settings = this.settings;
-        */
+
+
+
+
         this.menuManager = new Controller.MenuManager({
             container: document.querySelector("#menuContainer"),
             blockInputCallback: {
@@ -195,6 +194,8 @@ class App {
         this.chatNameSpace = new ChatNamespace(this);
         this.forwardingNameSpace = new ForwardingNameSpace();
 
+        this.friendsMenu.setForwardingNameSpace(this.forwardingNameSpace);
+
         // setup abort signal for when the player is already connected
         this.forwardingNameSpace.addEventListener("abort", () => {
             this.abort = true;
@@ -211,7 +212,7 @@ class App {
 
         this.inputManager.addMouseDownListener(this.spellCaster.onLeftClickDown.bind(this.spellCaster), "left");
         this.inputManager.addMouseDownListener(this.spellCaster.onRightClickDown.bind(this.spellCaster), "right");
-        this.inputManager.addKeyDownEventListener(interactKey, this.spellCaster.interact.bind(this.spellCaster));
+        this.inputManager.addKeyDownEventListener(keyBinds.interactKey, this.spellCaster.interact.bind(this.spellCaster));
         // this.inputManager.addKeyDownEventListener(subSpellKey, this.spellCaster.activateSubSpell.bind(this.spellCaster));
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
@@ -219,7 +220,6 @@ class App {
             console.log("Mining gem");
             const gem = this.itemManager.createGem((3));
         });
-
         this.menuManager.addEventListener("startFusion", async (event) => {
             const fusionTable = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             const fusionLevel = fusionTable.level;
@@ -228,6 +228,7 @@ class App {
             fusionTable.resetInputCrystals();
             let speed = stats.get("speed");
             let fortune = stats.get("fortune");
+            this.playerInfo.changeXP(2 * inputCrystals);
             console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
             // Send post request to create new task TODO: connect this to the new Thomas' code
             const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: inputCrystals});
@@ -252,9 +253,14 @@ class App {
         this.menuManager.addEventListener("lvlUp", async (event) => {
             const building = this.worldManager.world.getBuildingByPosition(this.worldManager.currentPos);
             if(this.playerInfo.crystals < building?.upgradeCost) return;
+            if(this.worldManager.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+                alertPopUp("Maximum Buildings in process reached.")
+                return
+            }
             this.playerInfo.changeCrystals(-building.upgradeCost);
             await this.playerInfo.createLevelUpTask(building);
             building.startUpgrade();
+            this.playerInfo.changeXP(150);
             this.menuManager.exitMenu();
         });
         this.menuManager.addEventListener("delete", async (event) =>{
@@ -286,7 +292,32 @@ class App {
             const spells = []
             for(let i = 0; i < 5; i++){
                 let spell = null;
-                if(event.detail.spellIds[i]) spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                if(event.detail.spellIds[i]){
+                    spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
+                    switch (spell){
+                        case "Fireball":
+                            spell.updateSpell(SpellConfigs.Fireball(this.playerInfo.level));
+                            break;
+                        case "ThunderCloud":
+                            spell.updateSpell(SpellConfigs.ThunderCloud(this.playerInfo.level));
+                            break;
+                        case "IceWall":
+                            spell.updateSpell(SpellConfigs.IceWall(this.playerInfo.level));
+                            break;
+                        case "Shield":
+                            spell.updateSpell(SpellConfigs.Shield(this.playerInfo.level));
+                            break;
+                        case "Heal":
+                            spell.updateSpell(SpellConfigs.Heal(this.playerInfo.level));
+                            break;
+                        case "Zap":
+                            spell.updateSpell(SpellConfigs.Zap(this.playerInfo.level));
+                            break;
+                        case "BuildSpell":
+                            spell.updateSpell(SpellConfigs.BuildSpell(this.playerInfo.level));
+                            break;
+                    }
+                }
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
                 if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
             }
@@ -406,6 +437,8 @@ class App {
                     });
                 }
             }
+            this.itemManager.stopGemProduction();
+            this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
@@ -465,7 +498,8 @@ class App {
             handleMatchEnd: this.multiplayerController.endMatch.bind(this.multiplayerController),
             processReceivedState: this.multiplayerController.processReceivedState.bind(this.multiplayerController),
             updateMatchTimer: this.multiplayerController.updateMatchTimer.bind(this.multiplayerController),
-            processIslandVisitEvent: this.multiplayerController.processIslandVisitEvent.bind(this.multiplayerController)
+            processIslandVisitEvent: this.multiplayerController.processIslandVisitEvent.bind(this.multiplayerController),
+            processOnlineStatus: this.friendsMenu.setOnlineIndicator.bind(this.friendsMenu)
         });
 
         //visualise camera line -- DEBUG STATEMENTS --
@@ -532,23 +566,38 @@ class App {
      */
     async loadAssets(){
         console.log( await this.playerInfo.getCurrentTime());
-        const progressBar = document.getElementById('progress-bar');
         //TODO: try to remove awaits? what can we complete in parallel?
-        progressBar.labels[0].innerText = "retrieving user info...";
+        await loadingScreen.setText("retrieving user info...");
         await this.playerInfo.retrieveInfo();
 
         if(this.abort) return false;
 
-        progressBar.value = 10;
-        progressBar.labels[0].innerText = "loading assets...";
+        await loadingScreen.setValue(10);
+        await loadingScreen.setText("loading assets...");
         this.settings.loadCursors();
+        await this.settings.getSettings().then(
+            (performance) => {
+                if(performance === 2){
+                    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+                    this.renderer.shadowMap.enabled = true;
+                }
+            }
+        );
+
         await this.assetManager.loadViews();
         this.assetManager.createTimerViews(minCharCount, "SurabanglusFont", this.scene);
+        this.spellFactory.thunderCloudPool = new View.ThunderCloudPool({
+            texture: this.assetManager.getAsset("cloud"),
+            length: maxThunderClouds,
+            scene: this.scene
+        });
 
         if(this.abort) return false;
 
         // Load info for building menu. May be extended to other menus
         await this.menuManager.fetchInfoFromDatabase();
+
+        await this.friendsMenu.populateRequests();
 
         if(this.abort) return false;
 
@@ -560,26 +609,26 @@ class App {
         this.itemManager.createGemModels(this.playerInfo.gems);
         this.menuManager.createMenus();
         this.menuManager.addItems(this.itemManager.getGemsViewParams());
-        progressBar.value = 80;
+        await loadingScreen.setValue(70);
+        await loadingScreen.setText("loading world...");
         //TODO: create menuItems for loaded in items, buildings that can be placed and all spells (unlocked and locked)
-        progressBar.labels[0].innerText = "loading world...";
         this.worldManager = new Controller.WorldManager({factory: this.factory, spellFactory: this.spellFactory, collisionDetector: this.collisionDetector, playerInfo: this.playerInfo, itemManager: this.itemManager});
-        /* TODO: look and see
-        this.settings.worldManager = this.worldManager;
-        */
+
+        this.settings.addEventListener("grassChange", this.worldManager.toggleGrass.bind(this.worldManager));
         await this.worldManager.importWorld(this.playerInfo.islandID);
         this.worldManager.createPlayer();
+        this.settings.applySettings(true);
 
         if(this.abort) return false;
 
         this.worldManager.world.player.setId({entity: {player_id: this.playerInfo.userID}});
-        progressBar.value = 90;
+        await loadingScreen.setValue(80);
         this.playerController = new CharacterController({
             Character: this.worldManager.world.player,
             InputManager: this.inputManager,
             collisionDetector: this.collisionDetector
         });
-        progressBar.labels[0].innerText = "last touches...";
+        await loadingScreen.setText("connecting the dots...");
         this.inputManager.addMouseMoveListener(this.playerController.updateRotation.bind(this.playerController));
         this.cameraManager.target = this.worldManager.world.player;
         // Crete event to show that the assets are 100% loaded
@@ -587,7 +636,7 @@ class App {
         this.spellCaster.wizard = this.worldManager.world.player;
 
         // this.worldManager.world.player.addEventListener("updateRotation", this.viewManager.spellPreview.updateRotation.bind(this.viewManager.spellPreview));
-        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
+        this.inputManager.addKeyDownEventListener(keyBinds.eatingKey, this.playerController.eat.bind(this.playerController));
         this.playerController.addEventListener("eatingEvent", this.worldManager.updatePlayerStats.bind(this.worldManager));
         this.worldManager.world.player.addEventListener("updateHealth", this.hud.updateHealthBar.bind(this.hud));
         this.worldManager.world.player.addEventListener("changeSpell", this.hud.setSpellIcon.bind(this.hud));
@@ -606,7 +655,7 @@ class App {
         this.worldManager.world.player.addEventListener("updateMana", this.playerInfo.updateMana.bind(this.playerInfo));
         this.worldManager.world.player.addEventListener("updateCooldowns", this.hud.updateCooldowns.bind(this.hud));
         this.worldManager.world.player.addEventListener("updatePosition", this.playerInfo.updatePlayerPosition.bind(this.playerInfo)); //TODO: do this only once on visibility change
-        this.inputManager.addKeyDownEventListener(eatingKey, this.playerController.eat.bind(this.playerController));
+        this.inputManager.addKeyDownEventListener(keyBinds.eatingKey, this.playerController.eat.bind(this.playerController));
 
 
         this.menuManager.addEventListener("collect", this.worldManager.collectCrystals.bind(this.worldManager));
@@ -667,10 +716,11 @@ class App {
 
         if(this.abort) return false;
 
-        progressBar.labels[0].innerText = "Logging in...";
+        await loadingScreen.setValue(90);
+        await loadingScreen.setText("Logging in...");
         await this.playerInfo.login();
-        progressBar.labels[0].innerText = "Last magical touches...";
-        progressBar.value = 95;
+        await loadingScreen.setValue(95);
+        await loadingScreen.setText("sprinkling fairy dust everywhere...");
 
         // IMPORTANT: THIS LINE HAS TO BE CALLED LAST
         this.collisionDetector.generateColliderOnWorker();
@@ -692,7 +742,7 @@ class App {
         dirLight.position.set(-100,50, 100);
         dirLight.castShadow = true;
 
-        if(shadowCasting){
+        if(shadows.shadowCasting){
             //2048, 4096, 8192, 16384
             //Set up shadow properties for the light
             dirLight.shadow.mapSize.width = 8192;
@@ -728,6 +778,9 @@ class App {
 
 
             document.querySelector('.loading-animation').style.display = 'none';
+            if (this.playerInfo.level == 1 && this.playerInfo.experience == 0) {
+                this.settings.toggleHelpMenu();
+            }
             this.togglePhysicsUpdates(true);
             this.update();
         } else {

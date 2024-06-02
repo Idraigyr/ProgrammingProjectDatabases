@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
 from src.resource import add_swagger, clean_dict_input, check_data_ownership
-from src.model.placeable.buildings import FuseTableBuilding
+from src.model.placeable.fuse_table_building import FuseTableBuilding
 from src.resource.placeable.building import BuildingResource, BuildingSchema
 from src.schema import ErrorSchema
 from src.swagger_patches import summary

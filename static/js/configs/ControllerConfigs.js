@@ -9,6 +9,9 @@ export let horizontalSensitivity = 0.25;
 export let verticalSensitivity = 0.15;
 export let zoomSensitivity = 1;
 
+export const sensitivity = { verticalSensitivity,  horizontalSensitivity};
+export const baseHorizontalSensitivity = 0.25;
+export const baseVerticalSensitivity = 0.15;
 export const cameraPosition = {
     offset: {
         x: -5,
@@ -43,6 +46,10 @@ export const playerSpawn = {
     y: 50,
     z: -10
 }
+//-- Volume --//
+export let overalVolume = 50;
+
+export const volume = {overalVolume};
 
 //-- Minions --//
 export const minionAttackRadius = 4;
@@ -53,6 +60,8 @@ export const minionSpeedMultiplier = 200;
 export const powerScaling = 0.5;
 
 export const fusionTime = 20;
+
+export const gemProductionInterval = 10;
 
 //-- multiplayer --//
 export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?

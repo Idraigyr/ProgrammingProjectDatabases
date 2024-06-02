@@ -260,7 +260,7 @@ ___
 ![Asset caching image](/docs/img/index-db.png)
 
 When player logs in for the first time certain 3D-models and images are stored in cache. This makes the process of loading 
-assets faster every time the player opens the game. To store the models we use IndexedDB.
+assets faster because the player does not have to download all assets again. To store the models we use IndexedDB.
 
 
 

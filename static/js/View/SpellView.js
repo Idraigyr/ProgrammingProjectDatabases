@@ -2,7 +2,8 @@ import {IAnimatedView, IView} from "./View.js";
 import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 import {Color} from "three";
-import {iceWall} from "../configs/SpellConfigs.js";
+import * as Spells from "../configs/SpellConfigs.js";
+import {IceWallView} from "../configs/SpellConfigs.js";
 
 /**
  * Fireball view
@@ -61,10 +62,143 @@ export class Fireball extends IView{
     }
 }
 
+class ThunderCloudWrapper{
+    /**
+     * Create a wrapper around + a new thundercloud object
+     * @param {{parent: ThunderCloudPool, texture: THREE.Texture, position: THREE.Vector3}} params
+     */
+    constructor(params) {
+        this.hasUpdates = true;
+        this.parent = params.parent;
+        this.thunderCloud = new ThunderCloud({
+            texture: params.texture,
+        });
+    }
+
+    get charModel(){
+        return this.thunderCloud.charModel;
+    }
+
+    get boundingBox(){
+        return this.thunderCloud.boundingBox;
+    }
+
+    get boxHelper(){
+        return this.thunderCloud.boxHelper;
+    }
+
+    /**
+     * Set position of the thundercloud
+     * @param {THREE.Vector3} position
+     */
+    setPosition(position){
+        this.thunderCloud.updatePosition({detail: {position: position}});
+    }
+
+    /**
+     * Reset thundercloud (remove from scene and set position to 0,0,0)
+     */
+    reset(){
+        this.thunderCloud.charModel.visible = false;
+        // this.setPosition(new THREE.Vector3(0,0,0));
+    }
+
+    /**
+     * see IVIew
+     */
+    updateBoundingBox(){
+        this.thunderCloud.updateBoundingBox();
+    }
+
+    /**
+     * see IVIew
+     * @param event
+     */
+    updatePosition(event){
+        this.thunderCloud.updatePosition(event);
+    }
+
+    /**
+     * see IVIew
+     * @param event
+     */
+    updateRotation(event){
+        this.thunderCloud.updateRotation(event);
+    }
+
+    /**
+     * see IVIew
+     * @param deltaTime
+     * @param camera
+     */
+    update(deltaTime, camera){
+        this.thunderCloud.update(deltaTime, camera);
+    }
+
+    /**
+     * release thundercloud back into the pool
+     */
+    dispose(){
+        this.parent.release(this);
+    }
+}
+
+
+export class ThunderCloudPool{
+    /**
+     * Create thundercloud pool to prevent frame drops when creating new thunderclouds
+     * @param {{texture: THREE.Texture, length: number}} params - length of the pool and texture of the thundercloud
+     * for optimal use, the length should be the maximum number of thunderclouds that will be used at the same time
+     */
+    constructor(params) {
+        this.pool = [];
+        this.length = params.length;
+        this.texture = params.texture;
+        this.scene = params.scene;
+        for(let i = 0; i < this.length; i++){
+            this.pool.push(new ThunderCloudWrapper({
+                parent: this,
+                texture: this.texture
+            }));
+            this.scene.add(this.pool[i].charModel);
+            this.pool[i].charModel.visible = true;
+        }
+    }
+
+    /**
+     * returns a thunderCloudWrapper from the pool or creates a new one if the pool is empty, then sets the position
+     * try to avoid calling this function if the pool is empty since this would defeat the purpose of the pool
+     * @param {THREE.Vector3} position - position that the thundercloud will be placed in
+     * @return {ThunderCloudWrapper}
+     */
+    get(position){
+        if(this.pool.length === 0) {
+            throw new Error("ThunderCloudPool is empty");
+            // this.pool.push(new ThunderCloudWrapper({
+            //     texture: this.texture
+            // }));
+        }
+        const thunderCloud = this.pool.pop();
+        thunderCloud.setPosition(position);
+        thunderCloud.charModel.visible = true;
+        return thunderCloud;
+    }
+
+    /**
+     * releases a thunderCloudWrapper back into the pool
+     * @param {ThunderCloudWrapper} thunderCloud
+     */
+    release(thunderCloud){
+        thunderCloud.reset();
+        this.pool.push(thunderCloud);
+    }
+}
+
+
 /**
  * ThunderCloud view
  */
-export class ThunderCloud extends IView{
+class ThunderCloud extends IView{
     constructor(params) {
         super(params);
         this.hasUpdates = true;
@@ -188,11 +322,12 @@ export class ThunderCloud extends IView{
 
     /**
      * Update clouds
-     * @param deltaTime time passed
+     * @param {number} deltaTime time passed
+     * @param {THREE.Camera} camera
      */
     #updateClouds(deltaTime, camera){
+        this.charModel.rotateY(0.2*deltaTime);
         for(let i = 0; i < this.planes.children.length; i++){
-            this.#rotateAroundPosition(this.planes.children[i],new THREE.Vector3(0,1,0),0.2*deltaTime);
             this.planes.children[i].lookAt(camera.position);
             this.planesRotation[i] +=  this.cloudMetrics[i].rotation;
             this.planes.children[i].rotation.z = this.planesRotation[i];
@@ -202,8 +337,8 @@ export class ThunderCloud extends IView{
 
     /**
      * Update thundercloud
-     * @param deltaTime time passed
-     * @param camera
+     * @param {number} deltaTime time passed
+     * @param {THREE.Camera} camera
      */
     update(deltaTime, camera){
         this.#updateLight(deltaTime);
@@ -254,13 +389,13 @@ export class RitualSpell extends IAnimatedView{
  */
 export const IceWall = function (params) {
     const iceBlocks = [];
-    for(let i = 0; i < iceWall.blocks; i++){
+    for(let i = 0; i < Spells.IceWallView.blocks; i++){
         const modelWidth = new THREE.Box3().setFromObject(params.charModel).getSize(new THREE.Vector3()).z;
         iceBlocks.push(new IceBlock({
             charModel: params.charModel.clone(),
             horizontalRotation: params.horizontalRotation,
             //figure out why + 0.5 is needed
-            position: new THREE.Vector3(i*(iceWall.width/iceWall.blocks) - (iceWall.width - modelWidth + 0.5)/2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),params.horizontalRotation*Math.PI/180),
+            position: new THREE.Vector3(i*(Spells.IceWallView.width/Spells.IceWallView.blocks) - (Spells.IceWallView.width - modelWidth + 0.5)/2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),params.horizontalRotation*Math.PI/180),
             offset: new THREE.Vector3().copy(params.position)
         }));
         iceBlocks[i].charModel.traverseVisible((child) => {

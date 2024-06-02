@@ -687,8 +687,8 @@ export class MenuManager extends Subject{
 
     /**
      * move a subMenu from one menu to another
-     * @param {ListMenu | SlotMenu | CollectMenu} child
-     * @param {BaseMenu | PageMenu} parent
+     * @param {"ListMenu" | "SlotMenu" | "CollectMenu"} child
+     * @param {"BaseMenu" | "PageMenu"} parent
      * @param {"afterbegin" | "beforeend"} position
      * @return {boolean}
      */
@@ -751,14 +751,15 @@ export class MenuManager extends Subject{
     #arrangeStatMenuItems(params){
         //TODO: remove and make dynamic
         const stats = ["fortune", "speed", "damage", "capacity"];
+        //TODO: remove
         // update stats for according to the building
         // if (params.name === "MineMenu"){
         //     params.stats.set("capacity", params.maxCrystals);
         // }
-        if (params.name === "TowerMenu"){
-            params.stats.set("capacity", params.stats.get("capacity"));
-            params.stats.set("damage", params.stats.get("damage")*5); // TODO: remove * 5?
-        }
+        // if (params.name === "TowerMenu"){
+        //     params.stats.set("capacity", params.stats.get("capacity"));
+        //     params.stats.set("damage", params.stats.get("damage")*5); // TODO: remove * 5?
+        // }
         for(const stat of stats){
             if(params.stats.has(stat)){
                 this.items.get(stat).element.style.display = this.items.get(stat).display;
@@ -816,12 +817,12 @@ export class MenuManager extends Subject{
     #updateBuildingItems(params){
         console.log("inside updateBuildingItems:", params);
         for(const param of params){
-            if(param.total === 0){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
-                this.items.get(param.building).element.style.opacity = 0.5;
+            if(param.total === 0 || param.placed/param.total === 1){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
+                this.items.get(param.building).lock();
             }else{
-                this.items.get(param.building).element.style.opacity = 1;
-                this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
+                this.items.get(param.building).unlock();
             }
+            if(param.total !== 0) this.items.get(param.building).element.querySelector(".menu-item-description-placed").innerText = `placed: ${param.placed}/${param.total}`;
         }
     }
 
@@ -906,8 +907,8 @@ export class MenuManager extends Subject{
                 icon: {src: spells[i].src, width: 50, height: 50},
                 description: "",
                 extra: { //TODO: change this based on lvl
-                    unlocked: this.playerInfo.availableSpells.includes(spells[i].name),
-                    draggable: this.playerInfo.availableSpells.includes(spells[i].name)
+                    unlocked: this.playerInfo.availableSpells[spells[i].name] ?? false,
+                    draggable: this.playerInfo.availableSpells[spells[i].name] ?? false
                 }
             });
         }
@@ -915,9 +916,13 @@ export class MenuManager extends Subject{
     }
 
     updateSpellItems(spells){
-        for(let spell in spells){
-            if(spells[spell] !== "BuildSpell") {
-                this.items.get(spells[spell]).unlock();
+        for(const spellType in spells){
+            if(spellType !== "BuildSpell" && spells[spellType]){
+                console.log("unlocking spell", spellType, ":", spells[spellType]);
+                this.items.get(spellType).unlock();
+            } else {
+                console.log("locking spell", spellType);
+                this.items.get(spellType).lock();
             }
         }
     }
@@ -1052,11 +1057,11 @@ export class MenuManager extends Subject{
         this.collectParams.current = this.collectParams.current + this.collectParams.rate > this.collectParams.max ? this.collectParams.max : this.collectParams.current + this.collectParams.rate;
         this.collectParams.meter.style.width = `${(this.collectParams.current/this.collectParams.max)*100}%`;
         this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${Math.ceil(this.collectParams.current)}/${Math.ceil(this.collectParams.max)}`;        // random crystal generation
-        if(Math.random()*100 < this.fortune/10.0){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
-            console.log("Gem mined!");
-            this.dispatchEvent(this.createMineGemEvent());
-
-        }
+        // if(Math.random()*100 < this.fortune/10.0){   // fortune amount is a percentage chance to get a gem each time a crystal is mined
+        //     console.log("Gem mined!");
+        //     this.dispatchEvent(this.createMineGemEvent());
+        //
+        // }
     }
 
     /**
@@ -1093,7 +1098,7 @@ export class MenuManager extends Subject{
 
     /**
      * arrange menus in preparation for rendering
-     * @param {{name: "AltarMenu"} |
+     * @param {{name: "AltarMenu", spells: *} |
      * {name: "BuildMenu", buildings: {building: string, placed: number, total: number}[]} |
      * {name: "TowerMenu" | "FusionTableMenu", gemIds: String[], slots: number, stats: Map} |
      * {name: "MineMenu", gemIds: String[], slots: number, crystals: number, maxCrystals: number, rate: number, stats: Map} |
@@ -1126,17 +1131,15 @@ export class MenuManager extends Subject{
             case "MineMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#arrangeStatMenuItems(params);
-                this.collectParams.current = params.crystals;
+                params.crystals = this.collectParams.current;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
                 this.collectParams.rate = Math.ceil(params.stats.get("speed")); // Todo: Or add * 10 back?
-                this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
                 this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
                 this.menus.get("CollectMenu").element.querySelector(".crystal-meter").style.width = `${(params.crystals/this.collectParams.max)*100}%`; //TODO: change this so text stays in the middle of the meter
                 this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${this.collectParams.max}`;
                 this.menus.get("MineMenu").updateLvlUpButton(params);
-                this.collectParams.current = params.crystals;
                 this.collectParams.max = params.maxCrystals;
                 this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);

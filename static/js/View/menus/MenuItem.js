@@ -8,6 +8,7 @@ export class MenuItem{
         this.icon.classList.add("menu-item-icon");
         this.icon.src = params.icon.src;
         this.element = this.createElement(params);
+        this.element.classList.add("unlocked-menu-item");
     }
 
     render(){
@@ -16,6 +17,14 @@ export class MenuItem{
 
     hide(){
         this.element.style.display = "none";
+    }
+
+    lock(){
+        this.element.classList.remove("unlocked-menu-item");
+    }
+
+    unlock(){
+        this.element.classList.add("unlocked-menu-item");
     }
 
     detach(){
@@ -56,6 +65,8 @@ export class SpellItem extends MenuItem{
         super(params);
         this.unlocked = params?.extra?.unlocked ?? false;
         this.element.draggable = params?.extra?.draggable ?? false;
+        if(this.unlocked) this.unlock();
+        else this.lock();
         this.display = "flex";
     }
 
@@ -67,10 +78,16 @@ export class SpellItem extends MenuItem{
         parent.addChild("beforeend", this);
     }
 
-    unlock(params){
+    lock() {
+        this.unlocked = false;
+        this.element.draggable = false;
+        this.element.classList.remove("unlocked-menu-item");
+    }
+
+    unlock(){
         this.unlocked = true;
         this.element.draggable = true;
-        this.element.classList.add("unlocked");
+        this.element.classList.add("unlocked-menu-item");
     }
 
 
@@ -101,6 +118,7 @@ export class BuildingItem extends MenuItem{
     constructor(params) {
         super(params);
         this.element.classList.add("building-item");
+        this.lock();
         this.element.draggable = false;
     }
 

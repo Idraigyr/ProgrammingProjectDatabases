@@ -1,10 +1,9 @@
 import {Subject} from "../Patterns/Subject.js";
 import {
-    horizontalSensitivity,
+    sensitivity,
     movementSpeed,
     sprintMultiplier,
     gravity,
-    verticalSensitivity,
     spellCastMovementSpeed,
     jumpHeight
 } from "../configs/ControllerConfigs.js";
@@ -44,8 +43,8 @@ export class CharacterController extends Subject{
      */
     updateRotation(event){
         const {movementX, movementY} = event;
-        const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/180);
-        const rotateVertical = (movementY  * verticalSensitivity) *  (Math.PI/180);
+        const rotateHorizontal = (movementX * sensitivity.horizontalSensitivity) * (Math.PI/180);
+        const rotateVertical = (movementY  * sensitivity.verticalSensitivity) *  (Math.PI/180);
         this._character.phi -= rotateHorizontal;
         this._character.theta = THREE.MathUtils.clamp(this._character.theta - rotateVertical, -Math.PI/3, Math.PI /3);
 

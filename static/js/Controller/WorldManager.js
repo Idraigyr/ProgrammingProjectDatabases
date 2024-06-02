@@ -10,6 +10,7 @@ import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
 import {printFoundationGrid} from "../helpers.js";
+import {alertPopUp} from "../external/LevelUp.js";
 
 
 /**
@@ -408,6 +409,9 @@ export class WorldManager{
 
         if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
             console.log("Cannot place");
+        }
+        else if(this.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+            alertPopUp("Maximum Buildings in process reached.")
         }
         else {
             if(!this.cheats){
@@ -853,7 +857,17 @@ export class WorldManager{
             console.error(err);
         }
     }
+
+    /**
+     * Checks for buildings in progress
+     * @return {number} Total number of buildings in progress
+     */
     checkBuildingsInProgress() {
+        let progress = 0;
+        for(let i = 0; i < this.world.islands[0].buildings.length; i++){
+            if(this.world.islands[0].buildings[i].ready === false) progress++;
+        }
+        return progress
 
     }
 
@@ -861,8 +875,8 @@ export class WorldManager{
      * Toggle the grass on the world
      * @param on - whether to turn the grass on or off
      */
-    toggleGrass(on){
-        this.world.toggleGrass(on);
+    toggleGrass(event){
+        this.world.toggleGrass(event.detail.on);
     }
 
     async updateBuildings(){

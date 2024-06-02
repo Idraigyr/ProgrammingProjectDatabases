@@ -41,6 +41,12 @@ class PlayerStats(current_app.db.Model):
 
 
     def update(self, data):
+        """
+        Update the player statistics with new data
+        All fields are updatable
+        :param data:
+        :return:
+        """
         self.player_kills = data.get('player_kills', self.player_kills)
         self.player_deaths = data.get('player_deaths', self.player_deaths)
         self.minions_killed = data.get('minions_killed', self.minions_killed)

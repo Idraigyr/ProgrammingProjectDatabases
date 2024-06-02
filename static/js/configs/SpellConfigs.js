@@ -1,5 +1,5 @@
 //Fireball
-export const fireball = (level) => ({
+export const Fireball = (level) => ({
     duration: 10,
     damage: 30 + 5 * (level-1),
     cost: 10,
@@ -9,7 +9,7 @@ export const fireball = (level) => ({
     castTime: 0
 });
 
-export const thunderCloud = (level) => ({
+export const ThunderCloud = (level) => ({
     duration: 10,
     damage: 50 + 10 * Math.min(0,level-10),
     cost: 50,
@@ -17,18 +17,36 @@ export const thunderCloud = (level) => ({
     castTime: 0
 });
 
-export const iceWall = {
+export const maxThunderClouds = Math.ceil(ThunderCloud(1).duration / ThunderCloud(1).cooldown)*2; //*2 for multiplayer
+
+export const IceWall = (level) => ({
     blocks: 5,
     width: 10,
     duration: 15,
     cooldown: 22,
     cost: 25,
     castTime: 0
-}
+});
 
-export const Shield = {
+export const Shield = (level) => ({
     duration: 7,
     cooldown: 18,
     cost: 30,
+    castTime: 0,
+    damage: 0
+});
+
+export const Heal = (level) => ({});
+
+export const Zap = (level) => ({});
+
+export const BuildSpell = (level) => ({});
+
+export const IceWallView = {
+    blocks: 5,
+    width: 10,
+    duration: 15,
+    cooldown: 22,
+    cost: 25,
     castTime: 0
 }

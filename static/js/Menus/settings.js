@@ -1,29 +1,133 @@
 // all variables for game settings
-import {API_URL, logoutURI} from "../configs/EndpointConfigs.js";
+import {API_URL, logoutURI, settingsURI} from "../configs/EndpointConfigs.js";
+import {Subject} from "../Patterns/Subject.js";
 import { } from "../Controller/PlayerInfo.js";
-import {cursorImgPaths} from "../configs/ViewConfigs.js";
-let volume = 50;
-let soundEffects = true;
-let backgroundMusic = true;
-let resolution = 1080;
-let keyBinds = new Map();
-keyBinds.set('move-forward', 'w');
-keyBinds.set('move-left', 'a');
-keyBinds.set('move-right', 'd');
-keyBinds.set('move-backwards', 's');
-keyBinds.set('jump', ' ');
-keyBinds.set('open-inventory', 'e');
-keyBinds.set('eat', 'q');
+import {cursorImgPaths, shadows} from "../configs/ViewConfigs.js";
+import {
+    baseHorizontalSensitivity,
+    baseVerticalSensitivity,
+    sensitivity,
+    volume
+} from "../configs/ControllerConfigs.js";
+import {keyBinds} from "../configs/Keybinds.js";
+import {Cursors} from "../configs/Enums.js";
 
-export class Settings {
+/**
+ *Map to map keys from settings to the keybinds in config
+ */
+const keyMapping = {
+    'move-forward': 'primaryForwardKey',
+    'move-left': 'primaryLeftKey',
+    'move-right': 'primaryRightKey',
+    'move-backwards': 'primaryBackwardKey',
+    'jump': 'upKey',
+    'sprint': 'sprintKey',
+    'interact': 'interactKey',
+    'eat': 'eatingKey',
+    'chat': 'chatKey',
+    'spellSlot1': 'slot1Key',
+    'spellSlot2': 'slot2Key',
+    'spellSlot3': 'slot3Key',
+    'spellSlot4': 'slot4Key',
+    'spellSlot5': 'slot5Key'
+};
+
+const dbToKeyMap = {
+    'move_fwd': 'move-forward',
+    'move_left': 'move-left',
+    'move_right': 'move-right',
+    'move_bkwd': 'move-backwards',
+    'jump': 'jump',
+    'sprint': 'sprint',
+    'eat': 'eat',
+    'interact': 'interact',
+    'chat': 'chat',
+    'slot_1': 'spellSlot1',
+    'slot_2': 'spellSlot2',
+    'slot_3': 'spellSlot3',
+    'slot_4': 'spellSlot4',
+    'slot_5': 'spellSlot5'
+};
+
+const keyMapToDb = {
+    'move-forward': 'move_fwd',
+    'move-left': 'move_left',
+    'move-right': 'move_right',
+    'move-backwards': 'move_bkwd',
+    'jump': 'jump',
+    'sprint': 'sprint',
+    'eat': 'eat',
+    'interact': 'interact',
+    'chat': 'chat',
+    'spellSlot1': 'slot_1',
+    'spellSlot2': 'slot_2',
+    'spellSlot3': 'slot_3',
+    'spellSlot4': 'slot_4',
+    'spellSlot5': 'slot_5'
+}
+
+/**
+ *Map to store keys from input in the settings menu
+ */
+let keyMap = new Map();
+keyMap.set('move-forward', 'KeyW');
+keyMap.set('move-left', 'KeyA');
+keyMap.set('move-right', 'KeyD');
+keyMap.set('move-backwards', 'KeyS');
+keyMap.set('jump', 'Space');
+keyMap.set('sprint', 'ShiftLeft');
+keyMap.set('interact', 'keyE');
+keyMap.set('eat', 'KeyQ');
+keyMap.set('chat', 'KeyC');
+keyMap.set('spellSlot1', 'Digit1');
+keyMap.set('spellSlot2', 'Digit2');
+keyMap.set('spellSlot3', 'Digit3');
+keyMap.set('spellSlot4', 'Digit4');
+keyMap.set('spellSlot5', 'Digit5');
+
+let dbMap = {
+    "move_fwd_key": "KeyW",
+    "move_fwd_val": "NULL",
+    "move_bkwd_key": "KeyS",
+    "move_bkwd_val": "NULL",
+    "move_left_key": "KeyA",
+    "move_left_val": "NULL",
+    "move_right_key": "KeyD",
+    "move_right_val": "NULL",
+    "jump_key": "Space",
+    "jump_val": "NULL",
+    "sprint_key": "ShiftLeft",
+    "sprint_val": "NULL",
+    "eat_key": "KeyQ",
+    "eat_val": "NULL",
+    "interact_key": "KeyE",
+    "interact_val": "NULL",
+    "chat_key": "KeyC",
+    "chat_val": "NULL",
+    "slot_1_key": "Digit1",
+    "slot_1_val": "NULL",
+    "slot_2_key": "Digit2",
+    "slot_2_val": "NULL",
+    "slot_3_key": "Digit3",
+    "slot_3_val": "NULL",
+    "slot_4_key": "Digit4",
+    "slot_4_val": "NULL",
+    "slot_5_key": "Digit5",
+    "slot_5_val": "NULL"
+};
+let cursorId = 0;
+
+let performance = 1;
+
+let performanceChange = false;
+
+export class Settings extends Subject {
     grassOn = true;
+
     constructor(params) {
+        super(params);
         this.map = null;
         this.inputManager = params.inputManager;
-        /* TODO: look and see
-        this.worldManager = params.worldManager;
-
-         */
         this.playerInfo = params.playerInfo;
 
         this.inputManager.addLeaveMatchButtonListener((e) => {
@@ -35,25 +139,20 @@ export class Settings {
         this.inputManager.addRespawnButtonListener(this.respawn.bind(this));
         this.inputManager.addSettingsCloseButtonListener(this.exitSettingsMenu.bind(this))
         this.inputManager.addDeleteAccountButtonListener(this.deleteAccountCallback.bind(this))
-        this.inputManager.addGrassToggleListener(this.toggleGrass.bind(this));
         this.inputManager.addApplyButtonListener(this.applySettings.bind(this))
-        const button = document.getElementById('applyButton');
-        button.addEventListener('click', this.applySettings.bind(this));
+        this.inputManager.addFullscreenButtonListener(this.toggleFullscreen.bind(this))
+        this.inputManager.addHelpButtonListener(this.toggleHelpMenu.bind(this))
+        this.inputManager.addHelpCloseButtonListener(this.toggleHelpMenu.bind(this))
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
     }
 
-    toggleGrass(event) {
-        console.log("Grass toggle button clicked ", event);
-        this.grassOn = !!event.target.checked;
-        // Dispatch event to toggle grass
-        //this.worldManager.toggleGrass(this.grassOn);
-        //TODO: add a callback don't add worldmanager directly
-    }
-
+    /**
+     * Function to load the cursors
+     */
     loadCursors() {
         const cursors = document.querySelector('.cursors');
-        for(let cursor in cursorImgPaths) {
+        for (let cursor in cursorImgPaths) {
             const cursorDiv = document.createElement('div');
             cursorDiv.addEventListener('click', this.switchCursor.bind(this));
             const cursorName = document.createElement('p');
@@ -101,6 +200,7 @@ export class Settings {
     exitSettingsMenu() {
         const settingsMenu = document.querySelector(`.settings-container`);
         settingsMenu.classList.toggle('hide');
+
     }
 
     /**
@@ -131,22 +231,243 @@ export class Settings {
 
     }
 
-    applySettings(){
-        console.log("Settings applied");
-        this.exitSettingsMenu();
+    /**
+     * Send a PUT request to the server
+     * @param uri - the URI to send the PUT request to
+     * @param entity - the Entity that we want to update in the db
+     * @param retries - the number of retries to resend the PUT request
+     */
+    sendPUT(data) {
+        try {
+            $.ajax({
+                url: `${API_URL}/${settingsURI}`,
+                type: "PUT",
+                data: JSON.stringify(data),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("PUT success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("PUT fail");
+                throw new Error(`Could not send PUT request for settings: Error: ${textStatus} ${errorThrown}`);
+
+            });
+        } catch (err) {
+            console.error(err);
+        }
     }
 
+    /**
+     * Function to get the settings data from the server
+     * @returns {Promise<number>}
+     */
+    async getSettings() {
+        let performance = -1;
+        await $.ajax({
+            url: `${API_URL}/${settingsURI}?player_id=${this.playerInfo.userID}`,
+            type: "GET",
+            contentType: "application/json",
+            success: (data) => {
+                this.loadSettings(data);
+                performance = data.performance;
+            }
+        });
+        return performance;
+    }
+
+    /**
+     * Function to load the settings data from the server in the settings menu
+     * @param data
+     */
+
+    loadSettings(data) {
+        const docVolume = document.getElementById('volume');
+        const docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
+        const docVerticalSensitivity = document.getElementById('vertical-sensitivity');
+        const docPerformance = document.getElementById('performance');
+        const crosshair = document.querySelector('#crosshair-img');
+        docVolume.value = data.audio_volume;
+        docHorizontalSensitivity.value = data.horz_sensitivity;
+        docVerticalSensitivity.value = data.vert_sensitivity;
+        docPerformance.selectedIndex = data.performance;
+        performance = data.performance;
+        crosshair.src = Cursors.getName(data.selected_cursor);
+        cursorId = data.selected_cursor;
+        this.loadKeys(data);
+    }
+
+    /**
+     * Function to load the keybinds from the server in the settings menu
+     */
+    loadKeys(data) {
+        for (let key in dbMap) {
+            if (dbMap.hasOwnProperty(key)) {
+                dbMap[key] = data[key];
+            }
+        }
+        for (const [dbKey, dbValue] of Object.entries(dbMap)) {
+            if (dbKey.endsWith('_key')) {
+                const baseKey = dbKey.slice(0, -4); // Remove '_key'
+                const keyMappingValue = dbToKeyMap[baseKey]; // Find the key in dbToKeyMap
+                if (keyMappingValue) {
+                    keyMap.set(keyMappingValue, dbValue); // Update keyMap
+                }
+            }
+        }
+        for (const [dbKey, dbValue] of Object.entries(dbMap)) {
+                if (dbKey.endsWith('_val')) {
+                    const baseKey = dbKey.slice(0, -4); // Remove '_val'
+                    const keyMappingValue = dbToKeyMap[baseKey]; // Find the key in dbToKeyMap
+                    if (keyMappingValue) {
+                        const inputElement = document.getElementById(keyMappingValue); // Get the input element
+                        if (inputElement) {
+                            inputElement.value = dbValue; // Update the input element's value
+                        }
+                    }
+                }
+            }
+        for (let [key, value] of keyMap.entries()) {
+            const objectKey = keyMapping[key];
+            if (objectKey) {
+                keyBinds[objectKey] = value;
+            }
+        }
+
+    }
+
+    /**
+     * Function to apply the volume from the settings menu to the game
+     */
+    applyVolume(obj){
+        let docVolume = document.getElementById('volume');
+        volume.overalVolume = docVolume.value;
+        obj.audio_volume = parseInt(docVolume.value);
+
+    }
+
+    /**
+     * Function to apply the sensitivity from the settings menu to the game
+     */
+
+    applySensitivity(obj){
+        let docHorizontalSensitivity = document.getElementById('horizontal-sensitivity');
+        let docVerticalSensitivity = document.getElementById('vertical-sensitivity');
+        sensitivity.horizontalSensitivity = baseHorizontalSensitivity * ( 0.5 + (docHorizontalSensitivity.value/100));
+        sensitivity.verticalSensitivity = baseVerticalSensitivity * ( 0.5 + (docVerticalSensitivity.value/100));
+        obj.horz_sensitivity = parseInt(docHorizontalSensitivity.value);
+        obj.vert_sensitivity = parseInt(docVerticalSensitivity.value);
+
+    }
+
+    /**
+     * Function to apply the performance settings from the settings menu to the game
+     */
+
+    applyPerformace(obj){
+        let docPerformance = document.getElementById('performance');
+        if (docPerformance.value === 'low'){
+            shadows.shadowCasting = false;
+            this.grassOn = false;
+            obj.performance = 0;
+        }
+        if (docPerformance.value === 'middle'){
+            shadows.shadowCasting = false;
+            this.grassOn = true;
+            obj.performance = 1;
+        }
+        if (docPerformance.value === 'high'){
+            shadows.shadowCasting = true;
+            this.grassOn = true;
+            obj.performance = 2;
+        }
+        if (obj.performance != performance)
+        {
+            performanceChange = true;
+            performance = obj.performance;
+            console.log("performance changed")
+        }
+        this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
+
+    }
+
+    /**
+     * Function to apply the keybinds from the settings menu to the game
+     */
+
+    applyKeys(obj){
+        for (let [key, value] of keyMap.entries()) {
+            const objectKey = keyMapping[key];
+            if (objectKey) {
+                keyBinds[objectKey] = value;
+            }
+        }
+        for (let key in dbMap) {
+            if (dbMap.hasOwnProperty(key)) {
+                if (dbMap[key] !== "NULL") {obj[key] =  dbMap[key];}
+            }
+        }
+
+
+    }
+
+    /**
+     * Function to apply all the settings from the settings menu to the game and send data to the backend, except when this function is called on loading the game
+     */
+
+    applySettings(onLoad) {
+        let data = {player_id: this.playerInfo.userID};
+        data.selected_cursor = cursorId;
+        this.applyVolume(data);
+        this.applySensitivity(data);
+        this.applyPerformace(data);
+        this.applyKeys(data);
+        if(onLoad === true) {return;}
+
+        this.sendPUT(data);
+        if (performanceChange)
+        {
+            //reload for shadows
+            this.respawn();
+        }
+        this.exitSettingsMenu();
+
+
+    }
+
+    /**
+     * Function to switch the cursor
+     * @param event
+     */
     switchCursor(event) {
         const crosshair = document.querySelector('#crosshair-img');
         crosshair.src = cursorImgPaths[event.target.dataset.cursor];
+        cursorId = Cursors.getNumber([cursorImgPaths[event.target.dataset.cursor]]);
+    }
+    /**
+    * Function to change the keybinds
+     */
+    changeKeyBind(event) {
+        if(!(event.code === 'Backspace'))
+        {
+            keyMap.set(event.target.name, event.code);
+            const dbKey = keyMapToDb[event.target.name];
+            if (dbKey) {
+                dbMap[dbKey + "_key"] = event.code;
+                dbMap[dbKey + "_val"] = event.key;
+            }
+
+        }
     }
 
-    changeKeyBind(event) {
-        console.log(event);
-    }
+    /**
+     * Function to toggle fullscreen
+     */
 
     toggleFullscreen() {
-        console.log("Fullscreen button clicked");
         if (document.fullscreenElement) {
             document.exitFullscreen();
         } else {
@@ -158,6 +479,10 @@ export class Settings {
             }
         }
     }
+
+    /**
+     * Function to toggle the help menu
+     */
 
     toggleHelpMenu() {
         const helpMenu = document.querySelector('.help-container');

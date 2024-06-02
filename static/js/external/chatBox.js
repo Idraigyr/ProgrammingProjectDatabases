@@ -1,3 +1,5 @@
+import {chatKey, keyBinds} from "../configs/Keybinds.js";
+
 document.addEventListener('DOMContentLoaded', (event) => {
     const chatButton = document.getElementById('chatButton');
     const chatPopup = document.getElementById('chatPopup');
@@ -65,7 +67,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         // Listen for the "C" key to open the chat box
     document.addEventListener('keydown', function(e) {
         if (document.activeElement !==  usernameFriend){
-            if (e.key === 'c' || e.key === 'C') {
+            if (e.code === keyBinds.chatKey) {
                 // Check if the current active element is the chat input field
                 if (document.activeElement !== chatInput) {
                     // Check if the chatPopup is already displayed before toggling

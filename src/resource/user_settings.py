@@ -1,4 +1,4 @@
-from flask import request, Flask, Blueprint
+from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
@@ -9,6 +9,9 @@ from src.swagger_patches import Schema, summary
 
 
 class UserSettingsSchema(Schema):
+    """
+    JSON Schema for the player settings
+    """
 
     type = 'object'
     properties = {
@@ -139,6 +142,14 @@ class UserSettingsSchema(Schema):
         'slot_5_val': {
             'type': 'string',
             'description': 'The value for slot 5'
+        },
+        'sprint_key': {
+            'type': 'string',
+            'description': 'The key for sprinting'
+        },
+        'sprint_val': {
+            'type': 'string',
+            'description': 'The value for sprinting'
         }
     }
     required = []
@@ -164,6 +175,7 @@ class UserSettingsSchema(Schema):
                                 slot_3_key=user_settings.slot_3_key, slot_3_val=user_settings.slot_3_val,
                                 slot_4_key=user_settings.slot_4_key, slot_4_val=user_settings.slot_4_val,
                                 slot_5_key=user_settings.slot_5_key, slot_5_val=user_settings.slot_5_val,
+                                sprint_key=user_settings.sprint_key, sprint_val=user_settings.sprint_val,
                                 **kwargs)
         else:  # schema -> user_settings
             super().__init__(**kwargs)
@@ -211,20 +223,22 @@ class UserSettingsResource(Resource):
         Update the settings of a player
         :return: The updated settings of the player
         """
-        id = request.args.get('player_id', type=int)
-
-        if id is None:
-            return ErrorSchema('Player id absent'), 400
-
-        user_settings = UserSettings.query.get(id)
-        if user_settings is None:
-            return ErrorSchema('The player does not exist'), 404
 
         try:
             data = request.get_json()
             data = clean_dict_input(data)
 
             UserSettingsSchema(**data, _check_requirements=False)
+
+            id = int(data['player_id'])
+
+            if id is None:
+                return ErrorSchema('Player id absent'), 400
+
+            user_settings = UserSettings.query.get(id)
+            if user_settings is None:
+                return ErrorSchema('The player does not exist'), 404
+
 
             data = request.get_json()
             data = clean_dict_input(data)
@@ -234,9 +248,10 @@ class UserSettingsResource(Resource):
             if r: return r
 
             user_settings.update(data)
+            current_app.db.session.commit()
 
             return UserSettingsSchema(user_settings), 200
-        except ValueError as e:
+        except (ValueError, KeyError) as e:
             return str(e), 400
 
 

@@ -1,12 +1,12 @@
 import * as AllFriends from "./Friends.js"
+import {userId} from "./ChatNamespace.js"
 import {getFriendRequestStatus} from "./Friends.js";
+import {addFriendNotification, removeFriendNotification} from "./LevelUp.js";
 
 export class FriendsMenu {
 
     constructor() {
         this.friendsButton = document.getElementById("friends-button");
-
-        this.notificationCount = document.getElementById("notification-count");
 
         this.Friends = document.getElementById("Friends");
 
@@ -35,7 +35,12 @@ export class FriendsMenu {
 
         this.requests = [];
 
+        this.initial = true;
+
+
         this.inMatch = false;
+
+        this.forwardingNameSpace = null;
 
         if(!this.inMatch){
             this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
@@ -48,6 +53,10 @@ export class FriendsMenu {
 
     }
 
+    setForwardingNameSpace(nameSpace){
+        this.forwardingNameSpace = nameSpace;
+    }
+
 
     async toggleFriendsDisplay() {
         if(!this.inMatch){
@@ -55,6 +64,7 @@ export class FriendsMenu {
                 this.Friends.style.display = "none";
                 this.addFriendButton.style.display = "none";
                 this.listFriendButton.style.display = "none";
+                this.addFriend.style.display = "none";
                 this.requestFriendButton.style.display = "none";
             } else {
                 this.FriendList.style.display = "none";
@@ -63,6 +73,7 @@ export class FriendsMenu {
                 this.addFriendButton.style.display = "block";
                 this.listFriendButton.style.display = "block"
                 this.requestFriendButton.style.display = "block";
+                this.addFriend.style.display = "none";
                 this.FriendList.style.display = "block";
                 this.listRequest.style.display = "none";
             }
@@ -93,6 +104,7 @@ export class FriendsMenu {
         this.usernameExist.style.display = "none";
         let exists = false;
         await AllFriends.setPlayerList();
+        await this.updateRequests();
         for (let player of AllFriends.playerList) {
             if (player.username === this.usernameFriend.value.trim()) {
                 exists = true;
@@ -106,8 +118,15 @@ export class FriendsMenu {
                 break;
             }
         }
-
-        if (exists && !requestExists) {
+        let friendsExists = false;
+        for (let friend of this.friends)
+        {
+            if(await AllFriends.getPlayerUsername(friend) === this.usernameFriend.value.trim()){
+                friendsExists = true;
+                break;
+            }
+        }
+        if (exists && !requestExists && !friendsExists) {
             let receiver_id = await AllFriends.getPlayerID(this.usernameFriend.value.trim());
             AllFriends.sendRequest(receiver_id);
             this.usernameFriend.value = '';
@@ -117,6 +136,10 @@ export class FriendsMenu {
             this.usernameExist.style.display = "block";
             this.usernameFriend.value = '';
 
+        } else if(friendsExists){
+            this.usernameExist.innerHTML = `Friend already exists.`;
+            this.usernameExist.style.display = "block";
+            this.usernameFriend.value = '';
         }
         else {
             this.usernameFriend.value = '';
@@ -125,9 +148,8 @@ export class FriendsMenu {
         }
     }
 
-
-
     async populateFriends() {
+        console.log("Populating friends");
         let tempFriends = await AllFriends.getFriends();
         if (this.friends.length !== tempFriends.length){
             const unique = tempFriends.filter(element => !this.friends.includes(element));
@@ -137,7 +159,35 @@ export class FriendsMenu {
             this.friends = tempFriends;
             return true;
         }
+        for(let f of this.friends){
+            this.forwardingNameSpace.sendCheckOnlineStatusEvent(f);
+        }
         return false;
+    }
+
+    /**
+     * Set the online indicator for a friend
+     * @param {{target: number, status: 'online' | 'offline' | 'in_match'}} data
+     */
+    setOnlineIndicator(data) {
+        console.log(`setting online indicator for ${data.target}: ${data.status}`);
+        const onlineIndicator = document.getElementById(`online-indicator-${data.target}`);
+        const visitButton = document.getElementById(`visit-${data.target}`);
+        switch (data.status) {
+            case 'online':
+                onlineIndicator.classList.add('online');
+                onlineIndicator.classList.remove('in-match');
+                visitButton.classList.add('enabled');
+                break;
+            case 'in_match':
+                onlineIndicator.classList.add('in-match');
+                onlineIndicator.classList.remove('online');
+                visitButton.classList.remove('enabled');
+                break;
+            default:
+                onlineIndicator.classList.remove('online', 'in-match');
+                visitButton.classList.remove('enabled');
+        }
     }
 
 
@@ -146,9 +196,15 @@ export class FriendsMenu {
         if (this.requests.length !== tempRequests.length){
             const unique = this.findUniqueRequests(this.requests, tempRequests);
             for(let r of unique){
-                await this.addRequestMenu(r);
+                await this.addRequest(r);
+                if(this.initial){
+                    addFriendNotification();
+                }
             }
             this.requests = tempRequests;
+            if(this.initial){
+                this.initial = false;
+            }
             return true;
         }
         return false;
@@ -157,16 +213,26 @@ export class FriendsMenu {
         const friend = document.createElement('div');
         friend.id = `friend-${playerId}`;
         friend.classList.add('friend');
-        friend.innerHTML = `${await AllFriends.getPlayerUsername(playerId)}`;
+        const username = document.createElement('div');
+        username.innerText = `${await AllFriends.getPlayerUsername(playerId)}`;
         const viewIsland = document.createElement('button');
-        viewIsland.id = "viewIsland";
+        const onlineIndicator = document.createElement('div');
+        const filler = document.createElement('div');
+        filler.classList.add('friend-filler');
+        username.classList.add('friend-username');
+        onlineIndicator.id = `online-indicator-${playerId}`;
+        onlineIndicator.classList.add('online-indicator');
+        viewIsland.id = `visit-${playerId}`;
         viewIsland.innerHTML = `Visit Island`;
         viewIsland.classList.add('View-Island');
+        friend.appendChild(username);
+        friend.appendChild(onlineIndicator);
+        friend.appendChild(filler);
         friend.appendChild(viewIsland);
         this.listFriend.appendChild(friend);
     }
 
-    async addRequestMenu(request) {
+    async addRequest(request) {
         let status = await AllFriends.getFriendRequestStatus(request.id);
         if (status === "pending") {
             const requestElement = document.createElement('div');
@@ -187,12 +253,15 @@ export class FriendsMenu {
                 await AllFriends.acceptFriendRequest(request.id);
                 await friendsMenu.updateRequests();
                 requestElement.remove();
+                removeFriendNotification();
+                await friendsMenu.populateFriends();
             }
 
             rejectButton.onclick = async function () {
                 await AllFriends.rejectFriendRequest(request.id);
                 console.log("Request rejected, request ID:", request.id);
                 await friendsMenu.updateRequests();
+                removeFriendNotification();
                 requestElement.remove();
             }
 
@@ -204,7 +273,6 @@ export class FriendsMenu {
 
     async updateRequests() {
         this.requests = await AllFriends.getFriendRequests();
-        await this.populateRequests();
     }
     toggleWindowbutton() {
         if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {
@@ -250,4 +318,6 @@ export class FriendsMenu {
 
         return uniqueMaps;
     }
+
+
 }
