@@ -53,6 +53,7 @@ export class Island extends IView{
     dispose() {
         super.dispose();
         this.#grassField.parent.remove(this.#grassField);
+        this.#model.parent.remove(this.#model);
     }
 
     /**
