@@ -37,7 +37,19 @@ https://timvandevall.com/free-blank-keyboard-template-printable/
 Island texture:
 <a href="https://www.freepik.com/free-vector/dark-polygonal-background_1111561.htm#fromView=search&page=1&position=24&uuid=3447e6cc-400d-468f-afb1-71591864b85c">Image by rocketpixel on Freepik</a>
 Mine icon for build menu:
-https://www.flaticon.com/free-icon/mining_1504044?term=mining&page=1&position=3&origin=tag&related_id=1504044
+https://www.flaticon.com/free-icon/mining-cart_3275628?term=mine&page=1&position=24&origin=search&related_id=3275628
+Fusion table icon for build menu:
+https://www.flaticon.com/free-icon/alchemy_10431813?term=alchemy&related_id=10431813
+Tower icon for build menu:
+https://www.flaticon.com/free-icon/castle_6483699?term=defense+tower&related_id=6483699
+Warrior hut icon for build menu:
+https://www.flaticon.com/free-icon/_15155239?term=warrior+hut&page=1&position=3&origin=search&related_id=15155239
+Tree icon for build menu:
+https://www.flaticon.com/free-icon/tree_685076?term=tree&page=1&position=59&origin=search&related_id=685076
+Bush icon for build menu:
+https://www.flaticon.com/free-icon/shrub_9997731?term=bush&related_id=9997731
+Wall icon for build menu:
+https://www.flaticon.com/free-icon/brick-wall_9920949?term=wall&page=1&position=6&origin=search&related_id=9920949
 -----------------------------------
 3d models:
 Floating island landing page:

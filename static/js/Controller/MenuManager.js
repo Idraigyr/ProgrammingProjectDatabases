@@ -842,43 +842,43 @@ export class MenuManager extends Subject{
         const items = [
             {
                 item: {belongsIn: "CombatBuildingsMenu", getItemId: () => "Tower", getDisplayName: () => "Tower"},
-                icon: {src: "/static/assets/images/buildMenu/tower.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/castle.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === towerName)?.buildTime}
             },
             {
                 item: {belongsIn: "CombatBuildingsMenu", getItemId: () => "Wall", getDisplayName: () => "Wall"},
-                icon: {src: "/static/assets/images/buildMenu/wall.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/brick-wall.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === wallName)?.buildTime}
             },
             {
                 item: {belongsIn: "DecorationsMenu", getItemId: () => "Tree", getDisplayName: () => "Tree"},
-                icon: {src: "/static/assets/images/buildMenu/tree_alt.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/tree_icon.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === treeName)?.buildTime}
             },
             {
                 item: {belongsIn: "DecorationsMenu", getItemId: () => "Bush", getDisplayName: () => "Bush"},
-                icon: {src: "/static/assets/images/buildMenu/bush.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/shrub.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === bushName)?.buildTime}
             },
             {
                 item: {belongsIn: "ResourceBuildingsMenu", getItemId: () => "Mine", getDisplayName: () => "Mine"},
-                icon: {src: "/static/assets/images/buildMenu/mining.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/mining-cart.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === mineName)?.buildTime}
             },
             {
                 item: {belongsIn: "ResourceBuildingsMenu", getItemId: () => "FusionTable", getDisplayName: () => "Fusion table"},
-                icon: {src: "/static/assets/images/buildMenu/fusionTable.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/alchemy.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === fusionTableName)?.buildTime}
             },
             {
                 item: {belongsIn: "CombatBuildingsMenu", getItemId: () => "WarriorHut", getDisplayName: () => "Warrior hut"},
-                icon: {src: "/static/assets/images/buildMenu/warriorHut.png", width: 50, height: 50},
+                icon: {src: "/static/assets/images/buildMenu/warrior.png", width: 50, height: 50},
                 description: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.description,
                 extra: {cost: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.cost, buildTime: this.infoFromDatabase["buildings"].find(building => building.name === warriorHutName)?.buildTime}
             }
