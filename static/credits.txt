@@ -34,6 +34,8 @@ Delete button:
 https://imgbin.com/png/sFjhVbnJ/web-buttons-icon-delete-icon-trash-icon-png
 Island texture:
 <a href="https://www.freepik.com/free-vector/dark-polygonal-background_1111561.htm#fromView=search&page=1&position=24&uuid=3447e6cc-400d-468f-afb1-71591864b85c">Image by rocketpixel on Freepik</a>
+Mine icon for build menu:
+https://www.flaticon.com/free-icon/mining_1504044?term=mining&page=1&position=3&origin=tag&related_id=1504044
 -----------------------------------
 3d models:
 Floating island landing page:
