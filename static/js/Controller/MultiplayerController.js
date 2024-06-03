@@ -518,7 +518,6 @@ export class MultiplayerController extends Subject{
         //remove island from world and remove spawners
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.peerController.peer = null;
-        this.peerInfo = new PlayerInfo();
         this.minionController.clearMinions();
         this.worldManager.resetWorldState(this.playerInfo.userID < this.peerInfo.userID);
         //stop receiving state updates from server
