@@ -53,7 +53,7 @@ export class ItemManager {
     }
 
     /**
-     * creates a gem every interval defined in controllerConfigs
+     * creates a gem with 1% chance every gemProductionInterval seconds
      * gem fortune based on fortune of placed mines
      * @param {Object[]} params - placed buildings
      */
@@ -67,7 +67,9 @@ export class ItemManager {
             }
         }
         this.interval = setInterval(() => {
-            this.createGem(Math.floor(fortune));
+            if (Math.random() <= 0.01) {
+                this.createGem(Math.floor(fortune));
+            }
         }, gemProductionInterval*1000);
     }
 
