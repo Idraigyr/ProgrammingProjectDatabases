@@ -21,9 +21,6 @@ export class MultiplayerController extends Subject{
     viewManager;
     spellCaster;
     spellFactory;
-    /* TODO: look and see
-    settings;
-    */
     factory;
     minionController;
     forwardingNameSpace;
@@ -65,6 +62,7 @@ export class MultiplayerController extends Subject{
         this.stats = new Map();
         this.lifetimeStats = new Map();
     }
+
 
     /**
      * sets the lifetime stats of the player (& initializes the current stats)
@@ -207,6 +205,34 @@ export class MultiplayerController extends Subject{
     toggleTimer(bool= null){
         const timer = document.querySelector('.game-timer-container');
         timer.style.display = (bool ? 'flex' : 'none') ?? (timer.style.display === 'none' ? 'flex' : 'none');
+    }
+
+        /**
+     * changes the text of the leave match button in the settings menu and hides/shows the apply button
+     */
+    toggleLeaveMatchButton(){
+        const applyButton = document.querySelector(`.applyButton`);
+        switch (this.state) {
+            case "visiting":
+                document.getElementById("leaveMatchButton").innerText = "Leave Island";
+                applyButton.classList.add('hide');
+                break;
+            case "visited":
+                document.getElementById("leaveMatchButton").innerText = "Kick Friend";
+                applyButton.classList.add('hide');
+                break;
+            case "singlePlayer":
+                applyButton.classList.remove('hide');
+                break;
+            case "inMatch":
+                applyButton.classList.add('hide');
+                break;
+            default:
+                document.getElementById("leaveMatchButton").innerText = "Leave Match";
+               applyButton.classList.remove('hide');
+                break;
+        }
+
     }
 
 
@@ -388,6 +414,7 @@ export class MultiplayerController extends Subject{
                 lifetime: lifetimeStats
             }
         });
+        this.toggleLeaveMatchButton();
         //wait for player to click on close button
     }
 
@@ -559,9 +586,7 @@ export class MultiplayerController extends Subject{
         if(data.spellEvent) {
             console.log(data.spellEvent)
             if(data.spellEvent.shieldUpdate){
-                console.log("shield update")
                 //get spell from id
-                console.log("ID:  ", data.spellEvent.shieldUpdate)
                 const shield = this.viewManager.getSpellEntityModelByID(data.spellEvent.shieldUpdate - 1000);
                 if(shield) shield.takeDamage(10);
                 else throw new Error("Shield not found");
@@ -921,24 +946,7 @@ export class MultiplayerController extends Subject{
         }
     }
 
-    /**
-     * changes the text of the leave match button in the settings menu
-     */
-    toggleLeaveMatchButton(){
-        switch (this.state) {
-            case "visiting":
-                document.getElementById("leaveMatchButton").innerText = "Leave Island";
-                break;
-            case "visited":
-                document.getElementById("leaveMatchButton").innerText = "Kick Friend";
-                break;
-            case "singlePlayer":
-            case "inMatch":
-            default:
-                document.getElementById("leaveMatchButton").innerText = "Leave Match";
-                break;
-        }
-    }
+
 
     /**
      * callback for the visit island button of friendsmenu

@@ -42,6 +42,7 @@
   user-select: none; /* Standard syntax */
 }
 
+
 #menuContainer{
     position: absolute;
     z-index: 8;
@@ -1099,9 +1100,7 @@
     margin: 0 auto;
 }
 
-.hide{
-    display: none
-}
+
 
 .onCooldown{
     opacity: 0.5;
@@ -3091,6 +3090,11 @@ a[data-tooltip][data-placement="right"]::after {
     background-position: center; /* This will center the image in the element */
     background-repeat: no-repeat; /* This will prevent the image from repeating */
 }
+
+.hide{
+    display: none
+}
+
 
 
 
