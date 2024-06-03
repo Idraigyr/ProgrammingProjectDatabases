@@ -57,7 +57,10 @@ export class FriendsMenu {
         this.forwardingNameSpace = nameSpace;
     }
 
-
+    /**
+     * Shows the friends Menu.
+     * @return {Promise<void>}
+     */
     async toggleFriendsDisplay() {
         if(!this.inMatch){
             if (this.Friends.style.display === "block") {
@@ -80,12 +83,20 @@ export class FriendsMenu {
         }
     }
 
+    /**
+     * Shows the add friend menu of Friends Menu
+     */
     toggleAddFriendButton() {
         this.FriendList.style.display = "none";
         this.requestList.style.display = "none";
         this.addFriend.style.display = "block";
         this.usernameExist.style.display = "none";
     }
+
+    /**
+     * Shows the friends list in friedns menu
+     * @return {Promise<void>}
+     */
     async toggleListFriendButton(){
         this. FriendList.style.display = "none";
         this.addFriend.style.display = "none";
@@ -94,12 +105,22 @@ export class FriendsMenu {
         this.FriendList.style.display = "block";
 
     }
+
+    /**
+     * Shows the friends requests list in friends menu
+     * @return {Promise<void>}
+     */
     async toggleRequestFriendButton(){
         this.addFriend.style.display = "none";
         this.FriendList.style.display = "none";
         await this.populateRequests();
         this.requestList.style.display = "block";
     }
+
+    /**
+     * Sends friends Request to another user
+     * @return {Promise<void>}
+     */
     async toggleSendRequestButton() {
         this.usernameExist.style.display = "none";
         let exists = false;
@@ -148,8 +169,12 @@ export class FriendsMenu {
         }
     }
 
+    /**
+     * Populates the friends list in friendsMenu and checks if a friend is online.
+     * @return {Promise<boolean>}
+     */
     async populateFriends() {
-        console.log("Populating friends");
+        //console.log("Populating friends");
         let tempFriends = await AllFriends.getFriends();
         if (this.friends.length !== tempFriends.length){
             const unique = tempFriends.filter(element => !this.friends.includes(element));
@@ -170,7 +195,7 @@ export class FriendsMenu {
      * @param {{target: number, status: 'online' | 'offline' | 'in_match'}} data
      */
     setOnlineIndicator(data) {
-        console.log(`setting online indicator for ${data.target}: ${data.status}`);
+        //console.log(`setting online indicator for ${data.target}: ${data.status}`);
         const onlineIndicator = document.getElementById(`online-indicator-${data.target}`);
         const visitButton = document.getElementById(`visit-${data.target}`);
         switch (data.status) {
@@ -190,7 +215,10 @@ export class FriendsMenu {
         }
     }
 
-
+    /**
+     * Populate the friends requests list in the friendsMenu.
+     * @return {Promise<boolean>}
+     */
     async populateRequests() {
         let tempRequests = await AllFriends.getFriendRequests();
         if (this.requests.length !== tempRequests.length){
@@ -209,6 +237,12 @@ export class FriendsMenu {
         }
         return false;
     }
+
+    /**
+     * Adds specific friend Friend  to friendsMenu
+     * @param playerId
+     * @return {Promise<void>}
+     */
     async addFriendMenu(playerId) {
         const friend = document.createElement('div');
         friend.id = `friend-${playerId}`;
@@ -232,6 +266,11 @@ export class FriendsMenu {
         this.listFriend.appendChild(friend);
     }
 
+    /**
+     * Adds specific friend Request  to friendsMenu
+     * @param request
+     * @return {Promise<void>}
+     */
     async addRequest(request) {
         let status = await AllFriends.getFriendRequestStatus(request.id);
         if (status === "pending") {
@@ -259,7 +298,7 @@ export class FriendsMenu {
 
             rejectButton.onclick = async function () {
                 await AllFriends.rejectFriendRequest(request.id);
-                console.log("Request rejected, request ID:", request.id);
+                //console.log("Request rejected, request ID:", request.id);
                 await friendsMenu.updateRequests();
                 removeFriendNotification();
                 requestElement.remove();
@@ -271,14 +310,30 @@ export class FriendsMenu {
         }
     }
 
+    /**
+     * update the friends requests.
+     * @return {Promise<void>}
+     */
+
     async updateRequests() {
         this.requests = await AllFriends.getFriendRequests();
     }
+
+    /**
+     * If a user presses mouse else where in the game then close the friendsMenu.
+     */
     toggleWindowbutton() {
         if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {
             this.Friends.style.display = 'none';
         }
     }
+
+    /**
+     * This function checks if two maps have the key and value
+     * @param obj1
+     * @param obj2
+     * @return {boolean}
+     */
 
     mapsAreEqual(obj1, obj2) {
         const keys1 = Object.keys(obj1);
@@ -298,6 +353,13 @@ export class FriendsMenu {
 
         return true;
     }
+
+    /**
+     * This function goes through two arrays of requests and finds the unique ones.
+     * @param arrayA
+     * @param arrayB
+     * @return {*[]}
+     */
 
      findUniqueRequests(arrayA, arrayB) {
         const uniqueMaps = [];

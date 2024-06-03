@@ -9,7 +9,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const chatMessages = document.getElementById('chatMessages');
     const chatButtonContainer = document.getElementById('chatButtonContainer');
 
-
+    /**
+     * Scrolls the chat popup every time to bottom
+     */
     function scrollToBottom() {
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -17,6 +19,9 @@ document.addEventListener('DOMContentLoaded', (event) => {
         openChat();
     };
 
+    /**
+     * opens the chat menu
+     */
     function openChat() {
         chatPopup.style.display = 'block';
         chatButton.hidden = true;
@@ -25,13 +30,19 @@ document.addEventListener('DOMContentLoaded', (event) => {
         chatInput.focus(); // Set focus to the chat input field
     }
 
+    /**
+     * close the chat is the x is pressed.
+     */
+
     closeChat.onclick = function() {
         chatButton.hidden = false;
         chatButtonContainer.hidden = false;
         chatPopup.style.display = 'none';
     };
-
-    // Close the chat popup if the user clicks outside of it
+    /**
+     * Close the chat popup if the user clicks outside of it
+     * @param event
+     */
     window.onclick = function(event) {
         // Check if the clicked area is not the chat button and is outside the chat content
         if (!chatPopup.contains(event.target) && event.target != chatButton) {

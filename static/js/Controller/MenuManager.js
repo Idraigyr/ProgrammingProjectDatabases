@@ -915,6 +915,10 @@ export class MenuManager extends Subject{
         this.addItems(items);
     }
 
+    /**
+     * Updates the spell items in spell Menu
+     * @param spells
+     */
     updateSpellItems(spells){
         for(const spellType in spells){
             if(spellType !== "BuildSpell" && spells[spellType]){

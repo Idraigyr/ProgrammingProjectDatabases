@@ -2,7 +2,9 @@ import {API_URL} from "../configs/EndpointConfigs.js";
 import {userId} from "./ChatNamespace.js"
 
 export let playerList = [];
-
+/**
+ * Update the player list when the game is loaded.
+ */
 $(document).ready(function(){
     try {
         $.ajax({url: `${API_URL}/api/player/list`, type: "GET"}).done(function(data){
@@ -14,6 +16,10 @@ $(document).ready(function(){
 
 });
 
+/**
+ * updates the player list
+ * @return {Promise<void>}
+ */
 export async function setPlayerList() {
     try {
         playerList = await $.ajax({url: `${API_URL}/api/player/list`, type: "GET"});
@@ -23,6 +29,10 @@ export async function setPlayerList() {
     }
 }
 
+/**
+ * sends friend request to a user.
+ * @param receiverID
+ */
 export function sendRequest(receiverID){
     $.ajax({
         url: `${API_URL}/api/friend_request`,
@@ -33,14 +43,13 @@ export function sendRequest(receiverID){
         error: (e) => {
             console.error(e);
         }
-    }).done(() => {
-        console.log("Sending request");
-
-    }).fail(()=>{
-        console.log("Sending failed");
     })
 }
 
+/**
+ * get List of friend Request for current user.
+ * @return {Promise<*|*[]>}
+ */
 export async function getFriendRequests() {
     try {
         const response = await $.ajax({
@@ -50,15 +59,18 @@ export async function getFriendRequests() {
             dataType: 'json',
         });
 
-        // Assuming response is an array, you can directly return it
         return response;
     } catch (error) {
         console.error(error);
-        // Handle error appropriately, maybe throw it again or return an empty array
         return [];
     }
 }
 
+/**
+ * returns player_id through username
+ * @param receiver_username
+ * @return {Promise<*>}
+ */
 export async function getPlayerID(receiver_username)  {
     await setPlayerList();
     for (let receiver in playerList){
@@ -68,6 +80,11 @@ export async function getPlayerID(receiver_username)  {
     }
 }
 
+/**
+ * returns player username through player_id
+ * @param playerID
+ * @return {Promise<*>}
+ */
 export async function getPlayerUsername(playerID){
     await setPlayerList();
     for (let usernamePlayer in playerList) {
@@ -77,6 +94,10 @@ export async function getPlayerUsername(playerID){
     }
 }
 
+/**
+ * returns the list of friends
+ * @return {Promise<[]|*>}
+ */
 export async function  getFriends() {
     await setPlayerList();
     for (let player in playerList) {
@@ -86,6 +107,11 @@ export async function  getFriends() {
     }
 }
 
+/**
+ * returns the status of a friend request
+ * @param friendRequestID
+ * @return {Promise<*|*[]>}
+ */
 export async function getFriendRequestStatus(friendRequestID){
     try {
         const response = await $.ajax({
@@ -101,6 +127,11 @@ export async function getFriendRequestStatus(friendRequestID){
         return [];
     }
 }
+
+/**
+ * accept a friend request
+ * @param request_id
+ */
 
 export function acceptFriendRequest(request_id) {
         // Handle accepting a friend request here
@@ -121,6 +152,10 @@ export function acceptFriendRequest(request_id) {
 
     }
 
+/**
+ * reject a friend request
+ * @param requestID
+ */
 export function rejectFriendRequest(requestID) {
     // Handle rejecting a friend request here
     try {
@@ -139,6 +174,12 @@ export function rejectFriendRequest(requestID) {
     }
 }
 
+/**
+ * format to put the friend request in backend
+ * @param requestID
+ * @param status
+ * @return {{id, status}}
+ */
 export function formatPUTFriend(requestID, status) {
     return {id: requestID, status: status};
 }

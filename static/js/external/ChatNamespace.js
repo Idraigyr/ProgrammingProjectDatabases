@@ -10,7 +10,7 @@ $(document).ready(function(){
        username = data.username;
        admin = data.admin;
        userId = data.id;
-       console.log("Logged in as " + username)
+       //console.log("Logged in as " + username)
    });
 });
 
@@ -44,7 +44,10 @@ export class ChatNamespace {
         document.querySelector('#sendMessage').onclick = () => this.handleSendMessage()
     }
 
-
+    /**
+     * handles the message sent by server.
+     * @param data
+     */
     handleMessage(data) {
         const messageContainer = document.createElement('div');
         const messageText = document.createElement('div');
@@ -72,6 +75,9 @@ export class ChatNamespace {
         document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
     }
 
+    /**
+     * handle the message sent by user.
+     */
     handleSendMessage() {
         const message = document.querySelector('#chatInput').value;
         const messageData = {'message': message, 'username': username, 'user_id': userId};

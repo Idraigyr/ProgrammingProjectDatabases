@@ -1,5 +1,6 @@
 //abstract classes
 import * as THREE from "three";
+import * as spellConfig from "./../configs/SpellConfigs.js"
 
 /**
  * @class Spell - abstract class for all spells (first component of ConcreteSpell)
@@ -256,9 +257,9 @@ class ConcreteSpell{
 
     /**
      * update the spell attributes
-     * @param params
+     * @param level
      */
-    updateSpell(params){}
+    updateSpell(level){}
 }
 
 /**
@@ -314,16 +315,16 @@ export class Fireball extends ConcreteSpell{
 
     /**
      * update the spell attributes
-     * @param params
+     * @param level
      */
-    updateSpell(params) {
-        this.spell.duration = params.duration;
-        this.spell.cooldown = params.cooldown;
-        this.spell.cost = params.cost;
-        this.spell.castTime = params.castTime;
-        this.spell.velocity = params.velocity;
-        this.spell.fallOf = params.fallOf;
-        this.effects[0].damage = params.damage;
+    updateSpell(level) {
+        this.spell.duration = spellConfig.Fireball(level).duration;
+        this.spell.cooldown = spellConfig.Fireball(level).cooldown;
+        this.cost = spellConfig.Fireball(level).cost;
+        this.spell.castTime = spellConfig.Fireball(level).castTime;
+        this.spell.velocity = spellConfig.Fireball(level).velocity;
+        this.spell.fallOf = spellConfig.Fireball(level).fallOf;
+        this.effects[0].damage = spellConfig.Fireball(level).damage;
     }
 }
 
@@ -351,13 +352,13 @@ export class IceWall extends ConcreteSpell{
 
     /**
      * update the spell attributes
-     * @param params
+     * @param level
      */
-    updateSpell(params) {
-        this.spell.duration = params.duration;
-        this.spell.cooldown = params.cooldown;
-        this.spell.cost = params.cost;
-        this.spell.castTime = params.castTime;
+    updateSpell(level) {
+        this.spell.duration = spellConfig.IceWall(level).duration;
+        this.spell.cooldown = spellConfig.IceWall(level).cooldown;
+        this.cost = spellConfig.IceWall(level).cost;
+        this.spell.castTime = spellConfig.IceWall(level).castTime;
     }
 }
 
@@ -398,15 +399,15 @@ export class ThunderCloud extends ConcreteSpell{
 
     /**
      * update the spell attributes
-     * @param params
+     * @param level
      */
 
-    updateSpell(params) {
-        this.spell.duration = params.duration;
-        this.spell.cooldown = params.cooldown;
-        this.spell.cost = params.cost;
-        this.spell.castTime = params.castTime;
-        this.effects[0].damage = params.damage;
+    updateSpell(level) {
+        this.spell.duration = spellConfig.ThunderCloud(level).duration;
+        this.spell.cooldown = spellConfig.ThunderCloud(level).cooldown;
+        this.cost = spellConfig.ThunderCloud(level).cost;
+        this.spell.castTime = spellConfig.ThunderCloud(level).castTime;
+        this.effects[0].damage = spellConfig.ThunderCloud(level).damage;
     }
 }
 
@@ -430,12 +431,16 @@ export class Shield extends ConcreteSpell{
         this.name = "shield";
     }
 
-    updateSpell(params) {
-        this.spell.duration = params.duration;
-        this.spell.cooldown = params.cooldown;
-        this.spell.cost = params.cost;
-        this.spell.castTime = params.castTime;
-        this.effects[0].damage = params.damage;
+    /**
+     * Update the spell with attributes
+     * @param level
+     */
+    updateSpell(level) {
+        this.spell.duration = spellConfig.Shield(level).duration;
+        this.spell.cooldown = spellConfig.Shield(level).cooldown;
+        this.cost = spellConfig.Shield(level).cost;
+        this.spell.castTime = spellConfig.Shield(level).castTime;
+        this.effects[0].damage = spellConfig.Shield(level).damage;
     }
 }
 
