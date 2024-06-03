@@ -291,29 +291,7 @@ class App {
                 let spell = null;
                 if(event.detail.spellIds[i]){
                     spell = spellTypes.getSpellObject(event.detail.spellIds[i]);
-                    switch (spell){
-                        case "Fireball":
-                            spell.updateSpell(SpellConfigs.Fireball(this.playerInfo.level));
-                            break;
-                        case "ThunderCloud":
-                            spell.updateSpell(SpellConfigs.ThunderCloud(this.playerInfo.level));
-                            break;
-                        case "IceWall":
-                            spell.updateSpell(SpellConfigs.IceWall(this.playerInfo.level));
-                            break;
-                        case "Shield":
-                            spell.updateSpell(SpellConfigs.Shield(this.playerInfo.level));
-                            break;
-                        case "Heal":
-                            spell.updateSpell(SpellConfigs.Heal(this.playerInfo.level));
-                            break;
-                        case "Zap":
-                            spell.updateSpell(SpellConfigs.Zap(this.playerInfo.level));
-                            break;
-                        case "BuildSpell":
-                            spell.updateSpell(SpellConfigs.BuildSpell(this.playerInfo.level));
-                            break;
-                    }
+                    spell.updateSpell(this.playerInfo.level);
                 }
                 this.worldManager.world.player.changeEquippedSpell(i, spell);
                 if(spell) spells.push({id: spellTypes.getId(event.detail.spellIds[i]), slot: i});
@@ -711,6 +689,11 @@ class App {
             viewManager: this.viewManager,
             characterController: this.playerController,
         });
+        //update spells
+        for(let i = 0; i < 7; i++){
+            let spell = spellTypes.getSpellObject(spellTypes.getName(i));
+            spell.updateSpell(this.playerInfo.level);
+        }
 
         if(this.abort) return false;
 

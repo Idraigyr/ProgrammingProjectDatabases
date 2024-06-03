@@ -1,4 +1,4 @@
-# List of environment variables
+# List of cheats
 The following is a list of cheats the admin can use to speed up the game process.
 
 

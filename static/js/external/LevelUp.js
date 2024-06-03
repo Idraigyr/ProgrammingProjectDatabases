@@ -67,7 +67,11 @@ export function popUp(level, maxMana, maxHealth, buildings, Spells, buildingsPro
 let interval = null;
 let timeout = null;
 
-
+/**
+ * Converts an array to  string
+ * @param array
+ * @return {string}
+ */
 function arrayStringConverter(array) {
     let string = "[ ";
     for(let i = 0; i < array.length; i++){
@@ -110,7 +114,6 @@ export function alertPopUp(message, duration = 3000, updateInterval = 10){
 
     interval = setInterval(() => {
         width -= decrement;
-        console.log(width);
         timeBar.style.width = `${width}%`;
     }, updateInterval)
 

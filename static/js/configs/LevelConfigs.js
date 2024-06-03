@@ -1,3 +1,6 @@
+/**
+ * @file LevelConfigs.js is a file that contains the default configuration of each Level.
+ */
 export let Level  = {
     1: {
         maxMana: 100,

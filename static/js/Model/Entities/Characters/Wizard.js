@@ -249,6 +249,14 @@ export class Wizard extends Character{
         this.respawning = false;
     }
 
+    /**
+     * check if wizard has enough mana for spell.
+     * @return {boolean}
+     */
+    enoughMana(){
+        return this.mana >= this.getCurrentSpell().cost;
+    }
+
 
 
 

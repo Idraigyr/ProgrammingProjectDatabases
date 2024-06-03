@@ -1,3 +1,6 @@
+/**
+ * @file SpellConfigs.js is a file that contains the configuration for each spell on basis of the player level.
+ */
 //Fireball
 export const Fireball = (level) => ({
     duration: 10,
@@ -13,7 +16,7 @@ export const ThunderCloud = (level) => ({
     duration: 10,
     damage: 50 + 10 * Math.min(0,level-10),
     cost: 50,
-    cooldown: 10,
+    cooldown: 15,
     castTime: 0
 });
 
@@ -41,12 +44,3 @@ export const Heal = (level) => ({});
 export const Zap = (level) => ({});
 
 export const BuildSpell = (level) => ({});
-
-export const IceWallView = {
-    blocks: 5,
-    width: 10,
-    duration: 15,
-    cooldown: 22,
-    cost: 25,
-    castTime: 0
-}

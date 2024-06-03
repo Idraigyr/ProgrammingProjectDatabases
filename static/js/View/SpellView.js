@@ -3,7 +3,6 @@ import * as THREE from "three";
 import {ParticleSystem} from "./ParticleSystem.js";
 import {Color} from "three";
 import * as Spells from "../configs/SpellConfigs.js";
-import {IceWallView} from "../configs/SpellConfigs.js";
 
 /**
  * Fireball view
@@ -389,13 +388,13 @@ export class RitualSpell extends IAnimatedView{
  */
 export const IceWall = function (params) {
     const iceBlocks = [];
-    for(let i = 0; i < Spells.IceWallView.blocks; i++){
+    for(let i = 0; i < Spells.IceWall(1).blocks; i++){
         const modelWidth = new THREE.Box3().setFromObject(params.charModel).getSize(new THREE.Vector3()).z;
         iceBlocks.push(new IceBlock({
             charModel: params.charModel.clone(),
             horizontalRotation: params.horizontalRotation,
             //figure out why + 0.5 is needed
-            position: new THREE.Vector3(i*(Spells.IceWallView.width/Spells.IceWallView.blocks) - (Spells.IceWallView.width - modelWidth + 0.5)/2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),params.horizontalRotation*Math.PI/180),
+            position: new THREE.Vector3(i*(Spells.IceWall(1).width/Spells.IceWall(1).blocks) - (Spells.IceWall(1).width - modelWidth + 0.5)/2,0,0).applyAxisAngle(new THREE.Vector3(0,1,0),params.horizontalRotation*Math.PI/180),
             offset: new THREE.Vector3().copy(params.position)
         }));
         iceBlocks[i].charModel.traverseVisible((child) => {
