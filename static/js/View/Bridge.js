@@ -28,7 +28,7 @@ export class Bridge extends IView{
         let scale = {x: this.#width*gridCellSize, y: this.#islandThickness, z: this.#length*gridCellSize};
 
         //threeJS Section
-        let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x423f36}));
+        let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial({color: 0x423f36}));
 
         blockPlane.position.set(pos.x, pos.y, pos.z);
         blockPlane.scale.set(scale.x, scale.y, scale.z);
