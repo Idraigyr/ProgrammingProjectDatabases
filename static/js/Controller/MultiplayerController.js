@@ -603,8 +603,10 @@ export class MultiplayerController extends Subject{
         }
 
         if(data.playerHealth){
-            if(this.countStats) this.stats.set("damage_taken", this.stats.get("damage_taken") + data.playerHealth.previous - data.playerHealth.current);
-            this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
+            if(data.playerHealth.previous > data.playerHealth.current){
+                if(this.countStats) this.stats.set("damage_taken", this.stats.get("damage_taken") + data.playerHealth.previous - data.playerHealth.current);
+                this.worldManager.world.player.takeDamage(data.playerHealth.previous - data.playerHealth.current);
+            }
         }
         if(data.spellEvent) {
             console.log(data.spellEvent)

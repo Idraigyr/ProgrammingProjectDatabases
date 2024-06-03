@@ -134,7 +134,7 @@ class App {
             target: null,
             raycaster: this.raycastController,
             //visualise axes -- DEBUG STATEMENTS --
-            axisHelper: new Cursor({})
+            // axisHelper: new Cursor({})
             //visualise axes -- DEBUG STATEMENTS --
         });
         this.cameraManager.camera.position.set(0,0,0);
@@ -143,7 +143,7 @@ class App {
         this.viewManager.setCamera(this.cameraManager.camera);
 
         //visualise axes -- DEBUG STATEMENTS --
-        this.scene.add(this.cameraManager.axisHelper.charModel);
+        // this.scene.add(this.cameraManager.axisHelper.charModel);
         //visualise axes -- DEBUG STATEMENTS --
         this.friendsMenu = new FriendsMenu();
 

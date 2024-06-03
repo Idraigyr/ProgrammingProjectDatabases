@@ -85,7 +85,7 @@ export let Level  = {
     5: {
         maxMana: 180,
         maxHealth: 180,
-        xpThreshold: 30000,
+        xpThreshold: 3000,
         Tree: 0,
         Bush: 0,
         Wall: 5,
