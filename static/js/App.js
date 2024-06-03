@@ -412,8 +412,10 @@ class App {
                     });
                 }
             }
-            this.itemManager.stopGemProduction();
-            this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
+            if(this.playerInfo.level >= 3) {
+                this.itemManager.stopGemProduction();
+                this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
+            }
 
             //TODO: move if statements into their own method of the placeable class' subclasses
             if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
@@ -447,8 +449,8 @@ class App {
                 // tower stats for Lucas
                 // gets called on menu open
                 // default values: hp: 100, damage: 20, attackSpeed: 1
-                console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
-                    " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
+                //console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
+                //    " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
             if(buildingNumber === buildTypes.getNumber("altar_building")){
                 params.spells = this.playerInfo.availableSpells

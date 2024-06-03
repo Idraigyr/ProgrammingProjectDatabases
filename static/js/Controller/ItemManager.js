@@ -1,7 +1,7 @@
 import {Attribute, Gem, Spell} from "../Model/items/Item.js";
 import {API_URL, gemAttributesURI, gemURI, postRetries, spellListURI} from "../configs/EndpointConfigs.js";
 import {minTotalPowerForStakes, powerScaling} from "../configs/ControllerConfigs.js";
-import {gemProductionInterval} from "../configs/ControllerConfigs.js";
+import {gemProductionInterval, gemChanceMultiplier} from "../configs/ControllerConfigs.js";
 import {gemTypes} from "../configs/Enums.js";
 import {spellTypes} from "../Model/Spell.js";
 
@@ -53,23 +53,28 @@ export class ItemManager {
     }
 
     /**
-     * Start gem production
-     * @param params - all buildings that produce gems
+     * creates a gem with certain chance every gemProductionInterval seconds
+     * gem fortune based on fortune of placed mines
+     * @param {Object[]} params - placed buildings
      */
     startGemProduction(params){
         let fortune = 0;
         for (const key in params){
-            fortune = fortune + params[key].getStats().get("fortune");
+            if (typeof params[key].getStats().get("fortune") !== "undefined"){
+                if ('lastCollected' in params[key]){
+                    fortune += params[key].getStats().get("fortune");
+                }
+            }
         }
-        console.log("fortune: " + fortune);
         this.interval = setInterval(() => {
-            console.log("creating gem");
-            this.createGem(Math.floor(3));
+            if (Math.random() <= (fortune/100)*gemChanceMultiplier) {
+                this.createGem(Math.floor(fortune));
+            }
         }, gemProductionInterval*1000);
     }
 
     /**
-     * Stop gem production
+     * stops random gem generation
      */
     stopGemProduction(){
         clearInterval(this.interval);
