@@ -1,3 +1,4 @@
+/*This is a test for foundation rotation*/
 function returnMultipliedString(string, length){
   let str = "";
   for(let i = 0; i < length; i++){

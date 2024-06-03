@@ -1,5 +1,8 @@
 import * as THREE from 'three';
 
+/**
+ * Controller for the peer player
+ */
 export class PeerController{
     constructor(params) {
         this.peer = params.peer;

@@ -280,51 +280,91 @@ export class InputManager extends Subject{
         settingsButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for settings close button clicked
+     * @param callback function to add
+     */
     addSettingsCloseButtonListener(callback) {
-        const settingsCloseButton = document.querySelector('.close-button');
+        const settingsCloseButton = document.querySelector('.close-setting');
         settingsCloseButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for respawn button clicked
+     * @param callback function to add
+     */
     addRespawnButtonListener(callback) {
         const respawnButton = document.querySelector('.respawnButton');
         respawnButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for logout button clicked
+     * @param callback function to add
+     */
     addLogoutButtonListener(callback) {
         const logoutButton = document.querySelector('.logOutButton');
         logoutButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for leave match button clicked
+     * @param callback function to add
+     */
     addLeaveMatchButtonListener(callback) {
         const leaveMatchButton = document.querySelector('.leaveMatchButton');
         leaveMatchButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for delete account button clicked
+     * @param callback function to add
+     */
     addDeleteAccountButtonListener(callback) {
         const deleteAccountButton = document.querySelector('.deleteAccountButton');
         deleteAccountButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for apply button clicked
+     * @param callback function to add
+     */
     addApplyButtonListener(callback) {
         const applyButton = document.querySelector('.applyButton');
         applyButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for grass toggle clicked
+     * @param callback function to add
+     */
     addGrassToggleListener(callback) {
         const grassToggle = document.getElementById('grass-toggle');
         grassToggle.addEventListener('change', callback);
     }
 
+    /**
+     * Adds callback for fullscreen button clicked
+     * @param callback function to add
+     */
     addFullscreenButtonListener(callback) {
         const fulllscreenButton = document.querySelector('.fullscreenButton');
         fulllscreenButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for help button clicked
+     * @param callback function to add
+     */
     addHelpButtonListener(callback) {
         const helpButton = document.querySelector('.helpButton');
         helpButton.addEventListener('click', callback);
     }
 
+    /**
+     * Adds callback for help close button clicked
+     * @param callback function to add
+     */
     addHelpCloseButtonListener(callback) {
         const helpCloseButton = document.querySelector('.close-help');
         helpCloseButton.addEventListener('click', callback);

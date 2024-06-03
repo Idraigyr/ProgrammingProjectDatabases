@@ -62,6 +62,9 @@ export class Fireball extends IView{
     }
 }
 
+/**
+ * ThunderCloud view wrapper
+ */
 class ThunderCloudWrapper{
     /**
      * Create a wrapper around + a new thundercloud object
@@ -75,14 +78,26 @@ class ThunderCloudWrapper{
         });
     }
 
+    /**
+     * Get charModel of the thundercloud
+     * @returns {Group} charModel
+     */
     get charModel(){
         return this.thunderCloud.charModel;
     }
 
+    /**
+     * Get bounding box of the thundercloud
+     * @returns {Box3} boundingBox
+     */
     get boundingBox(){
         return this.thunderCloud.boundingBox;
     }
 
+    /**
+     * Get boxHelper of the thundercloud
+     * @returns boxHelper
+     */
     get boxHelper(){
         return this.thunderCloud.boxHelper;
     }
@@ -143,7 +158,9 @@ class ThunderCloudWrapper{
     }
 }
 
-
+/**
+ * ThunderCloudPool class
+ */
 export class ThunderCloudPool{
     /**
      * Create thundercloud pool to prevent frame drops when creating new thunderclouds

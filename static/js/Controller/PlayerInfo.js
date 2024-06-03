@@ -56,6 +56,10 @@ export class PlayerInfo extends Subject{
 
     }
 
+    /**
+     * Update logout information on the server
+     * @returns {Promise<void>}
+     */
     async logout(){
         // Get current time
         const currentTime = await this.getCurrentTime();
@@ -84,6 +88,10 @@ export class PlayerInfo extends Subject{
         }
     }
 
+    /**
+     * Update login information on the server
+     * @returns {Promise<void>} - Promise that resolves when the login information is updated
+     */
     async login(){
         // Get current time
         const currentTime = await this.getCurrentTime();
@@ -233,6 +241,10 @@ export class PlayerInfo extends Subject{
         return Math.max(0, this.level <= 10 ? (this.level-1)*20 : 180 + (this.level-10)*10);
     }
 
+    /**
+     * Checks if the player is logged in
+     * @returns {boolean} - True if the player is logged in, false otherwise
+     */
     isPlayerLoggedIn(){
         return this.userID !== null;
     }
@@ -264,6 +276,10 @@ export class PlayerInfo extends Subject{
         return this.crystals;
     }
 
+    /**
+     *
+     * @param event
+     */
     updateMana(event){
         this.mana = event.detail.current;
         this.maxMana = event.detail.total;
@@ -271,6 +287,10 @@ export class PlayerInfo extends Subject{
         this.updatePlayerInfoBackend();
     }
 
+    /**
+     * Update the player position in the playerInfo object
+     * @param event - Event that contains the new position
+     */
     updatePlayerPosition(event){
         this.playerPosition = event.detail.position;
     }
@@ -348,6 +368,9 @@ export class PlayerInfo extends Subject{
         }
     }
 
+    /**
+     * Create list of buildings that can be built
+     */
     buildings(){
         for(let b in this.buildingsThreshold){
             if (this.buildingsThreshold[b] !== 0){
@@ -465,6 +488,10 @@ export class PlayerInfo extends Subject{
         return true;
     }
 
+    /**
+     * Get the level of the player
+     * @returns {number} - Level of the player
+     */
     getLevel(){
         return this.level;
     }

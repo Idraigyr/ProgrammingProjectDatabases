@@ -40,6 +40,10 @@ class SpellEntity extends Entity{
         }
     }
 
+    /**
+     * Function to handle collision with world
+     * @param deltaTime - time since last update
+     */
     onWorldCollision(deltaTime) {}
     /**
      * Function to handle collision with characters and buildings
@@ -57,20 +61,37 @@ class SpellEntity extends Entity{
             character.hit = true;
         }
     }
+
+    /**
+     * Function to handle collision with characters
+     * @param damage - damage to apply
+     */
     takeDamage(damage){
         //skip
     }
+
+    /**
+     * Function to handle collision with characters
+     * @param number - id to set
+     */
     setId(number)  {
         this.id = number;
     }
 }
 
+/**
+ * @class CollidableSpellEntity - class for collidable spell entities
+ */
 class CollidableSpellEntity extends SpellEntity{
     constructor(params) {
         super(params);
         this.boundingBox = new THREE.Box3();
     }
 
+    /**
+     * updates the entity
+     * @param deltaTime - time since last update
+     */
     update(deltaTime) {
         super.update(deltaTime);
     }
@@ -245,11 +266,21 @@ export class FollowPlayer extends SpellEntity{
         this.targettable = true;
         this.shields = 3;
     }
+
+    /**
+     * Updates the entity
+     * @param deltaTime - time since last update
+     */
     update(deltaTime){
         super.update(deltaTime);
         this._position.copy(this.target.position);
         this.dispatchEvent(this._createUpdatePositionEvent());
     }
+
+    /**
+     * Function to handle collision with world
+     * @param damage - damage to apply
+     */
     takeDamage(damage) {
         this.shields -= 1;
         if(this.shields > 0){
@@ -262,6 +293,10 @@ export class FollowPlayer extends SpellEntity{
 
     }
 
+    /**
+     * Creates a shield lost event
+     * @returns {CustomEvent<unknown>} - the shield lost event
+     */
     createShieldLostEvent(){
         return new CustomEvent("shieldLost", {detail: this.id});
     }

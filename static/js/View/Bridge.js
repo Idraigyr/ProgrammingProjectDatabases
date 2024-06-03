@@ -2,6 +2,9 @@ import {IView} from "./View.js";
 import * as THREE from "three";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 
+/**
+ * Bridge view
+ */
 export class Bridge extends IView{
     #width;
     #length;

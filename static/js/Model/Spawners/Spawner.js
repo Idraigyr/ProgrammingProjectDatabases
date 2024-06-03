@@ -1,6 +1,9 @@
 import * as THREE from "three";
 import {Subject} from "../../Patterns/Subject.js";
 
+/**
+ * @class Spawner - class for spawning objects
+ */
 export class Spawner extends Subject{
     constructor(params) {
         super(params);
@@ -10,10 +13,17 @@ export class Spawner extends Subject{
         this.buildingID = params?.buildingID ?? null;
     }
 
+    /**
+     * Update the spawner
+     */
     dispose() {
         this.dispatchEvent(this.createDeleteEvent());
     }
 
+    /**
+     * Update the spawner
+     * @returns {CustomEvent<{model: Spawner}>} - the delete event
+     */
     createDeleteEvent() {
         return new CustomEvent("delete", {
             detail: {
@@ -22,6 +32,10 @@ export class Spawner extends Subject{
         });
     }
 
+    /**
+     * Update the spawner
+     * @param deltaTime - time since last update
+     */
     update(deltaTime) {
 
     }

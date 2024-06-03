@@ -52,6 +52,10 @@ export class ItemManager {
         }
     }
 
+    /**
+     * Start gem production
+     * @param params - all buildings that produce gems
+     */
     startGemProduction(params){
         let fortune = 0;
         for (const key in params){
@@ -64,6 +68,9 @@ export class ItemManager {
         }, gemProductionInterval*1000);
     }
 
+    /**
+     * Stop gem production
+     */
     stopGemProduction(){
         clearInterval(this.interval);
     }
@@ -208,6 +215,10 @@ export class ItemManager {
         return powerStaked >= minTotalPowerForStakes.getStakesForLvl(this.playerInfo.level);
     }
 
+    /**
+     * checks if the total power of staked gems is greater than the minimum required for staking
+     * @returns {boolean} - true if the total power of staked gems is greater than the minimum required for staking
+     */
     checkStakedGems(){
         let powerStaked = 0;
         this.gems.forEach(gem => {

@@ -2,6 +2,9 @@
 import {API_URL} from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
 
+/**
+ * Class to manage the forwarding namespace
+ */
 export class ForwardingNameSpace extends Subject{
 
     constructor() {

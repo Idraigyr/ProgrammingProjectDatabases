@@ -56,6 +56,11 @@ export class BuildingPreview extends IView{
         return true;
     }
 
+    /**
+     * Update building preview
+     * @param deltaTime time passed since last update
+     * @param camera camera to update view
+     */
     update(deltaTime, camera) {
         super.update(deltaTime, camera);
     }

@@ -11,6 +11,10 @@ export class Building extends IView{
         this.rollOverMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, opacity: 0.5, transparent: true });
     }
 
+    /**
+     * Update position of the building
+     * @param event event with position
+     */
     updatePosition(event) {
         super.updatePosition(event);
         //normally matrixWorld is updated every frame.
@@ -19,11 +23,20 @@ export class Building extends IView{
         this.charModel.updateMatrixWorld();
     }
 
+    /**
+     * Update rotation of the building
+     * @param event event with rotation
+     */
     updateRotation(event) {
         super.updateRotation(event);
         //check updatePosition for explanation
         this.charModel.updateMatrixWorld();
     }
+
+    /**
+     * Update the building's ready state
+     * @param event event with ready state
+     */
     updateReady(event) {
         if(event.detail.ready){
             this.charModel.traverse (function (child) {

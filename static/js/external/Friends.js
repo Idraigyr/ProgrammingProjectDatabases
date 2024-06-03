@@ -15,6 +15,10 @@ $(document).ready(function(){
 
 });
 
+/**
+ * Sets the player list to the list of players
+ * @returns {Promise<void>} the player list
+ */
 export async function setPlayerList() {
     try {
         playerList = await $.ajax({url: `${API_URL}/api/player/list`, type: "GET"});
@@ -24,6 +28,10 @@ export async function setPlayerList() {
     }
 }
 
+/**
+ * Sends a friend request to the player with the given ID
+ * @param receiverID the id of the player to send the request to
+ */
 export function sendRequest(receiverID){
     $.ajax({
         url: `${API_URL}/api/friend_request`,
@@ -45,6 +53,10 @@ export function sendRequest(receiverID){
     });
 }
 
+/**
+ * Get the friend requests of the current player
+ * @returns {Promise<*|*[]>} the friend requests of the current player
+ */
 export async function getFriendRequests() {
     await setPlayerList();
     try {
@@ -89,6 +101,10 @@ export function getPlayerUsername(playerID){
     }
 }
 
+/**
+ * Get the friends of the current player
+ * @returns {Promise<[]|*>} the friends of the current player
+ */
 export async function  getFriends() {
     await setPlayerList();
     for (let player in playerList) {
@@ -98,6 +114,11 @@ export async function  getFriends() {
     }
 }
 
+/**
+ * Get the status of a friend request
+ * @param friendRequestID the id of the friend request
+ * @returns {Promise<*|*[]>} the status of the friend request
+ */
 export async function getFriendRequestStatus(friendRequestID){
     try {
         const response = await $.ajax({
@@ -114,6 +135,10 @@ export async function getFriendRequestStatus(friendRequestID){
     }
 }
 
+/**
+ * Accepts a friend request
+ * @param request_id the id of the friend request
+ */
 export function acceptFriendRequest(request_id) {
         // Handle accepting a friend request here
         try {
@@ -133,6 +158,10 @@ export function acceptFriendRequest(request_id) {
 
     }
 
+/**
+ * Rejects a friend request
+ * @param requestID the id of the friend request
+ */
 export function rejectFriendRequest(requestID) {
     // Handle rejecting a friend request here
     try {
