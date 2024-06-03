@@ -15,7 +15,7 @@ from src.model.match_queue import MatchQueueEntry
 # It will ignore the original sender session, but will broadcast to all other sessions
 # BROADCAST_TO_SELF: bool = False
 MAX_PLAYERS: int = 2
-MATCH_TIME: int = 10*60  # 10 minutes
+MATCH_TIME: int = 10  # 10 minutes
 
 
 class ForwardingNamespace(Namespace):
@@ -73,13 +73,12 @@ class ForwardingNamespace(Namespace):
         """
         try:
             self._log.info(f"Ending match: {match_id}")
-            senderId = self.get_user_from_sid(request.sid)
 
             #remove friend visit "match" mainly added to handle case where player disconnects during friend visit
             if self.matches[match_id]['time_left'] is None:
                 self._log.info(f"Ending friend visit: {match_id}")
                 for player_id in self.matches[match_id]['players']:
-                    if player_id != senderId:
+                    if player_id == winner_id:
                         self._log.info(f"Player {player_id} left the island")
                         print(f"Player {player_id} left the island sending this to {player_id}")
                         self.emit('island_visit', {'request': 'leave'}, room=self.clients[player_id])

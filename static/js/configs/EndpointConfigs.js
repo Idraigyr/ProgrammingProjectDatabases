@@ -35,4 +35,10 @@ export const settingsURI = 'api/settings';
 
 export const fuseTaskURI = 'api/fuse_task';
 
+export const pendingFriendRequestURI = 'api/friend_request/list';
+
+export const friendRequestURI = 'api/friend_request';
+
+export const playerListURI = 'api/player/list';
+
 export const postRetries = 3;

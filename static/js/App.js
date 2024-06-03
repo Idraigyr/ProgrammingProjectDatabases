@@ -147,9 +147,6 @@ class App {
         //visualise axes -- DEBUG STATEMENTS --
         this.friendsMenu = new FriendsMenu();
 
-        //this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this)});
-        //TODO: check why you need to put friendsMenu into MultiplayerController
-        // This is needed to disable friends menu
         this.multiplayerController = new Controller.MultiplayerController({togglePhysicsUpdates: this.togglePhysicsUpdates.bind(this), friendsMenu: this.friendsMenu, playerInfo: this.playerInfo});
         this.timerManager = new Controller.TimerManager();
         this.playerController = null;

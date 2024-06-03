@@ -112,7 +112,6 @@ export function alertPopUp(message, duration = 3000, updateInterval = 10){
         width -= decrement;
         console.log(width);
         timeBar.style.width = `${width}%`;
-        console.log(timeBar.getBoundingClientRect().width);
     }, updateInterval)
 
     timeout = setTimeout(function () {

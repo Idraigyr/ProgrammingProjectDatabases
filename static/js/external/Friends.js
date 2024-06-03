@@ -1,5 +1,6 @@
-import {API_URL} from "../configs/EndpointConfigs.js";
+import {API_URL, pendingFriendRequestURI} from "../configs/EndpointConfigs.js";
 import {userId} from "./ChatNamespace.js"
+import {alertPopUp} from "./LevelUp.js";
 
 export let playerList = [];
 
@@ -30,28 +31,29 @@ export function sendRequest(receiverID){
         data: JSON.stringify({sender_id: userId, receiver_id:receiverID}),
         dataType: "json",
         contentType: "application/json",
-        error: (e) => {
-            console.error(e);
+        error: (jqXHR, textStatus, err) => {
+            if(jqXHR.status === 409){
+                console.error("Friend request already exists");
+                alertPopUp("You have already sent a friend request to this player");
+            }
         }
     }).done(() => {
         console.log("Sending request");
 
     }).fail(()=>{
         console.log("Sending failed");
-    })
+    });
 }
 
 export async function getFriendRequests() {
+    await setPlayerList();
     try {
-        const response = await $.ajax({
-            url: `${API_URL}/api/friend_request/list?receiver_id=${userId}`,
+        return await $.ajax({
+            url: `${API_URL}/${pendingFriendRequestURI}?receiver_id=${userId}`,
             type: 'GET',
             contentType: 'application/json; charset=utf-8',
             dataType: 'json',
         });
-
-        // Assuming response is an array, you can directly return it
-        return response;
     } catch (error) {
         console.error(error);
         // Handle error appropriately, maybe throw it again or return an empty array
@@ -59,8 +61,13 @@ export async function getFriendRequests() {
     }
 }
 
-export async function getPlayerID(receiver_username)  {
-    await setPlayerList();
+/**
+ * Get the playerID of a player given their username
+ * make sure the playerList is updated before calling this function
+ * @param receiver_username
+ * @return {number}
+ */
+export function getPlayerID(receiver_username)  {
     for (let receiver in playerList){
         if (playerList[receiver].username === receiver_username){
             return playerList[receiver].user_profile_id;
@@ -68,8 +75,13 @@ export async function getPlayerID(receiver_username)  {
     }
 }
 
-export async function getPlayerUsername(playerID){
-    await setPlayerList();
+/**
+ * Get the username of a player given their playerID
+ * make sure the playerList is updated before calling this function
+ * @param playerID
+ * @return {string}
+ */
+export function getPlayerUsername(playerID){
     for (let usernamePlayer in playerList) {
         if (playerList[usernamePlayer].user_profile_id === playerID) {
             return playerList[usernamePlayer].username;

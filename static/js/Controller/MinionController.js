@@ -33,7 +33,7 @@ class PathNode{
         this.hCost = 0;
         this.worldMap = params.worldMap;
         this.parent = null;
-        this.#accessibleCells = [buildTypes.getNumber("empty"), buildTypes.getNumber("bridge"), buildTypes.getNumber("altar_building")]; //TODO: maybe add a parameter for accessible cells (put it somewhere where it is more readable/easier to augment)
+        this.#accessibleCells = [buildTypes.getNumber("empty"), buildTypes.getNumber("bridge"), buildTypes.getNumber("altar_building")];
     }
 
     /**
@@ -527,6 +527,13 @@ export class MinionController extends Subject{
         }
     }
 
+    /**
+     * tests whether there is a path from start to end on the islands
+     * @param {Foundation[]} islands
+     * @param {THREE.Vector3} start
+     * @param {THREE.Vector3} end
+     * @return {*} - path if it exists, null otherwise
+     */
     testPath(islands, start, end){
         console.log("testing path, islands:", islands);
         printFoundationGrid(islands[0].grid, islands[0].width, islands[0].length);
