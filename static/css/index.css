@@ -1005,11 +1005,21 @@
 }
 
 
-.settings-menu > .close-button-container{
+.settings-menu > .close-button-container, .help-menu > .close-button-container{
     display: flex;
     justify-content: flex-end;
     position: fixed;
+    width: 50%;
 }
+
+#Friends > .close-button-container{
+    display: flex;
+    justify-content: flex-end;
+    position: fixed;
+    width: 50%;
+    z-index: 100;
+}
+
 .close-setting {
     left: 10px;
 }
@@ -2551,11 +2561,11 @@ body {
     pointer-events: none;
     position: absolute;
     display: none;
-    top: -13px;
-    left: -12px;
+    bottom: 0.4vw;
+    right: 0.4vw;
     width: 30px;
     height: 30px;
-    z-index: 5;
+    z-index: 10000;
     /*transform-origin: 50% 4px; if you want to do rotation from its top as anchorpoint*/
     animation: ring 4s .7s ease-in-out infinite;
 }
@@ -2686,24 +2696,33 @@ body {
 }
 
 #friends-button-container{
-    position: absolute;
-    top: 77.5%;
-    right: 0;
-    width: 50px;
-    height: 40px;
-    display: block; /* Ensure the container has the size of its contents */
-    z-index: 5;
-
+    position: fixed;
+  bottom: 0;
+  right: 0;
+  margin: 10px;
 }
 
 #friends-button {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background-color: lightblue; /* Optional: Just for better visibility */
-    text-align: center; /* Optional: Align text within the div */
-    padding: 10px; /* Optional: Add padding inside the div */
-    border-radius: 10px;
+    right: 0.4vw;
+  bottom: 0.4vw;
+  position: fixed;
+  z-index: 9999;
+  background-color: #129bf4;
+  color: #fff;
+  line-height: calc(2.75vw + 14px);
+  margin-top: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25vw;
+  width: calc(2.75vw + 14px);
+  height: calc(2.75vw + 14px);
+  text-align: center;
+  box-shadow: 2px 2px 8px -3px #000;
+  border-radius: 100%;
+  -webkit-border-radius: 100%;
+  -moz-border-radius: 100%;
+  -ms-border-radius: 100%;
+  display: inline-block;
     background-image: url('../assets/images/friend.png'); /* Replace with the path to your image */
     background-size: 30%; /* This will cover the entire element, may also use contain */
     background-position: center; /* This will center the image in the element */
