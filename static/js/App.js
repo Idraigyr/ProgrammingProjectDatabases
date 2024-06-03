@@ -709,6 +709,7 @@ class App {
             factory: this.factory,
             itemManager: this.itemManager,
             viewManager: this.viewManager,
+            characterController: this.playerController,
         });
 
         if(this.abort) return false;

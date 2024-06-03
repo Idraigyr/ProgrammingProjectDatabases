@@ -27,6 +27,7 @@ export class MultiplayerController extends Subject{
     peerController;
     updateInterval;
     #matchId = null;
+    characterController;
     constructor(params) {
         super(params);
         this.canMatchmake = true;
@@ -38,6 +39,7 @@ export class MultiplayerController extends Subject{
         this.togglePhysicsUpdates = params.togglePhysicsUpdates;
         this.friendsMenu = params.friendsMenu;
         this.state = "singlePlayer"; // singlePlayer, matchmaking, inMatch, visiting, visited
+
 
         //Friend visit properties
         this.pendingVisitRequest = null;
@@ -57,6 +59,7 @@ export class MultiplayerController extends Subject{
         this.updateEvents.set("proxyHealthUpdate", this.sendProxyHealthUpdate.bind(this));
         this.updateEvents.set("proxyDeath", this.proxyDeathEvent.bind(this));
         this.updateEvents.set("shieldUpdate", this.sendShieldUpdate.bind(this));
+        this.updateEvents.set("eatingEvent", this.sendEatingEvent.bind(this));
 
         this.countStats = false;
         this.stats = new Map();
@@ -105,7 +108,7 @@ export class MultiplayerController extends Subject{
      * add all the necessary controllers and managers to the MultiplayerController + initialize the stats properties
      * @param {{playerInfo: PlayerInfo, menuManager: MenuManager, worldManager, WorldManager, spellCaster: SpellCaster,
      * minionController: MinionController, forwardingNameSpace: ForwardingNameSpace, spellFactory: SpellFactory,
-     * factory: Factory, itemManager: ItemManager, viewManager: ViewManager}} params
+     * factory: Factory, itemManager: ItemManager, viewManager: ViewManager, characterController: CharacterController}} params
      */
     setUpProperties(params){
         this.playerInfo = params.playerInfo;
@@ -119,6 +122,7 @@ export class MultiplayerController extends Subject{
         this.factory = params.factory;
         this.itemManager = params.itemManager;
         this.viewManager = params.viewManager;
+        this.characterController = params.characterController;
     }
 
     /**
@@ -282,6 +286,7 @@ export class MultiplayerController extends Subject{
         opponent.setId({entity: {player_id: this.peerInfo.userID}});
         opponent.addEventListener("characterDied", this.updateEvents.get("playerDeath"));
         this.peerController = new Controller.PeerController({peer: opponent});
+        this.characterController.addEventListener("eatingEvent", this.updateEvents.get("eatingEvent"));
 
 
         await loadingScreen.setText("creating proxys for buildings...");
@@ -411,6 +416,9 @@ export class MultiplayerController extends Subject{
                 lifetime: lifetimeStats
             }
         });
+        this.worldManager.world.player.changeCurrentHealth(this.worldManager.world.player.maxHealth);
+        this.worldManager.world.player.respawning = false;
+        this.playerInfo.health = this.playerInfo.maxHealth;
         this.toggleLeaveMatchButton();
         //wait for player to click on close button
     }
@@ -575,6 +583,11 @@ export class MultiplayerController extends Subject{
                  this.viewManager.getPair(this.peerController.peer).view.show();
                  this.peerController.peer.health = this.peerController.peer.maxHealth;
             }
+        if (data.eatingEvent) {
+            const previousHealth = this.peerController.peer.health;
+            this.peerController.peer.health += data.eatingEvent.params.health;
+             this.peerController.peer.dispatchEvent(this.peerController.peer.createHealthUpdateEvent(previousHealth));
+        }
 
         if(data.playerHealth){
             if(this.countStats) this.stats.set("damage_taken", this.stats.get("damage_taken") + data.playerHealth.previous - data.playerHealth.current);
@@ -734,6 +747,15 @@ export class MultiplayerController extends Subject{
     }
 
     /**
+     * Send the eating event to the opponent
+     */
+    sendEatingEvent(event) {
+        this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
+            eatingEvent: event.detail
+        });
+    }
+
+    /**
      * removes event listeners from enemy minion
      * @param event
      */
@@ -771,7 +793,6 @@ export class MultiplayerController extends Subject{
      * @param event
      */
     sendProxyHealthUpdate(event){
-        console.log("proxy health update")
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             proxy: {
                 healthUpdate: event.detail
@@ -783,7 +804,6 @@ export class MultiplayerController extends Subject{
      * send shield update to opponent
      */
     sendShieldUpdate(event){
-        console.log("SENDING shield update")
         this.forwardingNameSpace.sendTo(this.peerInfo.userID, {
             spellEvent: {
                 shieldUpdate: event.detail

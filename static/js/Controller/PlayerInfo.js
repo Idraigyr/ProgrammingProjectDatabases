@@ -155,7 +155,7 @@ export class PlayerInfo extends Subject{
             this.experience = response.xp
             this.mana = response?.mana
             // this.mana += this.calculateManaBonus();
-            this.maxHealth += this.calculateHealthBonus();
+            this.maxHealth = Level[this.level]["maxHealth"];
             this.playerPosition.x = response?.entity?.x ?? playerSpawn.x;
             this.playerPosition.y = response?.entity?.y ?? playerSpawn.y;
             this.playerPosition.z = response?.entity?.z ?? playerSpawn.z;
