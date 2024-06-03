@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {BuildSpell, EntitySpell, HitScanSpell, InstantSpell} from "../Model/Spell.js";
 import {Subject} from "../Patterns/Subject.js";
 import {convertWorldToGridPosition, mapDegreesToNearestQuarter} from "../helpers.js";
+import {alertPopUp} from "../external/LevelUp.js";
 
 /**
  * Class for the SpellCaster
@@ -273,6 +274,7 @@ export class SpellCaster extends Subject{
             }
         } else {
             //play a sad sound;
+            if(!this.#wizard.enoughMana()) alertPopUp("Not enough mana.", 1000);
         }
     }
 
