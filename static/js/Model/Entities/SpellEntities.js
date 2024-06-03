@@ -289,8 +289,6 @@ export class FollowPlayer extends SpellEntity{
         else{
             this.dispose();
         }
-        this.dispatchEvent(new CustomEvent("shieldUpdate", {detail: this.id}));
-
     }
 
     /**

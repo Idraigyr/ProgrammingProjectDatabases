@@ -631,7 +631,7 @@ export class MultiplayerController extends Subject{
             let spell = this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
             spell.setId(spell.id + 1000);
             if (data.spellEvent.type.name === "Shield") {
-                if(spell) spell.addEventListener("shieldUpdate", this.updateEvents.get("shieldUpdate"));
+                if(spell) spell.addEventListener("shieldLost", this.updateEvents.get("shieldUpdate"));
                 else throw new Error("Shield not found");
             }
             }
