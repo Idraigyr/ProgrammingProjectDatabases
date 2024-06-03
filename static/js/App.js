@@ -472,8 +472,8 @@ class App {
                 // tower stats for Lucas
                 // gets called on menu open
                 // default values: hp: 100, damage: 20, attackSpeed: 1
-                console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
-                    " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
+                //console.log("Tower id: " + building.id + " hp: " + params.stats["hp"] +
+                //    " damage: " + params.stats["damage"] + " attack speed: " + params.stats["attackSpeed"]);
             }
             if(buildingNumber === buildTypes.getNumber("altar_building")){
                 params.spells = this.playerInfo.availableSpells

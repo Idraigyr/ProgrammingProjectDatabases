@@ -463,7 +463,6 @@ export class MenuManager extends Subject{
      * @param event
      */
     dispatchAddEvent(event){
-        console.log(this.playerCrystals);
         if (this.playerCrystals >= 10 ) {
             if (this.inputCrystalParams.current + 10 <= this.inputCrystalParams.max && this.loadingprogress === 0) {
                 this.inputCrystalParams.current += 10;

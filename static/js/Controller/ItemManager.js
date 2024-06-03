@@ -52,6 +52,11 @@ export class ItemManager {
         }
     }
 
+    /**
+     * creates a gem every interval defined in controllerConfigs
+     * gem fortune based on fortune of placed mines
+     * @param {Object[]} params - placed buildings
+     */
     startGemProduction(params){
         let fortune = 0;
         for (const key in params){
@@ -61,13 +66,14 @@ export class ItemManager {
                 }
             }
         }
-        console.log("fortune: " + fortune);
         this.interval = setInterval(() => {
-            console.log("creating gem");
             this.createGem(Math.floor(fortune));
         }, gemProductionInterval*1000);
     }
 
+    /**
+     * stops random gem generation
+     */
     stopGemProduction(){
         clearInterval(this.interval);
     }
