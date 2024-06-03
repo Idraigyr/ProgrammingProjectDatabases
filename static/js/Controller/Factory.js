@@ -441,60 +441,62 @@ export class Factory{
      * @returns {Promise<void>} - data of the task
      */
     async levelUpBuilding(params){
+        try{
         // Send get request to the server to check if the model already have the correct level
-        await $.ajax({
-            url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
-            type: "GET",
-            contentType: "application/json",
-            success: (data) => {
-                console.log(data);
-                if (data.to_level !== params.model.level) {
-                    let data2Send = {
-                            placeable_id: params.model.id,
-                            level: data.to_level
-                        }
-                    if(params.model.dbType === "tower_building") {
-                        data2Send.tower_type = "magic";
+            const data = await $.ajax({
+                url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
+                type: "GET",
+                contentType: "application/json",
+                success: async (data) => {
+                    console.log(data);
+                },
+                error: (xhr, status, error) => {
+                    console.error(xhr.responseText);
+                    console.log("Building with upgrade task id ", params.task.id, " is not found");
+                }});
+                let data2Send = {
+                        placeable_id: params.model.id,
+                        level: data.to_level
                     }
-                    if(params.model.dbType === "prop")  return; // Skip props
-                    // Send put request to the server to level up the building
-                    $.ajax({
-                        url: `${API_URL}/${placeableURI}/${params.model.dbType}`,
-                        type: "PUT",
-                        contentType: "application/json",
-                        data: JSON.stringify(
-                            data2Send),
-                        success: (data) => {
-                            params.model.level = data.level;
-                            //TODO: is this always +1
-                            // this.playerInfo.changeXP(150);
-                            console.log(data);
-                        },
-                        error: (xhr, status, error) => {
-                            console.error(xhr.responseText);
-                            console.log("Building ", params.model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
-                        }
-                    });
+                if(params.model.dbType === "tower_building") {
+                    data2Send.tower_type = "magic";
                 }
-            },
-            error: (xhr, status, error) => {
-                console.error(xhr.responseText);
-                console.log("Building with upgrade task id ", params.task.id, " is not found");
-            }
-        });
-        // Delete the old task
-        await $.ajax({
-            url: `${API_URL}/${taskURI}?id=${params.task.id}`,
-            type: "DELETE",
-            contentType: "application/json",
-            success: (data) => {
-                console.log(data);
-            },
-            error: (xhr, status, error) => {
-                console.error(xhr.responseText);
-                console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
-            }
-        });
+                if(params.model.dbType === "prop")  return; // Skip props
+                // Send put request to the server to level up the building
+                await $.ajax({
+                    url: `${API_URL}/${placeableURI}/${params.model.dbType}`,
+                    type: "PUT",
+                    contentType: "application/json",
+                    data: JSON.stringify(
+                        data2Send),
+                    success: (data) => {
+                        params.model.level = data.level;
+                        //TODO: is this always +1
+                        // this.playerInfo.changeXP(150);
+                        console.log(data);
+                        console.log("BuiLdinung upgrrrraded");
+                    },
+                    error: (xhr, status, error) => {
+                        console.error(xhr.responseText);
+                        console.log("Building ", params.model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
+                    }
+                });
+                // Delete the old task
+                await $.ajax({
+                    url: `${API_URL}/${taskURI}?id=${params.task.id}`,
+                    type: "DELETE",
+                    contentType: "application/json",
+                    success: (data) => {
+                        console.log(data);
+                    },
+                    error: (xhr, status, error) => {
+                        console.error(xhr.responseText);
+                        console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
+                    }
+                });
+        }catch (e){
+            console.error(e);
+        }
     }
 
     /**

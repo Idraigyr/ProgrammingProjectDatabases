@@ -345,7 +345,7 @@ export class PlayerInfo extends Subject{
         let time = localTime.toISOString();
         let formattedDate = time.slice(0, 19);
         try{
-            await $.ajax({
+            const res = await $.ajax({
                 url: `${API_URL}/${buildingUpgradeURI}`,
                 type: "POST",
                 contentType: 'application/json; charset=utf-8',
@@ -359,13 +359,12 @@ export class PlayerInfo extends Subject{
                 }),
                 success: (data) => {
                     console.log(data);
-                    const task_id = data.id;
-                    return task_id;
                 },
                 error: (err) => {
                     console.log(err);
                 }
             });
+            return res.id;
         } catch (e){
             console.log(e);
         }

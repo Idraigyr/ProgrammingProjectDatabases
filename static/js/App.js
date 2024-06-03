@@ -255,8 +255,9 @@ class App {
                 return
             }
             this.playerInfo.changeCrystals(-building.upgradeCost);
-            // const resp = await this.playerInfo.createLevelUpTask(building);
-            building.startUpgrade(this.worldManager.deleteOldTasks.bind(this.worldManager));
+            const resp = await this.playerInfo.createLevelUpTask(building);
+            let params = {task: {id: resp}, model: building};
+            building.startUpgrade(this.factory.levelUpBuilding.bind(this.factory), params);
             this.playerInfo.changeXP(150);
             this.menuManager.exitMenu();
         });
