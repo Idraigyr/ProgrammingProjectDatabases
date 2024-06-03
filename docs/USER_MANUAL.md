@@ -138,6 +138,17 @@ We use a library to add a bounding volume hierarchy (=bvh) which allows us to op
 
 Spell to entity, spell to spell and entity to entity collision does not make use of this optimisation and may appear more “clunky” (for example player movement when moving along an icewall spell). 
 
+## Multiplayer
+
+When a multiplayer match is started, the islands of both players will appear next to each other, connected by a bridge.
+The goal is to destroy the other player's altar. By doing so, the player will win the match and gain the stakes of the other player and get his
+own stakes back. The player can also lose the match, in which case the player will lose his stakes. If needed, the player can surrender the match
+by pressing the leave match button in the settings menu. On top of the screen, the player can see a timer. If this timer ends, the match will
+automatically end and result in a draw. The player can fight by using his spells, and is helped by his towers, which will shoot 
+fireballs at the enemy. The player can get helped by his minions too, which will move towards the enemy's altar and attacks enemies along the way.
+These minions spawn from warrior huts on the player's island. By eating crystals the player can regain health and mana during the battle 
+Health bars above allys and enemies show the current health of the entity.
+
 # In-game menus
 ___
 
@@ -191,11 +202,11 @@ Fireball: creates a fireball projectile that will damage enemies on hit.
 
 ![Fireball spell image](/docs/gif/fire-spell.gif)
 
-Thundercloud: creates a thundercloud above the position the player is looking at. 
+Thundercloud: creates a thundercloud above the position the player is looking at, doing area of effect damage for some time.
 
 ![Thunderstorm spell image](/docs/gif/thunder-spell.gif)
 
-Shield: creates 3 rotating shields around the player 
+Shield: creates 3 rotating shields around the player that will block the next 3 incoming damages.
 
 ![Shield spell image](/docs/gif/shield.gif)
 

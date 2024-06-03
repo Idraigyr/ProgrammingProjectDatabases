@@ -225,11 +225,11 @@ class App {
             fusionTable.resetInputCrystals();
             let speed = stats.get("speed");
             let fortune = stats.get("fortune");
-            this.playerInfo.changeXP(2 * inputCrystals);
-            console.log("Fusion will be completed in " + fusionTime/speed + " seconds with fusion power: " + (fusionLevel + inputCrystals/10 * fortune));
             // Send post request to create new task TODO: connect this to the new Thomas' code
             const response =  await this.worldManager.createFuseTask({buildingID: fusionTable.id, timeInSeconds: fusionTime, crystal_amount: inputCrystals});
             this.timerManager.createTimer(fusionTime, [() => {
+                this.playerInfo.changeXP(2 * inputCrystals);
+                this.menuManager.stopFusing();
                 const gem = this.itemManager.createGem((fusionLevel + inputCrystals/10 * fortune)); //TODO: make this parameter persistent? & don't just put a magic formula here
                 // Delete the old task
                 this.worldManager.deleteTask(response.id);
