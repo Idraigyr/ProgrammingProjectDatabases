@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {IView} from "./View.js";
 import {generateGrassField} from "../external/grass.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
+import {performance} from "../configs/ControllerConfigs.js";
 
 
 /**
@@ -52,7 +53,7 @@ export class Island extends IView{
      */
     dispose() {
         super.dispose();
-        this.#grassField.parent.remove(this.#grassField);
+        this.#grassField?.parent.remove(this.#grassField);
     }
 
     /**
@@ -90,6 +91,7 @@ export class Island extends IView{
      * Toggle grass field visibility
      */
     toggleGrassField(event){
+        if(!this.#grassField) return;
         this.#grassField.visible = event.detail.grassOn;
     }
 
@@ -142,7 +144,7 @@ export class Island extends IView{
         // old implementation
         // group.add(this.createGrassField());
         // new implementation
-        group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
+        if(performance.value > 0) group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
         group.add(this.createModel());
         this.charModel = plane;
         return group;
@@ -174,7 +176,7 @@ export class Island extends IView{
         const delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
         this.position.copy(event.detail.position);
         this.charModel.position.copy(this.position);
-        this.#grassField.position.copy(this.position);
+        if(this.#grassField) this.#grassField.position.copy(this.position);
         this.boundingBox.translate(delta);
         //normally matrixWorld is updated every frame.
         // we need to update it extra here because buildings and islands will be moved on loading of a multiplayer game,

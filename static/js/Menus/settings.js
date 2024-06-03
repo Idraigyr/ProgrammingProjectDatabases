@@ -7,7 +7,8 @@ import {
     baseHorizontalSensitivity,
     baseVerticalSensitivity,
     sensitivity,
-    volume
+    volume,
+    performance
 } from "../configs/ControllerConfigs.js";
 import {keyBinds} from "../configs/Keybinds.js";
 import {Cursors} from "../configs/Enums.js";
@@ -116,8 +117,6 @@ let dbMap = {
     "slot_5_val": "NULL"
 };
 let cursorId = 0;
-
-let performance = 1;
 
 let performanceChange = false;
 
@@ -294,7 +293,7 @@ export class Settings extends Subject {
         docHorizontalSensitivity.value = data.horz_sensitivity;
         docVerticalSensitivity.value = data.vert_sensitivity;
         docPerformance.selectedIndex = data.performance;
-        performance = data.performance;
+        performance.value = data.performance;
         crosshair.src = Cursors.getName(data.selected_cursor);
         cursorId = data.selected_cursor;
         this.loadKeys(data);
@@ -384,13 +383,13 @@ export class Settings extends Subject {
             this.grassOn = true;
             obj.performance = 2;
         }
-        if (obj.performance != performance)
+        if (obj.performance !== performance)
         {
             performanceChange = true;
-            performance = obj.performance;
+            performance.value = obj.performance;
             console.log("performance changed")
         }
-        this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
+        // this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
 
     }
 

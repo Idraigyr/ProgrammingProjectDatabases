@@ -72,3 +72,7 @@ export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?
 
 export const passiveManaGenerationInterval = 3;
 export const passiveManaGenerationAmount = 1;
+
+export let performance = {
+    value: 1
+};

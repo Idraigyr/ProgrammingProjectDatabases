@@ -117,10 +117,10 @@ export class CollisionDetector extends Subject{
     generateColliderOnWorker(modelsToIgnore = []){
         if(typeof Worker === 'undefined' || this.startUp || true){
             //show loading screen
-            document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
-            document.querySelector('.loading-animation').style.display = 'block';
+            // document.getElementById('progress-bar').labels[0].innerText = "Letting Fairies prettify the building...";
+            // document.querySelector('.loading-animation').style.display = 'block';
             this.collider = this.generateCollider(modelsToIgnore);
-            document.querySelector('.loading-animation').style.display = 'none';
+            // document.querySelector('.loading-animation').style.display = 'none';
         } else {
             console.log("starting worker...");
 

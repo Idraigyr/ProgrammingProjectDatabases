@@ -15,7 +15,7 @@ from src.model.match_queue import MatchQueueEntry
 # It will ignore the original sender session, but will broadcast to all other sessions
 # BROADCAST_TO_SELF: bool = False
 MAX_PLAYERS: int = 2
-MATCH_TIME: int = 10  # 10 minutes
+MATCH_TIME: int = 10*60  # 10 minutes
 
 
 class ForwardingNamespace(Namespace):

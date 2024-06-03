@@ -368,18 +368,14 @@ export class MinionController extends Subject{
             }
         }
 
+        //rotate towards target
+        minion.phi = new THREE.Vector3(1,0,0).angleTo(targetPosition.clone().sub(minion.position).setY(0).normalize())*180/Math.PI;
+        minion.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), minion.phi*Math.PI/180);
+
         if (minion.fsm.currentState.movementPossible) {
             // move towards current target
             movement.subVectors(targetPosition, minion.position);
             movement.normalize();
-
-            // rotate towards current target
-            if(movement.length() > 0){
-                //TODO: fix rotation
-                minion.phi = new THREE.Vector3(1,0,0).angleTo(movement)*180/Math.PI;
-                // console.log(minion.phi);
-                minion.rotation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0,1,0), minion.phi*Math.PI/180);
-            }
 
             minion.lastMovementVelocity.copy(movement).multiplyScalar(deltaTime*minionSpeedMultiplier);
             minion.velocity.copy(minion.verticalVelocity).add( minion.lastMovementVelocity);
