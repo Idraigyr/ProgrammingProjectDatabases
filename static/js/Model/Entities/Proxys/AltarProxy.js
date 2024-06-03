@@ -1,5 +1,8 @@
 import {ProxyEntity} from "./ProxyEntity.js";
 
+/**
+ * Altar Proxy
+ */
 export class AltarProxy extends ProxyEntity{
     constructor(params) {
         super(params);

@@ -81,6 +81,11 @@ export class MultiplayerController extends Subject{
         });
     }
 
+    /**
+     * Sends a match making request to the server
+     * @param matchmake - true to start match making, false to stop it
+     * @returns {Promise<void>} - resolves when the request is sent
+     */
     async sendMatchMakingRequest(matchmake = true){
         try {
             $.ajax({
@@ -165,6 +170,10 @@ export class MultiplayerController extends Subject{
         this.dispatchEvent(this.createMatchmakingEvent());
     }
 
+    /**
+     * Starts the matchmaking process
+     * @returns {Promise<void>}
+     */
     async startMatchMaking(){
         //TODO: first test if path is available to altar if not throw error
         const connectionPoint = this.worldManager.getIslandConnectionPoint();
@@ -181,6 +190,10 @@ export class MultiplayerController extends Subject{
         this.countStats = true;
     }
 
+    /**
+     * Ends the matchmaking process
+     * @returns {Promise<void>} - resolves when the request is sent
+     */
     async endMatchMaking(){
         //send request to server to leave matchmaking queue
         const response = await this.sendMatchMakingRequest(false);

@@ -67,10 +67,11 @@ export function popUp(level, maxMana, maxHealth, buildings, Spells, buildingsPro
 let interval = null;
 let timeout = null;
 
+
 /**
- * Converts an array to  string
- * @param array
- * @return {string}
+ * Converts an array to a string
+ * @param array - the array to convert
+ * @returns {string} - the string representation of the array
  */
 function arrayStringConverter(array) {
     let string = "[ ";

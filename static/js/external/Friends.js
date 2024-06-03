@@ -18,8 +18,8 @@ $(document).ready(function(){
 });
 
 /**
- * updates the player list
- * @return {Promise<void>}
+ * Sets the player list to the list of players
+ * @returns {Promise<void>} the player list
  */
 export async function setPlayerList() {
     try {
@@ -31,8 +31,8 @@ export async function setPlayerList() {
 }
 
 /**
- * sends friend request to a user.
- * @param receiverID
+ * Sends a friend request to the player with the given ID
+ * @param receiverID the id of the player to send the request to
  */
 export function sendRequest(receiverID){
     $.ajax({
@@ -51,8 +51,8 @@ export function sendRequest(receiverID){
 }
 
 /**
- * get List of friend Request for current user.
- * @return {Promise<*|*[]>}
+ * Get the friend requests of the current player
+ * @returns {Promise<*|*[]>} the friend requests of the current player
  */
 export async function getFriendRequests() {
     await setPlayerList();
@@ -98,8 +98,8 @@ export function getPlayerUsername(playerID){
 }
 
 /**
- * returns the list of friends
- * @return {Promise<[]|*>}
+ * Get the friends of the current player
+ * @returns {Promise<[]|*>} the friends of the current player
  */
 export async function  getFriends() {
     await setPlayerList();
@@ -111,9 +111,9 @@ export async function  getFriends() {
 }
 
 /**
- * returns the status of a friend request
- * @param friendRequestID
- * @return {Promise<*|*[]>}
+ * Get the status of a friend request
+ * @param friendRequestID the id of the friend request
+ * @returns {Promise<*|*[]>} the status of the friend request
  */
 export async function getFriendRequestStatus(friendRequestID){
     try {
@@ -132,10 +132,9 @@ export async function getFriendRequestStatus(friendRequestID){
 }
 
 /**
- * accept a friend request
- * @param request_id
+ * Accepts a friend request
+ * @param request_id the id of the friend request
  */
-
 export function acceptFriendRequest(request_id) {
         // Handle accepting a friend request here
         try {
@@ -156,8 +155,8 @@ export function acceptFriendRequest(request_id) {
     }
 
 /**
- * reject a friend request
- * @param requestID
+ * Rejects a friend request
+ * @param requestID the id of the friend request
  */
 export function rejectFriendRequest(requestID) {
     // Handle rejecting a friend request here

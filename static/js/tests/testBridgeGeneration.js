@@ -1,3 +1,4 @@
+/* This is a test file in bridge generation*/
 import * as THREE from "three";
 import {MinionController} from "../Controller/MinionController.js";
 import {Foundation} from "../Model/Entities/Foundations/Foundation.js";

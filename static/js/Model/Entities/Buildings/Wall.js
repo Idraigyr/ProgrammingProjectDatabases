@@ -1,5 +1,8 @@
 import {Placeable} from "./Placeable.js";
 
+/**
+ * Class for the wall model
+ */
 export class Wall extends Placeable {
   constructor(params) {
     super(params);

@@ -3,6 +3,9 @@ import {userId} from "./ChatNamespace.js"
 import {addFriendNotification, removeFriendNotification} from "./LevelUp.js";
 import {API_URL, pendingFriendRequestURI} from "../configs/EndpointConfigs.js";
 
+/**
+ * Class to manage the friends menu
+ */
 export class FriendsMenu {
 
     constructor() {
@@ -36,10 +39,18 @@ export class FriendsMenu {
 
     }
 
+    /**
+     * Set the forwarding namespace
+     * @param nameSpace the namespace to forward to
+     */
     setForwardingNameSpace(nameSpace){
         this.forwardingNameSpace = nameSpace;
     }
 
+    /**
+     * Set friends menu
+     * @returns {Promise<void>}
+     */
     async showFriendsDisplay(){
         if(this.inMatch) return;
         this.populateFriends(); //don't use await here will delay the display of the friends list
@@ -52,6 +63,9 @@ export class FriendsMenu {
         this.listRequest.style.display = "none";
     }
 
+    /**
+     * Hide friends menu
+     */
     hideFriendsDisplay(){
         this.Friends.style.display = "none";
         this.addFriendButton.style.display = "none";
@@ -64,8 +78,8 @@ export class FriendsMenu {
 
 
     /**
-     * Shows the friends Menu.
-     * @return {Promise<void>}
+     * Toggle the friends display
+     * @returns {Promise<void>} - the promise to toggle the friends display
      */
     async toggleFriendsDisplay() {
         if (this.Friends.style.display === "block") {
@@ -76,7 +90,7 @@ export class FriendsMenu {
     }
 
     /**
-     * Shows the add friend menu of Friends Menu
+     * Toggle the add friend button
      */
     toggleAddFriendButton() {
         this.FriendList.style.display = "none";
@@ -86,7 +100,7 @@ export class FriendsMenu {
     }
 
     /**
-     * Shows the friends list in friedns menu
+     * Toggle the list friend button
      * @return {Promise<void>}
      */
     async toggleListFriendButton(){
@@ -223,7 +237,7 @@ export class FriendsMenu {
 
     /**
      * Populate the friends requests list in the friendsMenu.
-     * @return {Promise<boolean>}
+     * @return {Promise<boolean>} - shows if the friend requests have changed
      */
     async populateRequests() {
         let tempRequests = await AllFriends.getFriendRequests();
@@ -246,8 +260,8 @@ export class FriendsMenu {
 
     /**
      * Adds specific friend Friend  to friendsMenu
-     * @param playerId
-     * @return {Promise<void>}
+     * @param playerId the id of the player to add
+     * @return {Promise<void>} - the promise to add a friend to the friends list
      */
     async addFriendMenu(playerId) {
         const friend = document.createElement('div');
@@ -273,9 +287,9 @@ export class FriendsMenu {
     }
 
     /**
-     * Adds specific friend Request  to friendsMenu
-     * @param request
-     * @return {Promise<void>}
+     * Add a friend request to the list of requests
+     * @param request the request to add
+     * @returns {Promise<void>} - the promise to add a friend request to the list of requests
      */
     async addRequest(request) {
         let status = await AllFriends.getFriendRequestStatus(request.id);
@@ -330,8 +344,9 @@ export class FriendsMenu {
         }
     }
 
+
     /**
-     * If a user presses mouse else where in the game then close the friendsMenu.
+     * Toggle the window button
      */
     toggleWindowbutton() {
         if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {

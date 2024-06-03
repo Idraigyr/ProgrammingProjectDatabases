@@ -125,6 +125,11 @@ export class MenuManager extends Subject{
         }
     }
 
+    /**
+     * Translates the constructor name to the name in the database
+     * @param ctorName - the name of the constructor
+     * @returns {*} - the name in the database
+     */
     ctorToDBName(ctorName){
         return this.#ctorToDBNameList[ctorName];
     }
@@ -245,6 +250,9 @@ export class MenuManager extends Subject{
         });
     }
 
+    /**
+     * Check if the stakes are valid and enable the play button
+     */
     checkStakes(){
         const gemsIds = [];
         this.menus.get("GemsMenu").element.querySelector(".list-menu-ul").querySelectorAll(".menu-item").forEach(item => gemsIds.push(item.id));
@@ -271,7 +279,9 @@ export class MenuManager extends Subject{
         }
     }
 
-    // loading bar
+    /**
+     * Fusion button clicked
+     */
     FusionClicked() {
       if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
           this.toggleAnimation(true);
@@ -308,6 +318,10 @@ export class MenuManager extends Subject{
       }
     }
 
+    /**
+     * Create a fusion event
+     * @returns {CustomEvent<unknown>}
+     */
     createFuseEvent() {
         return new CustomEvent("startFusion");
     }
@@ -316,7 +330,9 @@ export class MenuManager extends Subject{
         return new CustomEvent("mineGem");
     }
 
-    // Function to start or stop the fusing arrow animation based on condition
+    /**
+     * Function to start or stop the fusing arrow animation based on condition
+     */
     toggleAnimation(condition) {
         if (condition) {
             this.menus.get("FuseInputMenu").element.querySelector(".arrow").classList.add('move-right');
@@ -916,8 +932,8 @@ export class MenuManager extends Subject{
     }
 
     /**
-     * Updates the spell items in spell Menu
-     * @param spells
+     * Updates the spell items based on the spells object
+     * @param spells - object with spell names as keys and boolean values as values
      */
     updateSpellItems(spells){
         for(const spellType in spells){

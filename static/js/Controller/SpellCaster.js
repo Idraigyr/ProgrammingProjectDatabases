@@ -202,6 +202,11 @@ export class SpellCaster extends Subject{
         this.#wizard.updateCooldowns(deltaTime);
     }
 
+    /**
+     * Creates an event for interacting with the world
+     * @param position - position of the interaction
+     * @returns {CustomEvent<{rotation: number, position}>} - event for interacting with the world
+     */
     createInteractEvent(position){
         return new CustomEvent("interact", {
             detail: {

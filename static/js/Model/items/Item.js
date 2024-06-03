@@ -1,3 +1,6 @@
+/**
+ * Abstract class for items
+ */
 export class Item{
     constructor(params) {
         this.id = params?.id ?? null;
@@ -29,14 +32,26 @@ export class Item{
         return this.name;
     }
 
+    /**
+     * Get the description of the item
+     * @returns {string} - description of the item
+     */
     getDescription(){
         return "placeholder description babeeyy";
     }
 
+    /**
+     * Get the type of the item
+     * @returns {string} - the type of the item
+     */
     get type(){
         return "Abstract Item";
     }
 
+    /**
+     * Formats the data for a POST request
+     * @returns {{id: *, type}} - the formatted data
+     */
     formatPOSTData(){
         return {
             id: this.id,
@@ -56,6 +71,9 @@ export class Item{
     }
 }
 
+/**
+ * Class for attributes
+ */
 export class Attribute extends Item{
     constructor(params) {
         super(params);
@@ -76,6 +94,9 @@ export class Attribute extends Item{
     }
 }
 
+/**
+ * Class for gems (items)
+ */
 export class Gem extends Item{
     constructor(params) {
         super(params);
@@ -165,12 +186,20 @@ export class Gem extends Item{
 }
 
 //DO SPELLS NEED TO BE ITEMS?
+/**
+ * Class for spells (items)
+ */
 export class Spell extends Item{
     constructor(params) {
         super(params);
         this.belongsIn = "SpellsMenu";
         this.unlocked = params?.unlocked ?? false;
     }
+
+    /**
+     * Get the type of the item
+     * @returns {string} - the type of the item
+     */
     get type(){
         return "Spell";
     }

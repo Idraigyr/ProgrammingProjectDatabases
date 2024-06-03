@@ -84,12 +84,24 @@ export class TimerManager {
         this.#timers = [];
     }
 
+    /**
+     * Creates a timer and adds it to the manager
+     * @param duration - duration of the timer in seconds
+     * @param callbacks - array of callbacks to be called when the timer ends
+     * @param repeatable - if true, the timer will repeat
+     * @param callbackParams - parameters for the callbacks either null or the same length as callbacks
+     * @returns {Timer} - the created timer
+     */
     createTimer(duration, callbacks, repeatable= false, callbackParams = null){
         const timer = new Timer(duration, callbacks, repeatable, callbackParams);
         timer.setID(this.insertTimer(timer), this);
         return timer;
     }
 
+    /**
+     * Adds timer to the manager
+     * @param timer - timer to be added
+     */
     addTimer(timer){
         timer.setID(this.insertTimer(timer), this);
     }

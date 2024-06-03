@@ -76,6 +76,9 @@ export class World{
         this.islands.push(island);
     }
 
+    /**
+     * Remove all islands from the world
+     */
     removeIslands(){
         this.islands.forEach((island) => island.dispose());
         this.islands = [];

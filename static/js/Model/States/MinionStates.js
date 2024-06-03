@@ -1,5 +1,8 @@
 import {State} from "../../Patterns/State.js";
 
+/**
+ * Minion State
+ */
 export class MinionState extends State{
     constructor(fsm) {
         super(fsm);
@@ -56,6 +59,10 @@ export class MinionIdleState extends MinionState{
         }
     }
 
+    /**
+     * Process the event to change the state
+     * @param event event to process
+     */
     processEvent(event) {
         switch (event.detail.newState) {
             case "WalkForward":
@@ -120,6 +127,10 @@ export class MinionWalkForwardState extends MinionState{
         // this.manager.setState("Idle");
     }
 
+    /**
+     * Process the event to change the state
+     * @param event event to process
+     */
     processEvent(event) {
         switch (event.detail.newState) {
             case "Idle":
@@ -200,10 +211,20 @@ export class MinionDefaultAttackState extends MinionState{
     get name(){
         return "DefaultAttack";
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
         this.manager.setState("Idle");
     }
 
+    /**
+     * Process the event to change the state
+     * @param event event to process
+     */
     processEvent(event) {
         switch (event.detail.newState) {
             case "Idle":

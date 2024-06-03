@@ -1,5 +1,8 @@
 import {assert} from "../helpers.js";
 
+/**
+ * Class to manage the loading screen
+ */
 class LoadingScreen{
     #loadingScreen;
     #progressBar;

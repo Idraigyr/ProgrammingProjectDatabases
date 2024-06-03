@@ -150,6 +150,11 @@ export class Factory{
         return player;
     }
 
+    /**
+     *  Creates a model and view of another player
+     * @param params - position, health, maxHealth, team
+     * @returns {*} - model of the player
+     */
     createPeer(params){
         // let sp = new THREE.Vector3(-8,15,12);
         let sp = new THREE.Vector3(playerSpawn.x,playerSpawn.y,playerSpawn.z);
@@ -400,6 +405,11 @@ export class Factory{
         return model;
     }
 
+    /**
+     * Verifies if the building has an upgrade task
+     * @param params - parameters (with params.task.id)
+     * @param model - model of the building
+     */
     #checkIfBuildingHasUpgradeTask(params, model){
         // Send get request to the server to check if the model already have the correct level
         $.ajax({
@@ -411,6 +421,13 @@ export class Factory{
                 this._levelUpBuilding(params, model);
             }});
     }
+
+    /**
+     * Get the parameters of the fuse task
+     * @param params - parameters (with params.task.id)
+     * @param model - model of the building
+     * @returns {Promise<void>} - data of the task
+     */
     async #getFuseTaskParams(params, model){
         // Send get request to the server to check if the model already have the correct level
         await $.ajax({
@@ -421,6 +438,14 @@ export class Factory{
                 return data;
             }});
     }
+
+    /**
+     * Level up the building on server
+     * @param params - parameters (with params.task.id)
+     * @param model - model of the building
+     * @returns {Promise<void>} - data of the task
+     * @private - private method
+     */
     async _levelUpBuilding(params, model){
         // Send get request to the server to check if the model already have the correct level
         await $.ajax({
@@ -429,7 +454,6 @@ export class Factory{
             contentType: "application/json",
             success: (data) => {
                 console.log(data);
-                // TODO: or > to disallow downgrading
                 if (data.to_level !== model.level) {
                     let data2Send = {
                             placeable_id: model.id,
@@ -465,6 +489,12 @@ export class Factory{
             }
         });
     }
+
+    /**
+     * Creates a proxy model and view
+     * @param params - parameters (buildingName, position, team, building)
+     * @returns {*} - model of the proxy
+     */
     createProxy(params) {
         const asset = this.assetManager.getAsset(params.buildingName);
         let currentPos = new THREE.Vector3(params.position.x, params.position.y, params.position.z);

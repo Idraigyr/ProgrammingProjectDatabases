@@ -183,6 +183,10 @@ export class Settings extends Subject {
         window.location.href = `${API_URL}/logout`;
     }
 
+    /**
+     * Respawn the player
+     * @returns {Promise<void>}
+     */
     async respawn() {
         // Send respawn info to the backend
         await this.playerInfo.reload();

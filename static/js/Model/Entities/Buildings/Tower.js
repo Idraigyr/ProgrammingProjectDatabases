@@ -2,7 +2,6 @@ import {Placeable} from "./Placeable.js";
 
 /**
  * Class for the Tower model
-
  */
 export class Tower extends Placeable{
     constructor(params) {

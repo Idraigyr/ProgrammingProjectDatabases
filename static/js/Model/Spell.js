@@ -150,6 +150,10 @@ class InstantDamage extends Effect{
         this.damage = params.damage;
     }
 
+    /**
+     * Applies the effect to the target
+     * @param target - the target of the effect
+     */
     apply(target){
         target.takeDamage(this.damage)
     }

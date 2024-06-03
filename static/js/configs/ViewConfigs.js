@@ -39,6 +39,10 @@ export let assetPaths = Object.freeze({
     Island: ["./static/assets/3d-models/island_compressed.glb",".glb"],
 });
 
+/**
+ * Shows names of the buildings that are used in the game
+ * @type {Readonly<string[]>}
+ */
 export const buildingAssetsKeys = Object.freeze([
     "Altar",
     "Mine",
@@ -54,6 +58,10 @@ export const buildingAssetsKeys = Object.freeze([
     "Tree",
 ]);
 
+/**
+ * Shows the number of the reserved characters for the timer (needed for instanced meshes)
+ * @type {{"0": number, "1": number, "2": number, "3": number, "4": number, "5": number, "6": number, "7": number, "8": number, "9": number, ":": number}}
+ */
 export const charsReservedForTimer = {
     "0": 6,
     "1": 6,
@@ -83,6 +91,10 @@ export const minCharCount = {
     ":": charsReservedForTimer[":"]*Maxbuilders,
 }
 
+/**
+ * Paths to the cursor images
+ * @type {Readonly<{crosshairs: string, aim: string, cross: string, target: string}>}
+ */
 export const cursorImgPaths = Object.freeze({
     aim: "./static/assets/images/crosshairs/aim.png",
     cross: "./static/assets/images/crosshairs/cross.png",

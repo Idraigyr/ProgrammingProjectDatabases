@@ -22,7 +22,9 @@ void main() {
 }
 `;
 
-
+/**
+ * Character view
+ */
 export class CharacterView extends IAnimatedView{
     constructor(params) {
         super(params);
@@ -77,13 +79,22 @@ export class CharacterView extends IAnimatedView{
 
     }
 
-
+    /**
+     * Change the health of character
+     * @param event event with health
+     */
       OnHealth_(event) {
         console.log("on health");
         const healthPercent = (event.detail.current / event.detail.total);
 
         this.realHealth_ = healthPercent;
       }
+
+    /**
+     * Update the character's health bar
+     * @param deltaTime time passed since last update
+     * @param camera camera to update view
+     */
       update(deltaTime, camera) {
         const t = 1.0 - Math.pow(0.001, deltaTime);
 
@@ -101,6 +112,10 @@ export class CharacterView extends IAnimatedView{
         if(this.mixer) this.mixer.update(deltaTime);
       }
 
+    /**
+     * Update position of the view
+     * @param event - event with position
+     */
       updatePosition(event){
         if(!this.charModel) return;
         if(!this.healthBar) return;
@@ -113,7 +128,9 @@ export class CharacterView extends IAnimatedView{
         this.boundingBox.translate(delta);
     }
 
-
+    /**
+     * Generate buffers for the character's health bar
+     */
     GenerateBuffers_() {
         const indices = [];
         const positions = [];

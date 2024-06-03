@@ -10,6 +10,10 @@ export class Bridge extends Foundation{
         this.grid.fill(buildTypes.getNumber("bridge"));
     }
 
+    /**
+     * Get the type of the item
+     * @returns {string} - the type of the item
+     */
     get type(){
         return "island";
     }

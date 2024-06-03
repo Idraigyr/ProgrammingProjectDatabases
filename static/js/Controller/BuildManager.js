@@ -3,6 +3,9 @@ import * as THREE from "three";
 import {Object3D} from "three";
 import {convertWorldToGridPosition} from "../helpers.js";
 
+/**
+ * Deprecated class for building manager
+ */
 export class BuildManager {
     ritualToPlace;
     previewMaterial;

@@ -712,6 +712,9 @@ class App {
         return true;
     }
 
+    /**
+     * Initializes the scene with an ambient light and a directional light
+     */
     initScene(){
         const group = new THREE.Group();
         const light = new THREE.AmbientLight( 0xFFFFFF, 2);

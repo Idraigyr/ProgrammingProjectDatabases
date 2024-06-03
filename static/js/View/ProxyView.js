@@ -86,9 +86,19 @@ export class ProxyView extends IView{
 
     }
 
+    /**
+     * Update health bar
+     * @param event - event with health
+     */
     OnHealth_(event) {
         this.realHealth_ = (event.detail.current / event.detail.total);
     }
+
+    /**
+     * Update position of the proxy and the color of the health bar
+     * @param deltaTime time since last update
+     * @param camera camera to update view
+     */
     update(deltaTime, camera) {
         const t = 1.0 - Math.pow(0.001, deltaTime);
 
@@ -108,6 +118,9 @@ export class ProxyView extends IView{
     }
 
 
+    /**
+     * Generate buffers for the health bar
+     */
     GenerateBuffers_() {
         const indices = [];
         const positions = [];

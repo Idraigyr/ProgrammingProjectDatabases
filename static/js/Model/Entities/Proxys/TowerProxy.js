@@ -1,5 +1,8 @@
 import {ProxyEntity} from "./ProxyEntity.js";
 
+/**
+ * Tower Proxy
+ */
 export class TowerProxy extends ProxyEntity{
     constructor(params) {
         super(params);

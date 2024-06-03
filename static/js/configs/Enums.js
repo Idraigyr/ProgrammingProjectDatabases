@@ -76,6 +76,10 @@ export const buildTypes = (function (){
     };
 })();
 
+/**
+ * Enum for the different types of gems
+ * @type {{getNumber: (function(*): *), getSize: number, getName: (function(*): *), getIcon: (function(*): *)}}
+ */
 export const gemTypes = (function (){
     const number = {
         amber: 0,
@@ -118,6 +122,10 @@ export const gemTypes = (function (){
     };
 })();
 
+/**
+ * List of all the possible multiplayer stats
+ * @type {{getKeys: (function(): string[]), getDescription: (function(*): *)}}
+ */
 export const multiplayerStats = (function (){
     const description = {
         player_kills: "Player Kills",
@@ -142,6 +150,10 @@ export const multiplayerStats = (function (){
     }
 })();
 
+/**
+ * Default building stats for each building
+ * @type {{getStats: (function(*): *)}}
+ */
 export const buildingStats = (function (){
     const stats = {
         Altar: [
@@ -172,6 +184,10 @@ export const buildingStats = (function (){
     }
 })();
 
+/**
+ * Enum for the different types of cursors
+ * @type {{getNumber: (function(*): *), getSize: number, getName: (function(*): *)}}
+ */
 export const Cursors = (function (){
     const number = {
         "./static/assets/images/crosshairs/aim.png": 0,
@@ -198,6 +214,10 @@ export const Cursors = (function (){
     };
 })();
 
+/**
+ * Enum for the different types of performance
+ * @type {{getNumber: (function(*): *), getSize: number, getName: (function(*): *)}}
+ */
 export const Performace = (function (){
     const number = {
         "low": 0,

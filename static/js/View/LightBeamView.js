@@ -8,6 +8,9 @@ import * as THREE from "three";
 //square:
 //cutoff: 0.6
 
+/**
+ * Deprecated view for the light beam
+ */
 class LightBeamView extends IView{
     constructor(params) {
         super(params);

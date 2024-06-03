@@ -1,6 +1,9 @@
 import {assert} from "../../helpers.js";
 import {multiplayerStats} from "../../configs/Enums.js";
 
+/**
+ * Abstract class for the menu
+ */
 export class IMenu {
     constructor(params) {
         this.parent = params.parent;
@@ -9,6 +12,11 @@ export class IMenu {
         this.allows = [];
     }
 
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = document.createElement("div");
         element.id = this.name;
@@ -33,6 +41,10 @@ export class IMenu {
         this.element.insertAdjacentElement(position, child.element);
     }
 
+    /**
+     * Remove a child from the menu
+     * @param child - child to remove
+     */
     removeChild(child){
         try {
             this.element.removeChild(child.element);
@@ -41,19 +53,32 @@ export class IMenu {
         }
     }
 
+    /**
+     * Render the menu
+     */
     render(){
         this.element.style.display = this.display;
     }
 
+    /**
+     * Hide the menu
+     */
     hide(){
         this.element.style.display = "none";
     }
 
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "Abstract Menu";
     }
 }
 
+/**
+ * Buttons menu with a title bar and buttons
+ */
 export class ButtonsMenu extends IMenu{
     constructor(params) {
         params.classes ? params.classes.push("buttons-menu") : params.classes = ["buttons-menu"];
@@ -61,6 +86,11 @@ export class ButtonsMenu extends IMenu{
         this.display = "flex";
     }
 
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = document.createElement("div");
         const titleBar = document.createElement("h1");
@@ -77,16 +107,28 @@ export class ButtonsMenu extends IMenu{
         return element;
     }
 
+    /**
+     * Get the title of the menu
+     * @returns {string} - title of the menu
+     */
     get name(){
         return "ButtonsMenu";
     }
 }
 
+/**
+ * Menu with buttons for the main menu
+ */
 export class CollectMenu extends ButtonsMenu{
     constructor(params) {
         super(params);
     }
 
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params) {
         const element = super.createElement(params);
         const buttonDiv = element.querySelector(".buttons-container");
@@ -116,22 +158,35 @@ export class CollectMenu extends ButtonsMenu{
 
         return element;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "CollectMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Crystals";
     }
 
 }
 
+/**
+ * Menu for the input with amount of crystals to add or remove
+ */
 export class FuseInputMenu extends ButtonsMenu{
     constructor(params) {
         super(params);
     }
-
+/**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params) {
         const element = super.createElement(params);
         const buttonDiv = element.querySelector(".buttons-container");
@@ -165,17 +220,26 @@ export class FuseInputMenu extends ButtonsMenu{
 
         return element;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "FuseInputMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Crystals";
     }
 
 }
 
+/**
+ * Slot menu (e.g. for equipped gems)
+ */
 export class SlotMenu extends IMenu{
     constructor(params) {
         params.classes ? params.classes.push("slot-menu") : params.classes = ["slot-menu"];
@@ -184,7 +248,11 @@ export class SlotMenu extends IMenu{
         this.slots = params?.slots ?? 0;
         this.visibleSlots = 0;
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = document.createElement("div");
         const titleBar = document.createElement("h1");
@@ -210,6 +278,9 @@ export class SlotMenu extends IMenu{
         return element;
     }
 
+    /**
+     * Show the menu
+     */
     hide() {
         this.removeSlotIcons();
         super.hide();
@@ -228,6 +299,9 @@ export class SlotMenu extends IMenu{
         }
     }
 
+    /**
+     * Remove all icons from slots
+     */
     //TODO: remove all icons from slots on hide
     removeSlotIcons(){
         this.element.querySelectorAll(".slot").forEach(slot => {
@@ -235,6 +309,10 @@ export class SlotMenu extends IMenu{
         });
     }
     //TODO: add icons to slots on render depending on given params
+    /**
+     * Add icons to slots
+     * @param icons - icons to add
+     */
     addSlotIcons(icons){
         assert(icons.length <= this.slots, "Too many icons for the amount of slots");
         icons.forEach((icon, i) => {
@@ -242,14 +320,25 @@ export class SlotMenu extends IMenu{
         });
     }
 
+    /**
+     * Add an icon to a slot
+     * @param slot - slot number
+     * @param icon - icon to add
+     */
     addIcon(slot, icon){
         this.element.querySelector(`#slot-${slot}`).appendChild(icon);
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "SlotMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return null;
     }
@@ -269,13 +358,19 @@ export class GemInsertMenu extends SlotMenu{
     get name(){
         return "GemInsertMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Equipped";
     }
 
 }
 
+/**
+ * Menu with a title bar and a list
+ */
 export class ListMenu extends IMenu{
     constructor(params) {
         params.classes ? params.classes.push("list-menu") : params.classes = ["list-menu"];
@@ -283,7 +378,11 @@ export class ListMenu extends IMenu{
         this.display = "flex";
         this.titleBar = this.element.querySelector(".list-menu-title-bar");
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = document.createElement("div");
         const titleBar = document.createElement("h1");
@@ -302,22 +401,41 @@ export class ListMenu extends IMenu{
         return element;
     }
 
+    /**
+     * Remove the title bar from the menu
+     */
     removeTitleBar(){
         this.element.removeChild(this.titleBar);
     }
 
+    /**
+     * Add the title bar to the menu
+     */
     addTitleBar(){
         this.element.insertAdjacentElement("afterbegin", this.titleBar);
     }
 
+    /**
+     * Get the title bar of the menu
+     * @returns {*} - title bar of the menu
+     */
     getTitleBar(){
         return this.titleBar;
     }
 
+    /**
+     * Find the next item in the list for inserting item after it
+     * @param item
+     */
     findPrevious(item){
-        //find the previous item in the list for inserting item after it
+
     }
 
+    /**
+     * Add a child to the menu at a certain position
+     * @param position - position to add the child
+     * @param child - child to add
+     */
     addChild(position, child){
         if(!this.allows.includes(child.type)) {
             console.error(`${child.name} is not allowed in ${this.name}`);
@@ -325,28 +443,43 @@ export class ListMenu extends IMenu{
         }
         this.element.querySelector(".list-menu-ul").insertAdjacentElement(position, child.element);
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return null;
 
     }
 }
 
+/**
+ * Menu for the stats
+ */
 export class StatsMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["Stat"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "StatsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Stats";
     }
 }
 
+/**
+ * Menu for the spells
+ */
 export class HotbarMenu extends ListMenu{
     constructor(params) {
         super(params);
@@ -372,49 +505,76 @@ export class HotbarMenu extends ListMenu{
     get name(){
         return "HotbarMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Hotbar";
 
     }
 }
 
+/**
+ * Menu for the spells
+ */
 export class SpellsMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["Spell"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "SpellsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Spells";
     }
 }
 
+/**
+ * Menu for gem list
+ */
 export class GemsMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["Gem"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "GemsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Gems";
     }
 }
 
+/**
+ * Menu for the multiplayer gems]
+ */
 export class MultiplayerGemsMenu extends GemsMenu{
     constructor(params) {
         params.classes ? params.classes.push("multiplayer-gems-menu") : params.classes = ["multiplayer-gems-menu"];
         super(params);
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "MultiplayerGemsMenu";
     }
@@ -434,83 +594,128 @@ export class MultiplayerGemsMenu extends GemsMenu{
 
     }
 
+    /**
+     * Hide the menu
+     */
     hide(){
         this.element.style.display = "none";
         this.getTitleBar().innerText = this.title;
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Gems";
     }
 
 }
 
+/**
+ * Menu for the stakes
+ */
 export class StakesMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["Gem"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "StakesMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Stakes";
 
     }
 }
 
+/**
+ * Menu for combat buildings
+ */
 export class CombatBuildingsMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["CombatBuilding"];
         this.removeTitleBar();
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "CombatBuildingsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Combat";
 
     }
 }
 
+/**
+ * Menu for resource buildings
+ */
 export class ResourceBuildingsMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["ResourceBuilding"];
         this.removeTitleBar();
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "ResourceBuildingsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Resources";
     }
 }
 
+/**
+ * Menu for decoration buildings
+ */
 export class DecorationsMenu extends ListMenu{
     constructor(params) {
         super(params);
         this.allows = ["DecorationBuilding"];
         this.removeTitleBar();
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "DecorationsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Decorations";
 
     }
 }
 
+/**
+ * Base class for menus of a building
+ */
 export class BaseMenu extends IMenu{
     constructor(params) {
         params.classes ? params.classes.push("base-menu") : params.classes = ["base-menu"];
@@ -519,6 +724,11 @@ export class BaseMenu extends IMenu{
         this.allows = [];
     }
 
+    /**
+     * Add a child to the menu at a certain position
+     * @param position - position to add the child
+     * @param child - child to add
+     */
     addChild(position, child){
         if(!this.allows.includes(child.name)) {
             console.error(`${child.name} is not allowed in ${this.name}`);
@@ -526,7 +736,11 @@ export class BaseMenu extends IMenu{
         }
         this.element.querySelector(".sub-menu-container").insertAdjacentElement(position, child.element);
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         let element = document.createElement("div");
         const headerDiv = document.createElement("div");
@@ -555,27 +769,43 @@ export class BaseMenu extends IMenu{
         // element.innerText = this.name;
         return element;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "BaseMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Base";
     }
 
 }
 
+/**
+ * Menu of a prop
+ */
 export class PropMenu extends BaseMenu{
     constructor(params) {
         params.classes ? params.classes.push("prop-menu") : params.classes = ["prop-menu"];
         super(params);
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "PropMenu";
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params) {
         const element = super.createElement(params);
         const deleteButton = document.createElement("button");
@@ -589,29 +819,44 @@ export class PropMenu extends BaseMenu{
         headerDiv.insertBefore(deleteButtonDiv, headerDiv.lastChild);
         return element;
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Decoration";
     }
 }
 
+/**
+ * Menu for the multiplayer
+ */
 export class MultiplayerMenu extends BaseMenu{
     constructor(params) {
         params.classes ? params.classes.push("multiplayer-menu") : params.classes = ["multiplayer-menu"];
         super(params);
         this.allows = ["MultiplayerStatsMenu", "MultiplayerGemsMenu"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "MultiplayerMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Results";
 
     }
 }
 
+/**
+ * Menu for the multiplayer stats
+ */
 export class MultiplayerStatsMenu extends IMenu{
     #stats;
     constructor(params) {
@@ -623,7 +868,11 @@ export class MultiplayerStatsMenu extends IMenu{
             lifetime: null
         }
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = document.createElement("div");
         const statsDiv = document.createElement("div");
@@ -696,23 +945,36 @@ export class MultiplayerStatsMenu extends IMenu{
                 statElement.innerText = `${stat.name}: ${stat.value}`;
             }
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "MultiplayerStatsMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Stats";
     }
 }
 
+/**
+ * Base class for building menus
+ */
 export class BuildingMenu extends PropMenu{
     constructor(params) {
         params.classes ? params.classes.push("building-menu") : params.classes = ["building-menu"];
         super(params);
         this.allows = [];
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = super.createElement(params);
         // element.classList.remove("base-menu");
@@ -726,6 +988,10 @@ export class BuildingMenu extends PropMenu{
         return element;
     }
 
+    /**
+     * Update the level up button with the new level, cost and time
+     * @param params - parameters for the level up button
+     */
     updateLvlUpButton(params){
         const lvlUpButton = this.element.querySelector(".lvl-up-button");
         if(params.currentLevel === params.newLevel){
@@ -737,25 +1003,37 @@ export class BuildingMenu extends PropMenu{
         }
         this.element.querySelector(".lvl-up-button").innerText = `lvl ${params.currentLevel} → ${params.newLevel} \n 💎 ${params.upgradeCost} ⌛ ${params.upgradeTime}`;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "BuildingMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Building";
 
     }
 }
 
-
+/**
+ * Menu for the altar
+ */
 export class AltarMenu extends BaseMenu{
     constructor(params) {
         params.classes ? params.classes.push("altar-menu") : params.classes = ["altar-menu"];
         super(params);
         this.allows = ["SpellsMenu", "HotbarMenu", "GemsMenu", "StakesMenu"];
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = super.createElement(params);
         const playButtonDiv = document.createElement("div");
@@ -769,56 +1047,87 @@ export class AltarMenu extends BaseMenu{
         headerDiv.insertAdjacentElement("afterend", playButtonDiv);
         return element;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "AltarMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Altar";
 
     }
 }
 
+/**
+ * Menu for the tower
+ */
 export class TowerMenu extends BuildingMenu{
     constructor(params) {
         params.classes ? params.classes.push("tower-menu") : params.classes = ["tower-menu"];
         super(params);
         this.allows = ["GemsMenu", "GemInsertMenu", "StatsMenu"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "TowerMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Tower";
     }
 }
 
+/**
+ * Menu for the mine
+ */
 export class MineMenu extends BuildingMenu{
     constructor(params) {
         params.classes ? params.classes.push("mine-menu") : params.classes = ["mine-menu"];
         super(params);
         this.allows = ["GemsMenu", "GemInsertMenu", "StatsMenu", "CollectMenu"];
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "MineMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Mine";
     }
 }
 
+/**
+ * Menu for the fusion table
+ */
 export class FusionTableMenu extends BuildingMenu{
     constructor(params) {
         params.classes ? params.classes.push("fusion-table-menu") : params.classes = ["fusion-table-menu"];
         super(params);
         this.allows = ["FuseInputMenu", "GemsMenu", "GemInsertMenu", "StatsMenu"];
     }
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         const element = super.createElement(params);
         const fuseButtonDiv = document.createElement("div");
@@ -831,16 +1140,25 @@ export class FusionTableMenu extends BuildingMenu{
         headerDiv.insertAdjacentElement("afterend", fuseButtonDiv);
         return element;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "FusionTableMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Fusion Table";
     }
 }
 
+/**
+ * Page menu class
+ */
 export class PageMenu extends IMenu{
     constructor(params) {
         params.classes ? params.classes.push("page-menu") : params.classes = ["page-menu"];
@@ -850,6 +1168,11 @@ export class PageMenu extends IMenu{
         this.params = null;
     }
 
+    /**
+     * Add a child to the menu at a certain position
+     * @param position - position to add the child
+     * @param child - child to add
+     */
     addChild(position, child){
         if(!this.allows.includes(child.name)) {
             console.error(`${child.name} is not allowed in ${this.name}`);
@@ -858,7 +1181,11 @@ export class PageMenu extends IMenu{
         this.element.querySelector(".sub-menu-container").insertAdjacentElement(position, child.element);
     }
 
-
+    /**
+     * Create the element for the menu
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement} - menu element
+     */
     createElement(params){
         let element = document.createElement("div");
         const headerDiv = document.createElement("div");
@@ -890,16 +1217,25 @@ export class PageMenu extends IMenu{
         // element.innerText = this.name;
         return element;
     }
-
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "PageMenu";
     }
-
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Page";
     }
 }
 
+/**
+ * Menu choose a building to build
+ */
 export class BuildMenu extends PageMenu{
     constructor(params) {
         params.classes ? params.classes.push("build-menu") : params.classes = ["build-menu"];
@@ -914,6 +1250,9 @@ export class BuildMenu extends PageMenu{
         };
     }
 
+    /**
+     * Render the menu
+     */
     render() {
         this.element.querySelector(".sub-menu-container").childNodes.forEach((child, i) => {
             if(i === 0){
@@ -925,6 +1264,11 @@ export class BuildMenu extends PageMenu{
         super.render();
     }
 
+    /**
+     * Create the menu element
+     * @param params - parameters for the element
+     * @returns {HTMLDivElement}
+     */
     createElement(params) {
         const element = super.createElement(params);
         const combatButton = document.createElement("button");
@@ -949,10 +1293,18 @@ export class BuildMenu extends PageMenu{
         return element;
     }
 
+    /**
+     * Get the name of the menu
+     * @returns {string} - name of the menu
+     */
     get name(){
         return "BuildMenu";
     }
 
+    /**
+     * Get title of the menu
+     * @returns {string} - title of the menu
+     */
     get title(){
         return "Build";
     }

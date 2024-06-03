@@ -671,11 +671,17 @@ export class WorldManager{
         }
     }
 
+    /**
+     * Adds crystals to the building at the current position
+     */
     async addCrystals(){
         this.world.getBuildingByPosition(this.currentPos).removeInputCrystals();
         this.playerInfo.changeCrystals(10);
     }
 
+    /**
+     * Removes crystals from the building at the current position
+     */
     async removeCrystals(){
         this.world.getBuildingByPosition(this.currentPos).addInputCrystals();
         this.playerInfo.changeCrystals(-10);

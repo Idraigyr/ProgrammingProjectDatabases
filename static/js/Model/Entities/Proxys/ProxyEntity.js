@@ -19,6 +19,11 @@ export class ProxyEntity extends Entity {
 
 
     }
+
+    /**
+     * Take damage from an attack
+     * @param damage - amount of damage to take
+     */
     takeDamage(damage){
         const prevHealth = this.health;
         this.health -= damage;

@@ -1,6 +1,8 @@
 import {CharacterView} from "./CharacterView.js";
 
-
+/**
+ * Minion view
+ */
 export class Minion extends CharacterView {
     constructor(params) {
         super(params);

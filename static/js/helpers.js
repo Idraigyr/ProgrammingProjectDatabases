@@ -33,10 +33,21 @@ export const performanceMeter = (function(){
     }
 })();
 
+/**
+ * Pad the number with leading zeros
+ * @param num - the number to pad
+ * @param size - the size to pad to
+ * @returns {string} the padded number
+ */
 function padLeadingZeros(num, size) {
     return num.toString().padStart(size, "0");
 }
 
+/**
+ * Format the seconds to a string
+ * @param seconds - the seconds to format
+ * @returns {`${string}:${string}`|`${string}:${string}:${string}`|`00:${string}`} the formatted string
+ */
 export const formatSeconds = function(seconds){
     if(seconds >= 3600){
         const hours = Math.floor(seconds/3600);
@@ -85,6 +96,11 @@ export const returnMultipliedString = function(string, length){
     return str;
 }
 
+/**
+ *
+ * @param number
+ * @returns {null|string}
+ */
 export const getBuildingNumberColor = function(number){
     if(number === 0){
         return "color: black;";
@@ -210,6 +226,16 @@ export const convertGridIndexToWorldPosition = function (position){
     return position
 }
 
+/**
+ * Launch the collided object
+ * @param box1 - the first object's bounding box
+ * @param box2 - the second object's bounding box
+ * @param box1Velocity - the velocity of the first object
+ * @param box2Velocity - the velocity of the second object
+ * @param box1Mass - the mass of the first object
+ * @param box2Mass - the mass of the second object
+ * @param deltaTime - the time elapsed since the last frame
+ */
 //TODO: fix that added velocity only counts for one frame
 export const launchCollidedObject = function (box1, box2, box1Velocity, box2Velocity, box1Mass, box2Mass, deltaTime) {
     const hitVector = new THREE.Vector3(0,10,0);
@@ -451,7 +477,11 @@ export function getOccupiedCells(building){ //TODO @Daria: what was this used fo
     return cells;
 }
 
-
+/**
+ * Translates degrees to the nearest quarter
+ * @param degrees - the degrees to translate
+ * @returns {number} the translated degrees
+ */
 export const mapDegreesToNearestQuarter = function(degrees){
     return Math.round((degrees < 0 ? 360 + degrees%360 : degrees%360)/90)*90;
 }
