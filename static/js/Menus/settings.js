@@ -389,7 +389,7 @@ export class Settings extends Subject {
             this.grassOn = true;
             obj.performance = 2;
         }
-        if (obj.performance !== performance)
+        if (obj.performance !== performance.value)
         {
             performanceChange = true;
             performance.value = obj.performance;
