@@ -68,7 +68,7 @@ export const gemChanceMultiplier = 0.05;
 //-- multiplayer --//
 export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?
     getStakesForLvl: function (level) {
-        return 1;
+        return Math.round(level*1.5);
     }
 };
 

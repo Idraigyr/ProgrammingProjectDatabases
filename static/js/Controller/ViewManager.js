@@ -165,11 +165,13 @@ export class ViewManager extends Subject{
 
     /**
      * retrieve the spell Model by id
-     * @param id
-     * @returns {Model|*}
+     * @param {number} id
+     * @returns {SpellEntity | null} - returns null if not found
      */
     getSpellEntityModelByID(id){
-        return this.pairs.spellEntity.find((pair) => pair.model.id === id).model;
+        console.log("looking for model with id: " + id);
+        console.log(this.pairs.spellEntity);
+        return this.pairs.spellEntity.find((pair) => pair.model.id === id)?.model ?? null;
     }
 
     /**

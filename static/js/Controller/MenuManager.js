@@ -1150,7 +1150,7 @@ export class MenuManager extends Subject{
             case "MineMenu":
                 //TODO: show applied stats hide the others + change values based on the received params
                 this.#arrangeStatMenuItems(params);
-                params.crystals = this.collectParams.current;
+                this.collectParams.current = params.crystals;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
                 this.collectParams.rate = Math.ceil(params.stats.get("speed")); // Todo: Or add * 10 back?
                 this.fortune = params.stats.get("fortune");

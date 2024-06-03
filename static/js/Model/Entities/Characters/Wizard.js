@@ -60,6 +60,10 @@ export class Wizard extends Character{
      * Update cooldown of the current spell
      */
     cooldownSpell(){
+        if(this.mana < this.#spells[this.currentSpell].cost) {
+            console.log("Not enough mana");
+            // throw new Error("Not enough mana");
+        }
         this.spellCooldowns[this.currentSpell] = this.#spells[this.currentSpell].getCooldown();
         this.mana -= this.#spells[this.currentSpell].cost;
         this.dispatchEvent(this.#createUpdateManaEvent());
