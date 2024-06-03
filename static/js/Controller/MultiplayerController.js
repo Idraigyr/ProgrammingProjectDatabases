@@ -415,6 +415,9 @@ export class MultiplayerController extends Subject{
                 lifetime: lifetimeStats
             }
         });
+        this.worldManager.world.player.changeCurrentHealth(this.worldManager.world.player.maxHealth);
+        this.worldManager.world.player.respawning = false;
+        this.playerInfo.health = this.playerInfo.maxHealth;
         this.toggleLeaveMatchButton();
         //wait for player to click on close button
     }
@@ -519,6 +522,7 @@ export class MultiplayerController extends Subject{
         //remove island from world and remove spawners
         //!! important: remove reference to peer only after removing all event listeners !! (happens in stopSendingStateUpdates)
         this.peerController.peer = null;
+        this.peerInfo = new PlayerInfo();
         this.minionController.clearMinions();
         this.worldManager.resetWorldState(this.playerInfo.userID < this.peerInfo.userID);
         //stop receiving state updates from server
