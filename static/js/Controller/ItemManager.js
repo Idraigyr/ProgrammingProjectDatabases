@@ -1,7 +1,7 @@
 import {Attribute, Gem, Spell} from "../Model/items/Item.js";
 import {API_URL, gemAttributesURI, gemURI, postRetries, spellListURI} from "../configs/EndpointConfigs.js";
 import {minTotalPowerForStakes, powerScaling} from "../configs/ControllerConfigs.js";
-import {gemProductionInterval} from "../configs/ControllerConfigs.js";
+import {gemProductionInterval, gemChanceMultiplier} from "../configs/ControllerConfigs.js";
 import {gemTypes} from "../configs/Enums.js";
 import {spellTypes} from "../Model/Spell.js";
 
@@ -67,7 +67,7 @@ export class ItemManager {
             }
         }
         this.interval = setInterval(() => {
-            if (Math.random() <= 0.01) {
+            if (Math.random() <= (fortune/100)*gemChanceMultiplier) {
                 this.createGem(Math.floor(fortune));
             }
         }, gemProductionInterval*1000);
