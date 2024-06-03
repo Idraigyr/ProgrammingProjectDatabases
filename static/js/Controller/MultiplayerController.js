@@ -618,22 +618,22 @@ export class MultiplayerController extends Subject{
             }
             else{
                 data.spellEvent.type = spellTypes.getCtor(data.spellEvent.type);
-            for (const property in data.spellEvent.params) {
-                //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
-                if(data.spellEvent.params[property]?.x) data.spellEvent.params[property] = new THREE.Vector3(
-                    data.spellEvent.params[property].x,
-                    data.spellEvent.params[property].y,
-                    data.spellEvent.params[property].z
-                );
-            }
-            data.spellEvent.params.team = 1;
-            data.spellEvent.params.playerID = this.peerInfo.userID;
-            let spell = this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
-            spell.setId(spell.id + 1000);
-            if (data.spellEvent.type.name === "Shield") {
-                if(spell) spell.addEventListener("shieldLost", this.updateEvents.get("shieldUpdate"));
-                else throw new Error("Shield not found");
-            }
+                for (const property in data.spellEvent.params) {
+                    //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
+                    if(data.spellEvent.params[property].x && Number.isFinite(data.spellEvent.params[property].x)) data.spellEvent.params[property] = new THREE.Vector3(
+                        data.spellEvent.params[property].x,
+                        data.spellEvent.params[property].y,
+                        data.spellEvent.params[property].z
+                    );
+                }
+                data.spellEvent.params.team = 1;
+                data.spellEvent.params.playerID = this.peerInfo.userID;
+                const spell = this.spellFactory.createSpell({detail: {...data.spellEvent, canDamage: false}});
+                spell.setId(spell.id + 1000);
+                if (data.spellEvent.type.name === "Shield") {
+                    if(spell) spell.addEventListener("shieldLost", this.updateEvents.get("shieldUpdate"));
+                    else throw new Error("Shield not found");
+                }
             }
 
 
