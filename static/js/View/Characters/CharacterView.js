@@ -79,6 +79,7 @@ export class CharacterView extends IAnimatedView{
 
 
       OnHealth_(event) {
+        console.log("on health");
         const healthPercent = (event.detail.current / event.detail.total);
 
         this.realHealth_ = healthPercent;
