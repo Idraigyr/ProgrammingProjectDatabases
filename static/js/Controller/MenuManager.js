@@ -89,6 +89,8 @@ export class MenuManager extends Subject{
         this.collectInterval = null;
         this.fortune = 0;
 
+        this.fusing = false;
+
         this.inputCrystalParams = {
             meter: null,
             current: 0,
@@ -281,14 +283,15 @@ export class MenuManager extends Subject{
 
     /**
      * Fusion button clicked
+     * Start fusing
      */
     FusionClicked() {
-      if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0) {
+      if(this.inputCrystalParams.current > 0 && this.loadingprogress === 0 && this.fusing === false) {
+          this.fusing = true;
           this.toggleAnimation(true);
           this.dispatchEvent(this.createFuseEvent());
-          /* TODO: don't change xp here do this when fusion task is done
-          this.playerInfo.changeXP(2*this.inputCrystalParams.current);
-          */
+          // TODO: don't change xp here do this when fusion task is done
+          //this.playerInfo.changeXP(2*this.inputCrystalParams.current);
           this.inputCrystalParams.current = 0;
           this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter").style.width = this.inputCrystalParams.current + "%";
           this.menus.get("FuseInputMenu").element.querySelector(".crystal-meter-text").innerText = `${this.inputCrystalParams.current}/${this.inputCrystalParams.max}`;
@@ -316,6 +319,13 @@ export class MenuManager extends Subject{
           }, 100); // Total time to load bar
           */
       }
+    }
+
+    /**
+     * Stop fuse so new one can start
+     */
+    stopFusing() {
+        this.fusing = false;
     }
 
     /**
@@ -1152,7 +1162,7 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
-                this.collectParams.rate = Math.ceil(params.stats.get("speed")); // Todo: Or add * 10 back?
+                this.collectParams.rate = Math.ceil(params.stats.get("speed"))*10; // Todo: Remove or add * 10?
                 this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");
@@ -1160,7 +1170,6 @@ export class MenuManager extends Subject{
                 this.menus.get("CollectMenu").element.querySelector(".crystal-meter-text").innerText = `${params.crystals}/${this.collectParams.max}`;
                 this.menus.get("MineMenu").updateLvlUpButton(params);
                 this.collectParams.max = params.maxCrystals;
-                this.collectParams.rate = params.rate;
                 this.collectInterval = setInterval(this.updateCrystals.bind(this), 1000);
 
                 // show correct Gems based on received params
