@@ -620,7 +620,7 @@ export class MultiplayerController extends Subject{
                 data.spellEvent.type = spellTypes.getCtor(data.spellEvent.type);
                 for (const property in data.spellEvent.params) {
                     //assume that if a property has x, it has y and z as well (meaning data.spellEvent never contains properties with separate x, y, z values)
-                    if(data.spellEvent.params[property].x && Number.isFinite(data.spellEvent.params[property].x)) data.spellEvent.params[property] = new THREE.Vector3(
+                    if(Number.isFinite(data.spellEvent.params[property].x)) data.spellEvent.params[property] = new THREE.Vector3(
                         data.spellEvent.params[property].x,
                         data.spellEvent.params[property].y,
                         data.spellEvent.params[property].z
