@@ -458,6 +458,10 @@ export class Settings extends Subject {
     changeKeyBind(event) {
         if(!(event.code === 'Backspace'))
         {
+            const inputElement = document.getElementById(event.target.name); // Get the input element
+            if (inputElement) {
+                inputElement.value = event.key; // Update the input element's value
+            }
             keyMap.set(event.target.name, event.code);
             const dbKey = keyMapToDb[event.target.name];
             if (dbKey) {
