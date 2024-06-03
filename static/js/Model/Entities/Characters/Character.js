@@ -130,6 +130,18 @@ export class Character extends Entity{
     }
 
     /**
+     * heal character by amount
+     */
+    heal(amount){
+        const prevHealth = this.health;
+        this.health += amount;
+        if(this.health > this.maxHealth){
+            this.health = this.maxHealth;
+        }
+        this.dispatchEvent(this.createHealthUpdateEvent(prevHealth));
+    }
+
+    /**
      * Send a CustomEvent for updating the position of the character
      * @param vector {Vector3} the new position of the character
      */

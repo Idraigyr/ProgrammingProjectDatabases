@@ -597,9 +597,7 @@ export class MultiplayerController extends Subject{
                  this.peerController.peer.health = this.peerController.peer.maxHealth;
             }
         if (data.eatingEvent) {
-            const previousHealth = this.peerController.peer.health;
-            this.peerController.peer.health += data.eatingEvent.params.health;
-             this.peerController.peer.dispatchEvent(this.peerController.peer.createHealthUpdateEvent(previousHealth));
+            this.peerController.peer.heal(data.eatingEvent.params.health);
         }
 
         if(data.playerHealth){

@@ -13,6 +13,7 @@ import {
 import {keyBinds} from "../configs/Keybinds.js";
 import {Cursors} from "../configs/Enums.js";
 import {Level} from "../configs/LevelConfigs.js";
+import {alertPopUp} from "../external/LevelUp.js";
 
 /**
  *Map to map keys from settings to the keybinds in config
@@ -345,6 +346,21 @@ export class Settings extends Subject {
     }
 
     /**
+     * Function to check if there are no duplicate keys for keybinds
+     */
+    hasDuplicates() {
+    let values = new Set();
+    for (let value of keyMap.values()) {
+        if (values.has(value)) {
+            alertPopUp("Duplicate keybinds are not allowed!")
+            return true;
+        }
+        values.add(value);
+    }
+    return false;
+}
+
+    /**
      * Function to apply the volume from the settings menu to the game
      */
     applyVolume(obj){
@@ -389,7 +405,7 @@ export class Settings extends Subject {
             this.grassOn = true;
             obj.performance = 2;
         }
-        if (obj.performance !== performance)
+        if (obj.performance !== performance.value)
         {
             performanceChange = true;
             performance.value = obj.performance;
@@ -424,6 +440,7 @@ export class Settings extends Subject {
      */
 
     applySettings(onLoad) {
+        if (this.hasDuplicates()) { return;}
         let data = {player_id: this.playerInfo.userID};
         data.selected_cursor = cursorId;
         this.applyVolume(data);
@@ -458,6 +475,10 @@ export class Settings extends Subject {
     changeKeyBind(event) {
         if(!(event.code === 'Backspace'))
         {
+            const inputElement = document.getElementById(event.target.name); // Get the input element
+            if (inputElement) {
+                inputElement.value = event.key; // Update the input element's value
+            }
             keyMap.set(event.target.name, event.code);
             const dbKey = keyMapToDb[event.target.name];
             if (dbKey) {
