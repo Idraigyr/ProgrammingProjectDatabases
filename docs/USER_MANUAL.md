@@ -146,6 +146,9 @@ with the buildings and use their functionalities and upgrade them.
 Most buildings can be upgraded by using gems and enhancing their abilities.
 Opening a menu is done by default by pressing the `E` key when the player is
 aiming at the building.
+In each menu, you have a possibility to delete the building by pressing on the bin.
+
+![Delete building image](/docs/img/delete-bin.png)
 
 ### Altar menu
 
@@ -165,10 +168,14 @@ You can collect the crystals by clicking on the collect button. The number of cr
 
 ### Fusion table menu
 
+![Fusion table menu image](/docs/img/fusion-table.png)
+
 In the fusion table the player can use crystals and fuse them into gems.
-This will take some time.
+This will take some time. The player can use gems to upgrade buildings and also to participate in multiplayer battles.
 
 ### Tower menu
+
+![Tower menu image](/docs/img/tower-menu.png)
 
 The tower is used for combat and displays its health and damage.
 
@@ -225,6 +232,19 @@ Above the building preview you can see the timer that shows the remaining time t
 After that, you can interact with the building by pressing the `E` key. 
 
 If you want to move the building, you have to select the build spell in the inventory and click on the building. Then the building will be selected and you can move it to the desired location. To place the selected object on the new place, click on the desired cell. If you want to rotate the building, you have to click with the right mouse button.
+
+## Building upgrade
+
+![Building upgrade image](/docs/img/upgrade-menu.png)
+
+This upgrade submenu shows the player the current level of the building and the cost and time to upgrade it to the next level. 
+
+The game supports two types of building upgrades:
+- Building upgrade: the player can upgrade the building to the next level
+- Gem upgrade: the player can upgrade the building with gems by putting them in the gem slots
+
+The first one is done by clicking on the upgrade button. The second one is done by clicking on the gem slot and selecting the gem you want to put in the slot.
+Building upgrades provide the player more gem slots and in some cases improves stats of the building.
 
 ## Currency
 
