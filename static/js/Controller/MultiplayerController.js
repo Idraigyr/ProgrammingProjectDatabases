@@ -254,6 +254,7 @@ export class MultiplayerController extends Subject{
         await loadingScreen.render();
 
         this.menuManager.exitMenu();
+        this.friendsMenu.hideFriendsDisplay();
         this.spellCaster.dispatchVisibleSpellPreviewEvent(false);
         this.inMatch = true;
         this.spellCaster.multiplayer = true;
@@ -931,8 +932,14 @@ export class MultiplayerController extends Subject{
             case "kick": //your friend kicked you out of his/her island
                 await this.unloadFriendIsland();
                 break;
-            case "leave": // your friend left your island
-                this.unloadFriend();
+            case "leave": // your friend left your island or disconnects
+                if(this.state === "visiting") {
+                    await this.unloadFriendIsland();
+                } else if(this.state === "visited") {
+                    this.unloadFriend();
+                } else {
+                    throw new Error("wrong state");
+                }
                 break;
             case "visit": //your friend requested to visit your island
                 //TODO: get friend name from friendslist
@@ -1074,6 +1081,7 @@ export class MultiplayerController extends Subject{
      */
     async loadFriend(userId){
         //TODO: load friend on your island
+        this.friendsMenu.hideFriendsDisplay();
         await this.peerInfo.retrieveInfo(userId, false);
         this.friendsMenu.inMatch = true;
         const friend = this.worldManager.addPeer({
@@ -1094,9 +1102,9 @@ export class MultiplayerController extends Subject{
      */
     async unloadFriendIsland(){
         console.log("leaving friends island");
-        const progressBar = document.getElementById('progress-bar');
-        progressBar.labels[0].innerText = "leaving match...";
-        document.querySelector('.loading-animation').style.display = 'block';
+        await loadingScreen.setValue(0);
+        await loadingScreen.setText("leaving friend's island...");
+        await loadingScreen.render();
         this.togglePhysicsUpdates();
 
         this.spellCaster.multiplayer = false;
@@ -1106,13 +1114,14 @@ export class MultiplayerController extends Subject{
         this.spellCaster.onSpellSwitch({detail: {spellSlot: this.worldManager.world.player.currentSpell++}}); //reset spellView TODO: does not work currently
 
         this.unloadFriend();
+        await loadingScreen.setValue(50);
 
         await this.worldManager.switchIslands(this.playerInfo.userID);
-        //stop receiving state updates from server
-        document.querySelector('.loading-animation').style.display = 'none';
+        await loadingScreen.setValue(100);
         this.togglePhysicsUpdates();
         console.log("done leaving match");
         this.canMatchmake = true;
+        await loadingScreen.hide();
     }
 
     /**
