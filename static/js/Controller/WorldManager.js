@@ -878,13 +878,4 @@ export class WorldManager{
     toggleGrass(event){
         this.world.toggleGrass(event.detail.on);
     }
-
-    async updateBuildings(){
-
-    }
-
-    async updateCharacter(){
-
-    }
-
 }

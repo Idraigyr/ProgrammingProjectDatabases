@@ -66,7 +66,7 @@ export class Factory{
             minionType: params.type,
             mass: 20
         });
-        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 25,camera: this.camera});
+        let view = new View.Minion({charModel: this.assetManager.getAsset(params.type), position: currentPos, horizontalRotation: 90,camera: this.camera});
         //add weapon to hand
         view.charModel.traverse((child) => {
             if(child.name === "handIKr") {

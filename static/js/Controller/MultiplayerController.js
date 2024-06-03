@@ -293,7 +293,7 @@ export class MultiplayerController extends Subject{
         this.minionController.worldMap = this.worldManager.world.islands;
         await loadingScreen.setValue(90);
 
-        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 2});
+        this.worldManager.generateMinionSpawners(this.minionController, {interval: 3, maxSpawn: 1});
         this.worldManager.generateSpellSpawners({
             spell: {
                 type: new Fireball({}),
@@ -312,10 +312,6 @@ export class MultiplayerController extends Subject{
         this.startSendingStateUpdates(this.peerInfo.userID);
         //announce to the server that the player is ready to start the match
         this.forwardingNameSpace.sendPlayerReadyEvent(this.#matchId);
-        /* TODO: look and see
-        // Time for settings
-        this.settings.toggleGrass({target: {checked: this.settings.grassOn}});
-        */
     }
 
     /**
