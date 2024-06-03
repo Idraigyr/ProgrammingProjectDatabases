@@ -368,7 +368,7 @@ export class WorldManager{
         const island1 = this.world.islands[0];
         printFoundationGrid(island1.grid, island1.width, island1.length);
         //--DEBUG--
-        await this.deleteOldTasks(); // TODO: or somewhere else?
+        await this.deleteOldTasks();
     }
 
     async deleteOldTasks(){

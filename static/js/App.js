@@ -255,8 +255,8 @@ class App {
                 return
             }
             this.playerInfo.changeCrystals(-building.upgradeCost);
-            await this.playerInfo.createLevelUpTask(building);
-            building.startUpgrade();
+            // const resp = await this.playerInfo.createLevelUpTask(building);
+            building.startUpgrade(this.worldManager.deleteOldTasks.bind(this.worldManager));
             this.playerInfo.changeXP(150);
             this.menuManager.exitMenu();
         });
@@ -417,8 +417,8 @@ class App {
                 this.itemManager.startGemProduction(this.worldManager.world.islands[0].buildings);
             }
 
-            //TODO: move if statements into their own method of the placeable class' subclasses
-            if(building && building.gemSlots >= 0){ // TODO: why was this originally > 0? answer: for buildings that don't have gems skip this step maybe place > 0 back?
+
+            if(building && building.gemSlots >= 0){
                 // Update all stats
                 building.changeLevel(0);
                 params.gemIds = this.itemManager.getItemIdsForBuilding(building.id);

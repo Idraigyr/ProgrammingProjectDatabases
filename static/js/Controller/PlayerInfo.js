@@ -332,6 +332,7 @@ export class PlayerInfo extends Subject{
     /**
      * Creates level up task on the server
      * @param building - Building to level up
+     * @returns number - Task id
      */
     async createLevelUpTask(building){ //TODO: WHY DO THIS HERE?
         // Get time
@@ -358,6 +359,8 @@ export class PlayerInfo extends Subject{
                 }),
                 success: (data) => {
                     console.log(data);
+                    const task_id = data.id;
+                    return task_id;
                 },
                 error: (err) => {
                     console.log(err);

@@ -289,11 +289,6 @@ export class Factory{
 
         this.viewManager.addPair(model, view);
 
-        //TODO: withTimer: (DONE?)
-        // get total time from config/db
-        // create a timer that has a callback that triggers when the timer ends
-        // put the buildingPreview in dyingViews of viewManager
-        // just make the buildingView invisible for the duration of the timer
         if (params.task){
             // Get if the timer is already finished
             const timeEnd = new Date(params.task.endtime);
@@ -328,7 +323,8 @@ export class Factory{
             // End of black magic
             if(timeEnd < this.currentTime){
                 if(params.task.type === "building_upgrade_task") {
-                    this._levelUpBuilding(params, model);
+                    params.model = model;
+                    this.levelUpBuilding(params);
                 }
                 else if (params.task.type === "fuse_task") {
                     // Time to create a new gem!
@@ -373,7 +369,6 @@ export class Factory{
         if(params.withTimer){
             // Copy asset object
             const assetClone = asset.clone();
-            //TODO: find solution invisible THREE.Object3D do not become a part of staticGeometrywith generateCollider function
             view.charModel.visible = false;
             // Set that model is not ready
             model.ready = false;
@@ -418,7 +413,8 @@ export class Factory{
             contentType: "application/json",
             success: (data) => {
                 // If there is a task, we have to upgrade the building
-                this._levelUpBuilding(params, model);
+                params.model = model;
+                this.levelUpBuilding(params);
             }});
     }
 
@@ -441,12 +437,10 @@ export class Factory{
 
     /**
      * Level up the building on server
-     * @param params - parameters (with params.task.id)
-     * @param model - model of the building
+     * @param params - parameters (with params.task.id and model)
      * @returns {Promise<void>} - data of the task
-     * @private - private method
      */
-    async _levelUpBuilding(params, model){
+    async levelUpBuilding(params){
         // Send get request to the server to check if the model already have the correct level
         await $.ajax({
             url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
@@ -454,31 +448,31 @@ export class Factory{
             contentType: "application/json",
             success: (data) => {
                 console.log(data);
-                if (data.to_level !== model.level) {
+                if (data.to_level !== params.model.level) {
                     let data2Send = {
-                            placeable_id: model.id,
+                            placeable_id: params.model.id,
                             level: data.to_level
                         }
-                    if(model.dbType === "tower_building") {
+                    if(params.model.dbType === "tower_building") {
                         data2Send.tower_type = "magic";
                     }
-                    if(model.dbType === "prop")  return; // Skip props
+                    if(params.model.dbType === "prop")  return; // Skip props
                     // Send put request to the server to level up the building
                     $.ajax({
-                        url: `${API_URL}/${placeableURI}/${model.dbType}`,
+                        url: `${API_URL}/${placeableURI}/${params.model.dbType}`,
                         type: "PUT",
                         contentType: "application/json",
                         data: JSON.stringify(
                             data2Send),
                         success: (data) => {
-                            model.level = data.level;
+                            params.model.level = data.level;
                             //TODO: is this always +1
                             // this.playerInfo.changeXP(150);
                             console.log(data);
                         },
                         error: (xhr, status, error) => {
                             console.error(xhr.responseText);
-                            console.log("Building ", model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
+                            console.log("Building ", params.model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
                         }
                     });
                 }
@@ -486,6 +480,19 @@ export class Factory{
             error: (xhr, status, error) => {
                 console.error(xhr.responseText);
                 console.log("Building with upgrade task id ", params.task.id, " is not found");
+            }
+        });
+        // Delete the old task
+        await $.ajax({
+            url: `${API_URL}/${taskURI}?id=${params.task.id}`,
+            type: "DELETE",
+            contentType: "application/json",
+            success: (data) => {
+                console.log(data);
+            },
+            error: (xhr, status, error) => {
+                console.error(xhr.responseText);
+                console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
             }
         });
     }

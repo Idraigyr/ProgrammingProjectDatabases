@@ -276,14 +276,19 @@ export class Placeable extends Entity{
 
     /**
      * Starts upgrade of the building
+     * @param {function} callback the callback to call when the upgrade is done
+     * @param {object} callbackParams the parameters to pass to the callback
      */
-    startUpgrade(){
+    startUpgrade(callback=null, ...callbackParams){
         this.ready = false;
         this.dispatchEvent(new CustomEvent("startUpgrade", {detail: {time: this.upgradeTime, position: this.position}}));
         setTimeout(() => {
             this.ready = true;
             this.levelUp();
             this.dispatchEvent(new CustomEvent("finishUpgrade"));
+            if(callback){
+                callback(callbackParams);
+            }
         }, this.upgradeTime*1000);
     }
     levelUp(){
