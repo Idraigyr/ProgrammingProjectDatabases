@@ -1,45 +1,30 @@
 import * as AllFriends from "./Friends.js"
 import {userId} from "./ChatNamespace.js"
-import {getFriendRequestStatus} from "./Friends.js";
 import {addFriendNotification, removeFriendNotification} from "./LevelUp.js";
+import {API_URL, pendingFriendRequestURI} from "../configs/EndpointConfigs.js";
 
 export class FriendsMenu {
 
     constructor() {
         this.friendsButton = document.getElementById("friends-button");
-
         this.Friends = document.getElementById("Friends");
-
         this.addFriendButton = document.getElementById("friendAddButton");
-
         this.requestFriendButton = document.getElementById("friendRequestButton");
-
         this.listFriendButton = document.getElementById("friendListButton");
-
         this.addFriend = document.getElementById("addFriend");
-
         this.FriendList = document.getElementById("listFriend");
-
         this.requestList = document.getElementById("listRequests");
-
         this.sendRequestButton = document.getElementById('requestSubmit');
         this.usernameFriend = document.getElementById("usernameFriend");
-
         this.usernameExist = document.getElementById("UsernameExist");
-
         this.listFriend = document.getElementById('listFriend');
-
         this.listRequest = document.getElementById('listRequests');
 
         this.friends =  [];
-
         this.requests = [];
 
         this.initial = true;
-
-
         this.inMatch = false;
-
         this.forwardingNameSpace = null;
 
         this.friendsButton.onclick = this.toggleFriendsDisplay.bind(this);
@@ -118,8 +103,10 @@ export class FriendsMenu {
             }
         }
         let requestExists = false;
+        console.log("requests: ", this.requests)
         for (let request of this.requests){
-            if(request.sender_id === await AllFriends.getPlayerID(this.usernameFriend.value.trim())){
+            console.log(request);
+            if(request.sender_id === AllFriends.getPlayerID(this.usernameFriend.value.trim())){
                 requestExists = true;
                 break;
             }
@@ -127,13 +114,13 @@ export class FriendsMenu {
         let friendsExists = false;
         for (let friend of this.friends)
         {
-            if(await AllFriends.getPlayerUsername(friend) === this.usernameFriend.value.trim()){
+            if(AllFriends.getPlayerUsername(friend) === this.usernameFriend.value.trim()){
                 friendsExists = true;
                 break;
             }
         }
         if (exists && !requestExists && !friendsExists) {
-            let receiver_id = await AllFriends.getPlayerID(this.usernameFriend.value.trim());
+            let receiver_id = AllFriends.getPlayerID(this.usernameFriend.value.trim());
             AllFriends.sendRequest(receiver_id);
             this.usernameFriend.value = '';
         }
@@ -212,7 +199,7 @@ export class FriendsMenu {
     async populateRequests() {
         let tempRequests = await AllFriends.getFriendRequests();
         if (this.requests.length !== tempRequests.length){
-            const unique = this.findUniqueRequests(this.requests, tempRequests);
+            const unique = tempRequests.filter(element => !this.requests.includes(element));
             for(let r of unique){
                 await this.addRequest(r);
                 if(this.initial){
@@ -232,7 +219,7 @@ export class FriendsMenu {
         friend.id = `friend-${playerId}`;
         friend.classList.add('friend');
         const username = document.createElement('div');
-        username.innerText = `${await AllFriends.getPlayerUsername(playerId)}`;
+        username.innerText = `${AllFriends.getPlayerUsername(playerId)}`;
         const viewIsland = document.createElement('button');
         const onlineIndicator = document.createElement('div');
         const filler = document.createElement('div');
@@ -256,7 +243,7 @@ export class FriendsMenu {
             const requestElement = document.createElement('div');
             requestElement.id = "Request-bar"; // Assume each request has a unique sender ID
             requestElement.classList.add('request');
-            requestElement.innerHTML = `${await AllFriends.getPlayerUsername(request.sender_id)}`;
+            requestElement.innerHTML = `${AllFriends.getPlayerUsername(request.sender_id)}`;
 
             const friendsMenu = this;
             const acceptButton = document.createElement('button');
@@ -289,53 +276,22 @@ export class FriendsMenu {
         }
     }
 
+    /**
+     * Update the list of friend requests
+     * @return {Promise<*[]>}
+     */
     async updateRequests() {
-        this.requests = await AllFriends.getFriendRequests();
+        try {
+            this.requests = await AllFriends.getFriendRequests();
+        } catch (error) {
+            console.error(error);
+            // Handle error appropriately, maybe throw it again or return an empty array
+            return [];
+        }
     }
     toggleWindowbutton() {
         if (!this.Friends.contains(event.target) && event.target !== this.friendsButton && !event.target.classList.contains('Accept-Request') && !event.target.classList.contains('Reject-Request')) {
             this.Friends.style.display = 'none';
         }
     }
-
-    mapsAreEqual(obj1, obj2) {
-        const keys1 = Object.keys(obj1);
-        const keys2 = Object.keys(obj2);
-
-        // First, check if the objects have the same number of keys
-        if (keys1.length !== keys2.length) {
-            return false;
-        }
-
-        // Then, check if all keys and values are the same in both objects
-        for (let key of keys1) {
-            if (obj1[key] !== obj2[key]) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-     findUniqueRequests(arrayA, arrayB) {
-        const uniqueMaps = [];
-
-        arrayB.forEach(mapB => {
-            let isUnique = true;
-
-            arrayA.forEach(mapA => {
-                if (this.mapsAreEqual(mapA, mapB)) {
-                    isUnique = false;
-                }
-            });
-
-            if (isUnique) {
-                uniqueMaps.push(mapB);
-            }
-        });
-
-        return uniqueMaps;
-    }
-
-
 }
