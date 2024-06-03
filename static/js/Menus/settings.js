@@ -12,6 +12,7 @@ import {
 } from "../configs/ControllerConfigs.js";
 import {keyBinds} from "../configs/Keybinds.js";
 import {Cursors} from "../configs/Enums.js";
+import {Level} from "../configs/LevelConfigs.js";
 
 /**
  *Map to map keys from settings to the keybinds in config
@@ -144,6 +145,7 @@ export class Settings extends Subject {
         this.inputManager.addHelpCloseButtonListener(this.toggleHelpMenu.bind(this))
         const keybinds = document.querySelector('.key-binds');
         keybinds.addEventListener('keydown', this.changeKeyBind.bind(this));
+        this.inniLevelOverview();
     }
 
     /**
@@ -486,5 +488,49 @@ export class Settings extends Subject {
     toggleHelpMenu() {
         const helpMenu = document.querySelector('.help-container');
         helpMenu.classList.toggle('hide');
+    }
+
+    /**
+     * Function to initialize the level overview
+     */
+    inniLevelOverview() {
+        const battlePassDiv = document.getElementById('battle-pass');
+
+        for (const [level, details] of Object.entries(Level)) {
+            const levelDiv = document.createElement('div');
+            levelDiv.classList.add('level');
+            levelDiv.id = `level-${level}`;
+
+            const levelHeader = document.createElement('h3');
+            levelHeader.textContent = `Level ${level}`;
+            levelDiv.appendChild(levelHeader);
+
+            const ul = document.createElement('ul');
+
+            for (const [key, value] of Object.entries(details)) {
+                if (typeof value === 'object') {
+                    const spells = Object.keys(value).filter(spell => value[spell]); //.join(', ');
+                    const li = document.createElement('li');
+                    // li.textContent = `Spells: ${spells}`;
+                    li.textContent = `Spells:`;
+                    const spellsul = document.createElement('ul');
+                    spells.forEach(spell => {
+                        const spellLi = document.createElement('li');
+                        spellLi.textContent = spell;
+                        spellsul.appendChild(spellLi);
+                    });
+                    li.appendChild(spellsul);
+                    ul.appendChild(li);
+                } else {
+                    const li = document.createElement('li');
+                    if (value !== 0)
+                    {li.textContent = `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`;
+                    ul.appendChild(li);}
+                }
+            }
+
+            levelDiv.appendChild(ul);
+            battlePassDiv.appendChild(levelDiv);
+        }
     }
 }

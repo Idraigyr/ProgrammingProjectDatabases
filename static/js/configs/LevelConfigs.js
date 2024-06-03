@@ -10,8 +10,6 @@ export let Level  = {
         WarriorHut: 0,
         Mine: 1,
         FusionTable: 0,
-        crystalStatue: 0,
-        goldenStatue: 0,
         Spells: {
             'BuildSpell': true,
             'Fireball': false,
