@@ -5,23 +5,22 @@ export class Timer{
     /**
      *
      // * @param parent - parent of the timer, update function will be called by the parent
-     * @param duration - duration of the timer
-     * @param callbacks - array of callbacks to be called when the timer ends
-     * @param callbackParams - array of parameters for the callbacks either null or the same length as callbacks
-     * @param repeatable - if true, the timer will repeat
+     * @param {number} duration - duration of the timer in seconds
+     * @param {function[]} callbacks - array of callbacks to be called when the timer ends
+     * @param {Object[]} callbackParams - array of parameters for the callbacks either null or the same length as callbacks
+     * @param {boolean} repeatable - if true, the timer will repeat
      */
     constructor(duration, callbacks, repeatable= false, callbackParams = null){
         this.parent = null;
         this.id = null;
         this.duration = duration;
-        this.timer = 0;
-        this.deltaTime = 0;
         this.callbacks = callbacks;
         this.callbacksParams = callbackParams??[];
         this.repeatable = repeatable;
+
+        this.paused = false;
         this.finished = false;
-        this.runtimeCallbacks = [];
-        this.runtimeCallbacksParams = [];
+        this.delayCallbacks = false;
     }
 
     /**
@@ -42,41 +41,34 @@ export class Timer{
      * @param deltaTime
      */
     update(deltaTime){
-        if(this.finished) return;
-        this.deltaTime = deltaTime;
-        this.timer += deltaTime;
-        if(this.timer >= this.duration){
-            this.callbacks.forEach((callback, i) => callback(this.callbacksParams?.[i]));
+        if(this.finished || this.paused) return;
+        this.duration -= deltaTime; //TODO: maybe add a check if this.timer >= this.duration stop increasing timer (to prevent overflow when callbacks are delayed for a long time)?
+        if(this.duration <= 0 && !this.delayCallbacks){
+            this.callbacks.forEach((callback, i) => {
+                try {
+                    callback(this.callbacksParams?.[i])
+                } catch (e) {
+                    console.error(e);
+                }
+            });
             if(this.repeatable){
                 this.timer = 0;
-            }else{
+            } else {
                 this.finished = true;
                 // remove timer from parent - remove this line if you want to keep the timer in the parent (maybe 2 timerClasses: one that deletes itself and one that doesn't)
                 //only update the timer from parent!
                 this.parent.removeTimer(this.id);
             }
-            return;
         }
-        // Execute runtime callbacks
-        this.runtimeCallbacks.forEach((callback, i) => callback(this.runtimeCallbacksParams?.[i]));
     }
 
     /**
-     * Adds a callback to the timer that will be called every time the timer is updated
-     * @param callback - callback to be called
-     * @param callbackParams - parameters for the callback
-     */
-    addRuntimeCallback(callback, callbackParams){
-        this.runtimeCallbacks.push(callback);
-        this.runtimeCallbacksParams.push(callbackParams);
-    }
-
-    /**
-     * Adds a callback to the timer that will be called when the timer ends
+     * Adds a callback to the timer that will be called when the timer ends, throws an error if the timer has already finished
      * @param callback - callback to be called
      * @param callbackParams - parameters for the callback
      */
     addCallback(callback, callbackParams){
+        if(this.finished) throw new Error("Timer has already finished, can't add callback");
         this.callbacks.push(callback);
         this.callbacksParams.push(callbackParams);
     }
@@ -92,12 +84,24 @@ export class TimerManager {
         this.#timers = [];
     }
 
+    /**
+     * Creates a timer and adds it to the manager
+     * @param duration - duration of the timer in seconds
+     * @param callbacks - array of callbacks to be called when the timer ends
+     * @param repeatable - if true, the timer will repeat
+     * @param callbackParams - parameters for the callbacks either null or the same length as callbacks
+     * @returns {Timer} - the created timer
+     */
     createTimer(duration, callbacks, repeatable= false, callbackParams = null){
         const timer = new Timer(duration, callbacks, repeatable, callbackParams);
         timer.setID(this.insertTimer(timer), this);
         return timer;
     }
 
+    /**
+     * Adds timer to the manager
+     * @param timer - timer to be added
+     */
     addTimer(timer){
         timer.setID(this.insertTimer(timer), this);
     }

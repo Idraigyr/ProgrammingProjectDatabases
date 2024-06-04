@@ -6,6 +6,9 @@ from src.model.enums import BlueprintType
 
 
 class Blueprint(current_app.db.Model):
+    """
+    A blueprint object is a representation of a building that can be built in the game
+    """
 
     id: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
     name: Mapped[str] = Column(String(32), nullable=False, unique=True)

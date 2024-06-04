@@ -1,73 +1,98 @@
 import {Model} from "../Model/ModelNamespace.js";
-import {API_URL, islandURI, placeableURI, postRetries} from "../configs/EndpointConfigs.js";
+import {API_URL, islandURI, placeableURI, postRetries, taskURI, timeURI, buildingUpgradeURI, fuseTaskURI} from "../configs/EndpointConfigs.js";
 import {playerSpawn} from "../configs/ControllerConfigs.js";
-import {convertGridIndexToWorldPosition} from "../helpers.js";
-import {MinionSpawner} from "../Model/MinionSpawner.js";
+import {assert, convertGridIndexToWorldPosition, convertWorldToGridPosition} from "../helpers.js";
+import {MinionSpawner} from "../Model/Spawners/MinionSpawner.js";
 import * as THREE from "three";
+import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall, spellTypes} from "../Model/Spell.js";
+import {gridCellSize} from "../configs/ViewConfigs.js";
+import {buildingStats} from "../configs/Enums.js";
+import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
+import {Island} from "../Model/Entities/Foundations/Island.js";
+import {printFoundationGrid} from "../helpers.js";
+import {alertPopUp} from "../external/PopUps.js";
 
 
 /**
  * Class that manages the world
  */
 export class WorldManager{
+    /**
+     * Constructor for the WorldManager
+     * @param {Object} params - the parameters for the WorldManager
+     */
     constructor(params) {
         this.world = null;
-        this.userInfo = params.userInfo;
+        this.playerInfo = params.playerInfo;
         this.factory = params.factory;
         this.spellFactory = params.spellFactory;
         this.collisionDetector = params.collisionDetector;
+        this.itemManager = params.itemManager;
         this.currentPos = null;
+        this.currentRotation = 0;
 
         this.postRequests = [];
 
         document.addEventListener('placeBuilding', this.placeBuilding.bind(this));
 
         this.persistent = true;
+        this.cheats = false;
     }
 
     /**
-     * Imports a world from the server
-     * @param islandID - the id of the island to import
-     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     * imports an island from the database
+     * @param {number} islandID
+     * @param {boolean} allowUnreadyBuildings - whether to place buildings that are not ready yet
+     * @return {Promise<{characters: *[], island: {buildings: *[], rotation: number, position: {x: number, y: number, z: number}}}>}
      */
-    async importWorld(islandID){
-        let islands = [
-            {buildings: [],
+    async importIsland(islandID, allowUnreadyBuildings = true){
+        let island = {
+            buildings: [],
                 position: {
                     x: 0,
                     y: 0,
                     z: 0
                 },
                 rotation: 0
-            }
-        ];
-        let player = {position: {
-                x: playerSpawn.x,
-                y: playerSpawn.y,
-                z: playerSpawn.z
-            },
-            health: 100,
-            mana: 1000,
-            maxMana: 1000
         };
+
         let characters = [];
 
         try {
             // GET request to server
             const response = await $.getJSON(`${API_URL}/${islandURI}?id=${islandID}`);
             for(const building of response.placeables){
-                islands[0].buildings.push({
+                if(!allowUnreadyBuildings && building.task) continue;
+                const buildingParams = {
                     type: building.blueprint.name,
-                    position: {
-                        x: building.x,
-                        y: 0,
-                        z: building.z
-                    },
-                    rotation: 0,
-                    id: building.placeable_id
-                });
+                    position: new THREE.Vector3(building.x, 0, building.z),
+                    rotation: building.rotation*90,
+                    id: building.placeable_id,
+                    stats: buildingStats.getStats(building.blueprint.name),
+                    task: building.task,
+                    level: building.level
+                };
+                let gems = [];
+                //used only for adding gem ids and stat multipliers to building
+                if(building.gems){ //normal adding of gems to buildings
+                    for(const gem of building.gems){
+                        gems.push({
+                            id: gem.id,
+                            getAttributes: () => {
+                                const attributes = new Map();
+                                gem.attributes.forEach(attribute => {
+                                    attributes.set(attribute.gem_attribute_type, attribute.multiplier);
+                                });
+                                return attributes;
+                            }
+                        });
+                    }
+                    buildingParams.gems = gems;
+                }
+                island.buildings.push(buildingParams);
             }
 
+            //Remove?
             for(const entity in response.entities){
                 characters.push({
                     type: entity.type,
@@ -83,30 +108,426 @@ export class WorldManager{
             console.error(e);
         }
 
-        this.factory.currentTime = new Date(await this.userInfo.getCurrentTime());
-        this.world = new Model.World({islands: islands, player: player, characters: characters, factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
+        return {island: island, characters: characters};
+    }
+
+    /**
+     * Calculates a random offset for the next island to be placed (currently only works for adding 1 island around 0,0,0)
+     * DO NOT USE FOR MULTIPLAYER! there is currently no information exchange between players about the position of the islands
+     * will almost always be used together with calculateBridgeMetrics so check that method for more information
+     * will always return an even number for x and z
+     * @param {number} maxDistance
+     * @param {number} minDistance
+     * @return {THREE.Vector3}
+     */
+    calculateRandomIslandOffset(minDistance = 15, maxDistance = 20){
+        let x = Math.floor(Math.random() * (maxDistance - minDistance) + minDistance);
+        let z = Math.floor(Math.random() * (maxDistance - minDistance) + minDistance);
+        if(x % 2 !== 0) {
+            if(x <= minDistance) x++;
+            else x--;
+        }
+        if(z % 2 !== 0) {
+            if(z <= minDistance) z++;
+            else z--;
+        }
+        return new THREE.Vector3(x*gridCellSize, 0, z*gridCellSize);
+    }
+
+    /**
+     * Calculates an offset for the next island to be placed (currently only works for adding 1 island around 0,0,0)
+     * @return {THREE.Vector3}
+     */
+    calculateIslandOffset(){
+        return new THREE.Vector3((15+3)*gridCellSize, 0, 0);
+    }
+
+    /**
+     * returns the middle position of the edge that will connect the islands
+     * @return {THREE.Vector3} - the middle position of the edge that will connect the islands
+     */
+    getIslandConnectionPoint(){
+        return this.world.islands[0].position.clone().add(new THREE.Vector3(7*gridCellSize, 0, 0));
+    }
+
+    /**
+     * returns the position of the altar on the first island
+     * @return {THREE.Vector3}
+     */
+    getAltarPosition(){
+        return this.world.islands[0].getBuildingsByType("altar_building")[0].position;
+    }
+
+    /**
+     * returns a proxy corresponding to the building with the given id
+     * @param {number} buildingID
+     * @return {ProxyEntity | null}
+     */
+    getProxyByBuildingID(buildingID){
+        let proxy = null;
+        this.world.islands.find((island) => {
+            if(island instanceof Island){
+                proxy = island.proxys.find((proxy) => {
+                    return proxy.building.id === buildingID;
+                });
+                if(proxy){
+                    return true;
+                }
+            }
+            return false;
+        });
+        return proxy ?? null;
+    }
+
+    /**
+     * calculates the position, width, and length of a bridge between two islands, positions of islands must be even, width and length of islands must be odd
+     * @param {Foundation} island1
+     * @param {Foundation} island2
+     * @param {number} padding - the number of grid cells to add to the bridge (only on the sides of the bridge, not the ends)
+     * @return {{width: number, length: number, position: THREE.Vector3}}
+     */
+    calculateBridgeMetrics(island1, island2, padding= 1){ //TODO: refactor/optimise this harrowing method
+        assert(island1.width % 2 === 1 && island1.length % 2 === 1, "island1 width and length must be odd");
+        assert(island2.width % 2 === 1 && island2.length % 2 === 1, "island2 width and length must be odd");
+        assert(island1.position.x%2 === 0 && island1.position.z%2 === 0, "island1 position must be even");
+        assert(island2.position.x%2 === 0 && island2.position.z%2 === 0, "island2 position must be even");
+
+        const bridgePosition = convertWorldToGridPosition(island1.position.clone().add(island2.position).divideScalar(2));
+
+        const xEdgeDiff = island1.position.x > island2.position.x ? island1.min.x - island2.max.x : island2.min.x - island1.max.x;
+        const zEdgeDiff = island1.position.z > island2.position.z ? island1.min.z - island2.max.z : island2.min.z - island1.max.z;
+
+        if(xEdgeDiff <= gridCellSize && zEdgeDiff <= gridCellSize){
+           throw new Error("islands are too close to each other");
+        }
+
+        const xDiff = island1.position.x - island2.position.x;
+        const zDiff = island1.position.z - island2.position.z;
+
+        let bridgeMinX, bridgeMaxX, bridgeMinZ, bridgeMaxZ;
+        if(zDiff >= 0 && zEdgeDiff > 0 && (xEdgeDiff <= 0 || xEdgeDiff >= zEdgeDiff)){ //island2 is north of island1 + edge cases
+            if(xDiff >= 0){ // island2 is north of island1 and west/center of island1
+                bridgeMinX = island2.position.x - padding*gridCellSize;
+                bridgeMaxX = island1.position.x + padding*gridCellSize;
+            } else { // island2 is north of island1 and east of island1
+                bridgeMinX = island1.position.x - padding*gridCellSize;
+                bridgeMaxX = island2.position.x + padding*gridCellSize;
+            }
+            bridgeMinZ = island2.max.z + gridCellSize;
+            bridgeMaxZ = island1.min.z - gridCellSize;
+        } else if(xDiff < 0 && xEdgeDiff > 0 && (zEdgeDiff <= 0 || zEdgeDiff >= xEdgeDiff)){ //island2 is east of island1 + edge cases
+            bridgeMinX = island1.max.x + gridCellSize;
+            bridgeMaxX = island2.min.x - gridCellSize;
+            if(zDiff >= 0){ // island2 is east of island1 and north/center of island1
+                bridgeMinZ = island2.position.z - padding*gridCellSize;
+                bridgeMaxZ = island1.position.z + padding*gridCellSize;
+            } else { // island2 is east of island1 and south of island1
+                bridgeMinZ = island1.position.z - padding*gridCellSize;
+                bridgeMaxZ = island2.position.z + padding*gridCellSize;
+            }
+        } else if(zDiff < 0 && zEdgeDiff > 0 && (xEdgeDiff <= 0 || xEdgeDiff >= zEdgeDiff)){ //island2 is south of island1 + edge cases
+            if(xDiff >= 0){ // island2 is south of island1 and west/center of island1
+                bridgeMinX = island2.position.x - padding*gridCellSize;
+                bridgeMaxX = island1.position.x + padding*gridCellSize;
+            } else { // island2 is south of island1 and east of island1
+                bridgeMinX = island1.position.x - padding*gridCellSize;
+                bridgeMaxX = island2.position.x + padding*gridCellSize;
+            }
+            bridgeMinZ = island1.max.z + gridCellSize;
+            bridgeMaxZ = island2.min.z - gridCellSize;
+        } else if(xDiff > 0){ //island2 is west of island1 + edge cases
+            bridgeMinX = island2.max.x + gridCellSize;
+            bridgeMaxX = island1.min.x - gridCellSize;
+            if(zDiff >= 0){ // island2 is west of island1 and north/center of island1
+                bridgeMinZ = island2.position.z - padding*gridCellSize;
+                bridgeMaxZ = island1.position.z + padding*gridCellSize;
+            } else { // island2 is west of island1 and south of island1
+                bridgeMinZ = island1.position.z - padding*gridCellSize;
+                bridgeMaxZ = island2.position.z + padding*gridCellSize;
+            }
+        } else {
+            throw new Error("no known bridge formation for current island positions");
+        }
+
+        return {position: bridgePosition, width: (bridgeMaxX - bridgeMinX)/gridCellSize + 1, length: (bridgeMaxZ - bridgeMinZ)/gridCellSize + 1};
+    }
+
+    /**
+     * Adds a peer to the world
+     * @param {Object} params - params for the createPeer method in the factory
+     * @return {Wizard}
+     */
+    addPeer(params){
+        if(params.team === this.world.player.team) throw new Error("cannot add opponent with same team as player");
+        const opponent = this.factory.createPeer(params);
+        this.world.addEntity(opponent);
+        return opponent;
+    }
+
+    async switchIslands(islandID){
+        this.world.removeIslands();
+        const {island, characters} = await this.importIsland(islandID);
+        this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+        this.collisionDetector.generateColliderOnWorker();
+    }
+
+    async addImportedIslandToWorld(islandID, currentIslandIsCenter = true){
+        const {island, characters} = await this.importIsland(islandID, false);
+        let islandPosition = new THREE.Vector3(0,0,0);
+        const offset = this.calculateIslandOffset();
+        const rotation = 180;
+        if(currentIslandIsCenter){
+            islandPosition.add(offset);
+            //TODO: implement rotation in factory createIsland
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1})); //TODO: team should be dynamically allocated
+        } else {
+            const offset = this.calculateIslandOffset(this.world.islands[0].width, this.world.islands[0].length);
+            this.moveCurrentIsland(offset, rotation);
+            this.world.addIsland(this.factory.createIsland({position: islandPosition, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15, team: 1}));
+        }
+        const {position, width, length} = this.calculateBridgeMetrics(this.world.islands[0], this.world.islands[1]);
+        //add a bridge between the 2 islands
+        this.world.addIsland(this.factory.createBridge({position: position, rotation: 0, width: width, length: length, team: 3}));
+
+        this.collisionDetector.generateColliderOnWorker();
+    }
+
+    /**
+     * Moves the current island and player to the new position, BE AWARE: this method does not call generateColliderOnWorker
+     * @param {THREE.Vector3} translation - the translation to apply to the island
+     * @param {number} rotation - the new rotation of the island in degrees
+     */
+    moveCurrentIsland(translation, rotation){
+        const island = this.world.islands[0];
+        island.position = island.position.add(translation);
+
+        island.rotation += rotation;
+        this.world.player.spawnPoint = this.world.player.spawnPoint.add(translation);
+        this.world.player.position = this.world.player.spawnPoint; //TODO: fix this currently the player is not moved
+    }
+
+    /**
+     * resets the world state, removing all entities of other teams, removing spawners
+     * @param {boolean} currentIslandIsCenter - whether the current island is the center island in the multiplayer match
+     * @param {number} team
+     */
+    resetWorldState(currentIslandIsCenter = true){
+        this.clearSpawners();
+        this.world.removeEntitiesByTeam(1);
+        this.world.removeProxys();
+        if(!currentIslandIsCenter) this.moveCurrentIsland(this.calculateIslandOffset().negate(), -180);
+        this.collisionDetector.generateColliderOnWorker();
+    }
+
+    /**
+     * adds the player
+     */
+    createPlayer(){
+        let playerPosition;
+        if(this.playerInfo.playerPosition) {
+            playerPosition = this.playerInfo.playerPosition;
+        }else{ //TODO: if i'm not mistaken, this is unneccesary because it already happens in the playerInfo
+            playerPosition = {x: playerSpawn.x, y: playerSpawn.y, z: playerSpawn.z};
+        }
+        const player = {position: {
+                x: playerPosition.x,
+                y: playerPosition.y,
+                z: playerPosition.z
+            },
+            health: this.playerInfo.health,
+            maxHealth: this.playerInfo.maxHealth,
+            mana: this.playerInfo.mana,
+            maxMana: this.playerInfo.maxMana,
+        };
+
+        this.world.setPlayer(this.factory.createPlayer(player));
+    }
+
+    setPlayerSpells(){
+        for(const spell of this.playerInfo.spells){
+            if(spell.slot === null) continue;
+            this.world.player.changeEquippedSpell(spell.slot, spellTypes.getSpellObjectFromId(spell.spell_id));
+        }
+    }
+
+
+    /**
+     * Imports an island from the server and generates a player
+     * @param islandID - the id of the island to import
+     * @returns {Promise<void>} - a promise that resolves when the world has been imported
+     */
+    async importWorld(islandID){
+        const {island, characters} = await this.importIsland(islandID);
+
+        this.factory.currentTime = new Date(await this.playerInfo.getCurrentTime());
+        this.world = new Model.World({factory: this.factory, SpellFactory: this.spellFactory, collisionDetector: this.collisionDetector});
+        this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
+
+        //--DEBUG--
+        console.log("importing island:")
+        const island1 = this.world.islands[0];
+        printFoundationGrid(island1.grid, island1.width, island1.length);
+        //--DEBUG--
+        await this.deleteOldTasks();
+    }
+
+    async deleteOldTasks(){
+        // Get all tasks from the server
+        $.getJSON(`${API_URL}/${taskURI}/list?island_id=${this.playerInfo.islandID}&is_over=true`).done((data) => {
+            // Delete all tasks that are finished
+            data.forEach((task) => {
+                this.deleteTask(task.id);
+            });
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.error("GET request failed");
+            console.error(textStatus, errorThrown);
+        });
+    }
+
+    async deleteTask(taskID){
+        $.ajax({
+            url: `${API_URL}/${taskURI}?id=${taskID}`,
+            type: "DELETE",
+            error: (e) => {
+                console.error(e);
+            }
+        }).done((data, textStatus, jqXHR) => {
+            console.log("DELETE success");
+            console.log(textStatus, data);
+        }).fail((jqXHR, textStatus, errorThrown) => {
+            console.log("DELETE fail");
+            console.error(textStatus, errorThrown);
+        });
     }
 
     /**
      * Places a building in the world
-     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world/grid coordinates
+     * @param {{detail: {position: THREE.Vector3, withTimer: Boolean}}} event - position needs to be in world-grid coordinates (=world coordinates rounded to grid cell size)
      */
     placeBuilding(event){
         const buildingName = event.detail.buildingName;
-        if(this.userInfo.unlockedBuildings.includes(buildingName) && this.userInfo.buildingsPlaced < this.userInfo.maxBuildings){
-            const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.withTimer);
-            if(placeable){
-                const requestIndex = this.postRequests.length;
-                if(this.persistent){
-                    this.sendPOST(placeableURI, placeable, postRetries, requestIndex);
+
+        if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
+            console.log("Cannot place");
+        }
+        else if(this.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
+            alertPopUp("Maximum Buildings in process reached.")
+        }
+        else {
+            if(!this.cheats){
+                const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation, event.detail.withTimer);
+                if (placeable) {
+                    if (this.persistent) {
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), event.detail.withTimer);
+                    }
+                    this.collisionDetector.generateColliderOnWorker();
+                    this.playerInfo.changeXP(100);
+                    this.playerInfo.buildingsPlaced[buildingName]++;
+                    return true;
+                } else {
+                    console.error("failed to add new building at that position");
                 }
-                this.collisionDetector.generateColliderOnWorker();
-                this.userInfo.changeXP(10);
-                this.userInfo.buildingsPlaced++;
-            } else {
-                console.error("failed to add new building at that position");
+            } else{
+                const placeable = this.world.addBuilding(buildingName, event.detail.position, event.detail.rotation);
+                if (placeable) {
+                    if (this.persistent) {
+                        this.sendPOST(placeableURI, placeable, postRetries, this.insertPendingPostRequest(placeable), false);
+                    }
+                    this.collisionDetector.generateColliderOnWorker();
+                    this.playerInfo.changeXP(100);
+                    this.playerInfo.buildingsPlaced[buildingName]++;
+                    return true;
+                } else {
+                    console.error("failed to add new building at that position");
+                }
+
             }
 
+        }
+        return false;
+    }
+
+    /**
+     * Create a new task to fuse a gem
+     * @param params {{timeInSeconds: number, buildingID: number, crystal_amount: number}}
+     * @returns {Promise<void>} - a promise that resolves when the task has been created
+     */
+    async createFuseTask(params){
+        try {
+            // Get server time
+            let response = await this.playerInfo.getCurrentTime();
+            let serverTime = new Date(response);
+            serverTime.setSeconds(serverTime.getSeconds()+params.timeInSeconds);
+            let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+            let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+            // Convert local time to ISO string
+            let time = localTime.toISOString();
+            let formattedDate = time.slice(0, 19);
+            // TODO: change uri + add crystal_amount to JSON.stringify
+            const result = await $.ajax({
+                url: `${API_URL}/${fuseTaskURI}`,
+                type: "POST",
+                data: JSON.stringify({endtime: formattedDate, building_id: params.buildingID, island_id: this.playerInfo.islandID, crystal_amount: params.crystal_amount}),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                throw new Error(`Could not send POST request to fuse a gem: Error: ${textStatus} ${errorThrown}`);
+            });
+            return result;
+        } catch (err){
+            console.error(err);
+        }
+    }
+    /**
+     * Places a building in the world
+     * @param uri - the URI to send the POST request to
+     * @param timeInSeconds - the time in seconds to build the building
+     * @param buildingID - the id of the building to upgrade
+     * @param islandId - the id of the island the building is on
+     * @param retries - the number of retries to resend the POST request
+     * @returns {Promise<void>} - a promise that resolves when the building has been placed
+     */
+    async postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries){
+        try {
+            // Get server time
+            let response = await this.playerInfo.getCurrentTime();
+            let serverTime = new Date(response);
+            serverTime.setSeconds(serverTime.getSeconds()+timeInSeconds);
+            let timeZoneOffset = serverTime.getTimezoneOffset() * 60000;
+            let localTime = new Date(serverTime.getTime() - timeZoneOffset);
+            // Convert local time to ISO string
+            let time = localTime.toISOString();
+            let formattedDate = time.slice(0, 19);
+            console.log(JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId, to_level: 1}));
+            $.ajax({
+                url: `${API_URL}/${uri}`,
+                type: "POST",
+                data: JSON.stringify({endtime: formattedDate, building_id: buildingID, island_id: islandId, to_level: 1, used_crystals: 0}),
+                dataType: "json",
+                contentType: "application/json",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("POST success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("POST fail");
+                if (retries > 0){
+                    this.postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries - 1);
+                } else {
+                    throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
+                }
+            });
+        } catch (err){
+            console.error(err);
         }
     }
 
@@ -120,15 +541,104 @@ export class WorldManager{
     }
 
     /**
-     * Adds a new island to the world to spawn minions
+     * places minionSpawners on warrior huts and attaches event listeners to them. The event listeners add the minions to the world and attach their controller
+     * @param {MinionController} controller
+     * @param {{interval: number, maxSpawn: number}} params - the parameters for the minion spawner
      */
-    addSpawningIsland(){
+    generateMinionSpawners(controller, params){ //TODO: refactor this method: try to remove arrow function?
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
+            const warriorHuts = island.getBuildingsByType("warrior_hut");
+            warriorHuts.forEach((hut) => {
+                if(!hut.ready) return;
+                const spawner = new MinionSpawner({position: hut.position, buildingID: hut.id, interval: params.interval, maxSpawn: params.maxSpawn, team: 0});
+                spawner.addEventListener("spawn", (event) => {
+                   controller.addMinion(this.factory.createMinion(event.detail));
+                });
+                this.world.addMinionSpawner(spawner);
+            });
+        });
+    }
+
+    /**
+     * places spellSpawners on towers and attaches event listeners to them. The event listeners add the spells to the world
+     * @param {{spell: {type: ConcreteSpell, params: Object}, interval: number}} params - the parameters for the spell spawner
+     */
+    generateSpellSpawners(params){
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
+            const towerProxies = island.getProxysByType("tower_building");
+            towerProxies.forEach((towerProxy) => {
+
+                if(!towerProxy.building.ready) return;
+                const position = towerProxy.position;
+                position.y += 40;
+                const spawner = new SpellSpawner({
+                    position: position,
+                    buildingID: towerProxy.building.id,
+                    interval: params.interval,
+                    spell: params.spell,
+                    team: 0,
+                    collisionDetector: this.collisionDetector
+                });
+                towerProxy.addEventListener("delete", (event) => {
+                    spawner.dispose();
+                });
+                spawner.addEventListener("spawn", (event) => {
+                    console.log("spawning spell")
+                    this.spellFactory.createSpell(event);
+                });
+                this.world.addSpellSpawner(spawner);
+            });
+        });
+    }
+
+    /** adds proxy models and view to the island of towers and altars
+     *  this is used to check for collisions with spells, and to display the health of the towers and altars
+     *  @param {number | null} team - for which team to generate the proxys (default is null, which generates for all teams)
+     */
+    generateProxys(opponentLevel, team= null){
+        const proxyList = ["altar_building", "tower_building"];
+        this.world.islands.forEach((island) => {
+            if(!(island instanceof Island)) return;
+            if(team && island.team !== team) return;
+            proxyList.forEach((type) => {
+                island.getBuildingsByType(type).forEach((building) => {
+                    if(!building.ready) return;
+                    const proxy = this.factory.createProxy({
+                        position: building.position,
+                        team: building.team,
+                        buildingName: building.constructor.name,
+                        building: building,
+                        playerLevel: this.playerInfo.level,
+                        yourTeam: this.world.player.team,
+                        opponentLevel: opponentLevel
+                    });
+                    island.addProxy(proxy);
+                });
+            });
+        });
+    }
+
+    /**
+     * Clears all spawners from the world
+     */
+    clearSpawners(){
+        this.world.clearMinionSpawners();
+        this.world.clearSpellSpawners();
+    }
+
+    /**
+     * Adds an island with enemy buildings to the world to test front-end multiplayer aspects without the server
+     */
+    addEnemyTestIsland(){
         //TODO: get a random position for the island which lies outside of the main island
-        let position = {x: -9, y: 0, z: -8};
+        let position = {x: -11, y: 0, z: 0};
+        convertGridIndexToWorldPosition(position)
         //TODO: if the new island is not connected to the main island, add a bridge that connects the two islands
 
         //create an island
-        let island = this.factory.createIsland({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), rotation: 0, buildingsList: [], width: 3, length: 3});
+        let island = this.factory.createIsland({position: new THREE.Vector3(position.x, 0, position.z), rotation: 0, buildingsList: [], width: 5, length: 5, team: 1});
         // //create a bridge
         // let bridge = this.factory.createBridge({position: {x: 0, y: 0, z: 0}, rotation: 0});
 
@@ -137,10 +647,14 @@ export class WorldManager{
         // this.world.islands.push(bridge);
 
         //add a enemy warrior hut to the island
-        // let hut = this.factory.createBuilding({buildingName: "Tower", position: position, withTimer: false});
-        // island.addBuilding(hut);
-        // this.world.addBuilding("Tower", convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z)), false);
-        this.world.spawners.push(new MinionSpawner({position: convertGridIndexToWorldPosition(new THREE.Vector3(position.x, 0, position.z))}));
+        const hutPosition = {x: position.x, y: 0, z: position.z-gridCellSize};
+        const towerPosition = {x: position.x, y: 0, z: position.z+gridCellSize};
+        let hut = this.factory.createBuilding({buildingName: "WarriorHut", position: hutPosition, withTimer: false, id: 999, team: 1});
+        let tower = this.factory.createBuilding({buildingName: "Tower", position: towerPosition, withTimer: false, id: 1000, team: 1});
+        island.addBuilding(hut);
+        island.addBuilding(tower);
+        this.world.addMinionSpawner(new MinionSpawner({position: new THREE.Vector3(hutPosition.x, 15, hutPosition.z), buildingID: hut.id, interval: 4}));
+        this.generateProxys(1);
         this.collisionDetector.generateColliderOnWorker();
     }
 
@@ -150,12 +664,28 @@ export class WorldManager{
      */
     async collectCrystals(){
         const building = this.world.getBuildingByPosition(this.currentPos);
-        console.log("collect from min - worldManager", building);
+        console.log("collect from mine - worldManager", building);
         if(building){
-            this.userInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.userInfo.getCurrentTime())));
+            this.playerInfo.changeCrystals(building.takeStoredCrystals(new Date(await this.playerInfo.getCurrentTime())));
         } else {
             console.error("no building found at that position");
         }
+    }
+
+    /**
+     * Adds crystals to the building at the current position
+     */
+    async addCrystals(){
+        this.world.getBuildingByPosition(this.currentPos).removeInputCrystals();
+        this.playerInfo.changeCrystals(10);
+    }
+
+    /**
+     * Removes crystals from the building at the current position
+     */
+    async removeCrystals(){
+        this.world.getBuildingByPosition(this.currentPos).addInputCrystals();
+        this.playerInfo.changeCrystals(-10);
     }
 
     /**
@@ -168,12 +698,12 @@ export class WorldManager{
 
     /**
      * changes to resources of the player, when event removes crystals, crystals should always be the first key
-     * @param event
+     * @param {} event
      */
     updatePlayerStats(event){
         for(const key of event.detail.type){
             if (key === "crystals"){
-                if(!this.userInfo.changeCrystals(event.detail.params[key])){
+                if(!this.playerInfo.changeCrystals(event.detail.params[key])){
                     break;
                 }
             } else if(key === "health"){
@@ -185,9 +715,9 @@ export class WorldManager{
             } else if(key === "maxMana") {
                 this.world.player.increaseMaxMana(event.detail.params[key]);
             } else if (key === "xp"){
-                this.userInfo.changeXP(event.detail.params[key]);
+                this.playerInfo.changeXP(event.detail.params[key]);
             } else if (key === "level"){
-                this.userInfo.changeLevel(event.detail.params[key]);
+                this.playerInfo.changeLevel(event.detail.params[key]);
             }
             //TODO: sad sound when not enough crystals
             //TODO: update db?
@@ -228,16 +758,20 @@ export class WorldManager{
      * @param {String} uri - the URI to send the POST request to
      * @param {Entity} entity - the Entity that we want to add to the db
      * @param {Number} retries - the number of retries to resend the POST request
-     * @param {Number} requestIndex - the index of the request in the postRequests array
+     * @param {Number} requestIndex - the index of the Entity in the postRequests array (used to remove the request from the array) use insertPendingPostRequest to get the index
      * @returns {Promise<void>}
      */
-    sendPOST(uri, entity, retries, requestIndex){
-        this.insertPendingPostRequest(entity);
+    sendPOST(uri, entity, retries, requestIndex, withTimer = false){
         try {
+            console.log("sending POST request: ", entity);
+            const island = this.world.getIslandByPosition(entity.position);
+            if(!island){ //TODO: add team check/ check if island is player's
+                throw new Error("No island found at position");
+            }
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "POST",
-                data: JSON.stringify(entity.formatPOSTData(this.userInfo)),
+                data: JSON.stringify(entity.formatPOSTData(this.playerInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -248,10 +782,13 @@ export class WorldManager{
                 console.log(textStatus, data);
                 entity.setId(data);
                 this.removePendingPostRequest(requestIndex);
+                if (withTimer){
+                    this.postBuildingTimer(buildingUpgradeURI, entity.timeToBuild, entity.id, this.playerInfo.islandID, postRetries);
+                }
             }).fail((jqXHR, textStatus, errorThrown) => {
                 console.log("POST fail");
                 if (retries > 0){
-                    this.sendPOST(uri, entity, retries - 1, requestIndex);
+                    this.sendPOST(uri, entity, retries - 1, requestIndex, withTimer);
                 } else {
                     throw new Error(`Could not send POST request for building: Error: ${textStatus} ${errorThrown}`);
                     //TODO: popup message to user that building could not be placed, bad connection? should POST acknowledgment be before or after model update?
@@ -263,17 +800,50 @@ export class WorldManager{
     }
 
     /**
+     * Send a DELETE request to the server
+     * @param building - the building to delete
+     */
+    deleteBuilding(building){
+        try {
+            $.ajax({
+                url: `${API_URL}/${placeableURI}?placeable_id=${building.id}`,
+                type: "DELETE",
+                error: (e) => {
+                    console.error(e);
+                }
+            }).done((data, textStatus, jqXHR) => {
+                console.log("DELETE success");
+                console.log(textStatus, data);
+            }).fail((jqXHR, textStatus, errorThrown) => {
+                console.log("DELETE fail");
+                console.error(textStatus, errorThrown);
+            });
+        } catch (err){
+            console.error(err);
+        }
+        // Delete building from world
+        this.world.deleteBuilding(building);
+        const buildingName = building.constructor.name;
+        this.playerInfo.buildingsPlaced[buildingName]--;
+        this.collisionDetector.generateColliderOnWorker();
+    }
+
+    /**
      * Send a PUT request to the server
      * @param uri - the URI to send the PUT request to
      * @param entity - the Entity that we want to update in the db
      * @param retries - the number of retries to resend the PUT request
      */
-    sendPUT(uri, entity, retries){
+    sendPUT(uri, entity, retries){ //TODO: add to postRequests array
+        const island = this.world.getIslandByPosition(entity.position);
+        if(!island){ //TODO: add team check / check if island = player's
+            throw new Error("No island found at position");
+        }
         try {
             $.ajax({
                 url: `${API_URL}/${uri}/${entity.dbType}`,
                 type: "PUT",
-                data: JSON.stringify(entity.formatPUTData(this.userInfo)),
+                data: JSON.stringify(entity.formatPUTData(this.playerInfo, island.position)),
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
@@ -295,16 +865,24 @@ export class WorldManager{
         }
     }
 
-    async updateGems(){
+    /**
+     * Checks for buildings in progress
+     * @return {number} Total number of buildings in progress
+     */
+    checkBuildingsInProgress() {
+        let progress = 0;
+        for(let i = 0; i < this.world.islands[0].buildings.length; i++){
+            if(this.world.islands[0].buildings[i].ready === false) progress++;
+        }
+        return progress
 
     }
 
-    async updateBuildings(){
-
+    /**
+     * Toggle the grass on the world
+     * @param on - whether to turn the grass on or off
+     */
+    toggleGrass(event){
+        this.world.toggleGrass(event.detail.on);
     }
-
-    async updateCharacter(){
-
-    }
-
 }

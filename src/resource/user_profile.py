@@ -56,7 +56,7 @@ class UserProfileResource(Resource):
     @summary('Retrieve the user profile with the given id')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to retrieve. Defaults to the current user id (by JWT)')
     @swagger.response(200, description='Success, returns the user profile in JSON format', schema=UserProfileSchema)
-    @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(403, description='Attempted access to other user profile (while not admin)', schema=ErrorSchema)
     @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @jwt_required()
     def get(self):
@@ -71,7 +71,7 @@ class UserProfileResource(Resource):
 
         if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-            return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
+            return ErrorSchema(f"Access denied to profile {target_user_id}"), 403
 
         # Get the user profile
         if target_user_id != current_user:
@@ -92,7 +92,7 @@ class UserProfileResource(Resource):
     @summary('Update the user profile by id. Note that id is here NOT required, but can be used to update other user profiles (if the invoker is an admin). Updateable fields are firstname, lastname & admin')
     @swagger.expected(UserProfileSchema, required=True)
     @swagger.response(200, description='Succesfully updated the user profile', schema=UserProfileSchema)
-    @swagger.response(401, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(403, description='Attempted access to other user profile (while not admin), attempt to set the admin property (while not admin) or invalid JWT token', schema=ErrorSchema)
     @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
     @jwt_required()
@@ -118,7 +118,7 @@ class UserProfileResource(Resource):
             if current_user != target_user_id and not invoker_user.admin:
                 logging.getLogger(__name__).warning(
                     f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-                return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
+                return ErrorSchema(f"Access denied to profile {target_user_id}"), 403
 
             # Get the user profile
             if target_user_id != current_user:
@@ -135,7 +135,7 @@ class UserProfileResource(Resource):
                 # Check if the current user is an admin, otherwise he's not allowed to change the admin bit
                 # (a creative user would be able to give himself admin, so we need to check this)
                 if not invoker_user.admin:
-                    return ErrorSchema(f"Access denied to set admin status for profile {target_user_id}"), 401
+                    return ErrorSchema(f"Access denied to set admin status for profile {target_user_id}"), 403
 
             target_user.update(data)
             current_app.db.session.commit()  # Save changes to db
@@ -151,7 +151,7 @@ class UserProfileResource(Resource):
     @summary('Delete the user profile by id. Id defautls to the current user id (by JWT)')
     @swagger.parameter(_in='query', name='id', schema={'type': 'int'}, description='The user profile id to delete. Defaults to the current user id (by JWT)')
     @swagger.response(200, description='Success, user profile has been deleted', schema=SuccessSchema)
-    @swagger.response(401, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
+    @swagger.response(403, description='Attempted access to other user profile (while not admin) or invalid JWT token', schema=ErrorSchema)
     @swagger.response(404, description='Unknown user id', schema=ErrorSchema)
     @jwt_required()
     def delete(self):
@@ -163,10 +163,13 @@ class UserProfileResource(Resource):
         current_user = get_jwt_identity()
         target_user_id = int(escape(request.args.get('id', current_user)))
         invoker_user = AUTH_SERVICE.get_user(user_id=current_user)
+        if not invoker_user:
+            logging.getLogger(__name__).warning(f'User {current_user} does not exist, but this id comes from his JWT token. Is the token invalid or did his account just got deleted?')
+            return ErrorSchema(f"Current user {current_user} does not exist. Is your JWT token invalid? Or did your account just got deleted?"), 400
 
-        if not invoker_user or (current_user != target_user_id and not invoker_user.admin):
+        if current_user != target_user_id and not invoker_user.admin:
             logging.getLogger(__name__).warning(f'User {current_user} attempted to access user {request.args.get("id")}, not authorized')
-            return ErrorSchema(f"Access denied to profile {target_user_id}"), 401
+            return ErrorSchema(f"Access denied to profile {target_user_id}"), 403
 
         # Get the user profile
         if target_user_id != current_user:
@@ -179,6 +182,7 @@ class UserProfileResource(Resource):
         if target_user is None:
             return ErrorSchema(f"User {target_user_id} not found"), 404
         else:
+            logging.getLogger(__name__).info(f'Annihilating user {target_user_id} from existence... (deleting user profile)')
             current_app.db.session.delete(target_user)
             current_app.db.session.commit()
             return SuccessSchema(f"User {target_user_id} has been deleted"), 200

@@ -4,10 +4,31 @@
  */
 export const TIMEOUT_SEC = 5;
 
-export let horizontalSensitivity = 0.5;
-export let verticalSensitivity = 0.3;
+//-- Camera --//
+export let horizontalSensitivity = 0.25;
+export let verticalSensitivity = 0.15;
 export let zoomSensitivity = 1;
 
+export const sensitivity = { verticalSensitivity,  horizontalSensitivity};
+export const baseHorizontalSensitivity = 0.25;
+export const baseVerticalSensitivity = 0.15;
+export const cameraPosition = {
+    offset: {
+        x: -5,
+        y: 2,
+        z: 1
+    },
+    lookAt: {
+        x: 500,
+        y: 0,
+        z: 0
+    }
+}
+export const maxZoomIn = 15;
+
+export const minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));
+
+//-- Character physics --//
 export const movementSpeed = 9;
 
 export const spellCastMovementSpeed = 2;
@@ -25,19 +46,35 @@ export const playerSpawn = {
     y: 50,
     z: -10
 }
+//-- Volume --//
+export let overalVolume = 50;
 
-export const cameraPosition = {
-    offset: {
-        x: -5,
-        y: 2,
-        z: 1
-    },
-    lookAt: {
-        x: 500,
-        y: 0,
-        z: 0
+export const volume = {overalVolume};
+
+//-- Minions --//
+export const minionAttackRadius = 4;
+export const minionFollowRadius = 10;
+export const minionSpeedMultiplier = 200;
+
+//-- Gems --//
+export const powerScaling = 0.5;
+
+export const fusionTime = 20;
+
+export const gemProductionInterval = 10;
+
+export const gemChanceMultiplier = 0.05;
+
+//-- multiplayer --//
+export const minTotalPowerForStakes = { //TODO: compute this value based on lvl?
+    getStakesForLvl: function (level) {
+        return Math.round(level*1.5);
     }
-}
-export const maxZoomIn = 15;
+};
 
-export const minZoomIn = Math.sqrt(Math.pow(cameraPosition.offset.x,2) + Math.pow(cameraPosition.offset.y,2) + Math.pow(cameraPosition.offset.z,2));
+export const passiveManaGenerationInterval = 3;
+export const passiveManaGenerationAmount = 1;
+
+export let performance = {
+    value: 1
+};

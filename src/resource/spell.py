@@ -4,7 +4,7 @@ from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.schema import ErrorSchema, SuccessSchema
 from src.model.spell import Spell
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_admin
 from src.swagger_patches import Schema, summary
 
 
@@ -29,16 +29,10 @@ class SpellSchema(Schema):
         else:
             super().__init__(**kwargs)
 
-    def _to_json(self):
-        return {
-            'id': self.id,
-            'name': self.name
-        }
-
-
 class SpellResource(Resource):
     """
     A Spell resource is a resource/api endpoint that allows for the retrieval and modification of spell profiles
+    Note: all endpoints except GET are restricted to admins
     """
 
     @swagger.tags('spell')
@@ -68,6 +62,7 @@ class SpellResource(Resource):
     @summary('Create a new spell profile')
     @swagger.response(200, description='Success', schema=SpellSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not an admin', schema=ErrorSchema)
     @swagger.expected(SpellSchema, required=True) # The expected input is a spell profile in JSON format, as defined by the SpellSchema class
     @jwt_required() # for security
     def post(self):
@@ -75,6 +70,12 @@ class SpellResource(Resource):
         Create a new spell profile
         :return: The spell profile in JSON format
         """
+        # Check admin rights
+        r = check_admin()
+        if r:
+            return r
+
+
         # Get the JSON input
         data = request.get_json()
         data = clean_dict_input(data)
@@ -92,12 +93,21 @@ class SpellResource(Resource):
     @swagger.tags('spell')
     @summary('Update the spell profile by id. Only the name of a spell is modifiable')
     @swagger.response(200, description='Success', schema=SpellSchema)
+    @swagger.response(404, description='Unknown spell id', schema=ErrorSchema)
+    @swagger.response(400, description='Invalid or no spell id', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not an admin', schema=ErrorSchema)
+    @swagger.expected(SpellSchema, required=True)  # The expected input is a spell profile in JSON format, as defined by the SpellSchema class
     @jwt_required()  # for security
     def put(self):
         """
         Update the spell profile by id
         :return: The spell profile in JSON format
         """
+        # Check admin rights
+        r = check_admin()
+        if r:
+            return r
+
         # Get the JSON input
         data = request.get_json()
         data = clean_dict_input(data)
@@ -121,6 +131,7 @@ class SpellResource(Resource):
     @swagger.response(200, description='Success', schema=SuccessSchema)
     @swagger.response(404, description='Unknown spell id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no spell id', schema=ErrorSchema)
+    @swagger.response(403, description='Caller is not an admin', schema=ErrorSchema)
     @jwt_required()  # for security
     def delete(self):
         """
@@ -128,6 +139,11 @@ class SpellResource(Resource):
         Note: this will remove all references to this spell in the database.
         :return: Success message
         """
+        # Check admin rights
+        r = check_admin()
+        if r:
+            return r
+
         if 'id' not in request.args:
             return ErrorSchema('No spell id provided'), 400
 

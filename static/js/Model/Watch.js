@@ -1,4 +1,4 @@
-import {Entity} from "./Entity.js";
+import {Entity} from "./Entities/Entity.js";
 
 /**
  * @class Watch - represents a watch entity model

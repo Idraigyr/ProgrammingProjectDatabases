@@ -6,6 +6,8 @@ import {DRACOLoader} from "three-DRACOLoader";
 import * as THREE from "three";
 import {getFileExtension, setIndexAttribute} from "../helpers.js";
 import {AnimationMixer} from "three";
+import {shadows} from "../configs/ViewConfigs.js";
+import {loadingScreen} from "./LoadingScreen.js";
 
 /**
  * Class to load assets
@@ -15,10 +17,10 @@ export class AssetLoader{
         //code to update loading screen progress bar via loadingmanager
         this.loadingManager = new THREE.LoadingManager();
         // Use arrow functions or bind `this` to retain the correct context
-        const progressBar = document.getElementById('progress-bar');
         this.loadingManager.onProgress = (url, loaded, total) => {
-            progressBar.value = (loaded / total) * 60 + 10;
+            loadingScreen.setValue((loaded / total) * 70);
         };
+        this.logLoading = false;
     }
 
     /**
@@ -30,11 +32,7 @@ export class AssetLoader{
         //let extension = getFileExtension(path);
         let extension = path[1].slice(1);
         if(extension === "glb" || extension === "gltf"){
-            try{
-                return this.loadGLTF(path[0]);
-            }catch (e) {
-                return this.loadDRACOGLTF(path[0]);
-            }
+            return this.loadGLTF(path[0]);
         } else if(extension === "fbx"){
             return this.loadFBX(path[0]);
         } else if(extension === "png" || extension === "jpg") {
@@ -46,32 +44,6 @@ export class AssetLoader{
             throw new Error(`cannot load model with .${extension} extension`);
         }
     }
-    /**
-     * Load a gltf model
-     * @param {string} path path to the model
-     * @returns {*} the model and its animations
-     */
-    loadGLTF(path){
-        let loader = new GLTFLoader(this.loadingManager);
-        return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% loaded');
-        }).then((gltf) => {
-            let charModel;
-            let animations = null;
-
-            charModel = gltf.scene;
-            charModel.traverse(c => {
-                c.castShadow = true;
-            });
-            if(gltf.animations.length > 0){
-                animations = gltf.animations;
-                return {charModel, animations};
-            }
-            return {charModel};
-        },(err) => {
-            return this.loadDRACOGLTF(path);
-        });
-    }
 
     //TODO:: add timeout error handler
     /**
@@ -79,13 +51,13 @@ export class AssetLoader{
      * @param {string} path path to the model
      * @returns {*} the model and its animations
      */
-    loadDRACOGLTF(path){
+    loadGLTF(path){
         let loader = new GLTFLoader();
         let draco = new DRACOLoader();
         draco.setDecoderPath( './static/decoders/dracoloader/' );
         loader.setDRACOLoader( draco );
         return loader.loadAsync(path, function (xhr) {
-            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            if(this.logLoading) console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((gltf) => {
             let charModel;
             let animations = null;
@@ -93,6 +65,7 @@ export class AssetLoader{
             charModel = gltf.scene;
             charModel.traverse(c => {
                 c.castShadow = true;
+                if(shadows.shadowCasting) c.receiveShadow = true;
             });
             if(gltf.animations.length > 0){
                 animations = gltf.animations;
@@ -112,7 +85,7 @@ export class AssetLoader{
     loadFBX(path){
         let loader = new FBXLoader(this.loadingManager);
         return loader.loadAsync(path, function (xhr) {
-            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            if(this.logLoading) console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((fbx) => {
             let charModel;
             let animations = null;
@@ -123,6 +96,7 @@ export class AssetLoader{
                     setIndexAttribute(c.geometry);
                 }
                 c.castShadow = true;
+                if(shadows.shadowCasting) c.receiveShadow = true;
             });
             if(fbx.animations.length > 0){
                 animations = fbx.animations;
@@ -142,7 +116,7 @@ export class AssetLoader{
     loadTexture(path){
         let loader = new TextureLoader();
         return loader.loadAsync(path, function (xhr) {
-            // console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            if(this.logLoading) console.log((xhr.loaded / xhr.total * 100) + '% loaded');
         }).then((texture) => {
             return {texture};
         }, (err) => {
@@ -158,7 +132,7 @@ export class AssetLoader{
     loadFont(path){
         let loader = new FontLoader();
         return loader.loadAsync(path, function (xhr) {
-            console.log((xhr.loaded / xhr.total * 100) + '% of a font loaded');
+            if(this.logLoading) console.log((xhr.loaded / xhr.total * 100) + '% of a font loaded');
         }).then((font) => {
             return {font};
         }, (err) => {

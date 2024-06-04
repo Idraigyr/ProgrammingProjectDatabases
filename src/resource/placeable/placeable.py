@@ -2,7 +2,8 @@ from flask import request, current_app, Blueprint, Flask
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
-from src.resource import add_swagger
+from src.resource.task import TaskSchema
+from src.resource import add_swagger, check_data_ownership
 from src.schema import ErrorSchema, SuccessSchema
 from src.resource.blueprint import BlueprintSchema
 from src.model.placeable.placeable import Placeable
@@ -45,7 +46,8 @@ class PlaceableSchema(Schema):
         'blueprint': {
             'type': 'object',
             'items': BlueprintSchema,
-        }
+        },
+        'task': TaskSchema
     }
 
     required = ['island_id', 'x', 'z', 'rotation']
@@ -62,9 +64,30 @@ class PlaceableSchema(Schema):
                              type=placeable.type,
                              blueprint=BlueprintSchema(placeable.blueprint),
                              rotation=placeable.rotation,
+                             task=self._resolve_task_schema_for_type(placeable.task) if placeable.task is not None else None,
                              **kwargs)
         else:
             super().__init__(**kwargs)
+
+
+    def _resolve_task_schema_for_type(self, task: any):
+        """
+        Resolve the task schema for the given task type
+        :param task: THe task object to resolve the schema for
+        :return: The schema for the given task type
+        """
+        if task.type == "building_upgrade_task":
+            from src.resource.upgrade_task import BuildingUpgradeTaskSchema
+            return BuildingUpgradeTaskSchema(task)
+        elif task.type == "fuse_task":
+            from src.resource.fuse_task import FuseTaskSchema
+            return FuseTaskSchema(task)
+        elif task.type == "task":
+            return TaskSchema(task)
+        else:
+            raise ValueError(f'Cannot find Schema for unknown task type {task.type}')
+
+
 
 
 class PlaceableResource(Resource):
@@ -84,6 +107,7 @@ class PlaceableResource(Resource):
     @swagger.response(200, 'Success. Placeable has been deleted', schema=SuccessSchema)
     @swagger.response(404, 'Placeable not found', schema=ErrorSchema)
     @swagger.response(400, 'No placeable_id found', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """
@@ -96,6 +120,9 @@ class PlaceableResource(Resource):
         placeable = Placeable.query.get(id)
         if placeable is None:
             return ErrorSchema(f'Placeable {id} not found'), 404
+
+        r = check_data_ownership(placeable.island_id)  # island_id == owner_id
+        if r: return r
 
         current_app.db.session.delete(placeable)
         current_app.db.session.commit()

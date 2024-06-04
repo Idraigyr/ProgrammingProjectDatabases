@@ -6,9 +6,8 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/index.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.wasm.js"></script>
-    <!-- Inline load jQuery so that inline scripts such as socketio.js can use it -->
-    <!-- Importmap is loaded AFTER inline scripts, and therefore socketio.js can't use jQuery when it's loaded in the importmap -->
+    <!-- Inline load jQuery so that inline scripts such as ChatNamespace.js can use it -->
+    <!-- Importmap is loaded AFTER inline scripts, and therefore ChatNamespace.js can't use jQuery when it's loaded in the importmap -->
     <!-- See: https://stackoverflow.com/questions/71876873/rails-7-7-0-2-3-importmap-jquery-is-not-defined-in-view -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dexie@3/dist/dexie.min.js" defer></script>
@@ -33,7 +32,7 @@
         }
       }
     </script>
-    <script src="https://mrdoob.github.io/stats.js/build/stats.min.js"></script>
+    <script src="{{ url_for('static', filename='js/stats/buildStats/stats.min.js') }}"></script>
     <!--SocketIO JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.4/socket.io.js"
             integrity="sha512-tE1z+95+lMCGwy+9PnKgUSIeHhvioC9lMlI7rLWU0Ps3XTdjRygLcy4mLuL0JAoK4TLdQEyP0yOl/9dMOqpH/Q=="
@@ -47,9 +46,10 @@
     <!-- Load App -->
     <script type="module" src="{{ url_for('static', filename='js/App.js') }}"></script>
 
-{#    <script type="module" src="{{ url_for('static', filename='js/external/LevelUp.js') }}"></script>#}
+{#    <script type="module" src="{{ url_for('static', filename='js/external/PopUps.js') }}"></script>#}
 
     <script type="module" defer src="{{ url_for('static', filename='js/indexedDB/assetModels.js') }}"></script>
+
 
 
 
@@ -80,12 +80,66 @@
             </div>
             <div class="chat-input-area">
                 <input type="text" id="chatInput" placeholder="Type your message...">
-                <button id="sendMessage" class="btn btn-primary">
-                    <i class="fa fa-paper-plane"></i> Send
-                </button>
+                <button id="sendMessage"> Send </button>
             </div>
 
         </div>
+    </div>
+
+        <!-- Level UP -->
+    <div id="LevelUp" class="Levelpopup">
+      <!-- Popup content -->
+      <div class="Levelpopup-content" id="LevelPopupContent" >
+        <button id="detailsButton" class="details-button"> View Details </button>
+      </div>
+    </div>
+
+    <div id="alert-container">
+        <div id="alert-content-container">
+            <div id="alert-content"></div>
+        </div>
+        <div id="alert-time-bar">
+            <div id="alert-time-fill"></div>
+        </div>
+    </div>
+
+        <!-- Details Popup-->
+    <div id="LevelDetails" class="detailsInfo">
+      <!-- Details content-->>
+      <div class="Details-content" id="detailsContent">
+      </div>
+    </div>
+
+    <!-- Friends -->
+    <div id="friends-button-container">
+        <div id="friends-notification-container" class="bell-container">
+            <img src="../static/assets/images/notification.png" class="bell-img">
+            <div class="notification-count-container">
+                <div class="notification-count" id="friend-notification-count">0</div>
+            </div>
+        </div>
+        <button id="friends-button"></button>
+    </div>
+
+    <div id="Friends" class="Friends-Content">
+<!--        <div class="close-button-container">-->
+<!--                <button class="close-button close-friends" ></button>-->
+<!--        </div>-->
+        <button id="friendListButton" class="Friend-List-Button"></button>
+        <button id="friendAddButton" class="Friend-Add-Button"></button>
+        <button id="friendRequestButton" class="Friend-Request-Button"></button>
+        <div id="addFriend" class="Add-Friend">
+            <label for="usernameFriend" style="color:black;">Username:</label>
+            <input type="text" id="usernameFriend" name="usernameFriend">
+            <button id="requestSubmit" class="Request-Submit" value=""> </button>
+            <p id="UsernameExist" class="Username-Exist"> Username does not exist.</p>
+        </div>
+        <div id="listFriend" class="Friend-List">
+            <div id="friend-loading-animation">
+                <div class="lds-ripple"><div></div><div></div></div>
+            </div>
+        </div>
+        <div id="listRequests" class="Request-List"></div>
     </div>
 
     <!--SocketIO JS -->
@@ -138,154 +192,261 @@
         <!-- Setting menu -->
 
 
-        <div class="container hide" style="z-index: 1000">
-      <h1>Game Settings</h1>
+    <div class="settings-container hide" style="z-index: 1000">
+        <div class="settings-menu">
+            <div class="close-button-container">
+                <button class="close-button close-setting" ></button>
+            </div>
+            <h1>
+                Game Settings
+            </h1>
 
-      <div class="settings">
-          <button class="close-button close-setting" onclick="exitSettingsMenu()"></button>
-        <div class="slider">
-          <label for="volume">Volume:</label>
-          <input type="range" id="volume" name="volume" min="0" max="100" value="50">
-        </div>
+            <div class="settings">
+                 <div class="slider">
+                    <label for="volume">
+                        Volume:
+                    </label>
+                    <input type="range" id="volume" name="volume" min="0" max="100" value="50">
+                </div>
+                <div class="slider">
+                    <label for="horizontal-sensitivity">
+                        Horizontal sensitivity:
+                    </label>
+                    <input type="range" id="horizontal-sensitivity" name="horizontal-sensitivity" min="0" max="100" value="50">
+                </div>
+                <div class="slider">
+                    <label for="vertical-sensitivity">
+                        Vertical sensitivity:
+                    </label>
+                    <input type="range" id="vertical-sensitivity" name="vertical-sensitivity" min="0" max="100" value="50">
+                </div>
+                <!--<div class="checkbox">
+                    <label for="sound">
+                        Sound Effects
+                    </label>
+                    <input type="checkbox" id="sound" name="sound" checked>
 
-        <div class="checkbox">
-          <input type="checkbox" id="sound" name="sound" checked>
-          <label for="sound">Sound Effects</label>
-        </div>
+                </div>
+                <div class="checkbox">
+                    <label for="music">
+                        Background Music
+                    </label>
+                    <input type="checkbox" id="music" name="music">
 
-        <div class="checkbox">
-          <input type="checkbox" id="music" name="music">
-          <label for="music">Background Music</label>
-        </div>
+                </div> -->
 
-        <div class="dropdown">
-          <label for="resolution">Resolution:</label>
-          <select id="resolution" name="resolution">
-            <option value="720p">720p</option>
-            <option value="1080p">1080p</option>
-            <option value="4k">4K</option>
-          </select>
-        </div>
+                <div class="dropdown">
+                    <label for="performance">
+                        performance:
+                    </label>
+                    <select id="performance" name="performance">
+                        <option value="low">low</option>
+                        <option value="middle" selected>middle</option>
+                        <option value="high">high</option>
+                    </select>
+                </div>
+                <!-- Grass toggle
+                <div class="checkbox">
+                    <label for="grass-toggle">
+                        Grass
+                    </label>
+                    <input type="checkbox" id="grass-toggle" name="grass" checked>
+                </div> -->
 
-        <div class="key-binds">
-          <div class="key-bind">
-            <label for="move-forward">Move forward:</label>
-            <input type="text" id="move-forward" name="move-forward" placeholder="w" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="move-left">Move left:</label>
-            <input type="text" id="move-left" name="move-left" placeholder="a" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="move-right">Move right:</label>
-            <input type="text" id="move-right" name="move-right" placeholder="d" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="move-backwards">Move backwards:</label>
-            <input type="text" id="move-backwards" name="move-backwards" placeholder="s" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="jump">Jump:</label>
-            <input type="text" id="jump" name="jump" placeholder="Space" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="open-inventory">Open inventory:</label>
-            <input type="text" id="open-inventory" name="open-inventory" placeholder="e" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="attack">Attack:</label>
-            <input type="text" id="attack" name="attack" placeholder="Left Mouse Button" maxlength="1">
-          </div>
-          <div class="key-bind">
-            <label for="pause">Pause:</label>
-            <input type="text" id="pause" name="pause" placeholder="Esc" maxlength="1">
-          </div>
+                <div class="custom-dropdown">
+                    <button class="dropbtn">Cursor</button>
+                    <div class="dropdown-content cursors"></div>
+                </div>
+
+                <div class="key-binds">
+                    <div class="key-bind">
+                        <label for="move-forward">
+                            Move forward:
+                        </label>
+                        <input type="text" id="move-forward" name="move-forward" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="move-left">
+                            Move left:
+                        </label>
+                        <input type="text" id="move-left" name="move-left" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="move-right">
+                            Move right:
+                        </label>
+                        <input type="text" id="move-right" name="move-right" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="move-backwards">
+                            Move backwards:
+                        </label>
+                        <input type="text" id="move-backwards" name="move-backwards" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="jump">
+                            Jump:
+                        </label>
+                        <input type="text" id="jump" name="jump" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="sprint">
+                            Sprint:
+                        </label>
+                        <input type="text" id="sprint" name="sprint" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="interact">
+                            Interact:
+                        </label>
+                        <input type="text" id="interact" name="interact" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="eat">
+                            Eat:
+                        </label>
+                        <input type="text" id="eat" name="eat" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="chat">
+                            Open Chat:
+                        </label>
+                        <input type="text" id="chat" name="chat" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="spellSlot1">
+                            Spell slot 1:
+                        </label>
+                        <input type="text" id="spellSlot1" name="spellSlot1" placeholder="default" maxlength="1">
+                    </div>
+                    <div class="key-bind">
+                        <label for="spellSlot2">
+                            Spell slot 2:
+                        </label>
+                        <input type="text" id="spellSlot2" name="spellSlot2" placeholder="default" maxlength="1">
+                        </div>
+                    <div class="key-bind">
+                        <label for="spellSlot3">
+                            Spell slot 3:
+                        </label>
+                        <input type="text" id="spellSlot3" name="spellSlot3" placeholder="default" maxlength="1">
+                        </div>
+                    <div class="key-bind">
+                        <label for="spellSlot4">
+                            Spell slot 4:
+                        </label>
+                        <input type="text" id="spellSlot4" name="spellSlot4" placeholder="default" maxlength="1">
+                        </div>
+                    <div class="key-bind">
+                        <label for="spellSlot5">
+                            Spell slot 5:
+                        </label>
+                        <input type="text" id="spellSlot5" name="spellSlot5" placeholder="default" maxlength="1">
+                        </div>
+                </div>
+            </div>
+            <button class="button respawnButton" id="respawnButton" title="Stuck in a wall? Don't panic!">Reload the world</button>
+            <button class="button leaveMatchButton" id="leaveMatchButton">Leave Match</button>
+            <button class="button logOutButton" id="logOutButton">Log out</button>
+            <button class="button fullscreenButton" id="fullscreenButton">Fullscreen</button>
+            <button class="button helpButton" id="helpButton">Help</button>
+            <button class="button alert deleteAccountButton" id="deleteButton">Delete account</button>
+            <button class="button applyButton right-align" id="applyButton">Apply</button>
         </div>
-      </div>
-      <button class="applyButton" id="applyButton">Apply</button>
     </div>
+
+    <div class="crosshair">
+        <img src="../static/assets/images/crosshairs/aim.png" id="crosshair-img">
+    </div>
+
 
     <!-- Menu Container -->
     <div id="menuContainer"></div>
 
-
-    <!-- Tower Menu -->
-    <!--    <object type="text/html" id="towerMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/tower.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
-    <!-- Build Menu -->
-    <!--    <object type="text/html" id="buildMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/buildMenu.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
-    <!-- Altar Menu -->
-    <!--    <object type="text/html" id="altarMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/altar.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
-    <!-- Fusion Table Menu -->
-    <!--    <object type="text/html" id="fusionTableMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/fusionTable.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
-    <!-- Mine Menu -->
-    <!--    <object type="text/html" id="mineMenu" class = "container borderless hide" data="{{ url_for('static', filename='html/mine.html') }}" style="width:100%; height: 100%; background-color: transparent" allowtransparency="true"></object> -->
-
-
+    <!-- multiplayer timer -->
+    <div class="game-timer-container">
+        <img src="../static/assets/images/Ribbon_Blue_3Slides.png" class="timer-banner">
+        <div id="game-timer">00:00</div>
+    </div>
 
 
     <!-- UI/HUD -->
     <div class="settings-button" id="settings-btn">
-            <img src="../static/assets/images/Button_Blue.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue.png" class="button">
             <img src="../static/assets/images/Regular_02.png" class="icon">
     </div>
 
     <div class="HotBar">
         <div class="item Spell1 hovered">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell2">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
             </div>
         <div class="item Spell3">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell4">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
         <div class="item Spell5">
-            <img src="../static/assets/images/Button_Blue_9Slides.png" class="button">
+            <img src="../static/assets/images/buttons/Button_Blue_9Slides.png" class="button">
             <div class="countdown-overlay"></div> <!-- Countdown overlay -->
         </div>
     </div>
 
     <div class="HotBarIcons">
         <div class="Spell1Icon">
-            <img src="../static/assets/images/spell-cast-plant.png" class= "buildimage">
+            <img src="" class="spell-icon-img">
         </div>
         <div class="Spell2Icon">
-            <img src="../static/assets/images/spell-cast-fire.png" class= "firebalimage">
-            </div>
+            <img src="" class="spell-icon-img">
+        </div>
         <div class="Spell3Icon">
-            <img src="../static/assets/images/spell-cast-bolt.png" class= "lighningimage">
+            <img src="" class="spell-icon-img">
         </div>
         <div class="Spell4Icon">
-            <img src="../static/assets/images/double-ringed-orb_4.png" class= "shieldimage">
+            <img src="" class="spell-icon-img">
         </div>
         <div class="Spell5Icon">
-            <img src="../static/assets/images/spell-cast-ice.png" class= "icewallimage">
+            <img src="" class="spell-icon-img">
         </div>
     </div>
 
-    <div class="Health">
-        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
-        <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
-        <div class = "HealthAmount">
-            20/100
+    <div class="HotBarCooldown">
+        <div class="Spell1Cooldown">
+        </div>
+        <div class="Spell2Cooldown">
+            </div>
+        <div class="Spell3Cooldown">
+        </div>
+        <div class="Spell4Cooldown">
+        </div>
+        <div class="Spell5Cooldown">
         </div>
     </div>
+    <div class = "stats">
+        <div class="Health">
+            <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-left">
+            <img src="../static/assets/images/Potion-red.png"  class="HealthPotion">
+            <div class = "HealthAmount">
+                20/100
+            </div>
+        </div>
 
 
-    <div class="Mana">
-        <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
-        <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
-                <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
+        <div class="Mana">
+            <img src="../static/assets/images/Potion-blue.png" class="ManaPotion">
+            <img src="../static/assets/images/Potion-grey.png"  class="Greypotion-right">
+                    <img src="../static/assets/images/Potion-blue.png"  class="ManaPotion">
 
-        <div class = "ManaAmount">
-            50/100
+            <div class = "ManaAmount">
+                50/100
+            </div>
         </div>
     </div>
 
@@ -313,7 +474,165 @@
       </div>
     </div>
 
+    <!-- Overlay when player is awaiting respawn -->
+    <div id="overlay">
+        <div class="overlay-content">
+            <p id="respawntext">Awaiting Respawn...</p>
+            <p id="timer">10</p>
+            <button id="respawn-button" disabled>Respawn</button>
+        </div>
+    </div>
 
+    <!-- Help menu -->
+    <div class="help-container hide " style="z-index: 2000" >
+        <div class="help-menu" >
+                        <div class="close-button-container">
+                <button class="close-button close-help" ></button>
+            </div>
+
+        <h1 id="user-manual">Help Menu</h1>
+        <p>This menu can always be found by clicking the help button in the settings menu!</p>
+        <p>After logging in, you see the main screen. It contains the following elements:</p>
+        <ul>
+            <li>Settings button: opens settings menu</li>
+            <li>Chat button: opens chat menu</li>
+            <li>Crystal counter: shows the amount of crystals you have</li>
+            <li>Health bar (red potion): shows your health</li>
+            <li>Mana bar (blue potion): shows your mana</li>
+            <li>Inventory: shows your equipped spells</li>
+            <li>Username: shows your username of the player</li>
+            <li>Current level: shows your current level and xp you need until the next level</li>
+            <li>Game screen: shows the game</li>
+        </ul>
+        <h3 id="settings-menu">Settings menu</h3>
+        <p>By clicking the top left icon, you can open the settings menu. Here, you can change
+            some basic settings about the game, such as audio, graphics and controls.
+            You can also log out from the game and delete your account from here.</p>
+        <h3 id="chat">Chat</h3>
+        <p>By clicking on the bottom left icon, the you can open the chat. The chat is a global chat where every
+            player can chat with each other.</p>
+        <h3 id="inventory">Inventory</h3>
+        <p><img src="../static/assets/images/helpmenu/spell-inventory.png" alt="Spell inventory image"></p>
+        <p>At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell can&#39;t be changed and
+            will always be the build spell, with which you can build buildings on your island. The other 4 equipped spells can be changed
+            in the altar menu, and will be displayed in the inventory hot-bar. You always have one spell selected, which is shown by gold
+            highlighting of the selected spell slot. Each individual spell has a unique icon, which is then shown on its equipped spot on the hot-bar.
+            After using a spell, that spell becomes transparant for the cooldown period, and a timer is shown on the spell icon,
+            displaying the exact remaining cooldown time. The spell can&#39;t be used for that period of time.</p>
+        <h1 id="game">Game</h1>
+        <hr>
+        <h2 id="basic-player-movements">Basic movements</h2>
+        <p><img src="../static/assets/images/helpmenu/sprint-forward.png" alt="Player sprinting forward image"></p>
+        <p>You can move around the game using the following keys (can be changes in the settings menu):</p>
+        <ul>
+            <li>W: move forward</li>
+            <li>A: move left</li>
+            <li>S: move backward (rolling back)</li>
+            <li>D: move right</li>
+            <li>F: Toggle fps counter</li>
+            <li>Space: jump</li>
+            <li>Shift: sprint</li>
+            <li>C: toggle chat</li>
+            <li>1-5: select a spell slot</li>
+            <li>E: interact with objects</li>
+            <li>Mouse: look around</li>
+            <li>Left mouse button: cast spell</li>
+            <li>Q: eat</li>
+        </ul>
+         <p><img src="../static/assets/images/helpmenu/keyboard-layout.png" alt="Keyboard layout image"></p>
+            <h2 id="multiplayer">Multiplayer</h2>
+            <p>
+                When a multiplayer match is started, the islands of both players will appear next to each other, connected by a bridge.
+                The goal is to destroy the other player&#39;s altar. By doing so, you will win the match and gain the stakes your opponent and get your
+                own stakes back. You can also lose the match, in which case you lose your stakes. If needed, you can surrender the match
+                by pressing the leave match button in the settings menu. On top of the screen, you can see a timer. If this timer ends, the match will
+                automatically end and result in a draw. You can fight by using your spells, and you are helped by your placed towers, which will shoot
+                fireballs at the enemy. You can get helped by your minions too, which will move towards the enemy&#39;s altar and attacks enemies along the way.
+                These minions spawn from warrior huts you placed on your island. By eating crystals you can regain health and mana. During the battle
+                Health bars above allies and enemies show the current health of the entity.
+            </p>
+
+        <h1 id="in-game-menus">In-game menus</h1>
+        <hr>
+        <p>The buildings can be accessed through menus. Here you can interact
+            with the buildings and use their functionalities and upgrade them.
+            Most buildings can be upgraded by using gems and enhancing their abilities.
+            Opening a menu is done by default by pressing the E key when you are
+            aiming at the building.</p>
+        <h3 id="altar-menu">Altar menu</h3>
+        <p><img src="../static/assets/images/helpmenu/altar-menu.png" alt="Altar menu image"></p>
+        <p>In the altar menu you can configure your inventory and equip spells.
+            You can also select stakes (gems) to start a multiplayer battle. You do this by dragging gems from the gems tab to the stakes tab. Once you have selected enough stakes, the lights will turn green
+            and you can press the play button to enter the queue for multiplayer, indicated by the blue/purple lights. Once you are in queue, the game will look for an enemy player of simillar skill level to match you with.
+            Once the game finds an enemy, multiplayer is started!
+            You can also drag unlocked spells from the spells tab to the hotbar tab to configure what spells you have on your hotbar and thus can use.</p>
+        <h3 id="mine-menu">Mine menu</h3>
+        <p><img src="../static/assets/images/helpmenu/mine-menu.png" alt="Mine menu image"></p>
+        <p>The mine menu passively generates crystals and also has
+            a small chance of generating gems.</p>
+        <p>You can collect the crystals by clicking on the collect button. The number of crystals will be added to your inventory. After building a new mine, the mine will only start generating crystals from the moment you open
+        its menu for the first time.</p>
+        <h3 id="fusion-table-menu">Fusion table menu</h3>
+        <p>In the fusion table you can use crystals and fuse them into gems.
+            This will take some time.</p>
+        <h3 id="tower-menu">Tower menu</h3>
+        <p>The tower is used for combat and displays its health and damage.</p>
+        <h1 id="eating">Eating</h1>
+        <hr>
+        <p>By eating, you will consume crystals in exchange for mana, health and experience.</p>
+        <h1 id="spells">Spells</h1>
+        <hr>
+        <p>Fireball: creates a fireball projectile that will damage enemies on hit. </p>
+        <p><img src="../static/assets/images/helpmenu/fire-spell.gif" alt="Fireball spell image"></p>
+        <p>Thundercloud: creates a thundercloud above the position you are looking at, and does damage to all enemies under it for some time </p>
+        <p><img src="../static/assets/images/helpmenu/thunder-spell.gif" alt="Thunderstorm spell image"></p>
+        <p>Shield: creates 3 rotating shields around you that blocks the next three attacks </p>
+        <p><img src="../static/assets/images/helpmenu/shield.gif" alt="Shield spell image"></p>
+        <p>Icewall: conjures an ice wall out of the ground, blocking entities movement.</p>
+        <p><img src="../static/assets/images/helpmenu/ice-wall-spell.gif" alt="Ice wall spell image"></p>
+        <p>Each spell has its own cooldown period and mana cost. You can cast a spell by pressing the left mouse button.</p>
+        <p>The first spell is the build spell, which is used to build buildings on the island.</p>
+        <h1 id="building-system">Building system</h1>
+        <hr>
+        <p>BuildSpell is used to build and move buildings. Will always be present in slot 1 in the hotbar.</p>
+        <p><img src="../static/assets/images/helpmenu//build-spell-icon.png" alt="Build spell icon"></p>
+        <p>You can fully customize your island by building different buildings. Each building has its own functionality. To place a building, you have to select the build spell in the inventory and click on the desired location. Then the build menu will appear, where you can select the building you wants to place. </p>
+        <p><img src="../static/assets/images/helpmenu/build-menu.png" alt="Build menu image"></p>
+        <p>The build menu has three tabs:</p>
+        <ul>
+            <li>Combat: buildings that are used for combat (e.g. tower)</li>
+            <li>Resources: buildings that are used to generate resources (e.g. mine)</li>
+            <li>Decorations: buildings that are used for decoration (e.g. tree)
+                In each item cell you can see the required number of crystals and time in seconds to build the building. Also, there is an icon and the description of the building.
+                After you select the building you want to place, the build menu will disappear, the number of crystals will decrease and the building preview will be placed on the selected location.</li>
+        </ul>
+        <p><img src="../static/assets/images/helpmenu/building-green-preview.png" alt="Building preview image"> </p>
+        <p>Above the building preview you can see the timer that shows the remaining time to build the building. When the timer reaches 0, the building will be placed on the selected location.</p>
+        <p>After that, you can interact with the building by pressing the E key. </p>
+        <p>If you want to move the building, you have to select the build spell in the inventory and click on the building. Then the building will be selected and you can move it to the desired location. To place the selected object on the new place, click on the desired cell. If you want to rotate the building, you have to click with the right mouse button.</p>
+        <h2 id="currency">Currency</h2>
+        <p>The general currency in the game are the crystals. These can be mined and are used
+            for most actions in the game. There are also different gems with attributes that can be used to
+            upgrade buildings. Based on the level of the building, a certain amount of gems can be equipped on that building by dragging them to the designated spot in the menu of the building you want to equip them to.
+            Gems have different attributes, like speed, capacity, luck and more. These attributes have different effects
+            based on the building they are equipped on. The speed attribute for example will make when equipped on a mine, make that mine generate crystals faster, but on equipped on a tower, make that tower shoot faster.
+             The attributes a gem has, also have a value. That value is the multiplier, so a gem with speed: x2, will make a tower shoot twice as fast for example. Naturally, the higher the stat(s), the more powerful the gem.</p>
+        <h2 id="friends">Friends</h2>
+        <p>In the game, you can access the Friends Menu through the button located at the bottom right of the screen.</p>
+        <p><img src="../static/assets/images/helpmenu/friend.png" alt="Friend List image"></p>
+        <p>Click on the first icon to view your Friends List. Here, you can see the list of your friends. There is also a &quot;Visit Island&quot; button next to each friend&#39;s name. Pressing this button will send a visit request to your friend. If your friend accepts the request, you will be able to visit their island.</p>
+        <p><img src="../static/assets/images/helpmenu/friendList.png" alt="Friend List image"></p>
+        <p>Click on the second icon to open the Add Friend forum. Here, you can enter the username of the player you wish to add as a friend.</p>
+        <p><img src="../static/assets/images/helpmenu/friendAdd.png" alt="Friend Add image"></p>
+        <p>Click on the third icon to view the list of friend requests and &quot;Visit Island&quot; requests you have received. From here, you can accept or decline these requests.</p>
+        <p><img src="../static/assets/images/helpmenu/friendRequest.png" alt="Friend Request image"></p>
+            <h1 id="levels">Level reward overview</h1>
+            <p>Every time you level up, your maximum mana and health increase. On top of that, you might get extra spells, unlock certain buildings, be able to place more buildings of a kind, have more buildings in progress, and more!</p>
+            <p>Here, you can see what rewards await you on your journey:</p>
+
+        <div class="battle-pass" id="battle-pass"></div>
+            </div>
+</div>
 
 
     <canvas id="canvas"></canvas>
@@ -331,6 +650,7 @@
         function animate() {
             if (config.showFPS && !stats.dom.parentElement) {
                 document.body.appendChild(stats.dom);
+                console.log(stats.getFPS())
             } else if (!config.showFPS && stats.dom.parentElement) {
                 stats.dom.remove();
             }
@@ -343,7 +663,7 @@
 
         // Event listener for keydown to toggle FPS display
         document.addEventListener('keydown', function(e) {
-            if (document.activeElement === chatInput) {
+            if (document.activeElement === chatInput || document.activeElement ===  usernameFriend) {
                 return;
             }
             if (e.code === 'KeyF') {

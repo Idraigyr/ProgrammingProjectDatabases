@@ -12,7 +12,7 @@ class BuilderMinion(Entity):
     entity_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('entity.entity_id'), primary_key=True)
 
     builds_on_id: Mapped[int] = mapped_column(ForeignKey("building_upgrade_task.id"), nullable=True)
-    builds_on: Mapped[BuildingUpgradeTask] = relationship("BuildingUpgradeTask", back_populates="building_minions")
+    builds_on: Mapped[BuildingUpgradeTask] = relationship("BuildingUpgradeTask", back_populates="building_minions", cascade="all", passive_deletes=True)
 
     def __init__(self, island_id: int = 0, x: int = 0, y: int = 0, z: int = 0, level: int = 0, builds_on: BuildingUpgradeTask = None):
         """

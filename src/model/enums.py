@@ -28,6 +28,13 @@ class GemType(Enum):
     An enum for the different types of gems
     """
     JUMMY = 'jummy'
+    RUBY = 'ruby'
+    SAPPHIRE = 'sapphire'
+    DIAMOND = 'diamond'
+    EMERALD = 'emerald'
+    AMETHYST = 'amethyst'
+    AMBER = 'amber'
+
 
     @classmethod
     def has_value(cls, value):
@@ -43,6 +50,7 @@ class BlueprintType(Enum):
     TOWER = 3
     FUSE_TABLE = 4
     WARRIOR_HUT = 5
+    WALL = 8
 
     # Props
     BUSH = 6

@@ -11,8 +11,34 @@ export const placeableURI = 'api/placeable';
 
 export const timeURI = 'api/time';
 
+export const matchMakingURI = 'api/matchmaking';
+
 export const islandURI = 'api/island';
 
+export const logoutURI = 'api/auth/logout';
+
 export const blueprintURI = 'api/blueprint';
+
+export const gemURI = 'api/gem';
+
+export const gemAttributesURI = 'api/gem/attributes/list';
+
+export const spellListURI = 'api/spell/list';
+
+export const playerStatsURI = 'api/player_stats';
+
+export const taskURI = 'api/task';
+
+export const buildingUpgradeURI = 'api/building_upgrade_task';
+
+export const settingsURI = 'api/settings';
+
+export const fuseTaskURI = 'api/fuse_task';
+
+export const pendingFriendRequestURI = 'api/friend_request/list';
+
+export const friendRequestURI = 'api/friend_request';
+
+export const playerListURI = 'api/player/list';
 
 export const postRetries = 3;

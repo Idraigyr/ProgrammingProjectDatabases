@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import {displayViewBoxHelper} from "../configs/ViewConfigs.js";
 
 /**
  * View base class
@@ -6,26 +7,17 @@ import * as THREE from "three";
 export class IView {
     constructor(params) {
         this.position = params?.position ?? new THREE.Vector3(0,0,0);
-        this.charModel = params?.charModel;
+        this.charModel = params?.charModel  ?? null;
         if(this.charModel) this.charModel.position.copy(this.position);
         this.boundingBox = new THREE.Box3();
         //only for visualisation
-        this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
-        this.boxHelper.visible = false; // TODO: set in env
+        this.boxHelper = null;
+        if(displayViewBoxHelper){
+            this.boxHelper = new THREE.Box3Helper(this.boundingBox, 0xFFF700);
+        }
         this.horizontalRotation = params?.horizontalRotation ?? 0;
         this.staysAlive = false;
-    }
-
-    /**
-     * First update of the view
-     */
-    firstUpdate() {
-        try {
-            this.updatePosition({detail: {position: params.position}});
-            this.updateRotation({detail: {rotation: new THREE.Quaternion()}});
-        } catch (err){
-            console.log(err);
-        }
+        this.hasUpdates = false;
     }
 
     /**
@@ -36,13 +28,13 @@ export class IView {
     }
 
     /**
-     * Clean up the view
+     * Clean up the view for deletion
      */
-    cleanUp() {
+    dispose() {
         try {
             this.boxHelper.parent.remove(this.boxHelper);
         } catch (err){
-            console.log("BoxHelper not added to scene.");
+            // console.log("BoxHelper not added to scene.");
         }
         this.charModel.parent.remove(this.charModel);
     }
@@ -50,8 +42,9 @@ export class IView {
     /**
      * Update the view
      * @param deltaTime - time since last update
+     * @param camera - camera to update view
      */
-    update(deltaTime) {}
+    update(deltaTime, camera) {}
 
     /**
      * Update position of the view
@@ -75,28 +68,6 @@ export class IView {
         this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
         //this.boundingBox.setFromObject(this.charModel, true);
     }
-
-    /**
-     * Update minimum y value
-     * @param event - event with minimum y value
-     * @returns {*} new y value
-     */
-    updateMinimumY(event){
-        let y = event.detail.minY;
-        if(y === undefined) return y;
-        // Create bounding box
-        let box = new THREE.Box3().setFromObject(this.charModel);
-        // Get current minimum y
-        let minY = box.min.y;
-        // Calculate the difference
-        let diff = y - minY;
-        // Move the model
-        this.charModel.position.y += diff;
-        // Update the bounding box
-        this.boundingBox.translate(new THREE.Vector3(0, diff, 0));
-        // Return current y value
-        return this.charModel.position.y;
-    }
 }
 
 /**
@@ -105,7 +76,7 @@ export class IView {
 export class IAnimatedView extends IView{
     constructor(params) {
         super(params);
-        this.animated = true;
+        this.hasUpdates = true;
         this.mixer = new THREE.AnimationMixer(params.charModel);
         this.animations = {};
     }
@@ -125,8 +96,9 @@ export class IAnimatedView extends IView{
     /**
      * Update animations
      * @param deltaTime time since last update
+     * @param camera camera to update view
      */
-    update(deltaTime) {
+    update(deltaTime, camera) {
         if(this.mixer) this.mixer.update(deltaTime);
     }
 

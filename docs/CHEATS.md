@@ -1,4 +1,4 @@
-# List of environment variables
+# List of cheats
 The following is a list of cheats the admin can use to speed up the game process.
 
 
@@ -16,5 +16,4 @@ The following is a list of cheats the admin can use to speed up the game process
 | `\buildCooldown()               `        | change the cooldown of build spell         |
 | `\health()                     `         | change the current health                  |
 | `\forceSpells           `                | set required mana of all spells to 0.      |
-
-
+| `\forceBuilds           `                | build Buildings with no timer.             |

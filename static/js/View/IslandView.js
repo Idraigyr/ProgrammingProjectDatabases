@@ -2,36 +2,36 @@ import * as THREE from "three";
 import {IView} from "./View.js";
 import {generateGrassField} from "../external/grass.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
+import {performance} from "../configs/ControllerConfigs.js";
 
 
 /**
  * Island view
  */
 export class Island extends IView{
-    #gridCellSize;
     #width;
     #length;
     #islandThickness;
-    blockPlane;
+    #grassField;
+    #yOffset;
+    #model;
 
     /**
      * Constructor for Island view
-     * @param {{width: number, length: number, islandThickness: number}} params of grid cell
+     * @param {{width: number, length: number, islandThickness: number, model: Object}} params of grid cell
      * islandThickness thickness of the island plane
      */
     constructor(params) {
         super(params);
-        this.#gridCellSize = gridCellSize;
+        this.#grassField = null;
         this.#width = params?.width ?? 15;
         this.#length = params?.length ?? 15;
         this.#islandThickness = params?.islandThickness ?? 0.1;
+        this.#yOffset = 0;
+        this.#model = params?.model ?? null;
     }
-    createIsland(){
-
-    }
-
     /**
-     * Create lights for the scene
+     * Create lights for the scene - DEPRECATED, now in App.initScene
      * @returns {Group} group of lights
      */
     createLights(){
@@ -49,27 +49,32 @@ export class Island extends IView{
     }
 
     /**
+     * Clean up the view for deletion
+     */
+    dispose() {
+        super.dispose();
+        this.#grassField?.parent.remove(this.#grassField);
+        this.#model.parent.remove(this.#model);
+    }
+
+    /**
      * Create plane for the island
-     * @returns {THREE.Group} group of plane object
+     * @returns {THREE.Mesh} group of plane object
      */
     createPlane(){
-        const group = new THREE.Group();
+        this.#yOffset = -this.#islandThickness/2;
         let pos = {x: this.position.x, y: -this.#islandThickness/2, z: this.position.z};
-        let scale = {x: this.#width*this.#gridCellSize, y: this.#islandThickness, z: this.#length*this.#gridCellSize};
+        let scale = {x: this.#width*gridCellSize, y: this.#islandThickness, z: this.#length*gridCellSize};
 
-        //threeJS Section
-        this.blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial({color: 0x589b80}));
+        let blockPlane = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshStandardMaterial({color: 0x589b80}));
 
-        this.blockPlane.position.set(pos.x, pos.y, pos.z);
-        this.blockPlane.scale.set(scale.x, scale.y, scale.z);
+        blockPlane.position.set(pos.x, pos.y, pos.z);
+        blockPlane.scale.set(scale.x, scale.y, scale.z);
 
-        this.blockPlane.castShadow = true;
-        this.blockPlane.receiveShadow = true;
+        blockPlane.castShadow = true;
+        blockPlane.receiveShadow = true;
 
-        group.add(this.blockPlane);
-        // TODO: how to add it?
-        // touchableObjects.push(this.blockPlane)
-        return group;
+        return blockPlane;
     }
 
     /**
@@ -79,7 +84,16 @@ export class Island extends IView{
     createGrassField(params){
         const group = new THREE.Group();
         generateGrassField(group, params);
+        this.#grassField = group;
         return group;
+    }
+
+    /**
+     * Toggle grass field visibility
+     */
+    toggleGrassField(event){
+        if(!this.#grassField) return;
+        this.#grassField.visible = event.detail.grassOn;
     }
 
     /**
@@ -118,21 +132,70 @@ export class Island extends IView{
     }
 
     /**
-     * Initialize the scene
+     * Initialize the island model
      * @returns {THREE.Group} group of scene objects
      */
     initScene(){
         const group = new THREE.Group();
 
-        group.add(this.createLights());
+        // group.add(this.createLights()); //TODO: remove this place in App.initScene
 
         let plane = this.createPlane();
         group.add(plane);
         // old implementation
         // group.add(this.createGrassField());
         // new implementation
-        group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
+        if(performance.value > 0) group.add(this.createGrassField({type: 'square', width: this.#width*gridCellSize, length: this.#length*gridCellSize, position: this.position}));
+        group.add(this.createModel());
         this.charModel = plane;
         return group;
+    }
+
+    /**
+     * Create 3d model for the island view
+     */
+    createModel(){
+        const toAdd = this.#model;
+        const boundingBox = new THREE.Box3().setFromObject(toAdd);
+        const size = new THREE.Vector3();
+        boundingBox.getSize(size);
+        toAdd.scale.set((this.#width*gridCellSize)/size.x, this.#length*gridCellSize/size.y, this.#length*gridCellSize/size.z);
+        toAdd.position.copy(this.position);
+        // Set top position to the top of the island
+        const y = new THREE.Box3().setFromObject(toAdd).max.y;
+        toAdd.position.y -= y;
+        return toAdd;
+    }
+
+    /**
+     * Update position of the view
+     * @param event - event with position
+     */
+    updatePosition(event){
+        if(!this.charModel) return;
+        event.detail.position.add(new THREE.Vector3(0, this.#yOffset, 0));
+        const delta = new THREE.Vector3().subVectors(event.detail.position, this.position);
+        this.position.copy(event.detail.position);
+        this.charModel.position.copy(this.position);
+        if(this.#grassField) this.#grassField.position.copy(this.position);
+        this.boundingBox.translate(delta);
+        //normally matrixWorld is updated every frame.
+        // we need to update it extra here because buildings and islands will be moved on loading of a multiplayer game,
+        // we can't wait to update the matrixWorld because generateCollider depends on it
+        this.charModel.updateMatrixWorld();
+    }
+
+    /**
+     * Update rotation of the view
+     * @param event - event with rotation
+     */
+    updateRotation(event){
+        if(!this.charModel) return;
+        this.charModel.setRotationFromQuaternion(event.detail.rotation);
+        this.charModel.rotateY(this.horizontalRotation * Math.PI / 180);
+        this.#grassField.rotateY(this.horizontalRotation * Math.PI / 180);
+        //this.boundingBox.setFromObject(this.charModel, true);
+        //check updatePosition for explanation
+        this.charModel.updateMatrixWorld();
     }
 }

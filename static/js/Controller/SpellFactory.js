@@ -3,12 +3,12 @@ import {Model} from "../Model/ModelNamespace.js";
 import {View} from "../View/ViewNamespace.js";
 import {Fireball, ThunderCloud, Shield, BuildSpell, IceWall} from "../Model/Spell.js";
 import * as THREE from "three";
-import {iceWall} from "../configs/SpellConfigs.js";
 
 /**
  * Factory class that creates models and views for the spells
  */
 export class SpellFactory{
+    #thunderCloudPool = null;
     /**
      * Constructs the factory with the given parameters
      * @param params parameters (with scene, viewManager and AssetManager)
@@ -20,6 +20,16 @@ export class SpellFactory{
         this.assetManager = params.assetManager;
         //TODO: change this
         this.models = [];
+        this.spellNumber = 0;
+    }
+
+    /**
+     * Sets the thunderCloudPool
+     * @param {ThunderCloudPool} thunderCloudPool
+     */
+    set thunderCloudPool(thunderCloudPool){
+        if(this.#thunderCloudPool) throw new Error("ThunderCloudPool already set");
+        this.#thunderCloudPool = thunderCloudPool;
     }
 
     /**
@@ -28,7 +38,7 @@ export class SpellFactory{
      */
     createSpell(event){
         let entityModel = null;
-        switch (event.detail.type.constructor){
+        switch (event.detail.type){
             case Fireball:
                 entityModel = this.#createFireball(event.detail);
                 break;
@@ -45,9 +55,13 @@ export class SpellFactory{
                 const customEvent = new CustomEvent('callBuildManager', {detail: event.detail});
                 document.dispatchEvent(customEvent);
                 break;
+            default:
+                console.log("Spell type not found");
+                break;
         }
         if(!entityModel) return;
         this.models.push(entityModel);
+        entityModel.setId(++this.spellNumber);
         return entityModel;
     }
 
@@ -58,14 +72,16 @@ export class SpellFactory{
      * @private private method
      */
     #createFireball(details){
+        const spell = new details.type();
         let model = new Model.Projectile({
-            spellType: details.type,
+            spellType: spell,
             direction: details.params.direction,
-            duration: details.type.spell.duration,
-            velocity: details.type.spell.velocity,
-            fallOf: details.type.fallOf,
+            duration: spell.spell.duration,
+            velocity: spell.spell.velocity,
+            fallOf: spell.fallOf,
             position: details.params.position,
-            team: details.params.team
+            team: details.params.team,
+            canDamage: details?.canDamage ?? true
         });
         let uniforms = {
             diffuseTexture: {
@@ -83,7 +99,7 @@ export class SpellFactory{
         });
 
         this.scene.add(view.charModel);
-        this.scene.add(view.boxHelper);
+        if(view.boxHelper) this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -96,24 +112,22 @@ export class SpellFactory{
      * @return {*}
      */
     #createThunderCloud(details){
+        const spell = new details.type();
         let model = new Model.Immobile({
-            spellType: details.type,
+            spellType: spell,
             position: details.params.position,
-            duration: details.type.spell.duration,
-            team: details.params.team
+            duration: spell.spell.duration,
+            team: details.params.team,
+            canDamage: details?.canDamage ?? true
         });
         let position = new THREE.Vector3().copy(details.params.position);
         position.y += 15;
-        let view = new View.ThunderCloud({
-            camera: this.camera,
-            texture: this.assetManager.getAsset("cloud"),
-            position: position
-        });
+        let view = this.#thunderCloudPool.get(position);
 
         this.scene.add(view.charModel);
 
         view.boundingBox.set(new THREE.Vector3().copy(position).sub(new THREE.Vector3(4,15,4)), new THREE.Vector3().copy(position).add(new THREE.Vector3(4,0.5,4)));
-        this.scene.add(view.boxHelper);
+        if(view.boxHelper) this.scene.add(view.boxHelper);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
         this.viewManager.addPair(model,view);
@@ -126,11 +140,13 @@ export class SpellFactory{
      * @return {*}
      */
     #createShield(details){
+        const spell = new details.type();
+        const target = this.viewManager.getPlayerModelByID(details.params.playerID);
         let model = new Model.FollowPlayer({
-            target: this.viewManager.pairs.player[0].model, //TODO: change this implementation, don't keep player as a property
-            spellType: details.type,
+            target: target, //TODO: change this implementation, don't keep player as a property
+            spellType: spell,
             position: details.params.position,
-            duration: details.type.spell.duration,
+            duration: spell.spell.duration,
             team: details.params.team
         });
 
@@ -138,10 +154,13 @@ export class SpellFactory{
             camera: this.camera,
             position: details.params.position
         });
-
+        target.setShielded(true);
+        model.addEventListener("shieldLost", view.loseShield.bind(view));
         this.scene.add(view.charModel);
         model.addEventListener("updatePosition", view.updatePosition.bind(view));
+        model.addEventListener("delete", target.setShielded(false));
         model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
+        view.boundingBox.set(details.params.position.clone().sub(new THREE.Vector3(1,0,1)), details.params.position.clone().add(new THREE.Vector3(1,3.5,1)));
         this.viewManager.addPair(model,view);
         return model;
     }
@@ -177,14 +196,15 @@ export class SpellFactory{
      * @return {*}
      */
     #createIceWall(details) {
+        const spell = new details.type();
         let position = new THREE.Vector3().copy(details.params.position);
         position.y -= 7;
         let model = new Model.MobileCollidable({
-            spellType: details.type,
+            spellType: spell,
             position: position,
-            moveFunction: details.type.spell.moveFunction,
-            moveFunctionParams: details.type.spell.moveFunctionParams,
-            duration: details.type.spell.duration
+            moveFunction: spell.spell.moveFunction,
+            moveFunctionParams: spell.spell.moveFunctionParams,
+            duration: spell.spell.duration
         });
         let views = View.IceWall({
             charModel: this.assetManager.getAsset("iceBlock"),
@@ -194,7 +214,7 @@ export class SpellFactory{
 
         views.forEach((view) => {
             this.scene.add(view.charModel);
-            this.scene.add(view.boxHelper);
+            if(view.boxHelper) this.scene.add(view.boxHelper);
             model.addEventListener("updatePosition", view.updatePosition.bind(view));
             model.addEventListener("delete", this.viewManager.deleteView.bind(this.viewManager));
             this.viewManager.addPair(model,view);

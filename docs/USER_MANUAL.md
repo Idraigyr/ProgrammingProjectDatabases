@@ -79,6 +79,7 @@ The index page is the main page of the game. It contains the following elements:
 
 By clicking the top left icon, the player can open the settings menu. Here, the player can change
 some basic settings about the game, such as audio, graphics and controls.
+He can also log out from the game and delete his account from here.
 
 ### Chat
 
@@ -97,10 +98,12 @@ If the player has the right to use cheats, the player can open the chat menu and
 
 ![Spell inventory image](/docs/img/spell-inventory.png)
 
-At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell cant be changed and 
+At the bottom of the screen are 5 boxes, that all provide a space for an equipped spell. The first spell can't be changed and 
 will always be the build spell, with which the player can build buildings on his island. The other 4 equipped spells can be changed
 in the altar menu, and will be displayed in the inventory hot-bar. The player always has one spell selected, which is shown by gold
 highlighting of the selected spell slot. Each individual spell has a unique icon, which is then shown on its equipped spot on the hot-bar.
+After using a spell, that spell becomes transparant for the cooldown period, and a timer is shown on the spell icon,
+displaying the exact remaining cooldown time. The spell can't be used for that period of time.
 
 # Game
 ___
@@ -135,6 +138,17 @@ We use a library to add a bounding volume hierarchy (=bvh) which allows us to op
 
 Spell to entity, spell to spell and entity to entity collision does not make use of this optimisation and may appear more “clunky” (for example player movement when moving along an icewall spell). 
 
+## Multiplayer
+
+When a multiplayer match is started, the islands of both players will appear next to each other, connected by a bridge.
+The goal is to destroy the other player's altar. By doing so, the player will win the match and gain the stakes of the other player and get his
+own stakes back. The player can also lose the match, in which case the player will lose his stakes. If needed, the player can surrender the match
+by pressing the leave match button in the settings menu. On top of the screen, the player can see a timer. If this timer ends, the match will
+automatically end and result in a draw. The player can fight by using his spells, and is helped by his towers, which will shoot 
+fireballs at the enemy. The player can get helped by his minions too, which will move towards the enemy's altar and attacks enemies along the way.
+These minions spawn from warrior huts on the player's island. By eating crystals the player can regain health and mana during the battle 
+Health bars above allys and enemies show the current health of the entity.
+
 # In-game menus
 ___
 
@@ -143,6 +157,9 @@ with the buildings and use their functionalities and upgrade them.
 Most buildings can be upgraded by using gems and enhancing their abilities.
 Opening a menu is done by default by pressing the `E` key when the player is
 aiming at the building.
+In each menu, you have a possibility to delete the building by pressing on the bin.
+
+![Delete building image](/docs/img/delete-bin.png)
 
 ### Altar menu
 
@@ -162,10 +179,14 @@ You can collect the crystals by clicking on the collect button. The number of cr
 
 ### Fusion table menu
 
+![Fusion table menu image](/docs/img/fusion-table.png)
+
 In the fusion table the player can use crystals and fuse them into gems.
-This will take some time.
+This will take some time. The player can use gems to upgrade buildings and also to participate in multiplayer battles.
 
 ### Tower menu
+
+![Tower menu image](/docs/img/tower-menu.png)
 
 The tower is used for combat and displays its health and damage.
 
@@ -181,11 +202,11 @@ Fireball: creates a fireball projectile that will damage enemies on hit.
 
 ![Fireball spell image](/docs/gif/fire-spell.gif)
 
-Thundercloud: creates a thundercloud above the position the player is looking at. 
+Thundercloud: creates a thundercloud above the position the player is looking at, doing area of effect damage for some time.
 
 ![Thunderstorm spell image](/docs/gif/thunder-spell.gif)
 
-Shield: creates 3 rotating shields around the player 
+Shield: creates 3 rotating shields around the player that will block the next 3 incoming damages.
 
 ![Shield spell image](/docs/gif/shield.gif)
 
@@ -223,11 +244,44 @@ After that, you can interact with the building by pressing the `E` key.
 
 If you want to move the building, you have to select the build spell in the inventory and click on the building. Then the building will be selected and you can move it to the desired location. To place the selected object on the new place, click on the desired cell. If you want to rotate the building, you have to click with the right mouse button.
 
+## Building upgrade
+
+![Building upgrade image](/docs/img/upgrade-menu.png)
+
+This upgrade submenu shows the player the current level of the building and the cost and time to upgrade it to the next level. 
+
+The game supports two types of building upgrades:
+- Building upgrade: the player can upgrade the building to the next level
+- Gem upgrade: the player can upgrade the building with gems by putting them in the gem slots
+
+The first one is done by clicking on the upgrade button. The second one is done by clicking on the gem slot and selecting the gem you want to put in the slot.
+Building upgrades provide the player more gem slots and in some cases improves stats of the building.
+
 ## Currency
 
 The general currency in the game are the crystals. These can be mined by the player and are used
 for most actions in the game. There are also different gems with attributes that can be used to
 upgrade buildings.
+
+## Friends
+
+In the game, you can access the Friends Menu through the button located at the bottom right of the screen.
+
+![Friend List image](/docs/img/friend.png)
+
+
+Click on the first icon to view your Friends List. Here, you can see the list of your friends. There is also a "Visit Island" button next to each friend's name. Pressing this button will send a visit request to your friend. If your friend accepts the request, you will be able to visit their island.
+
+![Friend List image](/docs/img/friendList.png)
+
+Click on the second icon to open the Add Friend forum. Here, you can enter the username of the player you wish to add as a friend.
+
+![Friend Add image](/docs/img/friendAdd.png)
+
+
+Click on the third icon to view the list of friend requests and "Visit Island" requests you have received. From here, you can accept or decline these requests.
+
+![Friend Request image](/docs/img/friendRequest.png)
 
 # Optimizations
 ___
@@ -237,7 +291,7 @@ ___
 ![Asset caching image](/docs/img/index-db.png)
 
 When player logs in for the first time certain 3D-models and images are stored in cache. This makes the process of loading 
-assets faster every time the player opens the game. To store the models we use IndexedDB.
+assets faster because the player does not have to download all assets again. To store the models we use IndexedDB.
 
 
 

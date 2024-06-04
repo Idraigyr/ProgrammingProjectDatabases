@@ -1,27 +1,23 @@
-from flask.templating import render_template
 from flask import Blueprint, current_app, redirect
-from flask_jwt_extended import get_jwt_identity, jwt_required, unset_jwt_cookies
-
-from src.service.auth_service import AUTH_SERVICE
+from flask.templating import render_template
+from flask_jwt_extended import get_jwt_identity, unset_jwt_cookies, verify_jwt_in_request
+from flask_jwt_extended.exceptions import NoAuthorizationError
+from jwt import ExpiredSignatureError
 
 blueprint = Blueprint('public_routes', __name__)
 db = current_app.db
 
-# Disable JWT if not enabled, JWT is enabled by default
-# We override the jwt_required decorator to be a no-op
-# We also override the get_jwt_identity function to return the default user
-if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
-    jwt_required = lambda: lambda x: x  # no-op decorator
-    def f():
-        # When JWT is disabled, return the default user (id=0)
-        return AUTH_SERVICE.get_user(user_id=1)
-    get_jwt_identity = f
-
-
 @blueprint.route("/")
-@jwt_required(optional=True)
 def index():
-    user = get_jwt_identity()
+    """
+    Returns the index HTML page
+    :return:
+    """
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
 
     if user is None:  # not logged in, redirect to landing page
         return redirect("/landing", code=302)
@@ -31,35 +27,67 @@ def index():
 
 @blueprint.route("/landing")
 def landing():
+    """
+    Returns the landing HTML page
+    :return:
+    """
     return render_template('landing-page.html', app_name=current_app.config['APP_NAME'])
 
 
 @blueprint.route("/favicon.ico")
 def send_favicon():
+    """
+    Returns the favicon for the website
+    :return:
+    """
     return current_app.send_static_file("favicon.ico")
 
 @blueprint.route("/login")
-@jwt_required(optional=True)
 def login():
-    user = get_jwt_identity()
+    """
+    Returns the login HTML page
+    :return:
+    """
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
+
     if user is not None:  # already logged in
         return redirect("/", 302)
     else:
         return render_template('login.html', app_name=current_app.config['APP_NAME'])
 
 @blueprint.route("/register")
-@jwt_required(optional=True)
 def register():
-    user = get_jwt_identity()
+    """
+    Returns the register HTML page
+    :return:
+    """
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
+
     if user is not None:  # user already logged in
         return redirect("/", 302)
     else:
         return render_template('register.html', app_name=current_app.config['APP_NAME'])
 
 @blueprint.route("/password-reset")
-@jwt_required(optional=True)
 def password_reset():
-    user = get_jwt_identity()
+    """
+    Returns the password reset HTML page
+    :return:
+    """
+    try:
+        verify_jwt_in_request()
+        user = get_jwt_identity()
+    except (NoAuthorizationError, ExpiredSignatureError):
+        user = None
+
     if user is not None:
         return redirect("/", 302)
     else:
@@ -68,7 +96,7 @@ def password_reset():
 @blueprint.route("/logout")
 def logout():
     """
-    User-friendly logout page
+    User-friendly logout page. Unsets the JWT cookies and redirects to the landing page
     :return:
     """
     response = redirect("/landing", 302)

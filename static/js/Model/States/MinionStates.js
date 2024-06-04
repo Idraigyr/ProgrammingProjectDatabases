@@ -1,5 +1,8 @@
 import {State} from "../../Patterns/State.js";
 
+/**
+ * Minion State
+ */
 export class MinionState extends State{
     constructor(fsm) {
         super(fsm);
@@ -57,6 +60,23 @@ export class MinionIdleState extends MinionState{
     }
 
     /**
+     * Process the event to change the state
+     * @param event event to process
+     */
+    processEvent(event) {
+        switch (event.detail.newState) {
+            case "WalkForward":
+                this.manager.setState("WalkForward");
+                break;
+            case "DefaultAttack":
+                this.manager.setState("DefaultAttack");
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
      * Enter the state (with crossfade from previous state)
      * @param prevState previous state
      */
@@ -105,6 +125,23 @@ export class MinionWalkForwardState extends MinionState{
      */
     updateState(deltaTime, input){
         // this.manager.setState("Idle");
+    }
+
+    /**
+     * Process the event to change the state
+     * @param event event to process
+     */
+    processEvent(event) {
+        switch (event.detail.newState) {
+            case "Idle":
+                this.manager.setState("Idle");
+                break;
+            case "DefaultAttack":
+                this.manager.setState("DefaultAttack");
+                break;
+            default:
+                break;
+        }
     }
 
     /**
@@ -174,7 +211,53 @@ export class MinionDefaultAttackState extends MinionState{
     get name(){
         return "DefaultAttack";
     }
+
+    /**
+     * Update the state
+     * @param deltaTime time since last frame
+     * @param input input from user
+     */
     updateState(deltaTime, input){
         this.manager.setState("Idle");
+    }
+
+    /**
+     * Process the event to change the state
+     * @param event event to process
+     */
+    processEvent(event) {
+        switch (event.detail.newState) {
+            case "Idle":
+                this.manager.setState("Idle");
+                break;
+            case "WalkForward":
+                this.manager.setState("WalkForward");
+                break;
+            default:
+                break;
+        }
+    }
+
+    /**
+     * Enter the state (with crossfade from previous state)
+     * @param prevState previous state
+     */
+    enter(prevState){
+        const curAction = this.manager.animations["DefaultAttack"];
+        if(prevState){
+            const prevAction = this.manager.animations[prevState.name];
+
+            curAction.time = 0.0;
+            curAction.enabled = true;
+            curAction.setEffectiveTimeScale(1.0);
+            curAction.setEffectiveWeight(1.0);
+
+            //possible necessary logic
+
+            curAction.crossFadeFrom(prevAction,0.5,true);
+            curAction.play();
+        } else {
+            curAction.play();
+        }
     }
 }
