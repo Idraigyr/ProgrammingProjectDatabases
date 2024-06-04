@@ -10,7 +10,7 @@ import {buildingStats} from "../configs/Enums.js";
 import {SpellSpawner} from "../Model/Spawners/SpellSpawner.js";
 import {Island} from "../Model/Entities/Foundations/Island.js";
 import {printFoundationGrid} from "../helpers.js";
-import {alertPopUp} from "../external/LevelUp.js";
+import {alertPopUp} from "../external/PopUps.js";
 
 
 /**

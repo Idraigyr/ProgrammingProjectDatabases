@@ -13,7 +13,7 @@ import {
 import {keyBinds} from "../configs/Keybinds.js";
 import {Cursors} from "../configs/Enums.js";
 import {Level} from "../configs/LevelConfigs.js";
-import {alertPopUp} from "../external/LevelUp.js";
+import {alertPopUp} from "../external/PopUps.js";
 
 /**
  *Map to map keys from settings to the keybinds in config

@@ -10,7 +10,7 @@
  */
 export const Fireball = (level) => ({
     duration: 10,
-    damage: 30 + 5 * (level-1),
+    damage: 30 + 5 * Math.min(0,level-1),
     cost: 10,
     cooldown: 1.34,
     velocity: 20,

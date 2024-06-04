@@ -2,7 +2,7 @@ import {Entity} from "../Entity.js"
 import * as THREE from "three";
 import {convertWorldToGridPosition} from "../../../helpers.js";
 import {gridCellSize} from "../../../configs/ViewConfigs.js";
-import {popUp} from "../../../external/LevelUp.js";
+import {popUp} from "../../../external/PopUps.js";
 import {API_URL, buildingUpgradeURI} from "../../../configs/EndpointConfigs.js";
 
 /**
@@ -52,7 +52,7 @@ export class Placeable extends Entity{
     getStats(){
         const stats = new Map();
         this.#stats.forEach((value, key) => {
-            stats.set(key, this.#statMultipliers.get(key) ? this.#statMultipliers.get(key) * value: 1 * value);
+            stats.set(key, this.#statMultipliers.get(key) ? this.#statMultipliers.get(key) * value : 1 * value);
         });
         return stats;
     }

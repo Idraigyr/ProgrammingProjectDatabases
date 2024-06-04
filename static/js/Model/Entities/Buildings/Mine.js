@@ -23,7 +23,7 @@ export class Mine extends Placeable{
         }else if (this.id){
             this.fetchLastCollected();
         }
-        this.productionRate = 10; //TODO: calculate based on level and equipped gems => use stats & stat multipliers
+        this.productionRate = 1; //TODO: calculate based on level and equipped gems => use stats & stat multipliers
         this.#maxCrystals = this.#calculateMaxCrystals();
         this.upgradable = true;
     }
@@ -95,7 +95,8 @@ export class Mine extends Placeable{
             this.updateLastCollected(currentTime);
             timePassed = 0;
         }
-        return Math.min(this.maxCrystals, timePassed * (this.productionRate * this.#rateMultiplier));
+        // return Math.min(this.maxCrystals, timePassed * (this.productionRate * this.#rateMultiplier));
+        return Math.min(this.maxCrystals, timePassed * (this.getStats().get("speed") * this.#rateMultiplier));
     }
 
     levelUp() {
@@ -117,15 +118,6 @@ export class Mine extends Placeable{
             this.#maxCrystals = this.getStats().get("capacity");
         }
         return this.getStats().get("capacity");
-    }
-
-    /**
-     * update max crystal gem multiplier
-     * @return {number}
-     */
-    updateGemMultipliers(speed, capacity){
-        this.#rateMultiplier = speed;
-        // this.#maxCrystals *= capacity;
     }
 
     /**
@@ -172,10 +164,12 @@ export class Mine extends Placeable{
         const result =  super.changeLevel(amount);
         const stat = new Map();
         stat.set("capacity", this.level === 0 ? 100 : this.level*1000);
+        stat.set("speed", this.level === 0 ? 1 : this.level);
         try {this.setStats(stat);} catch(e){this.addStat("capacity", this.level === 0 ? 100 : this.level*1000)}
         try{
             this.#maxCrystals = this.getStats().get("capacity");
             this.#maxCrystals = this.#calculateMaxCrystals();
+            this.productionRate = this.getStats().get("speed");
         }catch(e){}
         return result;
     }

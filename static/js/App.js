@@ -8,7 +8,7 @@ import {SpellFactory} from "./Controller/SpellFactory.js";
 import {HUD} from "./Controller/HUD.js"
 import "./external/ChatNamespace.js"
 import "./external/chatBox.js"
-import "./external/LevelUp.js"
+import "./external/PopUps.js"
 import {FriendsMenu} from "./external/friendsMenu.js"
 import {OrbitControls} from "three-orbitControls";
 import {
@@ -29,7 +29,7 @@ import {Altar} from "./View/Buildings/Altar.js";
 import {Mine} from "./Model/Entities/Buildings/Mine.js";
 import {loadingScreen} from "./Controller/LoadingScreen.js";
 import {maxThunderClouds} from "./configs/SpellConfigs.js";
-import {alertPopUp} from "./external/LevelUp.js";
+import {alertPopUp} from "./external/PopUps.js";
 import * as SpellConfigs from "./configs/SpellConfigs.js"
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
@@ -439,7 +439,6 @@ class App {
             //if the building is a mine, forward stored crystal information
             if(buildingNumber === buildTypes.getNumber("mine_building")){
                 const currentTime = new Date(await this.playerInfo.getCurrentTime());
-                building.updateGemMultipliers(params.stats.get("speed"), params.stats.get("capacity"));
                 params.crystals = building.checkStoredCrystals(currentTime);
                 params.maxCrystals = building.maxCrystals;
                 params.rate = building.productionRate;
@@ -661,11 +660,8 @@ class App {
             }
             // Check if the player has enough crystals
             if(this.playerInfo.crystals < price) {
-                // TODO: show message
-                console.log("Not enough crystals");
-                return;
-            }
-            else {
+                alertPopUp("You don't have enough crystals");
+            } else {
                 // Subtract the price from the player's crystals
                 if(this.worldManager.placeBuilding({detail: {buildingName: ctorName, position: this.worldManager.currentPos, rotation: this.worldManager.currentRotation, withTimer: true}})){
                     this.playerInfo.changeCrystals(-price) ;

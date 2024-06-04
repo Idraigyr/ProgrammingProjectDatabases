@@ -37,6 +37,7 @@ import {
 import {Subject} from "../Patterns/Subject.js";
 import {API_URL, blueprintURI} from "../configs/EndpointConfigs.js";
 import {spellTypes} from "../Model/Spell.js";
+import {alertPopUp} from "../external/PopUps.js";
 
 // loading bar
 
@@ -318,6 +319,11 @@ export class MenuManager extends Subject{
               }
           }, 100); // Total time to load bar
           */
+      } else {
+          const message = this.inputCrystalParams.current <= 0 ?
+              "Not enough crystals added to start fusing" :
+              (this.fusing === true ? "Fusing already in progress" : "you can't fuse right now");
+          alertPopUp(message);
       }
     }
 
@@ -1162,7 +1168,7 @@ export class MenuManager extends Subject{
                 this.#arrangeStatMenuItems(params);
                 this.collectParams.current = params.crystals;
                 this.collectParams.max = Math.ceil(params.stats.get("capacity"));
-                this.collectParams.rate = Math.ceil(params.stats.get("speed"))*10; // Todo: Remove or add * 10?
+                this.collectParams.rate = Math.ceil(params.stats.get("speed"));
                 this.fortune = params.stats.get("fortune");
                 this.#moveMenu("StatsMenu", "MineMenu", "afterbegin");
                 this.#moveMenu("CollectMenu", "MineMenu", "afterbegin");

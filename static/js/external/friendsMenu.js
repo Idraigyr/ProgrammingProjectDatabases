@@ -1,6 +1,6 @@
 import * as AllFriends from "./Friends.js"
 import {userId} from "./ChatNamespace.js"
-import {addFriendNotification, removeFriendNotification} from "./LevelUp.js";
+import {addFriendNotification, removeFriendNotification} from "./PopUps.js";
 import {API_URL, pendingFriendRequestURI} from "../configs/EndpointConfigs.js";
 
 /**

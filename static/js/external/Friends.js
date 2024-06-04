@@ -1,6 +1,6 @@
 import {API_URL, pendingFriendRequestURI} from "../configs/EndpointConfigs.js";
 import {userId} from "./ChatNamespace.js"
-import {alertPopUp} from "./LevelUp.js";
+import {alertPopUp} from "./PopUps.js";
 
 export let playerList = [];
 /**

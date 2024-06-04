@@ -7,7 +7,7 @@ import {formatSeconds} from "../helpers.js";
 import {Subject} from "../Patterns/Subject.js";
 import {multiplayerStats} from "../configs/Enums.js";
 import {passiveManaGenerationAmount, passiveManaGenerationInterval} from "../configs/ControllerConfigs.js";
-import {alertPopUp} from "../external/LevelUp.js";
+import {alertPopUp} from "../external/PopUps.js";
 import {loadingScreen} from "./LoadingScreen.js";
 
 /**

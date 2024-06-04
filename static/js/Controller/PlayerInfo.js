@@ -10,7 +10,7 @@ import {
     buildingUpgradeURI
 } from "../configs/EndpointConfigs.js";
 import {Subject} from "../Patterns/Subject.js";
-import {popUp} from "../external/LevelUp.js";
+import {popUp} from "../external/PopUps.js";
 import {assert} from "../helpers.js";
 import {Level} from "../configs/LevelConfigs.js";
 import {Vector3} from "three";

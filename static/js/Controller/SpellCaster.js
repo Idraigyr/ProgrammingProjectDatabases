@@ -2,7 +2,7 @@ import * as THREE from "three";
 import {BuildSpell, EntitySpell, HitScanSpell, InstantSpell} from "../Model/Spell.js";
 import {Subject} from "../Patterns/Subject.js";
 import {convertWorldToGridPosition, mapDegreesToNearestQuarter} from "../helpers.js";
-import {alertPopUp} from "../external/LevelUp.js";
+import {alertPopUp} from "../external/PopUps.js";
 
 /**
  * Class for the SpellCaster
