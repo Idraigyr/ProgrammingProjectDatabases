@@ -476,19 +476,24 @@ export class Factory{
                     // console.log("Building ", params.model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
                 }
             });
-            // Delete the old task
-            await $.ajax({
-                url: `${API_URL}/${taskURI}?id=${params.task.id}`,
-                type: "DELETE",
-                contentType: "application/json",
-                success: (data) => {
-                    // console.log(data);
-                },
-                error: (xhr, status, error) => {
-                    // console.error(xhr.responseText);
-                    // console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
-                }
-            });
+            // // Delete the old task
+            // try{
+            //     await $.ajax({
+            //         url: `${API_URL}/${taskURI}?id=${params.task.id}`,
+            //         type: "DELETE",
+            //         contentType: "application/json",
+            //         success: (data) => {
+            //             // console.log(data);
+            //         },
+            //         error: (xhr, status, error) => {
+            //             // console.error(xhr.responseText);
+            //             // console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
+            //         }
+            //     });
+            // }catch (e){
+            //     // The task was already deleted
+            //     console.warn("Explanation: The task was already deleted");
+            // }
         }catch (e){
             console.error(e);
         }
