@@ -358,10 +358,10 @@ export class PlayerInfo extends Subject{
                     endtime: formattedDate
                 }),
                 success: (data) => {
-                    console.log(data);
+                    // console.log(data);
                 },
                 error: (err) => {
-                    console.log(err);
+                    // console.log(err);
                 }
             });
             return res.id;
@@ -412,7 +412,6 @@ export class PlayerInfo extends Subject{
         this.playerPosition.x = playerSpawn.x;
         this.playerPosition.y = playerSpawn.y;
         this.playerPosition.z = playerSpawn.z;
-        console.log("Player respawned on ", this.playerPosition);
         this.advertiseCurrentCondition();
         location.reload();
     }

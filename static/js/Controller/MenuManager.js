@@ -846,7 +846,6 @@ export class MenuManager extends Subject{
      * @param {{building: string, placed: number, total: number}[]} params
      */
     #updateBuildingItems(params){
-        console.log("inside updateBuildingItems:", params);
         for(const param of params){
             if(param.total === 0 || param.placed/param.total === 1){ //TODO: don't do it like this: use locked css class and apply it on the menuItem if applicable
                 this.items.get(param.building).lock();
@@ -953,10 +952,8 @@ export class MenuManager extends Subject{
     updateSpellItems(spells){
         for(const spellType in spells){
             if(spellType !== "BuildSpell" && spells[spellType]){
-                console.log("unlocking spell", spellType, ":", spells[spellType]);
                 this.items.get(spellType).unlock();
             } else {
-                console.log("locking spell", spellType);
                 this.items.get(spellType).lock();
             }
         }

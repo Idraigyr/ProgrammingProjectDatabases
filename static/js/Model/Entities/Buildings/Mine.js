@@ -35,7 +35,6 @@ export class Mine extends Placeable{
                 async: true,
                 contentType: "application/json",
                 success: (data) => {
-                    console.log("Last collectd before: ", this.lastCollected, "Last collected after(?): ", data.last_collected);
                     this.lastCollected = new Date(data.last_collected);
                     // Add timezone offset
                     this.lastCollected.setMinutes(this.lastCollected.getMinutes() - this.lastCollected.getTimezoneOffset());
@@ -56,7 +55,6 @@ export class Mine extends Placeable{
      * @return {number} - the amount of crystals
      */
     takeStoredCrystals(currentTime){
-        console.log("Taking stored crystals, current time: ", currentTime, "last collected: ", this.lastCollected);
         const amount = this.checkStoredCrystals(currentTime);
         this.updateLastCollected(currentTime);
         return amount;

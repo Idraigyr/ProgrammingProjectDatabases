@@ -364,9 +364,9 @@ export class WorldManager{
         this.world.addIsland(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
 
         //--DEBUG--
-        console.log("importing island:")
-        const island1 = this.world.islands[0];
-        printFoundationGrid(island1.grid, island1.width, island1.length);
+        // console.log("importing island:")
+        // const island1 = this.world.islands[0];
+        // printFoundationGrid(island1.grid, island1.width, island1.length);
         //--DEBUG--
         await this.deleteOldTasks();
     }
@@ -392,11 +392,11 @@ export class WorldManager{
                 console.error(e);
             }
         }).done((data, textStatus, jqXHR) => {
-            console.log("DELETE success");
-            console.log(textStatus, data);
+            // console.log("DELETE success");
+            // console.log(textStatus, data);
         }).fail((jqXHR, textStatus, errorThrown) => {
-            console.log("DELETE fail");
-            console.error(textStatus, errorThrown);
+            // console.log("DELETE fail");
+            // console.error(textStatus, errorThrown);
         });
     }
 
@@ -408,7 +408,7 @@ export class WorldManager{
         const buildingName = event.detail.buildingName;
 
         if(this.playerInfo.buildingsPlaced[buildingName] >= this.playerInfo.buildingsThreshold[buildingName]){
-            console.log("Cannot place");
+            alertPopUp("You have already placed the maximum amount of this building.")
         }
         else if(this.checkBuildingsInProgress() >= this.playerInfo.buildingProgress){
             alertPopUp("Maximum Buildings in process reached.")

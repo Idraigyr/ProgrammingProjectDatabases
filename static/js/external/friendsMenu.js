@@ -139,9 +139,7 @@ export class FriendsMenu {
             }
         }
         let requestExists = false;
-        console.log("requests: ", this.requests)
         for (let request of this.requests){
-            console.log(request);
             if(request.sender_id === AllFriends.getPlayerID(this.usernameFriend.value.trim())){
                 requestExists = true;
                 break;

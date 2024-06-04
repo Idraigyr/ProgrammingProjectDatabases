@@ -95,14 +95,14 @@ export class MultiplayerController extends Subject{
                 dataType: "json",
                 contentType: "application/json",
                 error: (e) => {
-                    console.error(e);
+                    // console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("PUT success");
-                console.log(textStatus, data);
+                // console.log("PUT success");
+                // console.log(textStatus, data);
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("PUT fail");
-                console.log(textStatus, errorThrown);
+                // console.log("PUT fail");
+                // console.log(textStatus, errorThrown);
             });
         } catch (err){
             console.error(err);
@@ -182,7 +182,6 @@ export class MultiplayerController extends Subject{
         if(!(this.minionController.testPath(this.worldManager.world.islands, this.worldManager.getIslandConnectionPoint(), this.worldManager.getAltarPosition()))) throw new Error("Can't start match: No path from connection point to altar");
         //send request to server to join matchmaking queue
         const response = await this.sendMatchMakingRequest(true);
-        console.log(response);
         //wait for match to start
         //when opponent found, get opponent info (targetId, playerInfo, islandInfo) (via the REST API) and enter loading screen
         //start the match

@@ -127,7 +127,6 @@ export class Shield extends IView{
      * removes a shield
      */
     loseShield(){
-        console.log("Shield hit, removing shield")
         this.charModel.children.pop();
     }
 }

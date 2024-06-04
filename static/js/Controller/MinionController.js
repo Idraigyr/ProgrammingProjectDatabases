@@ -416,8 +416,7 @@ export class MinionController extends Subject{
      * @param {PathNode} end - end node, needs to be in this.#worldMap.grid
      */
     #calculatePath(start, end){
-        console.log("calculating path in following grid:")
-        printFoundationGrid(this.#worldMap.grid.map((node) => node.value), this.#worldMap.width, this.#worldMap.length);
+        // printFoundationGrid(this.#worldMap.grid.map((node) => node.value), this.#worldMap.width, this.#worldMap.length);
         this.open = [];
         this.closed = [];
 
@@ -429,8 +428,8 @@ export class MinionController extends Subject{
             this.closed.push(current);
 
             if(current === end){
-                console.log("%cfound path", "color: green;");
-                printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
+                // console.log("%cfound path", "color: green;");
+                // printGridPath(this.#worldMap.grid.map((node) => node.value), this.retracePath(start, current).map((node) => node.index), this.#worldMap.width, this.#worldMap.length, current.index);
                 return this.retracePath(start, end);
             }
 
@@ -507,7 +506,6 @@ export class MinionController extends Subject{
             if(!(island instanceof Island)) continue;
             const altar = island.getProxysByType("altar_building")[0];
             this.altars[island.team] = altar ?? null;
-            console.log("altar proxy", this.altars[island.team])
         }
 
         for(const island of islands){

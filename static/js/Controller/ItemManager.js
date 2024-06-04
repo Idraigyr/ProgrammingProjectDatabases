@@ -395,13 +395,13 @@ export class ItemManager {
                     console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("POST success");
-                console.log(textStatus, data);
+                // console.log("POST success");
+                // console.log(textStatus, data);
                 gem.setId(data);
                 this.menuManager.addItem({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});
                 this.removePendingRequest(requestIndex);
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("POST fail");
+                // console.log("POST fail");
                 if (retries > 0){
                     this.sendPOST(uri, gem, retries - 1, requestIndex);
                 } else {
@@ -424,7 +424,7 @@ export class ItemManager {
      * @returns {Promise<void>}
      */
     sendPUT(uri, gem, retries, requestIndex, changes = []){
-        console.log("Sending PUT request: ", gem.formatPUTData(changes));
+        // console.log("Sending PUT request: ", gem.formatPUTData(changes));
         try {
             $.ajax({
                 url: `${API_URL}/${uri}`,
@@ -436,11 +436,11 @@ export class ItemManager {
                     console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("PUT success");
-                console.log(textStatus, data);
+                // console.log("PUT success");
+                // console.log(textStatus, data);
                 this.removePendingRequest(requestIndex);
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("PUT fail");
+                // console.log("PUT fail");
                 if (retries > 0){
                     this.sendPUT(uri, gem, retries - 1, requestIndex);
                 } else {
@@ -459,10 +459,8 @@ export class ItemManager {
      * @param {number} fusionLevel
      */
     createGem(fusionLevel){
-        console.log("Fusion level: ", fusionLevel);
         // Push item with params
         let power = this.#generatePowerNumber(this.playerInfo.level, fusionLevel);
-        console.log("Power: ", power)
         const viewType = Math.floor(Math.random() * gemTypes.getSize);
         const params = {
             power: power,

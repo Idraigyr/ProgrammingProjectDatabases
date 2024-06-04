@@ -47,7 +47,7 @@ export class ForwardingNameSpace extends Subject{
             // Another session of our player emitted this message, probably should update our internal state as well
         }
 
-        console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
+        // console.log(data); // eg { target: <this_user_id>, ... (other custom attributes) }
     }
 
     sendTo(targetId, data) {
@@ -90,7 +90,6 @@ export class ForwardingNameSpace extends Subject{
      * @param {"accept" | "reject" | "visit" | "leave" | "kick" | "cancel"} request
      */
     sendIslandVisitEvent(userId, request) {
-        console.log(`sending island visit event type: ${request} to user: ${userId}`);
         this.socket.emit('island_visit', {'target': userId, 'request': request});
     }
 

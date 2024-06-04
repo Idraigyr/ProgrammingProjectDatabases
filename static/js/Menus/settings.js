@@ -194,13 +194,6 @@ export class Settings extends Subject {
     }
 
     /**
-     * Function to log out the user
-     */
-    leaveMatch() {
-        console.log("Leave match button clicked")
-    }
-
-    /**
      * Function to exit the settings menu
      */
     exitSettingsMenu() {
@@ -222,11 +215,11 @@ export class Settings extends Subject {
                     console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("DELETE success");
+                // console.log("DELETE success");
                 alert("Account deletion successful. You will now be logged out.");
                 window.location.href = "/logout"; // Redirect to the logout page, which will redirect to the landing page
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("DELETE fail");
+                // console.log("DELETE fail");
                 alert("Account deletion failed. Please try again later.");
                 throw new Error(`Could not send DELETE request for account deletion: ${textStatus} ${errorThrown}`);
             });
@@ -255,10 +248,10 @@ export class Settings extends Subject {
                     console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("PUT success");
-                console.log(textStatus, data);
+                // console.log("PUT success");
+                // console.log(textStatus, data);
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("PUT fail");
+                // console.log("PUT fail");
                 throw new Error(`Could not send PUT request for settings: Error: ${textStatus} ${errorThrown}`);
 
             });
@@ -409,7 +402,6 @@ export class Settings extends Subject {
         {
             performanceChange = true;
             performance.value = obj.performance;
-            console.log("performance changed")
         }
         // this.dispatchEvent(new CustomEvent("grassChange", {detail : {on: this.grassOn}}));
 

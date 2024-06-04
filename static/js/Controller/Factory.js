@@ -302,8 +302,6 @@ export class Factory{
                 hours = match[1].slice(1); // hours part
                 minutes = match[2]; // minutes part
                 let formattedOffset = `${sign}${hours}:${minutes}`;
-
-                console.log(`Time offset: ${formattedOffset}`);
             } else {
                 console.log("No offset found in the string");
             }
@@ -318,7 +316,6 @@ export class Factory{
             // Let's compare offset of the local time and the server time
             let localOffset = new Date().getTimezoneOffset() * 60 * 1000;
             let offsetDif = offset + localOffset;
-            console.log(`Offset difference: ${offsetDif}`, `Local offset: ${localOffset}`, `Server offset: ${offset}`);
             // Fix timeEnd
             timeEnd.setTime(timeEnd.getTime() + offsetDif);
             // End of black magic
@@ -351,11 +348,11 @@ export class Factory{
                         type: "DELETE",
                         contentType: "application/json",
                         success: (data) => {
-                            console.log(data);
+                            // console.log(data);
                         },
                         error: (xhr, status, error) => {
-                            console.error(xhr.responseText);
-                            console.log("Task ", params.task.id, " cannot be deleted");
+                            // console.error(xhr.responseText);
+                            // console.log("Task ", params.task.id, " cannot be deleted");
                         }
                     })
                     // this.menuManager.addItemrenderM({item: gem, icon: {src: gemTypes.getIcon(gemTypes.getNumber(gem.name)), width: 50, height: 50}, description: gem.getDescription()});

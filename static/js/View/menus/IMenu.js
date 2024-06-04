@@ -926,7 +926,6 @@ export class MultiplayerStatsMenu extends IMenu{
      * @param {{target: HTMLElement}} e
      */
     toggleStats(e){
-        console.log("toggling stats")
         const matchButton = this.element.querySelector("#multiplayer-match-button");
         const lifetimeButton = this.element.querySelector("#multiplayer-lifetime-button");
         let stats = null;

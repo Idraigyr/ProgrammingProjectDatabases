@@ -214,7 +214,6 @@ class App {
         this.inputManager.addEventListener("spellSlotChange", this.spellCaster.onSpellSwitch.bind(this.spellCaster));
 
         this.menuManager.addEventListener("mineGem", (event) => {
-            console.log("Mining gem");
             const gem = this.itemManager.createGem((3));
         });
         this.menuManager.addEventListener("startFusion", async (event) => {
@@ -269,7 +268,7 @@ class App {
                 let mines = this.playerInfo.buildingsPlaced["Mine"];
                 if(mines <= 1) {
                     // TODO: popup message
-                    console.log("Cannot delete last mine");
+                    alertPopUp("You can't delete all mines.")
                     return;
                 }
             }
