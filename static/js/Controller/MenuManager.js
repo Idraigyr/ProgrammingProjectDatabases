@@ -1048,6 +1048,7 @@ export class MenuManager extends Subject{
             case "MineMenu":
                 // Also update max crystals
                 this.collectParams.max = params.stats.get("capacity");
+                this.collectParams.rate = Math.ceil(params.stats.get("speed"));
                 this.#arrangeStatMenuItems(params);
                 break;
             case "FusionTableMenu":
