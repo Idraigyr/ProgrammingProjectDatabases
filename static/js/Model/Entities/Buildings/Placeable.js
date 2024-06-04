@@ -170,7 +170,7 @@ export class Placeable extends Entity{
      * @param islandPosition {THREE.Vector3} the world position of the island
      * @returns {{level: (*|number), rotation: number, x: number, island_id: null, z: number}} returns formatted data
      */
-    formatPOSTData(playerInfo, islandPosition){ //TODO: add gems
+    formatPOSTData(playerInfo, islandPosition){
         const gridPos = new THREE.Vector3().copy(this.position);
         gridPos.add(islandPosition);
         convertWorldToGridPosition(gridPos);
@@ -265,7 +265,7 @@ export class Placeable extends Entity{
      * @fires {CustomEvent<{rotation: THREE.Quaternion}>} the event
      */
     rotate(degrees = 90){
-        this.rotation -= degrees;
+        this.rotation += degrees;
         this.rotation = Math.round(this.rotation/90)*90;
         this.rotation %= 360;
         // Create quaternion from rotation

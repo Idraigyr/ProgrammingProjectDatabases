@@ -7,7 +7,7 @@ book-class: false
 
 # Ordinary Wizards - Technical Report
 
-### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abele & Thomas Urkens
+### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abeele & Thomas Urkens
 ### Programming Project Database, Group 2
 #### Created at the University Of Antwerp, 2024 for the course Programming Project Databases (2nd Bachelor's degree in Computer Science)
 
@@ -81,6 +81,10 @@ You can also open the original markdown files with a proper markdown viewer.
 * 14\. [Database Migrations](#database-migrations)
     * 14.1\. [Alembic](#alembic)
     * 14.2\. [Setting up a new database](#setting-up-a-new-database)
+* 15\. [Entity-Relationship Diagram](#entity-relationship-diagram)
+* 16\. [Class Diagrams](#class-diagrams)
+  * 16.1\. [Frontend](#frontend-2)
+  * 16.2\. [Backend](#backend-1)
 
 
 # Readme
@@ -114,6 +118,7 @@ APP_POSTGRES_USER=ordinary_wizards
 APP_POSTGRES_PASSWORD=<password>
 ```
 3. Setup app environment variables as well in the `.env` file:
+    For a full, detailed list of environment variables, see the [Environment Variables](#list-of-environment-variables) chapter.
 ```bash
 APP_BIND=127.0.0.1
 APP_HOST=127.0.0.1:5000
@@ -123,9 +128,9 @@ APP_NAME=Ordinary Wizards
 APP_JWT_SECRET_KEY=jwtRS256.key
 ```
     
-    For a full, detailed list of environment variables, see the [.env.md](docs/ENV.md) file.
+    
 
-4. Generate secret `jwtRS256.key` using the (`keygen.py`)[keygen.py] script:
+4. Generate secret `jwtRS256.key` using the `keygen.py` script:
 ```bash
 python3 keygen.py
 ```
@@ -154,14 +159,15 @@ This 'wiki' file will explain what documentation type does what.
 Some documentation types require generation by the user (PyDoc & JSDoc), please see below how to do so.
 
 In general, the documentation is divided into the following parts:
+
 - General documentation (auth flows, API conventions, etc.): see this document
-- REST API: see [API.md](docs/API.md) and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally with `APP_SWAGGER_ENABLED=true`)
-- Entity-Relationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D) and local copy at [ERD.svg](docs/ERD.svg)
+- REST API: see [Api](#api-information) chapter and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally with `APP_SWAGGER_ENABLED=true`)
+- Entity-Relationship (ER) diagram: see diagram at draw.io **[here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)** and in the last chapter **[Entity-Relationship Diagram](#entity-relationship-diagram)**
 - Backend code documentation: see PyDoc documentation at `/pydocs`
 - Frontend code documentation: see JSDoc documentation at `/jsDocs`
-- High-level user manual, with links to technical details: see [user manual](#user-manual)
-- Test cases: see [TEST_INDEX.md](/test-cases/TEST_INDEX.md)
-- Used assets: see [credits.txt](/static/credits.txt)
+- High-level user manual, with links to technical details: see **[user manual](#user-manual)**
+- Test cases: see **[tests](#tests)**
+- Used assets: see **[credits.txt](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/static/credits.txt)**
 
 ### Backend code documentation
 The backend code documentation is generated using PyDoc. 
@@ -205,6 +211,7 @@ The Schema is used to validate input JSON bodies, format output objects and docu
 A Resource lies in the `resource` package, preferably in the same file as the Schema.
 The resource functions as a RESTful API endpoint that accepts HTTP requests. As per RESTful spec, it has at most 4 methods for each CRUD operation on
 an entity. Each function has `@swagger` decorators with information about what schema is returned / used in what use case / error message.
+
 - `post()` - HTTP `POST` for create
 - `get()` - HTTP `GET` for read
 - `put()` - HTTP `PUT` for update
@@ -492,6 +499,7 @@ Periodic tasks that require a more general approach (eg a 'broadcast chat messag
 ### Types of tasks
 
 There are five types of tasks that are handled by the frontend:
+
 - Crystal mining task
 - Gem generation task (in fusion table)
 - Gem generation task (in mine)
@@ -804,6 +812,7 @@ ___
 
 Upon arrival of the landing page, the player has the option to create a new island, this will redirect the player to the register page.
 Here, the player can create a new account and get a new island by filling in the following fields:
+
 - Username
 - Password
 - First name
@@ -1149,6 +1158,24 @@ Follow the steps in the [README.md](/README.md) to setup a new database. After t
 flask db upgrade
 ```
 
+# Entity Relationship Diagram
+
+![ERD](docs/ERD.svg)
+
+See bigger version __[here](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/docs/ERD.svg)__.
 
 
+# Class diagrams
+
+## Frontend
+
+[//]: # (![Frontend class diagram]&#40;docs/js-class-diagram.png&#41;{ width=250px })
+
+See bigger version __[here](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/docs/js-class-diagram.png)__.
+
+## Backend
+
+[//]: # (![Backend class diagram]&#40;docs/python-class-diagram.png&#41;{ width=250px })
+
+See bigger version __[here](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/docs/python-class-diagram.png)__.
 

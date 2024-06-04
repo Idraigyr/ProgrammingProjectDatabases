@@ -1,6 +1,6 @@
 # Ordinary Wizards
 
-### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abele & Thomas Urkens
+### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abeele & Thomas Urkens
 #### Created at the University Of Antwerp, 2024 for the course Programming Project Databases (2nd Bachelor's degree in Computer Science)
 ## Introduction
 Web-based 3D idle game using THREE.js, Flask, PostgreSQL, SQLAlchemy, SocketIO & Alembic. Made by 6 students for the course Programming Project Databases at the University of Antwerp.
