@@ -1,5 +1,5 @@
 import {convertWorldToGridPosition} from "../helpers.js";
-import {buildTypes} from "../configs/Enums.js";
+import {buildingStats, buildTypes} from "../configs/Enums.js";
 import {gridCellSize} from "../configs/ViewConfigs.js";
 import {Bridge} from "./Entities/Foundations/Bridge.js";
 import {Island} from "./Entities/Foundations/Island.js";
@@ -204,6 +204,7 @@ export class World{
                 position: position,
                 rotation: rotation,
                 withTimer: withTimer,
+                stats: buildingStats.getStats(buildingName),
                 level: 1
             });
             island.addBuilding(building);
