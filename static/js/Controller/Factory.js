@@ -7,6 +7,7 @@ import * as THREE from "three";
 import {fusionTime, playerSpawn} from "../configs/ControllerConfigs.js";
 import {displayViewBoxHelper, gridCellSize} from "../configs/ViewConfigs.js";
 import {Timer3D} from "../View/Watch.js";
+import {Level} from "../configs/LevelConfigs.js";
 
 /**
  * Factory class that creates models and views for the entities
@@ -529,6 +530,13 @@ export class Factory{
             const height = 9;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(4,0,0.5)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(4.2,height,0.5)));
             model.radius = Math.sqrt(4*4 + 0.5*0.5) + 0.5;
+            let health = Level[params.playerLevel]["AltarHp"];
+            if (params.building.team != params.yourTeam) {
+                health = Level[params.opponentLevel]["AltarHp"];
+            }
+            model.health = health;
+            model.maxHealth = health;
+            console.log(model.health, model.maxHealth);
         }
         if (params.buildingName === "Tower") {
             const height = 33;

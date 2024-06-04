@@ -303,7 +303,7 @@ export class MultiplayerController extends Subject{
 
 
         await loadingScreen.setText("creating proxys for buildings...");
-        this.worldManager.generateProxys();
+        this.worldManager.generateProxys(this.peerInfo.level);
         await loadingScreen.setValue(80);
 
         await loadingScreen.setText("creating paths for minions...");
