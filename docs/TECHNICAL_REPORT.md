@@ -118,6 +118,7 @@ APP_POSTGRES_USER=ordinary_wizards
 APP_POSTGRES_PASSWORD=<password>
 ```
 3. Setup app environment variables as well in the `.env` file:
+    For a full, detailed list of environment variables, see the [Environment Variables](#list-of-environment-variables) chapter.
 ```bash
 APP_BIND=127.0.0.1
 APP_HOST=127.0.0.1:5000
@@ -127,9 +128,9 @@ APP_NAME=Ordinary Wizards
 APP_JWT_SECRET_KEY=jwtRS256.key
 ```
     
-    For a full, detailed list of environment variables, see the [.env.md](docs/ENV.md) file.
+    
 
-4. Generate secret `jwtRS256.key` using the (`keygen.py`)[keygen.py] script:
+4. Generate secret `jwtRS256.key` using the `keygen.py` script:
 ```bash
 python3 keygen.py
 ```
@@ -158,14 +159,15 @@ This 'wiki' file will explain what documentation type does what.
 Some documentation types require generation by the user (PyDoc & JSDoc), please see below how to do so.
 
 In general, the documentation is divided into the following parts:
+
 - General documentation (auth flows, API conventions, etc.): see this document
-- REST API: see [API.md](docs/API.md) and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally with `APP_SWAGGER_ENABLED=true`)
-- Entity-Relationship (ER) diagram: see diagram at draw.io [here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D) and local copy at [ERD.svg](docs/ERD.svg)
+- REST API: see [Api](#api-information) chapter and the Swagger documentation at `http://127.0.0.1:5000/api/docs` (when running the debug server locally with `APP_SWAGGER_ENABLED=true`)
+- Entity-Relationship (ER) diagram: see diagram at draw.io **[here](https://app.diagrams.net/#G1Ebpmnr3K95WjVUidBHmZOvmErXOZngmG#%7B%22pageId%22%3A%22qTOhjs8H4DzsFOw5SEp2%22%7D)** and in the last chapter **[Entity-Relationship Diagram](#entity-relationship-diagram)**
 - Backend code documentation: see PyDoc documentation at `/pydocs`
 - Frontend code documentation: see JSDoc documentation at `/jsDocs`
-- High-level user manual, with links to technical details: see [user manual](#user-manual)
-- Test cases: see [TEST_INDEX.md](/test-cases/TEST_INDEX.md)
-- Used assets: see [credits.txt](/static/credits.txt)
+- High-level user manual, with links to technical details: see **[user manual](#user-manual)**
+- Test cases: see **[tests](#tests)**
+- Used assets: see **[credits.txt](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/static/credits.txt)**
 
 ### Backend code documentation
 The backend code documentation is generated using PyDoc. 
@@ -209,6 +211,7 @@ The Schema is used to validate input JSON bodies, format output objects and docu
 A Resource lies in the `resource` package, preferably in the same file as the Schema.
 The resource functions as a RESTful API endpoint that accepts HTTP requests. As per RESTful spec, it has at most 4 methods for each CRUD operation on
 an entity. Each function has `@swagger` decorators with information about what schema is returned / used in what use case / error message.
+
 - `post()` - HTTP `POST` for create
 - `get()` - HTTP `GET` for read
 - `put()` - HTTP `PUT` for update
@@ -496,6 +499,7 @@ Periodic tasks that require a more general approach (eg a 'broadcast chat messag
 ### Types of tasks
 
 There are five types of tasks that are handled by the frontend:
+
 - Crystal mining task
 - Gem generation task (in fusion table)
 - Gem generation task (in mine)
@@ -808,6 +812,7 @@ ___
 
 Upon arrival of the landing page, the player has the option to create a new island, this will redirect the player to the register page.
 Here, the player can create a new account and get a new island by filling in the following fields:
+
 - Username
 - Password
 - First name
