@@ -196,7 +196,6 @@ export class MultiplayerController extends Subject{
     async endMatchMaking(){
         //send request to server to leave matchmaking queue
         const response = await this.sendMatchMakingRequest(false);
-        console.log(response);
         this.matchmaking = false;
         this.countStats = false;
     }
@@ -347,7 +346,7 @@ export class MultiplayerController extends Subject{
      */
     async endMatch(data){
         document.getElementById('overlay').style.display = 'none'; //make sure the respawn overlay is hidden
-        console.log(`match ended, winner: ${data.winner_id}`); //TODO: let backend also send won or lost gem ids
+        // console.log(`match ended, winner: ${data.winner_id}`); //TODO: let backend also send won or lost gem ids
         this.stopSendingStateUpdates();
         this.result = "draw";
 
@@ -378,7 +377,7 @@ export class MultiplayerController extends Subject{
                 renderGems.push(gemView.item.getItemId());
             });
             if(this.countStats) this.stats.set("games_won", this.stats.get("games_won") + 1);
-            console.log("you win");
+            // console.log("you win");
         } else if (data.winner_id === this.peerInfo.userID){
             //show lose screen
             this.result = "lose";
@@ -386,13 +385,13 @@ export class MultiplayerController extends Subject{
             this.stakedGems.forEach(gem => {
                 renderGems.push(gem.getItemId());
             });
-            console.log("you lose");
+            // console.log("you lose");
         } else {
             //show draw screen
             this.stakedGems.forEach(gem => {
                 renderGems.push(gem.getItemId());
             });
-            console.log("draw");
+            // console.log("draw");
         }
         this.stats.forEach((value, key) => {
             currentStats.push({name: multiplayerStats.getDescription(key), value: value, key: key});
@@ -452,8 +451,6 @@ export class MultiplayerController extends Subject{
                     reject(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("GET lifetimeStats success");
-                console.log(textStatus, data);
                 delete data["player_id"];
                 resolve(data);
             }).fail((jqXHR, textStatus, errorThrown) => {

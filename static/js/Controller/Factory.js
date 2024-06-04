@@ -302,8 +302,6 @@ export class Factory{
                 hours = match[1].slice(1); // hours part
                 minutes = match[2]; // minutes part
                 let formattedOffset = `${sign}${hours}:${minutes}`;
-            } else {
-                console.log("No offset found in the string");
             }
             // Alright, now we have sign, hours and minutes of the server offset
             // Now we have to convert them to milliseconds
@@ -445,53 +443,52 @@ export class Factory{
                 url: `${API_URL}/${buildingUpgradeURI}?id=${params.task.id}`,
                 type: "GET",
                 contentType: "application/json",
-                success: async (data) => {
-                    console.log(data);
+                success: (data) => {
+                    // console.log(data);
                 },
                 error: (xhr, status, error) => {
-                    console.error(xhr.responseText);
-                    console.log("Building with upgrade task id ", params.task.id, " is not found");
-                }});
-                let data2Send = {
-                        placeable_id: params.model.id,
-                        level: data.to_level
-                    }
-                if(params.model.dbType === "tower_building") {
-                    data2Send.tower_type = "magic";
+                    // console.error(xhr.responseText);
+                    // console.log("Building with upgrade task id ", params.task.id, " is not found");
+            }});
+            let data2Send = {
+                    placeable_id: params.model.id,
+                    level: data.to_level
                 }
-                if(params.model.dbType === "prop")  return; // Skip props
-                // Send put request to the server to level up the building
-                await $.ajax({
-                    url: `${API_URL}/${placeableURI}/${params.model.dbType}`,
-                    type: "PUT",
-                    contentType: "application/json",
-                    data: JSON.stringify(
-                        data2Send),
-                    success: (data) => {
-                        params.model.level = data.level;
-                        //TODO: is this always +1
-                        // this.playerInfo.changeXP(150);
-                        console.log(data);
-                        console.log("BuiLdinung upgrrrraded");
-                    },
-                    error: (xhr, status, error) => {
-                        console.error(xhr.responseText);
-                        console.log("Building ", params.model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
-                    }
-                });
-                // Delete the old task
-                await $.ajax({
-                    url: `${API_URL}/${taskURI}?id=${params.task.id}`,
-                    type: "DELETE",
-                    contentType: "application/json",
-                    success: (data) => {
-                        console.log(data);
-                    },
-                    error: (xhr, status, error) => {
-                        console.error(xhr.responseText);
-                        console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
-                    }
-                });
+            if(params.model.dbType === "tower_building") {
+                data2Send.tower_type = "magic";
+            }
+            if(params.model.dbType === "prop")  return; // Skip props
+            // Send put request to the server to level up the building
+            await $.ajax({
+                url: `${API_URL}/${placeableURI}/${params.model.dbType}`,
+                type: "PUT",
+                contentType: "application/json",
+                data: JSON.stringify(
+                    data2Send),
+                success: (data) => {
+                    params.model.level = data.level;
+                    //TODO: is this always +1
+                    // this.playerInfo.changeXP(150);
+                    // console.log(data);
+                },
+                error: (xhr, status, error) => {
+                    // console.error(xhr.responseText);
+                    // console.log("Building ", params.model.id, " with upgrade task id ", params.task.id, " cannot be leveled up");
+                }
+            });
+            // Delete the old task
+            await $.ajax({
+                url: `${API_URL}/${taskURI}?id=${params.task.id}`,
+                type: "DELETE",
+                contentType: "application/json",
+                success: (data) => {
+                    // console.log(data);
+                },
+                error: (xhr, status, error) => {
+                    // console.error(xhr.responseText);
+                    // console.log("Task ", params.task.id, " cannot be deleted (maybe already deleted)");
+                }
+            });
         }catch (e){
             console.error(e);
         }
@@ -540,10 +537,6 @@ export class Factory{
             model.radius = Math.sqrt(3*3 + 3*3) + 0.5;
             model.health = params.building.getStats().get("capacity");
             model.maxHealth = params.building.getStats().get("capacity");
-
-
-            console.log(model.health, model.maxHealth);
-
         }
 
         this.scene.add(view.healthBar);

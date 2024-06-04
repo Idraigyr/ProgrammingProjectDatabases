@@ -529,14 +529,14 @@ export class MinionController extends Subject{
      * @return {*} - path if it exists, null otherwise
      */
     testPath(islands, start, end){
-        console.log("testing path, islands:", islands);
-        printFoundationGrid(islands[0].grid, islands[0].width, islands[0].length);
+        // console.log("testing path, islands:", islands);
+        // printFoundationGrid(islands[0].grid, islands[0].width, islands[0].length);
 
         //test if there is a path from start to end (return null if not)
         this.#worldMap.setFromFoundations(islands);
 
-        console.log("worldmap set from islands:");
-        printFoundationGrid(this.#worldMap.grid, this.#worldMap.width, this.#worldMap.length);
+        // console.log("worldmap set from islands:");
+        // printFoundationGrid(this.#worldMap.grid, this.#worldMap.width, this.#worldMap.length);
 
         for(let i = 0; i < this.#worldMap.grid.length; i++){
             this.#worldMap.grid[i] = new PathNode({index: i, position: this.calculateNodePosition(i), value: this.#worldMap.grid[i], worldMap: this.#worldMap});
@@ -572,7 +572,7 @@ export class MinionController extends Subject{
     clearMinion(event){
         const minion = this.minions.find((minion) => minion.id === event.detail.model.id);
         if(minion){
-            console.log("minion deleted from controller");
+            // console.log("minion deleted from controller");
             minion.removeEventListener("delete", this.deleteCallbacks.get("minion"));
             minion.dispose();
             this.minions = this.minions.filter((minion) => minion.id !== event.detail.model.id);
@@ -586,7 +586,7 @@ export class MinionController extends Subject{
     clearEnemy(event){
         const enemy = this.enemies.find((enemy) => enemy.id === event.detail.model.id);
         if(enemy){
-            console.log("enemy deleted from controller");
+            // console.log("enemy deleted from controller");
             enemy.removeEventListener("delete", this.deleteCallbacks.get("enemy"));
             enemy.dispose();
             this.enemies = this.enemies.filter((enemy) => enemy.id !== event.detail.model.id);

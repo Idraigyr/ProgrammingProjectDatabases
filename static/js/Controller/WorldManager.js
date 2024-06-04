@@ -474,10 +474,10 @@ export class WorldManager{
                     console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("POST success");
-                console.log(textStatus, data);
+                // console.log("POST success");
+                // console.log(textStatus, data);
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("POST fail");
+                // console.log("POST fail");
                 throw new Error(`Could not send POST request to fuse a gem: Error: ${textStatus} ${errorThrown}`);
             });
             return result;
@@ -516,10 +516,10 @@ export class WorldManager{
                     console.error(e);
                 }
             }).done((data, textStatus, jqXHR) => {
-                console.log("POST success");
-                console.log(textStatus, data);
+                // console.log("POST success");
+                // console.log(textStatus, data);
             }).fail((jqXHR, textStatus, errorThrown) => {
-                console.log("POST fail");
+                // console.log("POST fail");
                 if (retries > 0){
                     this.postBuildingTimer(uri, timeInSeconds, buildingID, islandId, retries - 1);
                 } else {

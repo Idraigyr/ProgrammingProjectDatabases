@@ -525,7 +525,10 @@ export class MenuManager extends Subject{
      * @param event
      */
     drag(event){
-        if(this.matchmaking) return;
+        if(this.matchmaking) {
+            alertPopUp("You can't drag items while matchmaking");
+            return;
+        }
         let id = event.target.id;
         this.isSlotItem = event.target.classList.contains("slot-item")
         if(this.isSlotItem) {

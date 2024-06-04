@@ -541,7 +541,6 @@ class App {
      * @returns {Promise<boolean>} - a promise that resolves when the assets are loaded
      */
     async loadAssets(){
-        console.log( await this.playerInfo.getCurrentTime());
         //TODO: try to remove awaits? what can we complete in parallel?
         await loadingScreen.setText("retrieving user info...");
         await this.playerInfo.retrieveInfo();
@@ -650,11 +649,9 @@ class App {
             this.worldManager.world.player.cooldownSpell();
             const mana2 = this.playerInfo.mana;
             if (mana === mana2 || mana2 < 0) {
-                console.log("Not enough mana");
                 this.worldManager.world.player.mana = mana;
                 this.playerInfo.mana = mana;
                 this.hud.updateManaBar({detail: {current: this.playerInfo.mana, total: this.playerInfo.maxMana}});
-                console.log("mana: " + this.playerInfo.mana, "Hud: " + this.hud.manaBar.textContent);
                 return;
             }
             // Check if the player has enough crystals
