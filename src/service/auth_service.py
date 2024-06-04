@@ -158,6 +158,7 @@ class AuthService:
 
         # Create the player entity
         player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=0, zpos=0, ypos=0, level=1)
+        player_entity.update({'level': 1, 'x': 0, 'z': 15, 'y': 0})
         player_entity.player = player
         player.entity = player_entity
         current_app.db.session.add(player_entity)
