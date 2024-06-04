@@ -565,11 +565,9 @@ export class WorldManager{
      * @param {{spell: {type: ConcreteSpell, params: Object}, interval: number}} params - the parameters for the spell spawner
      */
     generateSpellSpawners(params){
-        console.log("generating spell spawners")
         this.world.islands.forEach((island) => {
             if(!(island instanceof Model.Island) || island.team !== this.world.player.team) return;
             const towerProxies = island.getProxysByType("tower_building");
-            console.log("towerProxies", towerProxies)
             towerProxies.forEach((towerProxy) => {
 
                 if(!towerProxy.building.ready) return;
@@ -599,7 +597,7 @@ export class WorldManager{
      *  this is used to check for collisions with spells, and to display the health of the towers and altars
      *  @param {number | null} team - for which team to generate the proxys (default is null, which generates for all teams)
      */
-    generateProxys(team= null){
+    generateProxys(opponentLevel, team= null){
         const proxyList = ["altar_building", "tower_building"];
         this.world.islands.forEach((island) => {
             if(!(island instanceof Island)) return;
@@ -611,7 +609,10 @@ export class WorldManager{
                         position: building.position,
                         team: building.team,
                         buildingName: building.constructor.name,
-                        building: building
+                        building: building,
+                        playerLevel: this.playerInfo.level,
+                        yourTeam: this.world.player.team,
+                        opponentLevel: opponentLevel
                     });
                     island.addProxy(proxy);
                 });

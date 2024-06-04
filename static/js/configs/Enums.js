@@ -165,7 +165,6 @@ export const buildingStats = (function (){
             {name: "fortune", value: 1}, // chance of getting a gem
         ],
         Tower: [
-            {name: "capacity", value: 100}, // repurposed for health
             {name: "range", value: 5}, // range of the tower
             {name: "damage", value: 5}, // damage of the tower
             {name: "speed", value: 1}, // attack speed of the tower
