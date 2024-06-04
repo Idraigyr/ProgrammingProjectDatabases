@@ -42,4 +42,12 @@ export class Tower extends Placeable{
         obj.tower_type = "magic";
         return obj;
     }
+
+    changeLevel(amount) {
+        const result =  super.changeLevel(amount);
+        const stat = new Map();
+        stat.set("capacity", this.level === 0 ? 50 : this.level*50);
+        try {this.setStats(stat);} catch(e){this.addStat("capacity", this.level === 0 ? 50 : this.level*50)}
+        return result;
+    }
 }
