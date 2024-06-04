@@ -1035,8 +1035,8 @@
 .settings-menu > .close-button-container, .help-menu > .close-button-container{
     display: flex;
     justify-content: flex-end;
-    position: fixed;
-    width: 50%;
+    position: absolute;
+    right: 0;
 }
 
 #Friends > .close-button-container{
@@ -1045,10 +1045,6 @@
     position: fixed;
     width: 50%;
     z-index: 100;
-}
-
-.close-setting {
-    left: 10px;
 }
 
 .borderless{
@@ -1098,11 +1094,6 @@
     scrollbar-width: thin;
 }
 
-.help-menu > .close-button-container{
-    display: flex;
-    justify-content: flex-end;
-    position: fixed;
-}
 .help-menu img {
     max-width: 100%;
     height: auto;
