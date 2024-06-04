@@ -9,6 +9,9 @@ export class Tower extends Placeable{
         this.spellSpawner = params.spellSpawner;
         this.timeToBuild = 600;
         this.upgradable = true;
+        const stat = new Map();
+        stat.set("capacity", this.level === 0 ? 50 : this.level*50);
+        try {this.setStats(stat);} catch(e){this.addStat("capacity", this.level === 0 ? 50 : this.level*50)}
     }
 
     /**

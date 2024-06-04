@@ -541,8 +541,8 @@ export class Factory{
             const height = 33;
             view.boundingBox.set(new THREE.Vector3().copy(currentPos).sub(new THREE.Vector3(3,0,3)), new THREE.Vector3().copy(currentPos).add(new THREE.Vector3(3,height,3)));
             model.radius = Math.sqrt(3*3 + 3*3) + 0.5;
-            model.health = Math.ceil(params.building.getStats().get("capacity"));
-            model.maxHealth = Math.ceil(params.building.getStats().get("capacity"));
+            model.health = params.building.getStats().get("capacity");
+            model.maxHealth = params.building.getStats().get("capacity");
 
 
             console.log(model.health, model.maxHealth);
