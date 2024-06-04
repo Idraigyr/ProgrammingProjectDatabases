@@ -19,6 +19,12 @@ export function popUp(level, maxMana, maxHealth, buildings, Spells, buildingsPro
     levelContent.prepend(newLevelP);
     modal.style.display = "block";
 
+    //setSpells
+
+    let spells = [];
+    for(let s in Spells){
+        if(Spells[s]) spells.push(s);
+    }
     setTimeout(function () {
         newLevelP.remove();
         modal.style.display = "none";
@@ -48,12 +54,25 @@ export function popUp(level, maxMana, maxHealth, buildings, Spells, buildingsPro
         newLevelP.remove();
         modal.style.display = "none";
         levelDetails.id = "levelDetails"
-        levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
+        if(buildings.length !==0 && Spells.size !== 0){
+            levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
             MaxHealth: ${maxHealth} <br>
             Buildings: ${arrayStringConverter(buildings)} <br>
-            Spells: ${arrayStringConverter(Spells)} <br>
+            Spells: ${arrayStringConverter(spells)} <br>
             Building in Progress: ${buildingsProgress}
-        `;
+            `;
+        } else if (buildings.length ===0 && Spells.size > 0){
+            levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
+            MaxHealth: ${maxHealth} <br>
+            Spells: ${arrayStringConverter(spells)} <br>
+            Building in Progress: ${buildingsProgress}
+            `;
+        } else if (buildings.length > 0 && Spells.size === 0){
+            levelDetails.innerHTML = `MaxMana: ${maxMana} <br>
+            MaxHealth: ${maxHealth} <br>
+            Buildings: ${arrayStringConverter(buildings)} <br>
+            Building in Progress: ${buildingsProgress}`;
+        }
         detailsContent.appendChild(levelDetails);
         detailsInfo.style.display = "block";
     }

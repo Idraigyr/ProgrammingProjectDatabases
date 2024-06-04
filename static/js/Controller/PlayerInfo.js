@@ -374,6 +374,7 @@ export class PlayerInfo extends Subject{
      * Create list of buildings that can be built
      */
     buildings(){
+        this.builds = [];
         for(let b in this.buildingsThreshold){
             if (this.buildingsThreshold[b] !== 0){
                 this.builds.push(b);
