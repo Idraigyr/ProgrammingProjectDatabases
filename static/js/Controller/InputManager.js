@@ -1,12 +1,9 @@
 import {
     buildKey, subSpellKey,
-    DownKey, eatingKey, primaryBackwardKey,
-    primaryForwardKey,
-    primaryLeftKey,
-    primaryRightKey, secondaryBackwardKey, secondaryForwardKey,
+    DownKey,
+    secondaryBackwardKey, secondaryForwardKey,
     secondaryLeftKey,
-    secondaryRightKey, slot1Key, slot2Key, slot3Key, slot4Key, slot5Key, sprintKey,
-    upKey
+    secondaryRightKey, keyBinds
 } from "../configs/Keybinds.js";
 import {Subject} from "../Patterns/Subject.js";
 import {assert} from "../helpers.js";
@@ -22,7 +19,6 @@ export class InputManager extends Subject{
         right: false,
         up: false,
         down: false,
-        spellSlot: 1,
         sprint: false,
         build: false,
         eating: false
@@ -104,7 +100,6 @@ export class InputManager extends Subject{
      */
     resetKeys(){
         for(const key in this.keys){
-            if(key === "spellSlot") continue;
             this.keys[key] = false;
         }
         this.mouse.leftClick = false;
@@ -178,15 +173,16 @@ export class InputManager extends Subject{
      */
     onClickEvent(event){
         if(this.blockedInput) return;
-        this.#callbacks["mousedown"][event.button].forEach((callback) => callback(event));
+        this.#callbacks["mousedown"][event.button]?.forEach((callback) => callback(event));
     }
 
     /**
      * creates custom event for spell slot change
+     * @param {number} slot - [1,5]
      * @return {CustomEvent<{spellSlot: number}>}
      */
-    createSpellSlotChangeEvent(){
-        return new CustomEvent("spellSlotChange", {detail: {spellSlot: this.keys.spellSlot}});
+    createSpellSlotChangeEvent(slot){
+        return new CustomEvent("spellSlotChange", {detail: {spellSlot: slot}});
     }
 
     /**
@@ -205,62 +201,55 @@ export class InputManager extends Subject{
 
     //TODO: remove all keys that need not be checked within an update function
     #onKey(KeyBoardEvent, bool){
-        if(this.blockedInput) return;
         switch (KeyBoardEvent.code){
-            case upKey:
+            case keyBinds.upKey:
                 this.keys.up = bool;
                 break;
             case DownKey:
                 this.keys.down = bool;
                 break;
-            case primaryLeftKey:
+            case keyBinds.primaryLeftKey:
             case secondaryLeftKey:
                 this.keys.left = bool;
                 break;
-            case primaryRightKey:
+            case keyBinds.primaryRightKey:
             case secondaryRightKey:
                 this.keys.right = bool;
                 break;
-            case primaryForwardKey:
+            case keyBinds.primaryForwardKey:
             case secondaryForwardKey:
                 this.keys.forward = bool;
                 break;
-            case primaryBackwardKey:
+            case keyBinds.primaryBackwardKey:
             case secondaryBackwardKey:
                 this.keys.backward = bool;
                 break;
-            case sprintKey:
+            case keyBinds.sprintKey:
                 this.keys.sprint = bool;
                 break;
             case buildKey:
                 this.keys.build = bool;
                 break;
-            case slot1Key:
-                this.keys.spellSlot = 1;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+            case keyBinds.slot1Key:
+                this.dispatchEvent(this.createSpellSlotChangeEvent(1));
                 break;
-            case slot2Key:
-                this.keys.spellSlot = 2;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+            case keyBinds.slot2Key:
+                this.dispatchEvent(this.createSpellSlotChangeEvent(2));
                 break;
-            case slot3Key:
-                this.keys.spellSlot = 3;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+            case keyBinds.slot3Key:
+                this.dispatchEvent(this.createSpellSlotChangeEvent(3));
                 break;
-            case slot4Key:
-                this.keys.spellSlot = 4;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+            case keyBinds.slot4Key:
+                this.dispatchEvent(this.createSpellSlotChangeEvent(4));
                 break;
-            case slot5Key:
-                this.keys.spellSlot = 5;
-                this.dispatchEvent(this.createSpellSlotChangeEvent());
+            case keyBinds.slot5Key:
+                this.dispatchEvent(this.createSpellSlotChangeEvent(5));
                 break;
-            case eatingKey:
+            case keyBinds.eatingKey:
                 this.keys.eating = bool;
                 break;
-        }
 
-        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
+        }
     }
 
     /**
@@ -268,7 +257,9 @@ export class InputManager extends Subject{
      * @param {event} KeyBoardEvent event
      */
     #onKeyDown(KeyBoardEvent){
+        if(this.blockedInput) return;
         this.#onKey(KeyBoardEvent,true);
+        this.#callbacks[KeyBoardEvent.code]?.(KeyBoardEvent);
     }
 
     /**
@@ -276,6 +267,7 @@ export class InputManager extends Subject{
      * @param {event} KeyBoardEvent event
      */
     #onKeyUp(KeyBoardEvent){
+        if(this.blockedInput) return;
         this.#onKey(KeyBoardEvent, false);
     }
 
@@ -286,5 +278,95 @@ export class InputManager extends Subject{
     addSettingButtonListener(callback) {
         const settingsButton = document.querySelector('.settings-button');
         settingsButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for settings close button clicked
+     * @param callback function to add
+     */
+    addSettingsCloseButtonListener(callback) {
+        const settingsCloseButton = document.querySelector('.close-setting');
+        settingsCloseButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for respawn button clicked
+     * @param callback function to add
+     */
+    addRespawnButtonListener(callback) {
+        const respawnButton = document.querySelector('.respawnButton');
+        respawnButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for logout button clicked
+     * @param callback function to add
+     */
+    addLogoutButtonListener(callback) {
+        const logoutButton = document.querySelector('.logOutButton');
+        logoutButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for leave match button clicked
+     * @param callback function to add
+     */
+    addLeaveMatchButtonListener(callback) {
+        const leaveMatchButton = document.querySelector('.leaveMatchButton');
+        leaveMatchButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for delete account button clicked
+     * @param callback function to add
+     */
+    addDeleteAccountButtonListener(callback) {
+        const deleteAccountButton = document.querySelector('.deleteAccountButton');
+        deleteAccountButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for apply button clicked
+     * @param callback function to add
+     */
+    addApplyButtonListener(callback) {
+        const applyButton = document.querySelector('.applyButton');
+        applyButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for grass toggle clicked
+     * @param callback function to add
+     */
+    addGrassToggleListener(callback) {
+        const grassToggle = document.getElementById('grass-toggle');
+        grassToggle.addEventListener('change', callback);
+    }
+
+    /**
+     * Adds callback for fullscreen button clicked
+     * @param callback function to add
+     */
+    addFullscreenButtonListener(callback) {
+        const fulllscreenButton = document.querySelector('.fullscreenButton');
+        fulllscreenButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for help button clicked
+     * @param callback function to add
+     */
+    addHelpButtonListener(callback) {
+        const helpButton = document.querySelector('.helpButton');
+        helpButton.addEventListener('click', callback);
+    }
+
+    /**
+     * Adds callback for help close button clicked
+     * @param callback function to add
+     */
+    addHelpCloseButtonListener(callback) {
+        const helpCloseButton = document.querySelector('.close-help');
+        helpCloseButton.addEventListener('click', callback);
     }
 }

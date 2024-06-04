@@ -478,7 +478,7 @@ export class EatingState extends BaseCharState{
     constructor(fsm) {
         super(fsm);
         this.timer = 0;
-        this.movementPossible = false;
+        this.movementPossible = true;
     }
 
     /**

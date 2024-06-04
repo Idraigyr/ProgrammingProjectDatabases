@@ -1,4 +1,5 @@
 import { Controller } from "./Controller.js";
+import {spellTypes} from "../Model/Spell.js";
 
 /**
  * Class for the HUD controller
@@ -71,9 +72,10 @@ export class HUD {
         $('#account-bar-level').html('Level: ' + event.detail.level);
 
     }
-    updateXPTreshold(event){
+    updateXPThreshold(event){
         $('#xp-bar-status').html(event.detail.xp + '/' + event.detail.threshold);
     }
+
 
     /**
      * Function to update the username in HUD
@@ -85,7 +87,7 @@ export class HUD {
 
     /**
      * Function to update the xp bar in HUD
-     * @param {{detail: {xp: number, treshold: number}}} event
+     * @param {{detail: {xp: number, threshold: number}}} event
      */
     updateXP(event){
         var percentage = ((event.detail.xp / event.detail.threshold) * 100);
@@ -115,25 +117,41 @@ export class HUD {
      * Function to toggle visibility of the settings menu
      */
     toggleSettingsMenu() {
-        const settingsMenu = document.querySelector(`.container`);
+        const settingsMenu = document.querySelector(`.settings-container`);
         settingsMenu.classList.toggle('hide');
     }
 
     /**
-     * Function to update the spell cooldown in HUD - currently unused
-     * @param spellCooldown
-     * @param spellSlotIndex
+     * Function to update the cooldowns in the HUD
+     * @param event {{detail: {spellCooldowns: list}}
      */
-    useSpell(spellCooldown, spellSlotIndex) {
-        const usedSpel = document.querySelector(`.HotBar .Spell${spellSlotIndex} .button`);
-        usedSpel.parentElement.classList.add('onCooldown');
+    updateCooldowns(event) {
+        let cooldowns = event.detail.cooldowns;
+        for (let i = 0; i < cooldowns.length; i++) {
+            let spellSlotIndex = i;
+            let spellCooldown = cooldowns[i];
+            const cooldownElement = document.querySelector(`.HotBarCooldown .Spell${spellSlotIndex + 1}Cooldown`);
+            const usedSpell = document.querySelector(`.HotBar .Spell${spellSlotIndex + 1} .button`);
+            const usedSpellIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex + 1}Icon`);
+            usedSpellIcon.classList.add('onCooldown');
+            if (spellCooldown <= 0) {
+                cooldownElement.textContent = ""; // Clear the cooldown display
+                usedSpell.parentElement.classList.remove('onCooldown');
+                usedSpellIcon.classList.remove('onCooldown');
+            } else {
+                cooldownElement.textContent = spellCooldown.toFixed(2) + "s"; // Update the cooldown display
+                usedSpell.parentElement.classList.add('onCooldown');
+                usedSpellIcon.classList.add('onCooldown');
+            }
+        }
+    }
 
-        const usedSpelIcon = document.querySelector(`.HotBarIcons .Spell${spellSlotIndex}Icon`);
-        usedSpelIcon.classList.add('onCooldown');
-
-        setTimeout(function() {
-        usedSpel.parentElement.classList.remove('onCooldown');
-        usedSpelIcon.classList.remove('onCooldown');
-        }, spellCooldown * 1000);
+    /**
+     * sets a spell icon in the hotbar
+     * @param {{detail: {index: number, spell: ConcreteSpell | null}}} event
+     */
+    setSpellIcon(event) {
+        const spellIconElement = document.querySelector(`.HotBarIcons .Spell${event.detail.index+1}Icon .spell-icon-img`);
+        spellIconElement.src = spellTypes.getIcon(event.detail.spell?.constructor.name) ?? "";
     }
 }

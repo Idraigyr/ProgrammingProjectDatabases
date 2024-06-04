@@ -90,11 +90,10 @@ export class ParticleSystem{
     #sizeSpline;
     /**
      * initialises class, adds splines for some particle attributes (colour, size, alpha)
-     * @param {{scene: THREE.Scene, camera: THREE.Camera, position: THREE.Vector3, uniforms: object}} params
+     * @param {{scene: THREE.Scene, position: THREE.Vector3, uniforms: object}} params
      */
     constructor(params) {
         this.scene = params.scene;
-        this.camera = params.camera;
         this.position = params.position;
 
         this.#material = new THREE.ShaderMaterial({
@@ -151,7 +150,7 @@ export class ParticleSystem{
      * cleans up object for garbage collection
      * removes existing particles from the scene
      */
-    cleanUp(){
+    dispose(){
         this.scene.remove(this.#points);
     }
 
@@ -191,8 +190,9 @@ export class ParticleSystem{
     /**
      * updates particles
      * @param {number} deltaTime
+     * @param {THREE.Camera} camera
      */
-    updateParticles(deltaTime){
+    updateParticles(deltaTime, camera){
         for (let p of this.#particles) {
           p.lifetime -= deltaTime;
         }
@@ -220,8 +220,8 @@ export class ParticleSystem{
         }
 
         this.#particles.sort((a,b) => {
-           const d1 =  this.camera.position.distanceToSquared(a.position);
-           const d2 =  this.camera.position.distanceToSquared(b.position);
+           const d1 =  camera.position.distanceToSquared(a.position);
+           const d2 =  camera.position.distanceToSquared(b.position);
 
            return d1 > d2 ? -1 : (d1 < d2 ? 1 : 0);
         });
@@ -230,24 +230,26 @@ export class ParticleSystem{
     /**
      * updates entire system (couples multiple functions together)
      * @param {number} deltaTime
+     * @param {THREE.Camera} camera
      */
-    update(deltaTime){
+    update(deltaTime, camera){
         this.addParticles(deltaTime);
-        this.updateParticles(deltaTime);
+        this.updateParticles(deltaTime, camera);
         this.updateGeometry();
     }
 
     /**
      * checks if the system is not dead
      * @param deltaTime {number} time since last frame
+     * @param camera {THREE.Camera} camera
      * @returns {boolean} true if system is not dead
      */
 
-    isNotDead(deltaTime){
-        this.updateParticles(deltaTime);
+    isNotDead(deltaTime, camera){
+        this.updateParticles(deltaTime, camera);
         this.updateGeometry();
         if(this.#particles.length === 0){
-            this.cleanUp();
+            this.dispose();
             return false;
         }
         return true;

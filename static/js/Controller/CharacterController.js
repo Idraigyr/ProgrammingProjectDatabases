@@ -1,16 +1,15 @@
 import {Subject} from "../Patterns/Subject.js";
 import {
-    horizontalSensitivity,
+    sensitivity,
     movementSpeed,
     sprintMultiplier,
     gravity,
-    verticalSensitivity,
     spellCastMovementSpeed,
     jumpHeight
 } from "../configs/ControllerConfigs.js";
 import * as THREE from "three";
 import {BuildSpell, HitScanSpell, InstantSpell, EntitySpell} from "../Model/Spell.js";
-import {BaseCharAttackState, EatingState} from "../Model/States/PlayerStates.js";
+import {BaseCharAttackState, DefaultAttackState, EatingState} from "../Model/States/PlayerStates.js";
 
 
 
@@ -44,8 +43,8 @@ export class CharacterController extends Subject{
      */
     updateRotation(event){
         const {movementX, movementY} = event;
-        const rotateHorizontal = (movementX * horizontalSensitivity) * (Math.PI/360);
-        const rotateVertical = (movementY  * verticalSensitivity) *  (Math.PI/360);
+        const rotateHorizontal = (movementX * sensitivity.horizontalSensitivity) * (Math.PI/180);
+        const rotateVertical = (movementY  * sensitivity.verticalSensitivity) *  (Math.PI/180);
         this._character.phi -= rotateHorizontal;
         this._character.theta = THREE.MathUtils.clamp(this._character.theta - rotateVertical, -Math.PI/3, Math.PI /3);
 
@@ -97,7 +96,7 @@ export class CharacterController extends Subject{
         //TODO: this is necessary to prevent falling through ground, find out why and remove this
         //const correctedDeltaTime = min(deltaTime, 0.1);
         this._character.velocity.y += deltaTime * gravity;
-
+        this.tempPosition.copy(this._character.position);
         this.tempPosition.addScaledVector( this._character.velocity, deltaTime );
 
         let deltaVector = this.collisionDetector.adjustCharacterPosition(this._character, this.tempPosition, deltaTime);
@@ -114,7 +113,10 @@ export class CharacterController extends Subject{
             this._character.velocity.y = 0;
         }
 
-        if ( this._character.position.y < - 50 ) {
+        if ( this._character.position.y < - 50 || this._character.position.y > 2000) {
+            //TODO: respawn function for player which can be reused for death by enemies, add funny message
+            //You fell of the island
+            //you were catapulted to the stratosphere
             //respawn
             this._character.velocity.set(0,0,0);
             this.lastMovementVelocity.set(0,0,0);
@@ -130,7 +132,7 @@ export class CharacterController extends Subject{
      * @returns {CustomEvent<{}>}
      */
     createEatingEvent(){
-        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -20, health: 5, mana: 5, xp: 50}}});
+        return new CustomEvent("eatingEvent", {detail: {type: ["crystals", "health", "mana", "xp"], params: {crystals: -30, health: 30, mana: 30, xp: 25}}});
     }
 
     /**
@@ -139,10 +141,9 @@ export class CharacterController extends Subject{
      */
     eat()
     {
-        console.log(!(this._character.fsm.currentState instanceof EatingState))
-       if (!(this._character.fsm.currentState instanceof EatingState)) {
+       if ((this._character.eatingCooldown > 1.25 ) && !(this._character.fsm.currentState instanceof DefaultAttackState)) {
             this.dispatchEvent(this.createEatingEvent());
-            console.log("dispacthing eating")
+            this._character.eatingCooldown = 0;
         }
     }
 
@@ -157,14 +158,12 @@ export class CharacterController extends Subject{
             return;
         }
 
-
-
-        this._character.currentSpell = this.#inputManager.keys.spellSlot - 1;
         this._character.fsm.updateState(deltaTime, this.#inputManager);
+
+        this._character.eatingCooldown += deltaTime;
 
 
         if (this._character.fsm.currentState.movementPossible) {
-
             if (this.#inputManager.keys.up && this._character.onGround) {
                 this._character.velocity.y = jumpHeight;
                 this._character.onGround = false;

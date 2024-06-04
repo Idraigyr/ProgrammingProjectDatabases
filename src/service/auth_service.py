@@ -5,9 +5,12 @@ from flask import current_app
 from flask_jwt_extended import create_access_token
 from flask_sqlalchemy import SQLAlchemy
 
+from src.model.player_stats import PlayerStats
+from src.model.player import PlayerSpellAssociation
 from src.model.player_entity import PlayerEntity
 from src.model.enums import BlueprintType
-from src.model.placeable.buildings import AltarBuilding, MineBuilding
+from src.model.placeable.altar_building import AltarBuilding
+from src.model.placeable.mine_building import MineBuilding
 from src.model.user_profile import UserProfile
 from src.model.island import Island
 from src.model.credentials import Credentials, PasswordCredentials, OAuth2Credentials
@@ -17,7 +20,8 @@ db: SQLAlchemy = current_app.db
 
 class AuthService:
     """
-    This class is responsible for managing & authenticating users
+    This class is responsible for managing & authenticating user operations that do not fit in the REST API endpoints
+    (because they require more complex logic, or short-term statefullness like social login etc)
     """
     def __init__(self):
         self._log = logging.getLogger(__name__)
@@ -154,9 +158,15 @@ class AuthService:
 
         # Create the player entity
         player_entity = PlayerEntity(player_id=player.user_profile_id, island_id=island.owner_id, xpos=0, zpos=0, ypos=0, level=1)
+        player_entity.update({'level': 1, 'x': 0, 'z': 15, 'y': 0})
         player_entity.player = player
         player.entity = player_entity
         current_app.db.session.add(player_entity)
+        current_app.db.session.commit()
+
+        # Create the stats object for the player
+        player_stats = PlayerStats(player_id=player.user_profile_id)
+        current_app.db.session.add(player_stats)
         current_app.db.session.commit()
 
         # player settings
@@ -170,7 +180,8 @@ class AuthService:
 
         # Update player spells, it initially has the build spell
         from src.model.spell import Spell
-        player.spells = [Spell.query.get(0)]  # Id 0 is the build spell
+        for i, spell in enumerate(Spell.query.all()):
+            player.spells_association.append(PlayerSpellAssociation(player_id=player.user_profile_id, spell_id=spell.id, slot=0 if i == 0 else None))
 
         current_app.db.session.commit()
 

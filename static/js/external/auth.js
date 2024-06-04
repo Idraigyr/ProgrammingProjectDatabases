@@ -72,7 +72,9 @@ $("#passwordResetForm").on("submit", function(event) {
     event.preventDefault();
     let username = $("#username").val();
     let newPassword = $("#newPassword").val();
-    $.ajax({url: "/api/auth/password_reset?username=" + username + "&password=" + newPassword, type: "POST", error: function (xhr, ajaxOption, thrownError) {
+    let firstname = $("#firstname").val();
+    let lastname = $("#lastname").val();
+    $.ajax({url: "/api/auth/password_reset?username=" + username + "&password=" + newPassword + "&firstname=" + firstname + "&lastname=" + lastname, type: "POST", error: function (xhr, ajaxOption, thrownError) {
         if (xhr.status !== 200) {
             if (xhr.status >= 500) {
                 alert("Server error. Please try again later.")

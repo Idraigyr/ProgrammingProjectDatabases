@@ -26,7 +26,7 @@ class Entity(current_app.db.Model):
     level: Mapped[int] = Column(Integer, CheckConstraint('level >= 0'), nullable=False, default=0)
 
 
-    def __init__(self, island_id:int = 0, xpos: int = 0, ypos: int = 0, zpos: int = 0, level: int = 0):
+    def __init__(self, island_id: int = 0, xpos: int = 0, ypos: int = 0, zpos: int = 0, level: int = 0):
         """
         Initialize the entity object
         :param island_id: The id of the island that this entity belongs to

@@ -1,22 +1,17 @@
-import {
-    DefaultAttackState,
-    IdleState,
-    RunForwardState, TakeDamageState,
-    WalkBackWardState,
-    WalkForwardState
-} from "../Model/States/PlayerStates.js";
+import {Subject} from "./Subject.js";
 
 /**
  * @class FiniteStateMachine - A class that represents a finite state machine
  */
-export class FiniteStateMachine{
+export class FiniteStateMachine extends Subject{
     #states = {};
-    constructor() {
+    constructor(params) {
+        super(params);
         this.currentState = null;
     }
 
     /**
-     * @function updateState - updates the current state
+     * @method updateState - updates the current state
      * @param deltaTime - time between frames
      * @param input - input from the user
      */
@@ -26,22 +21,36 @@ export class FiniteStateMachine{
     }
 
     /**
-     * @function setState - sets the current state
+     * same as updateState but event based
+     * @param event
+     */
+    processEvent(event){
+        if(!this.currentState) return;
+        this.currentState.processEvent(event);
+    }
+
+    /**
+     * @method setState - sets the current state
      * @param name - name of the state
      */
     setState(name){
         const prevState = this.currentState
-        if(prevState && prevState.name === name){
+        if(prevState){
             if(prevState.name === name) return;
             prevState.exit();
         }
 
         this.currentState = new this.#states[name](this);
         this.currentState.enter(prevState);
+        this.dispatchEvent(this.createUpdatedStateEvent());
+    }
+
+    createUpdatedStateEvent(){
+        return new CustomEvent("updatedState", {detail: {state: this.currentState.name}});
     }
 
     /**
-     * @function addState - adds a state to the state machine
+     * @method addState - adds a state to the state machine
      * @param name - name of the state
      * @param type - type of the state
      */

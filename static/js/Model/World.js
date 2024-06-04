@@ -1,9 +1,10 @@
-import {Fireball, BuildSpell, ThunderCloud, Shield, IceWall} from "./Spell.js";
-import {convertGridIndexToWorldPosition, convertWorldToGridPosition, returnWorldToGridIndex} from "../helpers.js";
+import {convertWorldToGridPosition} from "../helpers.js";
 import {buildTypes} from "../configs/Enums.js";
-import {Bridge} from "./Bridge.js";
-import * as THREE from "three";
-import {MinionSpawner} from "./MinionSpawner.js";
+import {gridCellSize} from "../configs/ViewConfigs.js";
+import {Bridge} from "./Entities/Foundations/Bridge.js";
+import {Island} from "./Entities/Foundations/Island.js";
+import {SpellSpawner} from "./Spawners/SpellSpawner.js";
+import {Fireball} from "./Spell.js";
 
 /**
  * World class that contains all the islands and the player
@@ -13,21 +14,128 @@ export class World{
         this.factory = params.factory;
         this.spellFactory = params.SpellFactory;
         this.collisionDetector = params.collisionDetector;
-        this.islands = [];
-        params.islands.forEach((island) => {
-            this.islands.push(this.factory.createIsland({position: island.position, rotation: island.rotation, buildingsList: island.buildings, width: 15, length: 15}));
-        });
-        this.player = this.factory.createPlayer(params.player);
-        // Set default values for the inventory slots
-        // TODO @Flynn: Change this to use the Spell.js#concreteSpellFromId() factory function
-        this.player.changeEquippedSpell(0,new BuildSpell({}));
-        this.player.changeEquippedSpell(1,new Fireball({}));
-        this.player.changeEquippedSpell(2,new ThunderCloud({}));
-        this.player.changeEquippedSpell(3,new Shield({}));
-        this.player.changeEquippedSpell(4,new IceWall({}));
+        this.islands = []; //TODO: rename to this.islands to this.foundations and all related properties/methods
+        this.player = null;
         this.entities = [];
-        params.characters.forEach((character) => {});
-        this.spawners = [];
+        this.spawners = {minions: [], spells: []};
+    }
+
+    /**
+     * Remove all entities of a certain team + all bridges
+     * @param team
+     */
+    removeEntitiesByTeam(team){
+        this.entities = this.entities.filter((entity) => {
+            if(entity.team === team){
+                entity.dispose();
+                return false;
+            }
+            return true;
+        });
+
+        this.islands = this.islands.filter((island) => {
+            if(island.team === team || island instanceof Bridge){
+                island.dispose();
+                return false;
+            }
+            return true;
+        });
+
+        this.spellFactory.models.forEach((model) => {
+            model.dispose();
+        });
+        this.spellFactory.models = [];
+    }
+
+    /**
+     * Get all proxys in the world
+     * @return {ProxyEntity[]}
+     */
+    getProxys(){
+        let proxys = [];
+        this.islands.forEach((island) => {
+            if(island instanceof Island) proxys = proxys.concat(island.proxys);
+        });
+        return proxys;
+    }
+
+    /**
+     * Remove all proxys from the islands
+     */
+    removeProxys(){
+        this.islands.forEach((island) => {
+            if(island instanceof Island) island.disposeProxys();
+        });
+    }
+
+    /**
+     * add a foundation to the world
+     * @param {Foundation} island
+     */
+    addIsland(island){
+        this.islands.push(island);
+    }
+
+    /**
+     * Remove all islands from the world
+     */
+    removeIslands(){
+        this.islands.forEach((island) => island.dispose());
+        this.islands = [];
+    }
+
+    /**
+     * Add an entity to the world
+     * @param {Entity} entity
+     */
+    addEntity(entity){
+        this.entities.push(entity);
+    }
+
+    /**
+     * set the player of the world
+     * @param player
+     */
+    setPlayer(player){
+        this.player = player;
+    }
+
+    /**
+     * Add a minion spawner to the world
+     * @param {MinionSpawner} spawner
+     */
+    addMinionSpawner(spawner){
+        spawner.addEventListener("delete", (event) => {
+            this.spawners.spells = this.spawners.spells.filter((spawner) => spawner !== event.detail.model);
+        });
+        this.spawners.minions.push(spawner);
+    }
+
+    /**
+     * Add a spell spawner to the world
+     * @param {SpellSpawner} spawner
+     */
+    addSpellSpawner(spawner){
+        spawner.addEventListener("delete", (event) => {
+            this.spawners.spells = this.spawners.spells.filter((spawner) => spawner !== event.detail.model);
+        });
+        this.spawners.spells.push(spawner);
+    }
+
+    /**
+     * Clear all minion spawners
+     */
+    clearMinionSpawners(){
+        this.spawners.minions.forEach((spawner) => spawner.dispose());
+        this.spawners.minions = [];
+    }
+
+    /**
+     * Clear all spell spawners
+     */
+    clearSpellSpawners(){
+        this.spawners.spells.forEach((spawner) => spawner.dispose());
+        this.spawners.spells = [];
     }
 
     /**
@@ -37,8 +145,10 @@ export class World{
      */
     getIslandByPosition(position){
         for(const island of this.islands){
-            //TODO: if min and max are center positions of most extremes cells do +gridCellSize/2 (depends on implementation of Foundation class)
-            if(position.x > island.min.x && position.x < island.max.x && position.z > island.min.z && position.z < island.max.z){
+            if(position.x > island.min.x - gridCellSize/2 &&
+                position.x < island.max.x + gridCellSize/2 &&
+                position.z > island.min.z - gridCellSize/2 &&
+                position.z < island.max.z + gridCellSize/2){
                 return island;
             }
         }
@@ -75,18 +185,24 @@ export class World{
     /**
      *
      * @param buildingName
-     * @param {THREE.Vector3} position - needs to be in world/grid coordinates
+     * @param {THREE.Vector3} position - needs to be in world-grid coordinates (=world coordinates rounded to grid cell size)
+     * @param {Number} rotation - 0, 90, 180, 270
      * @param {Boolean} withTimer
      * @return {Building || null} - the building that was added to the world
      */
-    addBuilding(buildingName, position, withTimer = false){
+    addBuilding(buildingName, position, rotation = 0, withTimer = false){
         const island = this.getIslandByPosition(position);
+        if(island.team !== this.player.team){
+            console.error("Cannot add building to island of another player");
+            return null;
+        }
         //buildTypes.getNumber("empty") is more readable than 1
         if(island?.checkCell(position) === buildTypes.getNumber("empty")){
-            const {x,z} = returnWorldToGridIndex(position);
+            convertWorldToGridPosition(position.sub(island.position));
             const building = this.factory.createBuilding({
                 buildingName: buildingName,
-                position: {x: x, y: 0, z: z},
+                position: position,
+                rotation: rotation,
                 withTimer: withTimer,
             });
             island.addBuilding(building);
@@ -98,21 +214,6 @@ export class World{
         //TODO: throw error?
     }
 
-    /**
-     * Export the world to a json object
-     * @param json - the json object to export to
-     */
-    exportWorld(json){
-
-    }
-
-    /**
-     * Import a world from a json object
-     * @param json - the json object to import
-     */
-    importWorld(json){
-
-    }
 
     /**
      * Update the world and all its components
@@ -120,10 +221,33 @@ export class World{
      */
     update(deltaTime){
         //update whole model
-        this.spawners.forEach((spawner) => spawner.update(deltaTime));
+        for(const spawnerType in this.spawners){
+            this.spawners[spawnerType].forEach((spawner) => {
+                spawner.update(deltaTime);
+            });
+        }
         this.collisionDetector.checkSpellEntityCollisions(deltaTime);
         this.collisionDetector.checkCharacterCollisions(deltaTime);
-        this.spellFactory.models.forEach((model) => model.update(deltaTime));
         this.spellFactory.models = this.spellFactory.models.filter((model) => model.timer <= model.duration);
+        this.spellFactory.models.forEach((model) => model.update(deltaTime));
+    }
+
+    /**
+     * Toggle the grass on the islands
+     * @param grassOn - boolean to toggle grass on or off
+     */
+    toggleGrass(grassOn){
+        this.islands.forEach((island) => {
+            island.toggleGrass(grassOn);
+        });
+    }
+
+    /**
+     * Delete a building from the world
+     * @param building - the building to delete
+     */
+    deleteBuilding(building){
+        const island = this.getIslandByPosition(building.position);
+        island.deleteBuilding(building);
     }
 }

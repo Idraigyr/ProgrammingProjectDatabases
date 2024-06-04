@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import {IAnimatedView} from "./View.js";
+import {CharacterView} from "./Characters/CharacterView.js";
 
 /**
  * Player view
  */
-export class Player extends IAnimatedView{
+export class Player extends CharacterView{
     constructor(params) {
         super(params);
         this.boundingBox.setFromObject(this.charModel);
@@ -23,6 +23,24 @@ export class Player extends IAnimatedView{
         this._getAnimation(clips, 'CharacterArmature|Roll',"WalkBackward");
         this._getAnimation(clips, 'CharacterArmature|Spell1',"DefaultAttack");
         this._getAnimation(clips, 'CharacterArmature|PickUp', 'Eating')
+    }
+
+    /**
+     * hides the player model (used when opponent dies)
+     */
+
+    hide(){
+        this.charModel.visible = false;
+        this.healthBar.visible = false;
+    }
+
+    /**
+     * shows the player model (used when opponent respawns)SS
+     */
+    show(){
+        this.charModel.visible = true;
+        this.healthBar.visible = true;
+        this.realHealth_ = 1.0;
     }
 
 }

@@ -3,7 +3,7 @@ from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import Resource, swagger, Api
 
 from src.model.gems import GemAttributeAssociation, Gem, GemAttribute
-from src.resource import add_swagger, clean_dict_input
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.schema import ErrorSchema, ArraySchema
 from src.swagger_patches import Schema, summary
 
@@ -90,6 +90,10 @@ class GemSchema(Schema):
             'type': 'integer',
             'format': 'int64',
             'nullable': True,
+        },
+        'staked': {
+            'type': 'boolean',
+            'description': 'Whether the gem is used as a stake in a multiplayer match or not. Staked gems are "reserved" and cannot be used for boosting buildings or mines',
         }
     }
 
@@ -104,6 +108,7 @@ class GemSchema(Schema):
                              attributes=[GemAttributeAssociationSchema(assoc) for assoc in gem.attributes_association],
                              building_id=gem.building_id,
                              player_id=gem.player_id,
+                             staked=gem.staked,
                              **kwargs)
         else:
             super().__init__(**kwargs)
@@ -139,11 +144,14 @@ class GemResource(Resource):
 
     @swagger.tags('gems')
     @summary('Update a gem by id. All fields (except ids) are updatable. Including attributes and their multipliers.'
-             ' Note that only one of the building_id or player_id can have a non-null value')
+             'A null building_id means the gem is in (island) storage, player_id must always be set')
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the updated gem in JSON format', schema=GemSchema)
     @swagger.response(404, description='Unknown gem id', schema=ErrorSchema)
     @swagger.response(400, description='Invalid or no gem id', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -161,6 +169,9 @@ class GemResource(Resource):
             if gem is None:
                 return ErrorSchema(f'Unknown gem id {id}'), 404
 
+            r = check_data_ownership(gem.player_id) # Check the owner id
+            if r: return r
+
             gem.update(data)
             current_app.db.session.commit()
 
@@ -175,6 +186,9 @@ class GemResource(Resource):
     @swagger.expected(schema=GemSchema, required=True)
     @swagger.response(200, description='Success, returns the created gem in JSON format', schema=GemSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -198,29 +212,27 @@ class GemResource(Resource):
             # Thus, we first create the gem without the attributes, then add the attributes with the gem id
             gem_attributes = []
             if 'attributes' in data:
-                gem_attributes = data['attributes']
-                data['attributes'] = [] # We need to remove the attributes before passing data to the Gem constructor
+                gem_attributes = data.pop('attributes')
 
-                # We need to add the gem id to each attribute association
-                for assoc in data['attributes']:
-                    assoc['gem_id'] = data['id']
+            building_id = None
+            if 'building_id' in data:
+                building_id = data.pop('building_id')
 
             gem = Gem(**data)
 
+            r = check_data_ownership(gem.player_id) # Check the owner id
+            if r: return r
+
             current_app.db.session.add(gem)
+            current_app.db.session.commit() # This is necessary to get the gem id
+
+            # We reuse the update method to add the attributes
+            gem.update({'attributes': gem_attributes, 'building_id': building_id})
+
             current_app.db.session.commit()
 
-            if gem_attributes: # not empty
-                for assoc in gem_attributes:
-                    assoc['gem_id'] = gem.id
-                    del assoc['gem_attribute_type'] # We don't need this, it's only (syntactically) required for the schema
-                    gem_assoc = GemAttributeAssociation(**assoc)
-                    gem.attributes_association.append(gem_assoc)
-
-                current_app.db.session.commit()
-
             return GemSchema(gem), 200
-        except Exception as e:
+        except (KeyError, ValueError) as e:
             return ErrorSchema(str(e)), 400
 
 
@@ -230,6 +242,9 @@ class GemResource(Resource):
     @swagger.response(200, description='Success', schema=ErrorSchema)
     @swagger.response(404, description='Gem not found', schema=ErrorSchema)
     @swagger.response(400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403,
+                      description='Unauthorized access to data object. Calling user is not owner of the data (or admin)',
+                      schema=ErrorSchema)
     @jwt_required()
     def delete(self):
         """
@@ -243,6 +258,9 @@ class GemResource(Resource):
         gem = Gem.query.get(id)
         if gem is None:
             return ErrorSchema(f'Gem {id} not found'), 404
+
+        r = check_data_ownership(gem.player_id)  # Check the owner id
+        if r: return r
 
         current_app.db.session.delete(gem)
         current_app.db.session.commit()

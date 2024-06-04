@@ -2,8 +2,8 @@ from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
-from src.model.placeable.buildings import WarriorHutBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.model.placeable.warrior_hut_building import WarriorHutBuilding
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -32,6 +32,7 @@ class WarriorHutBuildingSchema(BuildingSchema):
 class WarriorHutBuildingResource(BuildingResource):
     """
     A resource/api endpoint that allows the retrieval and modification of a Warrior Hut Buildings
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -64,6 +65,7 @@ class WarriorHutBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The updated warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
     @swagger.response(response_code=404, description='Warrior hut with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -84,6 +86,9 @@ class WarriorHutBuildingResource(BuildingResource):
             if not warrior_hut_building:
                 return ErrorSchema(f'Warrior hut with id {id} not found'), 404
 
+            r = check_data_ownership(warrior_hut_building.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the warrior hut building
             warrior_hut_building.update(data)
 
@@ -98,6 +103,7 @@ class WarriorHutBuildingResource(BuildingResource):
     @swagger.expected(schema=WarriorHutBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The created warrior hut building in JSON format", schema=WarriorHutBuildingSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -129,6 +135,10 @@ class WarriorHutBuildingResource(BuildingResource):
                 data.pop('placeable_id')  # let SQLAlchemy initialize the id
 
             warrior_hut_building = WarriorHutBuilding(**data)
+
+            r = check_data_ownership(warrior_hut_building.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(warrior_hut_building)
             current_app.db.session.commit()
 

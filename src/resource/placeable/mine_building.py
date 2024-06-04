@@ -4,8 +4,8 @@ from flask import request, Flask, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api, Resource
 
-from src.model.placeable.buildings import MineBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.model.placeable.mine_building import MineBuilding
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.gems import GemSchema
 from src.resource.placeable.building import BuildingSchema
 from src.schema import ErrorSchema
@@ -50,6 +50,7 @@ class MineBuildingResource(Resource):
     """
     A resource / api endpoint that allows for the retrieval and modification of
     new and existing mines.
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -82,6 +83,7 @@ class MineBuildingResource(Resource):
     @swagger.response(response_code=200, description="The mine building has been updated. The up-to-date object is returned", schema=MineBuildingSchema)
     @swagger.response(response_code=404, description='Mine building not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -104,7 +106,11 @@ class MineBuildingResource(Resource):
             # Convert the datetime strings to datetime objects
             if 'last_collected' in data:
                 data['last_collected'] = data['last_collected'].replace('T', ' ')
+                data["last_collected"] = data["last_collected"].split(".")[0]
                 data['last_collected'] = datetime.datetime.strptime(data['last_collected'], '%Y-%m-%d %H:%M:%S')
+
+            r = check_data_ownership(mine.island_id)  # island_id == owner_id
+            if r: return r
 
             # Update the mine building
             mine.update(data)
@@ -120,6 +126,7 @@ class MineBuildingResource(Resource):
     @swagger.expected(schema=MineBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The mine building has been created. The new object is returned", schema=MineBuildingSchema)
     @swagger.response(response_code=400, description="Invalid input", schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -152,6 +159,9 @@ class MineBuildingResource(Resource):
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
 
             mine = MineBuilding(**data)
+
+            r = check_data_ownership(mine.island_id)  # island_id == owner_id
+            if r: return r
 
             current_app.db.session.add(mine)
             current_app.db.session.commit()

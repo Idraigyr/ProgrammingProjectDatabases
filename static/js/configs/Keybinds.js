@@ -32,5 +32,8 @@ export let slot3Key = "Digit3"
 export let slot4Key = "Digit4"
 export let slot5Key = "Digit5"
 
-
+export let chatKey = "KeyC"
 export let eatingKey = "KeyQ"
+
+
+export const keyBinds = {primaryForwardKey, primaryLeftKey,primaryRightKey, primaryBackwardKey, upKey, sprintKey, interactKey, eatingKey, chatKey, slot1Key, slot2Key, slot3Key, slot4Key, slot5Key};

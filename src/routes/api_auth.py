@@ -21,17 +21,6 @@ blueprint = Blueprint('api_auth', __name__)
 db = current_app.db
 _log = logging.getLogger(__name__)
 
-# Disable JWT if not enabled, JWT is enabled by default
-# We override the jwt_required decorator to be a no-op
-# We also override the get_jwt_identity function to return the default user
-if current_app.config.get('APP_JWT_ENABLED', 'true') == 'false':
-    jwt_required = lambda *args, **kwargs: lambda x: x  # no-op decorator
-    def f():
-        # When JWT is disabled, return the default user (id=0)
-        return AUTH_SERVICE.get_user(user_id=1)
-    get_jwt_identity = f
-
-
 @blueprint.route("/register", methods=['POST'])
 def register():
     """
@@ -144,8 +133,12 @@ def refresh_expiring_jwts(response):
         target_timestamp = datetime.timestamp(now + timedelta(minutes=30))
         if target_timestamp > exp_timestamp:
             _log.debug(f"Refreshing JWT token of {get_jwt_identity()}")
-            access_token = AUTH_SERVICE.create_jwt(AUTH_SERVICE.get_user(user_id=get_jwt_identity()))
-            set_access_cookies(response, access_token)
+            user = AUTH_SERVICE.get_user(user_id=get_jwt_identity())
+            if not user:
+                _log.error(f"Unable to refresh token of unknown user with id {get_jwt_identity()}")
+            else:
+                access_token = AUTH_SERVICE.create_jwt(user)
+                set_access_cookies(response, access_token)
         return response
     except (RuntimeError, KeyError, PyJWTError):
         # Case where there is not a valid JWT. Just return the original response
@@ -283,10 +276,16 @@ def password_reset():
 
         username = escape(request.args.get('username'))
         newPassword = escape(request.args.get('password'))
+        firstname = escape(request.args.get('firstname'))
+        lastname = escape(request.args.get('lastname'))
 
         # Check if the user exists
         user = AUTH_SERVICE.get_user(username=username)
         if user is None:
+            return Response(json.dumps({'status': 'error', 'message': 'User not found'}), status=404, mimetype='application/json')
+
+        if user.firstname != firstname or user.lastname != lastname:
+            _log.warning(f'User {username} attempted to reset password with incorrect firstname and/or lastname')
             return Response(json.dumps({'status': 'error', 'message': 'User not found'}), status=404, mimetype='application/json')
 
         # Check if the user uses OAuth2

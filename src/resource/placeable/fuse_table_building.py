@@ -2,8 +2,8 @@ from flask import request, Blueprint, Flask, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
-from src.resource import add_swagger, clean_dict_input
-from src.model.placeable.buildings import FuseTableBuilding
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
+from src.model.placeable.fuse_table_building import FuseTableBuilding
 from src.resource.placeable.building import BuildingResource, BuildingSchema
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -31,6 +31,7 @@ class FuseTableBuildingSchema(BuildingSchema):
 class FuseTableBuildingResource(BuildingResource):
     """
     A resource/api endpoint that allows the retrieval and modification of a Fuse Table Building
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -64,6 +65,7 @@ class FuseTableBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The fuse table building has been updated. The up-to-date object is returned", schema=FuseTableBuildingSchema)
     @swagger.response(response_code=404, description='Fuse table with given id not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -83,6 +85,9 @@ class FuseTableBuildingResource(BuildingResource):
             if not fuse_table_building:
                 return ErrorSchema(f'Fuse table with id {id} not found'), 404
 
+            r = check_data_ownership(fuse_table_building.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the existing fuse table building
             fuse_table_building.update(data)
 
@@ -97,6 +102,7 @@ class FuseTableBuildingResource(BuildingResource):
     @swagger.expected(schema=FuseTableBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The fuse table building has been created. The new object is returned", schema=FuseTableBuildingSchema)
     @swagger.response(response_code=400, description='Invalid input', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -125,8 +131,17 @@ class FuseTableBuildingResource(BuildingResource):
             if 'placeable_id' in data:
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
 
+            if 'island_id' in data:
+                # Check if the island exists
+                from src.model.island import Island
+                if not Island.query.get(data['island_id']):
+                    raise ValueError('Invalid island_id')
+
             # Create the new fuse table building
             fuse_table_building = FuseTableBuilding(**data)
+            r = check_data_ownership(fuse_table_building.island_id)  # island_id == owner_id
+            if r: return r
+
             current_app.db.session.add(fuse_table_building)
             current_app.db.session.commit()
             return FuseTableBuildingSchema(fuse_table_building), 200

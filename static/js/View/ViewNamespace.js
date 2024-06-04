@@ -1,6 +1,6 @@
 import {Player} from "./PlayerView.js";
 import {Island} from "./IslandView.js";
-import {Fireball, ThunderCloud, RitualSpell, IceWall} from "./SpellView.js";
+import {Fireball, ThunderCloudPool, RitualSpell, IceWall} from "./SpellView.js";
 import {Mine} from "./Buildings/Mine.js";
 import {Altar} from "./Buildings/Altar.js";
 import {Tree} from  "./Buildings/Tree.js";
@@ -13,7 +13,9 @@ import {WarriorHut} from "./Buildings/WarriorHut.js";
 import {BuildingPreview} from "./BuildingPreview.js";
 import {Minion} from "./Characters/Minion.js";
 import {Watch} from "./Watch.js";
-import {Bridge} from "../Model/Bridge.js";
+import {Wall} from "./Buildings/Wall.js";
+import {Bridge} from "./Bridge.js";
+import {ProxyView} from "./ProxyView.js";
 
 /**
  * View namespace
@@ -24,11 +26,12 @@ export const View = Object.freeze({
     Minion: Minion,
     Island: Island,
     Fireball: Fireball,
-    ThunderCloud: ThunderCloud,
+    ThunderCloudPool: ThunderCloudPool,
     Tree: Tree,
     Altar: Altar,
     Bush: Bush,
     FusionTable: FusionTable,
+    Wall: Wall,
     WarriorHut: WarriorHut,
     Mine: Mine,
     Tower: Tower,
@@ -38,5 +41,6 @@ export const View = Object.freeze({
     BuildingPreview: BuildingPreview,
     RitualSpell: RitualSpell,
     Watch: Watch,
-    Bridge: Bridge
+    Bridge: Bridge,
+    ProxyView: ProxyView
 });

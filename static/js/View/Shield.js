@@ -27,7 +27,7 @@ const fs = 'uniform vec3 glowColor;\n' +
 export class Shield extends IView{
     constructor(params) {
         super(params);
-        this.camera = params.camera;
+        this.hasUpdates = true;
         this.charModel = new THREE.Group();
         this.centerOffset = params?.centerOffset ?? 1;
         this.heightOffset = params?.heightOffset ?? 0.5;
@@ -69,12 +69,13 @@ export class Shield extends IView{
     /**
      * @public Updates the shield's rotation
      * @param deltaTime The time passed since the last update
+     * @param camera The camera to update view
      */
-    update(deltaTime){
+    update(deltaTime, camera){
         this.charModel.rotateY((Math.PI/180)*deltaTime*20);
 
         this.charModel.children.forEach((child) => {
-            child.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(this.camera.position, child.position);
+            child.material.uniforms.viewVector.value = new THREE.Vector3().subVectors(camera.position, child.position);
         });
     }
 
@@ -109,7 +110,7 @@ export class Shield extends IView{
                         "c":   { type: "f", value: 1.0 },
                         "p":   { type: "f", value: 1.4 },
                         glowColor: { type: "c", value: new THREE.Color(0xffff00) },
-                        viewVector: { type: "v3", value: this.camera.position }
+                        viewVector: { type: "v3", value: new THREE.Vector3() } //TODO: link camera position to value
                     },
                 vertexShader:   vs,
                 fragmentShader: fs,
@@ -120,5 +121,12 @@ export class Shield extends IView{
         const shield = new THREE.Mesh(geometry, customMaterial);
         shield.scale.multiplyScalar(0.2);
         return shield;
+    }
+
+    /**
+     * removes a shield
+     */
+    loseShield(){
+        this.charModel.children.pop();
     }
 }

@@ -29,6 +29,10 @@ export class CameraManager {
         // this.linepoints = [new THREE.Vector3(),new THREE.Vector3()];
         // this.line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([]), new THREE.LineBasicMaterial({color: 0xFF0000}));
         //visualise camera line -- DEBUG STATEMENTS --
+
+        //visualise axes -- DEBUG STATEMENTS --
+        // this.axisHelper = params.axisHelper;
+        //visualise axes -- DEBUG STATEMENTS --
     }
 
     /**
@@ -66,6 +70,10 @@ export class CameraManager {
                 zoom.add(direction.negate().multiplyScalar(Math.min(minZoomIn-distance*grassZoom, maxZoomIn)));
             }
         }
+        //visualise axes -- DEBUG STATEMENTS --
+        // this.axisHelper.updatePosition(zoom.clone().addScaledVector(new THREE.Vector3(0,0,-1).applyQuaternion(this.camera.quaternion), this.axisHelper.offset));
+        // this.axisHelper.updateRotation(this.camera.quaternion);
+        //visualise axes -- DEBUG STATEMENTS --
         return zoom;
     }
 

@@ -14,7 +14,6 @@ async function storeModel(modelName, blob){
           name: modelName,
           content: blob
         });
-        console.log(`Model ${modelName} stored successfully.`);
         return blob; // Return the blob if successfully stored
   } catch (error) {
         console.error(`Error storing model ${modelName}:`, error);
@@ -33,7 +32,6 @@ async function getModelUrl(modelName) {
   if (model) {
     return URL.createObjectURL(model.content);
   } else {
-    console.error('Model not found:', modelName);
     return null;
   }
 }

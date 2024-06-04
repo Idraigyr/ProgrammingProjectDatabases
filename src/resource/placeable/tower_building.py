@@ -2,8 +2,8 @@ from flask import request, Blueprint, current_app
 from flask_jwt_extended import jwt_required
 from flask_restful_swagger_3 import swagger, Api
 
-from src.model.placeable.buildings import TowerBuilding
-from src.resource import add_swagger, clean_dict_input
+from src.model.placeable.tower_building import TowerBuilding
+from src.resource import add_swagger, clean_dict_input, check_data_ownership
 from src.resource.placeable.building import BuildingSchema, BuildingResource
 from src.schema import ErrorSchema
 from src.swagger_patches import summary
@@ -38,6 +38,7 @@ class TowerBuildingSchema(BuildingSchema):
 class TowerBuildingResource(BuildingResource):
     """
     A resource / api endpoint that allows for the retrieval and modification of new and existing towers.
+    Delete it through the placeable endpoint
     """
 
     @swagger.tags('building')
@@ -71,6 +72,7 @@ class TowerBuildingResource(BuildingResource):
     @swagger.response(response_code=200, description="The tower building has been updated. The up-to-date object is returned", schema=TowerBuildingSchema)
     @swagger.response(response_code=404, description='Tower building not found', schema=ErrorSchema)
     @swagger.response(response_code=400, description='No id given', schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def put(self):
         """
@@ -90,6 +92,9 @@ class TowerBuildingResource(BuildingResource):
             if not tower:
                 return ErrorSchema(f'Tower building with id {id} not found'), 404
 
+            r = check_data_ownership(tower.island_id)  # island_id == owner_id
+            if r: return r
+
             # Update the tower building
             tower.update(data)
 
@@ -105,6 +110,7 @@ class TowerBuildingResource(BuildingResource):
     @swagger.expected(schema=TowerBuildingSchema, required=True)
     @swagger.response(response_code=200, description="The tower building has been created. The new object is returned", schema=TowerBuildingSchema)
     @swagger.response(response_code=400, description="Invalid input", schema=ErrorSchema)
+    @swagger.response(response_code=403, description='Unauthorized access to data object. Calling user is not owner of the data (or admin)', schema=ErrorSchema)
     @jwt_required()
     def post(self):
         """
@@ -136,6 +142,9 @@ class TowerBuildingResource(BuildingResource):
                 data.pop('placeable_id') # let SQLAlchemy initialize the id
 
             tower = TowerBuilding(**data)
+
+            r = check_data_ownership(tower.island_id)  # island_id == owner_id
+            if r: return r
 
             current_app.db.session.add(tower)
             current_app.db.session.commit()
