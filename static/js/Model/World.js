@@ -204,6 +204,7 @@ export class World{
                 position: position,
                 rotation: rotation,
                 withTimer: withTimer,
+                level: 1
             });
             island.addBuilding(building);
             return building;
