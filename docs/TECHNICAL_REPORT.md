@@ -81,6 +81,10 @@ You can also open the original markdown files with a proper markdown viewer.
 * 14\. [Database Migrations](#database-migrations)
     * 14.1\. [Alembic](#alembic)
     * 14.2\. [Setting up a new database](#setting-up-a-new-database)
+* 15\. [Entity-Relationship Diagram](#entity-relationship-diagram)
+* 16\. [Class Diagrams](#class-diagrams)
+  * 16.1\. [Frontend](#frontend-2)
+  * 16.2\. [Backend](#backend-1)
 
 
 # Readme
@@ -1149,6 +1153,24 @@ Follow the steps in the [README.md](/README.md) to setup a new database. After t
 flask db upgrade
 ```
 
+# Entity Relationship Diagram
+
+![ERD](docs/ERD.svg)
+
+See bigger version __[here](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/docs/ERD.svg)__.
 
 
+# Class diagrams
+
+## Frontend
+
+[//]: # (![Frontend class diagram]&#40;docs/js-class-diagram.png&#41;{ width=250px })
+
+See bigger version __[here](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/docs/js-class-diagram.png)__.
+
+## Backend
+
+[//]: # (![Backend class diagram]&#40;docs/python-class-diagram.png&#41;{ width=250px })
+
+See bigger version __[here](https://github.com/Idraigyr/ProgrammingProjectDatabases/blob/main/docs/python-class-diagram.png)__.
 
