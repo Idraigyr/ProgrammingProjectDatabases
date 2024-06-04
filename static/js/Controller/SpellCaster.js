@@ -296,7 +296,7 @@ export class SpellCaster extends Subject{
         if(this.#wizard.getCurrentSpell() instanceof BuildSpell && !this.multiplayer){
             // If there is currentObject, rotate it
             if(this.currentObject){
-                this.currentObject.rotate();
+                this.currentObject.rotate(-90);
             }
         }
     }
