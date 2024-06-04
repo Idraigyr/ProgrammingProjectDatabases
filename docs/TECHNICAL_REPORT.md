@@ -7,7 +7,7 @@ book-class: false
 
 # Ordinary Wizards - Technical Report
 
-### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abele & Thomas Urkens
+### Authors: Joren De Smet, Aaditiya Nepal, Flynn Mol, Daria Matviichuk, Lucas Vanden Abeele & Thomas Urkens
 ### Programming Project Database, Group 2
 #### Created at the University Of Antwerp, 2024 for the course Programming Project Databases (2nd Bachelor's degree in Computer Science)
 
